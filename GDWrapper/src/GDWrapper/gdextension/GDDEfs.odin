@@ -11,7 +11,7 @@ package gdextension
 //Check Godot's docs for more info about each variant type: https://docs.godotengine.org/en/stable/classes/index.html#variant-types
 //Set to 40 if double is double precision
 //Data itself is in the _data union : https://github.com/godotengine/godot/blob/45fc515ae3574e9c1f9deacaa6960dec68a7d38b/core/variant/variant.h#L263
-//After testing won't always need to use Godot's functions. index 1 is the type enum, index 2 is the _data, I assume index 3 is ref counting or array length?
+//After testing won't always need to use Godot's functions. Check Godot's _data union to know if the info is stack or heap and needs to be freed.
 Variant :: struct #align(8) {
     VType: VariantType,
     data: [2]u64
@@ -152,28 +152,30 @@ Array :: distinct [1]u64
 The size and ref count are offset -1uintptr to the left of where the data begins.
 Use Godot's built-ins to make and manage these. Otherwise you risk heap corruption if/when Godot tries writing memory in your dynlib.
 */
-PackedByteArray :: distinct  [2]u64
+PackedByteArray :: packedArray(u8)
 
-PackedInt32Array :: distinct  [2]u64
+PackedInt32Array :: packedArray(i32)
 
-PackedInt64Array :: distinct  [2]u64
+PackedInt64Array :: packedArray(i64)
 
-PackedFloat32Array :: distinct [2]u64
+PackedFloat32Array :: packedArray(f32)
 
-PackedFloat64Array :: distinct  [2]u64
+PackedFloat64Array :: packedArray(f64)
 
-PackedStringArray :: distinct  [2]u64
 
-PackedVector2Array :: distinct  [2]u64
+//Godot only has one type for both an array of vecN and vecNi.
+PackedStringArray :: packedArray(gdstring)
 
-PackedVector3Array :: distinct  [2]u64
+PackedVector2Array :: packedArray(Vector2)
 
-PackedColorArray :: distinct  [2]u64
+PackedVector3Array :: packedArray(Vector3)
 
-PackedVector4Array :: distinct  [2]u64
+PackedColorArray :: packedArray(Color)
+
+PackedVector4Array :: packedArray(Vector4)
 
 packedArray :: struct($T: typeid) { 
-    proxy: rawptr,
+    proxy: rawptr, //This is only used for C#. C# is a safe language and as a result it needs to provide its pointer to itself in the struct itself.
     data: [^]T
 }
 

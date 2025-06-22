@@ -49,15 +49,6 @@ GDExample :: struct {
 //******Functions/Methods*****\\
 //****************************\\
 
-//TODO: make these functions automatically.
-ClassSetAmplitude :: proc "c" (self: ^GDExample, amplitude: f64) {
-    self.amplitude = amplitude
-}
-
-ClassGetAmplitude :: proc "c" (self: ^GDExample) -> f64 {
-    return self.amplitude
-}
-
 //required fields. 
 //classname
 //parentname
@@ -168,15 +159,6 @@ gdexample_class_bind_method :: proc "c" () {
 }
 
 
-ClassSetSpeed :: proc "c" (self: ^GDExample, speed: f64) {
-    self.speed = speed
-}
-ClassGetSpeed :: proc "c" (self: ^GDExample) -> f64 {
-    context = runtime.default_context()
-
-    fmt.println("speed: ", self.speed)
-    return self.speed
-}
 
 //Create instance will always run on program launch regardless if it's in the scene or not.
 //This will also run when the scene starts. Once for each instance of the Node present in the tree.
@@ -193,9 +175,8 @@ gdexampleClassCreateInstance :: proc "c" (p_class_user_data: rawptr, p_notify_po
     GDW.Destructors.stringNameDestructor(&class_name)
 
     //Create extension object.
-    //Can replace mem_alloc with new(). Just need to create the struct and pass a pointer.
-    //Maybe not if there will be types which will be managed by Godot.
-    //self: ^GDExample = cast(^GDExample)GDW.gdAPI.mem_alloc(size_of(GDExample))
+    //Use mem_alloc to allocate in Godot memory or Odin's new to allocate in the library memory.
+    //Deallocation should be owned depending on which you use. aka if it's possible that Godot will deallocate, do it with mem_alloc.
     self: ^GDExample = cast(^GDExample)GDW.gdAPI.mem_alloc(size_of(GDExample))
 
     //constructor is called after creation. Sets the defaults.
@@ -223,10 +204,8 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 }
 
 
-//WARNING : Free any heap memory allocated within this context.
-//There's also a destructor, so what's the difference?
-//Does destructor just clear the variable data and this is supposed to clear the class itself?
-//Maybe it's so that destructor can be run when making editor changes like reset?
+//WARNING : Free any heap memory allocated by your class within this context.
+
 gdexampleClassFreeInstance :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){
