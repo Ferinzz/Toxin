@@ -309,7 +309,7 @@ getMainLoop :: proc "c" () -> (gdLoop: GDE.ObjectPtr) {
     return
 }
 
-getRoot :: proc "c" () {
+getRoot :: proc "c" () -> GDE.ObjectPtr {
     @(static)getRoot: GDE.MethodBindPtr
     if getRoot == nil {
         ClassNamegr:GDE.StringName
@@ -321,9 +321,10 @@ getRoot :: proc "c" () {
         defer(Destructors.stringNameDestructor(&methodNamegr))
         getRoot = gdAPI.classDBGetMethodBind(&ClassNamegr, &methodNamegr, 1757182445)
     }
-    
-    r_ret:rawptr
+    mySceneTree:= getMainLoop()
+    r_ret:GDE.ObjectPtr
     gdAPI.objectMethodBindPtrCall(getRoot, mySceneTree, nil, &r_ret)
+    return r_ret
 }
 
 /**************************\
@@ -331,8 +332,19 @@ getRoot :: proc "c" () {
 /**************************\
 */*/*/
 
-loadResource :: proc "c" () {
+//https://docs.godotengine.org/en/stable/classes/class_resourceloader.html#enum-resourceloader-cachemode
+//default is 0
+cache_mode :: enum GDE.Int {
+    CACHE_MODE_IGNORE,
+    CACHE_MODE_REUSE,
+    CACHE_MODE_REPLACE,
+    CACHE_MODE_IGNORE_DEEP,
+    CACHE_MODE_REPLACE_DEEP,
+}
+
+loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectPtr {
     @(static)load: GDE.MethodBindPtr
+
     if load == nil {
         ClassNameres:GDE.StringName
         StringConstruct.stringNameNewLatin(&ClassNameres, "ResourceLoader", false)
@@ -344,20 +356,19 @@ loadResource :: proc "c" () {
         load = gdAPI.classDBGetMethodBind(&ClassNameres, &methodNameres, 3358495409)
     }
     
-    path: GDE.gdstring
-    hint: GDE.gdstring
-    StringConstruct.stringNewLatin(&path, "res://icon.svg")
-    defer(Destructors.stringDestruction(&path))
+    pathS: GDE.gdstring
+    hintS: GDE.gdstring
+    StringConstruct.stringNewLatin(&pathS, path)
+    defer(Destructors.stringDestruction(&pathS))
 
-    StringConstruct.stringNewLatin(&hint, "Texture")
-    defer(Destructors.stringDestruction(&hint))
+    StringConstruct.stringNewLatin(&hintS, hint)
+    defer(Destructors.stringDestruction(&hintS))
 
-    cache_mode:GDE.Int=0
-
-    args_res:= [?]rawptr {&path, &hint, &cache_mode}
-    r_resource:rawptr
+    args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
+    r_resource: GDE.ObjectPtr
 
     gdAPI.objectMethodBindPtrCall(load, getMainLoop(), raw_data(args_res[:]), &r_resource)
+    return r_resource
 }
 
 
@@ -366,8 +377,8 @@ loadResource :: proc "c" () {
 /**************************\
 */*/*/
 
-
-setTexture :: proc "c" () {    
+//Use Resource->loadResource to get the texture in the correct format. Remember to specify Texture as a hint when fetching.
+setTexture :: proc "c" (dest: GDE.ObjectPtr, texture: ^GDE.ObjectPtr) {    
     @(static)set_texture: GDE.MethodBindPtr
     if set_texture == nil {
         ClassNamespr:GDE.StringName
@@ -380,9 +391,9 @@ setTexture :: proc "c" () {
         set_texture = gdAPI.classDBGetMethodBind(&ClassNamespr, &methodNamespr, 4051416890)
     }
     
-    args_spr:= [?]rawptr {&r_resource}
-    r_nil:rawptr
-    gdAPI.objectMethodBindPtrCall(set_texture, mySprite, raw_data(args_spr[:]), &r_ret)
+    args_spr:= [?]rawptr {texture}
+    dummyReturn:rawptr
+    gdAPI.objectMethodBindPtrCall(set_texture, dest, raw_data(args_spr[:]), &dummyReturn)
 }
 
 
@@ -391,8 +402,19 @@ setTexture :: proc "c" () {
 /**************************\
 */*/*/
 
+InternalMode :: enum GDE.Int {
+    INTERNAL_MODE_DISABLED,
+    INTERNAL_MODE_FRONT,
+    INTERNAL_MODE_BACK,
+}
 
-addChild :: proc "c" () {
+
+/*
+* https://docs.godotengine.org/en/stable/classes/class_node.html#class-node-method-add-child
+* Force_readable_name default should be false if you care about performance. True if you really want a name to be visible to the user.
+* Use internalMode to hide children from the user. But make sure to set include_internal to true when calling get_children.
+*/
+addChild :: proc "c" (parent: GDE.ObjectPtr, child: ^GDE.ObjectPtr, force_readable_name: ^GDE.Bool, internalMode: ^InternalMode) {
     @(static)addChild: GDE.MethodBindPtr
     if addChild == nil {
         ClassName:GDE.StringName
@@ -404,13 +426,13 @@ addChild :: proc "c" () {
         defer(Destructors.stringNameDestructor(&methodName))
         addChild = gdAPI.classDBGetMethodBind(&ClassName, &methodName, 3863233950)
     }
+    
 
-    force_readable_name: GDE.Bool = false
     internal: GDE.Int = 0
-    args:= [?]rawptr {&mySprite, &force_readable_name, &internal}
+    args:= [?]rawptr {child, force_readable_name, internalMode}
     
     dummyReturn:rawptr
-    gdAPI.objectMethodBindPtrCall(addChild, cast(GDE.ObjectPtr)r_ret, raw_data(args[:]), dummyReturn)
+    gdAPI.objectMethodBindPtrCall(addChild, parent, raw_data(args[:]), dummyReturn)
 }
 
 
