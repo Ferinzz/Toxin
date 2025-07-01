@@ -284,11 +284,6 @@ stringNameCompare :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring
     return r_name[0] == (cast(^GDE.StringName)l_value)[0]
 }
 
-/*
-* MainLoop is a class that Godot uses to tick through the program logic.
-* This function returns a pointer to the object. If SceneTree is your mainLoop (or your own version of it) call
-* this to get the object instead of Node's get_tree which would provide a ref to SceneTree instead.
-*/
 getMainLoop :: proc "c" () -> (gdLoop: GDE.ObjectPtr) {
     @(static)getMainLoop:GDE.MethodBindPtr
 
@@ -308,111 +303,6 @@ getMainLoop :: proc "c" () -> (gdLoop: GDE.ObjectPtr) {
     gdAPI.objectMethodBindPtrCall(getMainLoop, myEngine, nil, &gdLoop)
     return
 }
-
-getRoot :: proc "c" () {
-    @(static)getRoot: GDE.MethodBindPtr
-    if getRoot == nil {
-        ClassNamegr:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassNamegr, "SceneTree", false)
-        defer(Destructors.stringNameDestructor(&ClassNamegr))
-        
-        methodNamegr: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodNamegr, "get_root", false)
-        defer(Destructors.stringNameDestructor(&methodNamegr))
-        getRoot = gdAPI.classDBGetMethodBind(&ClassNamegr, &methodNamegr, 1757182445)
-    }
-    
-    r_ret:rawptr
-    gdAPI.objectMethodBindPtrCall(getRoot, mySceneTree, nil, &r_ret)
-}
-
-/**************************\
-/*****Resource Methods*****\
-/**************************\
-*/*/*/
-
-loadResource :: proc "c" () {
-    @(static)load: GDE.MethodBindPtr
-    if load == nil {
-        ClassNameres:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassNameres, "ResourceLoader", false)
-        defer(Destructors.stringNameDestructor(&ClassNameres))
-        
-        methodNameres: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodNameres, "load", false)
-        defer(Destructors.stringNameDestructor(&methodNameres))
-        load = gdAPI.classDBGetMethodBind(&ClassNameres, &methodNameres, 3358495409)
-    }
-    
-    path: GDE.gdstring
-    hint: GDE.gdstring
-    StringConstruct.stringNewLatin(&path, "res://icon.svg")
-    defer(Destructors.stringDestruction(&path))
-
-    StringConstruct.stringNewLatin(&hint, "Texture")
-    defer(Destructors.stringDestruction(&hint))
-
-    cache_mode:GDE.Int=0
-
-    args_res:= [?]rawptr {&path, &hint, &cache_mode}
-    r_resource:rawptr
-
-    gdAPI.objectMethodBindPtrCall(load, getMainLoop(), raw_data(args_res[:]), &r_resource)
-}
-
-
-/**************************\
-/*****Sprite Methods*****\
-/**************************\
-*/*/*/
-
-
-setTexture :: proc "c" () {    
-    @(static)set_texture: GDE.MethodBindPtr
-    if set_texture == nil {
-        ClassNamespr:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassNamespr, "Sprite2D", false)
-        defer(Destructors.stringNameDestructor(&ClassNamespr))
-        
-        methodNamespr: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodNamespr, "set_texture", false)
-        defer(Destructors.stringNameDestructor(&methodNamespr))
-        set_texture = gdAPI.classDBGetMethodBind(&ClassNamespr, &methodNamespr, 4051416890)
-    }
-    
-    args_spr:= [?]rawptr {&r_resource}
-    r_nil:rawptr
-    gdAPI.objectMethodBindPtrCall(set_texture, mySprite, raw_data(args_spr[:]), &r_ret)
-}
-
-
-/**************************\
-/*******Tree Methods*******\
-/**************************\
-*/*/*/
-
-
-addChild :: proc "c" () {
-    @(static)addChild: GDE.MethodBindPtr
-    if addChild == nil {
-        ClassName:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassName, "Node", false)
-        defer(Destructors.stringNameDestructor(&ClassName))
-        
-        methodName: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodName, "add_child", false)
-        defer(Destructors.stringNameDestructor(&methodName))
-        addChild = gdAPI.classDBGetMethodBind(&ClassName, &methodName, 3863233950)
-    }
-
-    force_readable_name: GDE.Bool = false
-    internal: GDE.Int = 0
-    args:= [?]rawptr {&mySprite, &force_readable_name, &internal}
-    
-    dummyReturn:rawptr
-    gdAPI.objectMethodBindPtrCall(addChild, cast(GDE.ObjectPtr)r_ret, raw_data(args[:]), dummyReturn)
-}
-
 
 /*
 * Use this function to generate a ptr call for your virutal functions.

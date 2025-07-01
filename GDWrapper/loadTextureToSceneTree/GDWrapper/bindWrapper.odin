@@ -185,10 +185,7 @@ bindMethod :: proc "c" (className, methodName: cstring,
 
 
 /*
-* bindProperty is used to make your variable public.
-* Prior to calling this you should have registered the get and/or set functions with Godot.
-* Provide their names as cstrings. Check the makePublic function for a general workflow.
-* Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
+* 
 */
 bindProperty :: proc "c" (className, name: cstring, type: GDE.VariantType, getter, setter: cstring) {
     //context = runtime.default_context()
