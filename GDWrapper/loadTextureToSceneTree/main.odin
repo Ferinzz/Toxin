@@ -320,7 +320,7 @@ mainPhysTick :: proc "c" () {
         cache_mode:GDE.Int=0
         args_res:= [?]rawptr {&path, &hint, &cache_mode}
         r_resource:rawptr
-        GDW.gdAPI.objectMethodBindPtrCall(load, GDW.getMainLoop(), raw_data(args_res[:]), &r_resource)
+        //GDW.gdAPI.objectMethodBindPtrCall(load, GDW.getMainLoop(), raw_data(args_res[:]), &r_resource)
 
         
         
@@ -336,7 +336,7 @@ mainPhysTick :: proc "c" () {
 
         args_spr:= [?]rawptr {&r_resource}
         r_nil:rawptr
-        GDW.gdAPI.objectMethodBindPtrCall(set_texture, mySprite, raw_data(args_spr[:]), &r_ret)
+        //GDW.gdAPI.objectMethodBindPtrCall(set_texture, mySprite, raw_data(args_spr[:]), &r_ret)
 
         ClassName:GDE.StringName
         GDW.StringConstruct.stringNameNewLatin(&ClassName, "Node", false)
@@ -351,6 +351,8 @@ mainPhysTick :: proc "c" () {
         args:= [?]rawptr {&mySprite, &force_readable_name, &internal}
         r_ret2:rawptr
         GDW.gdAPI.objectMethodBindPtrCall(addChild, cast(GDE.ObjectPtr)r_ret, raw_data(args[:]), r_ret2)
+
+        GDW.getMainLoop()
 
         spriteClassCreated = true
     }
