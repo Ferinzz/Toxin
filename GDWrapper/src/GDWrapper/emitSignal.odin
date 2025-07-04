@@ -43,7 +43,7 @@ connectToSignal :: proc "c" (callback: ^GDE.CallableCustomInfo2, signal_name: ^G
     args:= [?]rawptr {signal_name, &myCallable, &flags}
     gdAPI.objectMethodBindPtrCall(connect_to, object, raw_data(args[:]), &ret_err)
 
-    assert(ret_err == .CALL_OK, loc = loc)
+    //assert(ret_err == .CALL_OK, loc = loc)
 
     return ret_err
 

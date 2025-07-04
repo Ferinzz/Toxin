@@ -8,6 +8,24 @@ import "base:runtime"
 import str "core:strings"
 import s "core:slice"
 
+//Draw canvas item directly while in the sceneTree.
+//This also shows that you can simply create a random class struct to hold the necessary data for rendering such as a texture.
+//Makes sense considering resource returns a refcounted object?
+//https://github.com/godotengine/godot-demo-projects/blob/master/2d/bullet_shower/bullets.gd
+//Create a canvasItem then draw to it directly.
+//https://docs.godotengine.org/en/stable/tutorials/performance/using_servers.html#creating-a-sprite
+
+/*
+Process to do this.
+If the object isn't already inherited into a canvas item (part of the scene tree)
+create a canvas item.
+create the appropriate body/shape
+if already part of a canvasItem can override draw function
+If you create the canvasitem yourself you can directly update the transform.
+
+
+*/
+
 treeHook :: struct {
     selfPtr: GDE.ObjectPtr,
 }
@@ -176,110 +194,7 @@ spriteClassCreated: bool= false
 mainPhysTick :: proc "c" () {
     context = runtime.default_context()
 
-    /*,
-				Node
-                {
-					"name": "add_child",
-					"is_const": false,
-					"is_vararg": false,
-					"is_static": false,
-					"is_virtual": false,
-					"hash": 3863233950,
-					"hash_compatibility": [
-						3070154285
-					],
-					"arguments": [
-						{
-							"name": "node",
-							"type": "Node"
-						},
-						{
-							"name": "force_readable_name",
-							"type": "bool",
-							"default_value": "false"
-						},
-						{
-							"name": "internal",
-							"type": "enum::Node.InternalMode",
-							"default_value": "0"
-						}
-					]
-				},
-                SceneTree
-                {
-					"name": "get_root",
-					"is_const": true,
-					"is_vararg": false,
-					"is_static": false,
-					"is_virtual": false,
-					"hash": 1757182445,
-					"return_value": {
-						"type": "Window"
-					}
-				},
-                {
-					"name": "set_texture",
-					"is_const": false,
-					"is_vararg": false,
-					"is_static": false,
-					"is_virtual": false,
-					"hash": 4051416890,
-					"arguments": [
-						{
-							"name": "texture",
-							"type": "Texture2D"
-						}
-					]
-				},
-                ResourceLoader
-                ,
-				{
-					"name": "load",
-					"is_const": false,
-					"is_vararg": false,
-					"is_static": false,
-					"is_virtual": false,
-					"hash": 3358495409,
-					"hash_compatibility": [
-						2622212233
-					],
-					"return_value": {
-						"type": "Resource"
-					},
-					"arguments": [
-						{
-							"name": "path",
-							"type": "String"
-						},
-						{
-							"name": "type_hint",
-							"type": "String",
-							"default_value": "\"\""
-						},
-						{
-							"name": "cache_mode",
-							"type": "enum::ResourceLoader.CacheMode",
-							"default_value": "1"
-						}
-					]
-				},
-                Sprite2d
-                {
-					"name": "set_texture",
-					"is_const": false,
-					"is_vararg": false,
-					"is_static": false,
-					"is_virtual": false,
-					"hash": 4051416890,
-					"arguments": [
-						{
-							"name": "texture",
-							"type": "Texture2D"
-						}
-					]
-				},*/
-    //
-    fmt.println("My phys tick.")
+    //fmt.println("My phys tick.")
 
     if !spriteClassCreated {
 
@@ -288,69 +203,11 @@ mainPhysTick :: proc "c" () {
         * To see that it is added we load the default icon.svg as a texture and set it on our Sprite2D object's texture.
         ***********/
         mySprite:= SpriteCreate(nil, false)
-        
-        ClassNamegr:GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&ClassNamegr, "SceneTree", false)
-        defer(GDW.Destructors.stringNameDestructor(&ClassNamegr))
-        
-        methodNamegr: GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&methodNamegr, "get_root", false)
-        defer(GDW.Destructors.stringNameDestructor(&methodNamegr))
-        getRoot: GDE.MethodBindPtr = GDW.gdAPI.classDBGetMethodBind(&ClassNamegr, &methodNamegr, 1757182445)
-        
-        r_ret:rawptr
-        GDW.gdAPI.objectMethodBindPtrCall(getRoot, mySceneTree, nil, &r_ret)
 
-        
-        ClassNameres:GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&ClassNameres, "ResourceLoader", false)
-        defer(GDW.Destructors.stringNameDestructor(&ClassNameres))
-        
-        methodNameres: GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&methodNameres, "load", false)
-        defer(GDW.Destructors.stringNameDestructor(&methodNameres))
-        load: GDE.MethodBindPtr = GDW.gdAPI.classDBGetMethodBind(&ClassNameres, &methodNameres, 3358495409)
-        
-        path: GDE.gdstring
-        hint: GDE.gdstring
-        GDW.StringConstruct.stringNewLatin(&path, "res://icon.svg")
-        defer(GDW.Destructors.stringDestruction(&path))
-        defer(GDW.Destructors.stringDestruction(&hint))
-        GDW.StringConstruct.stringNewLatin(&hint, "Texture")
-        cache_mode:GDE.Int=0
-        args_res:= [?]rawptr {&path, &hint, &cache_mode}
-        r_resource:rawptr
-        GDW.gdAPI.objectMethodBindPtrCall(load, GDW.getMainLoop(), raw_data(args_res[:]), &r_resource)
-
-        
-        
-        ClassNamespr:GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&ClassNamespr, "Sprite2D", false)
-        defer(GDW.Destructors.stringNameDestructor(&ClassNamespr))
-        
-        methodNamespr: GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&methodNamespr, "set_texture", false)
-        defer(GDW.Destructors.stringNameDestructor(&methodNamespr))
-        set_texture: GDE.MethodBindPtr = GDW.gdAPI.classDBGetMethodBind(&ClassNamespr, &methodNamespr, 4051416890)
-        
-
-        args_spr:= [?]rawptr {&r_resource}
-        r_nil:rawptr
-        GDW.gdAPI.objectMethodBindPtrCall(set_texture, mySprite, raw_data(args_spr[:]), &r_ret)
-
-        ClassName:GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&ClassName, "Node", false)
-        defer(GDW.Destructors.stringNameDestructor(&ClassName))
-        
-        methodName: GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&methodName, "add_child", false)
-        defer(GDW.Destructors.stringNameDestructor(&methodName))
-        addChild: GDE.MethodBindPtr = GDW.gdAPI.classDBGetMethodBind(&ClassName, &methodName, 3863233950)
-        force_readable_name: GDE.Bool = false
-        internal: GDE.Int = 0
-        args:= [?]rawptr {&mySprite, &force_readable_name, &internal}
-        r_ret2:rawptr
-        GDW.gdAPI.objectMethodBindPtrCall(addChild, cast(GDE.ObjectPtr)r_ret, raw_data(args[:]), r_ret2)
+        GDW.addChild(GDW.getRoot(), &mySprite)
+        //mySprite = SpriteCreate(nil, false)
+        //
+        //GDW.addChild(GDW.getRoot(), &mySprite)
 
         spriteClassCreated = true
     }

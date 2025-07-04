@@ -99,7 +99,8 @@ Projection :: distinct matrix[4,4]f32
 /*2×3 matrix. three Vector2 values: x, y, and origin.
 Will need to test to determine if major or minor. Likely reimplements C# version.
  */
-Transform2d :: distinct matrix[2,3]f32
+Transform2d ::  distinct #row_major matrix[3,2]f32
+//Transform2d :: distinct [6]f32
 
 /*3×4 matrix. A Basis, scale and shear. Combine with origin to do translations.
 Will need to test to determine if major or minor. Likely reimplements C# version.
