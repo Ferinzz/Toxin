@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"configurations": [
+		{
+			"type": "cppvsdbg",
+			"request": "launch",
+			"preLaunchTask": "extBuild",
+			"name": "Debug",
+			"program": "C:\/GodotSrc\/godot\/bin\/godot.windows.editor.dev.x86_64.exe",
+			//"args": [ ".\/TopDown/project.godot"],
+			"args": [ "--path ./TopDown --verbose"],
+			"cwd": "${workspaceFolder}/TopDown",
+			
+		}
+	]
+}

@@ -1,0 +1,13 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+TopDown/
+src.exp
+src.lib
+src.pdb
+sceneTreeHook.pdb
+sceneTreeHook.exp
+sceneTreeHook.lib
+extension_api.json
+gdextension_interface.h
+ols.json

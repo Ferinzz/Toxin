@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"command": "",
+	"args": [],
+	"tasks": [
+		{
+			"label": "extBuild",
+			"type": "shell",
+			"command": "./build.cmd",
+			"group": "build"
+		}
+	]
+}
