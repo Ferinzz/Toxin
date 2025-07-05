@@ -206,7 +206,7 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: int, loc := #
 }
 classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, hash: int, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
     //context = runtime.default_context()
-    
+
     method_name: GDE.StringName;
     
     StringConstruct.stringNameNewLatin(&method_name, methodName, false)
@@ -361,7 +361,7 @@ cache_mode :: enum GDE.Int {
 //The Resource only works with files that have already been imported into the engine.
 //If you just have a file sitting in the directory and haven't interacted with the editor to import it 
 //use Image->load() instead. Jesus fucking christ.
-loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.RID{
+loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectPtr{
     @(static)load: GDE.MethodBindPtr
 
     if load == nil {
@@ -384,7 +384,7 @@ loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.RI
     defer(Destructors.stringDestruction(&hintS))
 
     args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
-    r_resource: GDE.RID
+    r_resource: GDE.ObjectPtr
 
     gdAPI.objectMethodBindPtrCall(load, getMainLoop(), raw_data(args_res[:]), &r_resource)
     return r_resource
