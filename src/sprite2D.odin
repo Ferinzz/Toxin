@@ -117,15 +117,7 @@ SpriteDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstan
         return
     }
     
-    className:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&className, "PhysicsServer2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&className))
-
-    methodName: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&methodName, "free_rid", false)
-    defer(GDW.Destructors.stringNameDestructor(&methodName))
-
-    freeRID:= GDW.gdAPI.classDBGetMethodBind(&className, &methodName, 2722037293)
+    freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
 
     PhysicsServer2D_SN: GDE.StringName
     GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
@@ -285,29 +277,15 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 				},
     */
     
-    circleShapeCreate_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&circleShapeCreate_SN, "circle_shape_create", false)
-    defer(GDW.Destructors.stringNameDestructor(&circleShapeCreate_SN))
-    circleShapeCreate:= GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &circleShapeCreate_SN, 529393457)
-    
-
+    circleShapeCreate:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "circle_shape_create", 529393457)
     
     dummyReturn: GDE.TypePtr
     GDW.gdAPI.objectMethodBindPtrCall(circleShapeCreate, PhysicsServer2D, nil, &self.shape)
     //shape = PhysicsServer2D.circle_shape_create()
+
+    shapeSetData:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "shape_set_data", 3175752987)
     
-    shapesetdata_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&shapesetdata_SN, "shape_set_data", false)
-    defer(GDW.Destructors.stringNameDestructor(&shapesetdata_SN))
-    shapeSetData:= GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &shapesetdata_SN, 3175752987)
-    
-
-
-
-    methodName: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&methodName, "body_create", false)
-    defer(GDW.Destructors.stringNameDestructor(&methodName))
-    bodyCreate:= GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &methodName, 529393457)
+    bodyCreate:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_create", 529393457)
 
     
 
@@ -338,26 +316,12 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 					}
 				},*/
     
-    NodeClassName:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&NodeClassName, "Node", false)
-    defer(GDW.Destructors.stringNameDestructor(&NodeClassName))
-    
-    GetViewport_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&GetViewport_SN, "get_viewport", false)
-    defer(GDW.Destructors.stringNameDestructor(&GetViewport_SN))
-    getViewport:= GDW.gdAPI.classDBGetMethodBind(&NodeClassName, &GetViewport_SN, 3596683776)
+    getViewport:= GDW.classDBGetMethodBind("Node", "get_viewport", 3596683776)
     
     viewport: GDE.TypePtr
     GDW.gdAPI.objectMethodBindPtrCall(getViewport, self.selfPtr, nil, &viewport)
     
-    viewportClassName:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&viewportClassName, "Viewport", false)
-    defer(GDW.Destructors.stringNameDestructor(&viewportClassName))
-    
-    getWorld_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&getWorld_SN, "get_world_2d", false)
-    defer(GDW.Destructors.stringNameDestructor(&getWorld_SN))
-    getWorld2D:= GDW.gdAPI.classDBGetMethodBind(&viewportClassName, &getWorld_SN, 2339128592)
+    getWorld2D:= GDW.classDBGetMethodBind("Viewport", "get_world_2d", 2339128592)
     
     world2d: GDE.TypePtr
     GDW.gdAPI.objectMethodBindPtrCall(getWorld2D, cast(GDE.ObjectPtr)viewport, nil, &world2d)
@@ -380,15 +344,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
     */
     
     
-    world2dClassName:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&world2dClassName, "World2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&world2dClassName))
-    
-    getSpace_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&getSpace_SN, "get_space", false)
-    defer(GDW.Destructors.stringNameDestructor(&getSpace_SN))
-
-    getSpace:= GDW.gdAPI.classDBGetMethodBind(&world2dClassName, &getSpace_SN, 2944877500)
+    getSpace:= GDW.classDBGetMethodBind("World2D", "get_space", 2944877500)
     
 
     /*
@@ -413,15 +369,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 				},
     */
     
-    //world2dClassName:GDE.StringName
-    //GDW.StringConstruct.stringNameNewLatin(&world2dClassName, "PhysicsServer2D", false)
-    //defer(GDW.Destructors.stringNameDestructor(&world2dClassName))
-    
-    getbodysetspace_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&getbodysetspace_SN, "body_set_space", false)
-    defer(GDW.Destructors.stringNameDestructor(&getbodysetspace_SN))
-
-    bodySetSpace:= GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &getbodysetspace_SN, 395945892)
+    bodySetSpace:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_space", 395945892)
     
 
     /*
@@ -459,11 +407,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 				},
                 */
     
-    bodyaddspace_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&bodyaddspace_SN, "body_add_shape", false)
-    defer(GDW.Destructors.stringNameDestructor(&bodyaddspace_SN))
-
-    bodyAddSpace:= GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &bodyaddspace_SN, 339056240)
+    bodyAddSpace:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_add_shape", 339056240)
     
 
                 /*
@@ -488,11 +432,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 				},
                 */
     
-    bodySetCollision_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&bodySetCollision_SN, "body_set_collision_mask", false)
-    defer(GDW.Destructors.stringNameDestructor(&bodySetCollision_SN))
-
-    bodySetCollision:= GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &bodySetCollision_SN, 3411492887)
+    bodySetCollision:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_collision_mask", 3411492887)
     
                 
                 /*
@@ -521,11 +461,8 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 					]
 				},
     */
-    bodySetState_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&bodySetState_SN, "body_set_state", false)
-    defer(GDW.Destructors.stringNameDestructor(&bodySetState_SN))
 
-    bodySetState:= GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &bodySetState_SN, 1706355209)
+    bodySetState:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_state", 1706355209)
     
 
 
@@ -577,15 +514,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
     
     }
     
-    CanvasGroupClassName:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&CanvasGroupClassName, "CanvasGroup", false)
-    defer(GDW.Destructors.stringNameDestructor(&CanvasGroupClassName))
-    
-    getViewpRect_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&getViewpRect_SN, "get_viewport_rect", false)
-    defer(GDW.Destructors.stringNameDestructor(&getViewpRect_SN))
-
-    getViewpRect:= GDW.gdAPI.classDBGetMethodBind(&CanvasGroupClassName, &getViewpRect_SN, 1639390495)
+    getViewpRect:= GDW.classDBGetMethodBind("CanvasGroup", "get_viewport_rect", 1639390495)
 
 
     //Acutal code starts here.
@@ -595,17 +524,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
     OFFSET.x = rect.z + 16
     OFFSET.y = rect.w + 16
 
-
-    
-    className:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&className, "PhysicsServer2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&className))
-
-    methodName2: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&methodName2, "free_rid", false)
-    defer(GDW.Destructors.stringNameDestructor(&methodName2))
-
-    freeRID:= GDW.gdAPI.classDBGetMethodBind(&className, &methodName2, 2722037293)
+    freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
 
     args:= [1]rawptr {&self.shape}
     GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
@@ -633,15 +552,7 @@ process :: proc "c" (self: ^mySprite) {
 				},*/
     
     
-    canvasItem_SN:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&canvasItem_SN, "CanvasItem", false)
-    defer(GDW.Destructors.stringNameDestructor(&canvasItem_SN))
-    
-    queueRedraw_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&queueRedraw_SN, "queue_redraw", false)
-    defer(GDW.Destructors.stringNameDestructor(&queueRedraw_SN))
-
-    queueRedraw:= GDW.gdAPI.classDBGetMethodBind(&canvasItem_SN, &queueRedraw_SN, 3218959716)
+    queueRedraw:= GDW.classDBGetMethodBind("CanvasItem", "queue_redraw", 3218959716)
     
     dummyReturn: GDE.TypePtr
 
@@ -659,11 +570,9 @@ physics_process :: proc "c" (self: ^mySprite, delta: f64) {
 
     if bodySetState == nil {
     
-    bodySetState_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&bodySetState_SN, "body_set_state", false)
-    defer(GDW.Destructors.stringNameDestructor(&bodySetState_SN))
+    bodySetState = GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_state", 1706355209)
 
-    bodySetState = GDW.gdAPI.classDBGetMethodBind(&PhysicsServer2D_SN, &bodySetState_SN, 1706355209)}
+    }
 
     //Acutal code starts here.
     for &abullet in self.bullets {
@@ -687,6 +596,7 @@ physics_process :: proc "c" (self: ^mySprite, delta: f64) {
 
 draw :: proc "c" (self: ^mySprite) {
 
+    context = runtime.default_context()
     /*
     ,
 				{
@@ -715,15 +625,8 @@ draw :: proc "c" (self: ^mySprite) {
 						}
 					]
 				},*/
-    className:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&className, "CanvasItem", false)
-    defer(GDW.Destructors.stringNameDestructor(&className))
-
-    methodName: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&methodName, "draw_texture", false)
-    defer(GDW.Destructors.stringNameDestructor(&methodName))
-
-    drawTexture:= GDW.gdAPI.classDBGetMethodBind(&className, &methodName, 520200117)
+    
+    drawTexture:= GDW.classDBGetMethodBind("CanvasItem", "draw_texture", 520200117)
 
     color: GDE.Color = {1,1,1,1}
     args: [3]rawptr
@@ -755,16 +658,9 @@ draw :: proc "c" (self: ^mySprite) {
 				},
                 */
 exit_tree :: proc "c" (self: ^mySprite, delta: f64) {
+    context = runtime.default_context()
     
-    className:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&className, "PhysicsServer2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&className))
-
-    methodName: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&methodName, "free_rid", false)
-    defer(GDW.Destructors.stringNameDestructor(&methodName))
-
-    freeRID:= GDW.gdAPI.classDBGetMethodBind(&className, &methodName, 2722037293)
+    freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
 
     PhysicsServer2D_SN: GDE.StringName
     GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)

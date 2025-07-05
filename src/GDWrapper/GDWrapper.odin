@@ -204,6 +204,21 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: int, loc := #
 
     return methodBind
 }
+classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, hash: int, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+    //context = runtime.default_context()
+    
+    method_name: GDE.StringName;
+    
+    StringConstruct.stringNameNewLatin(&method_name, methodName, false)
+    
+    methodBind = gdAPI.classDBGetMethodBind(className, &method_name, hash)
+    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+    
+    
+    Destructors.stringNameDestructor(&method_name)
+
+    return methodBind
+}
 
 
 make_property :: proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
