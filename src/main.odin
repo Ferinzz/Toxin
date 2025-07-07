@@ -191,23 +191,38 @@ initializeMainLoop :: proc "c" (self: ^treeHook) {
 }
 
 spriteClassCreated: bool= false
+
 mainPhysTick :: proc "c" () {
     context = runtime.default_context()
 
     //fmt.println("My phys tick.")
 
     if !spriteClassCreated {
+        printTree:= GDW.classDBGetMethodBind("Node", "get_tree", 2958820483)
+        sceneTree: GDE.ObjectPtr
+        //GDW.gdAPI.objectMethodBindPtrCall(printTree, GDW.getMainLoop(), nil, &sceneTree)
 
         /**********
         * If the sprite hasn't been created we create it then add it as a child to our SceneTree's root.
         * To see that it is added we load the default icon.svg as a texture and set it on our Sprite2D object's texture.
         ***********/
-        mySprite:= SpriteCreate(nil, false)
+        //mySprite:= SpriteCreate(nil, false)
 
-        GDW.addChild(GDW.getRoot(), &mySprite)
-        //mySprite = SpriteCreate(nil, false)
-        //
         //GDW.addChild(GDW.getRoot(), &mySprite)
+
+        //newSprite := SpriteCreate(nil, false)
+        //
+        //GDW.addChild(GDW.getRoot(), &newSprite)
+
+        //removeChild:= GDW.classDBGetMethodBind("Node", "remove_child", 1078189570)
+
+        //arg:= [1]rawptr {&mySprite}
+        //dummyReturn:rawptr
+        //GDW.gdAPI.objectMethodBindPtrCall(removeChild, GDW.getRoot(), raw_data(arg[:]), dummyReturn)
+        //SpriteDestroy(nil, mySprite)
+
+
+        //GDW.gdAPI.objectMethodBindPtrCall(printTree, GDW.getMainLoop(), nil, &sceneTree)
 
         spriteClassCreated = true
     }

@@ -19,7 +19,7 @@ bodySetState: GDE.MethodBindPtr
 mySprite :: struct {
     selfPtr: GDE.ObjectPtr,
     shape: GDE.RID,
-    bullet_image: GDE.RID, //cannot preload from Extension. Will need to use load to get the texture.
+    bullet_image: GDE.ObjectPtr, //cannot preload from Extension. Will need to use load to get the texture.
     bullets: [dynamic]bullet, //Max bullet count is known, so we can create a fixed array. Otherwise would be dynamic.
     space: GDE.RID,
     area: GDE.RID,
@@ -116,39 +116,41 @@ SpriteDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstan
     if (p_instance == nil){
         return
     }
-    
-    freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
-
-    PhysicsServer2D_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&PhysicsServer2D_SN))
-    PhysicsServer2D:= GDW.Methods.getSingleton(&PhysicsServer2D_SN)
-    
-
-    self : ^mySprite = cast(^mySprite)p_instance
-    //Acutal code starts here.
-    dummyReturn:rawptr
-    for &abullet in self.bullets {
-        if abullet.body[0] != 0 {
-            args:= [1]rawptr {&abullet.body}    
-            GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
-        }
-    }
-    
-    args:= [1]rawptr {&self.shape[0]}
-    GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
-    args= {&self.bullet_image[0]}
-    GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
+    //
+    //freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
+//
+    //PhysicsServer2D_SN: GDE.StringName
+    //GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
+    //defer(GDW.Destructors.stringNameDestructor(&PhysicsServer2D_SN))
+    //PhysicsServer2D:= GDW.Methods.getSingleton(&PhysicsServer2D_SN)
+    //
+//
+    //self : ^mySprite = cast(^mySprite)p_instance
+    ////Acutal code starts here.
+    //dummyReturn:rawptr
+    //for &abullet in self.bullets {
+    //    if &abullet.body[0] != nil {
+    //        args:= [1]rawptr {&abullet.body}    
+    //        GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
+    //    }
+    //}
+    //
+    //args:= [1]rawptr {&self.shape[0]}
+    //GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
+    //args= {raw_data(self.bullet_image[:])}
+    //GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
     //args=  {&self.bullets[0]}
     //GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
     
-    class_destructorSprite(self)
-    GDW.gdAPI.mem_free(self)
+    //class_destructorSprite(self)
+    //GDW.gdAPI.mem_free(self)
 
 }
 
 class_destructorSprite :: proc "c" (self: ^mySprite) {
+    context = runtime.default_context()
 
+    delete(self.bullets)
 }
 
 
@@ -167,7 +169,7 @@ getVirtualWithDataSprite :: proc "c" (p_class_userdata: rawptr, p_name: GDE.Cons
         return cast(rawptr)draw
     }
     if GDW.stringNameCompare(p_name, "_exit_tree"){
-        return cast(rawptr)draw
+        return cast(rawptr)exit_tree
     }
     return nil
 }
@@ -199,7 +201,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 
     //Godot is able to pre-load the image data. We would need to store it in a global to be able to do this, so just doing it in here for now.
     cache_mode: GDW.cache_mode = .CACHE_MODE_IGNORE
-    self.bullet_image = GDW.loadResource("res://icon.svg", "Texture", &cache_mode)
+    self.bullet_image = GDW.loadResource("res://bullet.png", "Texture2D", &cache_mode)
     fmt.println(self.bullet_image)
     //1805167009392
     //Connect to mainLoop's phys tick signal.
@@ -282,6 +284,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
     dummyReturn: GDE.TypePtr
     GDW.gdAPI.objectMethodBindPtrCall(circleShapeCreate, PhysicsServer2D, nil, &self.shape)
     //shape = PhysicsServer2D.circle_shape_create()
+    fmt.println(self.shape)
 
     shapeSetData:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "shape_set_data", 3175752987)
     
@@ -528,12 +531,6 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 
     args:= [1]rawptr {&self.shape}
     GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
-    //args= {&space}
-    //GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
-    //args:= [1]rawptr {&self.shape}
-    //GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
-    
-
 
 }
 
@@ -566,12 +563,11 @@ physics_process :: proc "c" (self: ^mySprite, delta: f64) {
     PhysicsServer2D_SN: GDE.StringName
     GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
     defer(GDW.Destructors.stringNameDestructor(&PhysicsServer2D_SN))
+
     PhysicsServer2D:= GDW.Methods.getSingleton(&PhysicsServer2D_SN)
 
     if bodySetState == nil {
-    
-    bodySetState = GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_state", 1706355209)
-
+        bodySetState = GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_state", 1706355209)
     }
 
     //Acutal code starts here.
@@ -627,6 +623,9 @@ draw :: proc "c" (self: ^mySprite) {
 				},*/
     
     drawTexture:= GDW.classDBGetMethodBind("CanvasItem", "draw_texture", 520200117)
+        printTree:= GDW.classDBGetMethodBind("Node", "get_tree", 2958820483)
+        sceneTree: GDE.ObjectPtr
+        //GDW.gdAPI.objectMethodBindPtrCall(printTree, GDW.getMainLoop(), nil, &sceneTree)
 
     color: GDE.Color = {1,1,1,1}
     args: [3]rawptr
@@ -657,27 +656,62 @@ draw :: proc "c" (self: ^mySprite) {
 					]
 				},
                 */
-exit_tree :: proc "c" (self: ^mySprite, delta: f64) {
+exit_tree :: proc "c" (self: ^mySprite) {
     context = runtime.default_context()
+    if (self == nil){
+        return
+    }
     
     freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
+    freeRenderRID:= GDW.classDBGetMethodBind("RenderingServer", "free_rid", 2722037293)
 
     PhysicsServer2D_SN: GDE.StringName
     GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
     defer(GDW.Destructors.stringNameDestructor(&PhysicsServer2D_SN))
     PhysicsServer2D:= GDW.Methods.getSingleton(&PhysicsServer2D_SN)
-    
 
+    
+    RenderingServer_SN: GDE.StringName
+    GDW.StringConstruct.stringNameNewLatin(&RenderingServer_SN, "RenderingServer", false)
+    defer(GDW.Destructors.stringNameDestructor(&RenderingServer_SN))
+    RenderingServer:= GDW.Methods.getSingleton(&RenderingServer_SN)
+    
     //Acutal code starts here.
     dummyReturn:rawptr
     for &abullet in self.bullets {
-        args:= [1]rawptr {&abullet.body}
-        GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), dummyReturn)
+        if &abullet.body.ptr != nil {
+            args:= [1]rawptr {&abullet.body}    
+            GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
+        }
     }
     
     args:= [1]rawptr {&self.shape}
-    GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), dummyReturn)
+    GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
     
+    
+    getRid:= GDW.classDBGetMethodBind("Resource", "get_rid", 2944877500)
+
+    //Seeing as we get the resource ObjectPtr (aka refcounted object pointer) of our image we have to go fetch the acutal RID of it to use for the 
+    //the eventual freeRID method.
+    //For some reason when I was testing it woudl show 2 refs for the texture but removing it from here is enough to clear the errors.
+    //BTW!!!! The editor DOES NOT show you these errors.
+    die:GDE.RID
+    argse: [^]rawptr
+    GDW.gdAPI.objectMethodBindPtrCall(getRid, self.bullet_image, argse, &die)
+    args = {&die}
+    GDW.gdAPI.objectMethodBindPtrCall(freeRenderRID, RenderingServer, raw_data(args[:]), &die)
+    
+    q_free:= GDW.classDBGetMethodBind("Node", "queue_free", 3218959716)
+    GDW.gdAPI.objectMethodBindPtrCall(q_free, self.selfPtr, nil, nil)
+
+    getCanvas:= GDW.classDBGetMethodBind("CanvasItem", "get_canvas", 2944877500)
+
+    GDW.gdAPI.objectMethodBindPtrCall(getCanvas, self.selfPtr, nil, &die)
+    args = {&die}
+    GDW.gdAPI.objectMethodBindPtrCall(freeRenderRID, RenderingServer, raw_data(args[:]), &die)
+    
+    
+    class_destructorSprite(self)
     GDW.gdAPI.mem_free(self)
 }
 

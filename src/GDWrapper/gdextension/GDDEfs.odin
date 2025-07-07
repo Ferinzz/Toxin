@@ -128,7 +128,9 @@ NodePath :: distinct [1]u64
 which means they do not grant access to the resource by themselves. They are used by the low-level
 server classes, such as DisplayServer, RenderingServer, TextServer, etc.
 */
-RID :: distinct [1]u128
+RID :: distinct struct{
+proxy:u64,
+ptr:u64}
 
 Object :: distinct [2]u64
 
