@@ -174,7 +174,7 @@ initializeMainLoop :: proc "c" (self: ^treeHook) {
     mainLoop := GDW.getMainLoop()
 
 
-    rec_signal: GDE.CallableCustomInfo2 ={
+    rec_signal: GDE.CallableCustomInfo2 = {
         callable_userdata= cast(rawptr)mainPhysTick,
 	    token= GDW.Library,
 	    
@@ -206,13 +206,19 @@ mainPhysTick :: proc "c" () {
         * If the sprite hasn't been created we create it then add it as a child to our SceneTree's root.
         * To see that it is added we load the default icon.svg as a texture and set it on our Sprite2D object's texture.
         ***********/
-        //mySprite:= SpriteCreate(nil, false)
 
-        //GDW.addChild(GDW.getRoot(), &mySprite)
+        mySprite:= SpriteCreate(nil, false)
+        GDW.addChild(GDW.getRoot(), &mySprite)
 
-        //newSprite := SpriteCreate(nil, false)
-        //
-        //GDW.addChild(GDW.getRoot(), &newSprite)
+        //newSprite2 := SpriteCreate(nil, false)
+        //GDW.addChild(GDW.getRoot(), &newSprite2)
+        
+        /*
+        newSprite = SpriteCreate(nil, false)
+        GDW.addChild(GDW.getRoot(), &newSprite)
+        
+        newSprite = SpriteCreate(nil, false)
+        GDW.addChild(GDW.getRoot(), &newSprite)*/
 
         //removeChild:= GDW.classDBGetMethodBind("Node", "remove_child", 1078189570)
 

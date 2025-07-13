@@ -296,7 +296,7 @@ stringNameCompare :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring
     r_name: GDE.StringName
     StringConstruct.stringNameNewLatin(&r_name, r_value, false)
     defer(Destructors.stringNameDestructor(&r_name))
-    return r_name[0] == (cast(^GDE.StringName)l_value)[0]
+    return r_name.ptr == (cast(^GDE.StringName)l_value).ptr
 }
 
 /*

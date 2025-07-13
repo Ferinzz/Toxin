@@ -54,25 +54,60 @@ float   :: f64
 
 //The use 16 bytes if your Godot version was built with double precision support, which is not the default.
 //else use 8 bytes
-Vector2 :: distinct [2]f32
+//Doesn't have to be x,y pos. Also used in Godot as width height. They use a union to be able to switch between..
+Vector2 :: distinct struct{
+    x: f32,
+    y: f32,
+}
 
-Vector2i :: distinct [2]i32
-
+Vector2i :: distinct struct {
+    x: i32,
+    y: i32,
+}
 
 //Original has 2 Vector2
-Rec2 :: distinct [4]f32
+Rec2 :: distinct struct {
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+}
+    
 
 //Original has 2 Vector2i
-Rec2i :: distinct [4]i32
+Rec2i :: distinct struct {
+    x: i32,
+    y: i32,
+    width:  i32,
+    height: i32,
+}
 
-Vector3 :: distinct [3]f32
+Vector3 :: distinct struct{
+    x: f32,
+    y: f32,
+    z: f32,
+}
 
-Vector3i :: distinct [3]i32
+Vector3i :: distinct struct{
+    x: i32,
+    y: i32,
+    z: i32,
+}
 
 
-Vector4 :: distinct [4]f32
+Vector4 :: distinct struct{
+    x: f32,
+    y: f32,
+    z: f32,
+    w: f32,
+}
 
-Vector4i :: distinct [4]i32
+Vector4i :: distinct struct{
+    x: i32,
+    y: i32,
+    z: i32,
+    w: i32,
+}
 
 //Vector3 + d
 Plane :: distinct [4]f32
@@ -113,43 +148,66 @@ Color :: distinct Vector4
 //The value we get back for a string name is just the pointer to the Godot's interned string pool.
 //If you've use the name once you'll already created a string name with the specific text you'll have already added that string to the pool.
 //What we have access to is just the pointer.
-StringName :: distinct [1]u64
+StringName :: distinct struct{
+    ptr: rawptr
+}
 
 /*Pointer to a string stored in Godot. Format Unicode.
 Variable size.*/
-gdstring :: distinct [1]u64
+gdstring :: distinct struct{
+    ptr:rawptr
+}
 
 /*https://docs.godotengine.org/en/stable/classes/class_nodepath.html
 A filesystem representation of the node tree. Is not a direct pointer to the Node.
 Represented by a String.*/
-NodePath :: distinct [1]u64
+NodePath :: distinct gdstring
 
 /*The RID Variant type is used to access a low-level resource by its unique ID. RIDs are opaque,
 which means they do not grant access to the resource by themselves. They are used by the low-level
 server classes, such as DisplayServer, RenderingServer, TextServer, etc.
 */
 RID :: distinct struct{
-proxy:u64,
-ptr:u64}
+id:u64,
+ptr:u64 //probaby?? or it's a u128.
+}
 
-Object :: distinct [2]u64
+//extension_api says size is dependent on the build config, but callable uses u64 with no typedef.
+Object :: distinct struct{
+    proxy:u64,
+}
 
 /*Represents a function. It can either be a method within an Object instance,
-or a custom callable used for different purposes*/
-Callable :: distinct [4]u64
+or a custom callable used for different purposes.
+object is a union of u64 (object) or ^custom callable.*/
+//https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L47
+Callable :: distinct struct{
+    stringName: StringName,
+    object: u64,
+}
 
 /*Represents a signal of an Object instance. Like all Variant types,
 it can be stored in variables and passed to functions. Signals allow all connected
 Callables (and by extension their respective objects) to listen and react to events,
 without directly referencing one another.*/
-Signal :: distinct [4]u64
+//https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L177
+Signal :: distinct struct {
+    stringname: StringName,
+    objectid: Object,
+}
 
 /*Dictionaries are associative containers that contain values referenced by unique keys.
-Dictionaries will preserve the insertion order when adding new entries.*/
-Dictionary :: distinct [1]u64
+Dictionaries will preserve the insertion order when adding new entries.
+Size changes based on Godot build config.*/
+Dictionary :: distinct struct{
+    id: u32
+}
 
-/*An array of Variants.*/
-Array :: distinct [1]u64
+/*An array of Variants.
+Size changes based on Godot build config.*/
+Array :: distinct struct{
+    id: u32
+}
 
 /*First value is not used by anything other tha C#. Second value is where the data begins.
 The size and ref count are offset -1uintptr to the left of where the data begins.
@@ -178,7 +236,7 @@ PackedColorArray :: packedArray(Color)
 PackedVector4Array :: packedArray(Vector4)
 
 packedArray :: struct($T: typeid) { 
-    proxy: rawptr, //This is only used for C#. C# is a safe language and as a result it needs to provide its pointer to itself in the struct itself.
+    proxy: rawptr, //This is only used for C#. C# is a safe language and as a result it needs to provide its pointer to itself in the struct itself. We add this for the padding.
     data: [^]T
 }
 

@@ -204,22 +204,6 @@ initializeSprite :: proc "c" (self: ^mySprite) {
     self.bullet_image = GDW.loadResource("res://bullet.png", "Texture2D", &cache_mode)
     fmt.println(self.bullet_image)
     //1805167009392
-    //Connect to mainLoop's phys tick signal.
-    //Can do at create or _ready.
-    mainLoop := GDW.getMainLoop()
-    rec_signal: GDE.CallableCustomInfo2 ={
-        callable_userdata= cast(rawptr)mainPhysTickSprite,
-	    token= GDW.Library,
-	    
-	    call_func= signalCalbackSprite,
-    }
-    
-    signalName: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&signalName, "physics_frame", false)
-    defer(GDW.Destructors.stringNameDestructor(&signalName))
-
-    connectErr:= GDW.connectToSignal(&rec_signal, &signalName, mainLoop)
-    fmt.println("was there a connection error: ", connectErr)
     /*
     * "name": "PhysicsServer2D",,
 				{
@@ -234,9 +218,6 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 					}
 				},,
     */
-    
-    
-
     //Get PhysicsServer2D Singleton.
     PhysicsServer2D_SN: GDE.StringName
     GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
@@ -523,14 +504,9 @@ initializeSprite :: proc "c" (self: ^mySprite) {
     //Acutal code starts here.
     rect: GDE.Rec2
     rectptr:= &OFFSET
-    GDW.gdAPI.objectMethodBindPtrCall(getViewpRect, self.selfPtr, nil, raw_data(rect[:]))
-    OFFSET.x = rect.z + 16
-    OFFSET.y = rect.w + 16
-
-    freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
-
-    args:= [1]rawptr {&self.shape}
-    GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
+    GDW.gdAPI.objectMethodBindPtrCall(getViewpRect, self.selfPtr, nil, &rect)
+    OFFSET.x = rect.width + 16
+    OFFSET.y = rect.height + 16
 
 }
 
@@ -694,7 +670,7 @@ exit_tree :: proc "c" (self: ^mySprite) {
     //Seeing as we get the resource ObjectPtr (aka refcounted object pointer) of our image we have to go fetch the acutal RID of it to use for the 
     //the eventual freeRID method.
     //For some reason when I was testing it woudl show 2 refs for the texture but removing it from here is enough to clear the errors.
-    //BTW!!!! The editor DOES NOT show you these errors.
+    //BTW!!!! The editor DOES NOT show you these leaks.
     die:GDE.RID
     argse: [^]rawptr
     GDW.gdAPI.objectMethodBindPtrCall(getRid, self.bullet_image, argse, &die)
@@ -704,32 +680,76 @@ exit_tree :: proc "c" (self: ^mySprite) {
     q_free:= GDW.classDBGetMethodBind("Node", "queue_free", 3218959716)
     GDW.gdAPI.objectMethodBindPtrCall(q_free, self.selfPtr, nil, nil)
 
-    getCanvas:= GDW.classDBGetMethodBind("CanvasItem", "get_canvas", 2944877500)
+    /*name": "RenderingServer"
+		{
+			"name": "canvas_item_clear",
+			"is_const": false,
+			"is_vararg": false,
+			"is_static": false,
+			"is_virtual": false,
+			"hash": 2722037293,
+			"arguments": [
+				{
+					"name": "item",
+					"type": "RID"
+				}
+			]
+		},
+        "name": "CanvasItem",
+			{
+				"name": "get_canvas_item",
+				"is_const": true,
+				"is_vararg": false,
+				"is_static": false,
+				"is_virtual": false,
+				"hash": 2944877500,
+				"return_value": {
+					"type": "RID"
+				}
+			},
+    */
 
-    GDW.gdAPI.objectMethodBindPtrCall(getCanvas, self.selfPtr, nil, &die)
-    args = {&die}
-    GDW.gdAPI.objectMethodBindPtrCall(freeRenderRID, RenderingServer, raw_data(args[:]), &die)
+    getCanvas:= GDW.classDBGetMethodBind("CanvasItem", "get_canvas", 2944877500)
+    getCanvasItem:= GDW.classDBGetMethodBind("CanvasItem", "get_canvas_item", 2944877500)
+
+    //GDW.gdAPI.objectMethodBindPtrCall(getCanvas, self.selfPtr, nil, &die)
+    //GDW.gdAPI.objectMethodBindPtrCall(getCanvasItem, self.selfPtr, nil, &die)
+    //args = {&die}
+    //GDW.gdAPI.objectMethodBindPtrCall(freeRenderRID, RenderingServer, raw_data(args[:]), &die)
     
     
     class_destructorSprite(self)
     GDW.gdAPI.mem_free(self)
+
+    //freeRID:= GDW.classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
+    //
+    //args:= [1]rawptr {&self.shape}
+    //GDW.gdAPI.objectMethodBindPtrCall(freeRID, PhysicsServer2D, raw_data(args[:]), &dummyReturn)
 }
 
-mainPhysTickSprite :: proc "c" () {
-    context = runtime.default_context()
-
-    //fmt.println("My Sprite tick.")
-}
 
 signalCalbackSprite :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
     context = runtime.default_context()
 
-    if callable_userdata == cast(rawptr)mainPhysTickSprite {
-        mainPhysTickSprite()
-        r_error.error=.CALL_OK
-        return
-    }
-
     r_error.error = .CALL_ERROR_INSTANCE_IS_NULL
     return
 }
+
+/*
+    //Connect to mainLoop's phys tick signal.
+    //Can do at create or _ready.
+    mainLoop := GDW.getMainLoop()
+    rec_signal: GDE.CallableCustomInfo2 ={
+        callable_userdata= cast(rawptr)mainPhysTickSprite,
+	    token= GDW.Library,
+	    
+	    call_func= signalCalbackSprite,
+    }
+    
+    signalName: GDE.StringName
+    GDW.StringConstruct.stringNameNewLatin(&signalName, "physics_frame", false)
+    defer(GDW.Destructors.stringNameDestructor(&signalName))
+
+    connectErr:= GDW.connectToSignal(&rec_signal, &signalName, mainLoop)
+    fmt.println("was there a connection error: ", connectErr)
+*/
