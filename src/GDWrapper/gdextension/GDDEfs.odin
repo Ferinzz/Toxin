@@ -120,7 +120,7 @@ It is defined by its position and size, which are Vector3.*/
 AABB :: distinct [6]f32
 
 //3×3 matrix used to represent 3D rotation, scale, and shear.
-Basis :: distinct matrix[3,3]f32
+Basis :: distinct #row_major matrix[3,3]f32
 
 //Note: Godot uses a right-handed coordinate system, which is a common standard. For directions,
 //the convention for built-in types like Camera3D is for -Z to point forward (+X is right, +Y is up, and +Z is back). 
@@ -129,7 +129,7 @@ Basis :: distinct matrix[3,3]f32
 /*4×4 matrix used for 3D projective transformations. It can represent transformations such as
 translation, rotation, scaling, shearing, and perspective division. It consists of four Vector4 columns.
 */
-Projection :: distinct matrix[4,4]f32
+Projection :: distinct #row_major matrix[4,4]f32
 
 /*2×3 matrix. three Vector2 values: x, y, and origin.
 Will need to test to determine if major or minor. Likely reimplements C# version.
@@ -140,7 +140,7 @@ Transform2d ::  distinct #row_major matrix[3,2]f32
 /*3×4 matrix. A Basis, scale and shear. Combine with origin to do translations.
 Will need to test to determine if major or minor. Likely reimplements C# version.
 */
-Transform3D :: distinct matrix[3,4]f32
+Transform3D :: distinct #row_major matrix[3,4]f32
 
 //Color represented in RGBA
 Color :: distinct Vector4
