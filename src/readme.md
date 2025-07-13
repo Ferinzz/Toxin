@@ -7,3 +7,13 @@ removing something from the sceneTree does not automatically destroy it. This mi
 If you have not loaded the editor in between adding something to the folder you cannot use resource -> load to load the file. It seems you would need to use image -> load(?) to get an image to load in. Maybe using a path that isn't res:: could solve this? I'm assuming that the engine does some lookup shortcuts to make finding files faster. Perhaps even some preprocessing? Benefit of the doubt. Would be nice to explore how to avoid the need to load the editor just to package the import. Maybe ResourceImporter could be a way to do this as well. Run this on the folder when building.
 
 Despite some methods having the same name, hash and details; if you use the wrong parent name it will not provide you with the correct mapping to the method. I found this out when I tried reusing the same method ptr for free_rid of physicsserver2d to free from renderserver2d.
+
+Verifying the events received. Odd way to work things, but the best way to type check a class and thus be able to check the type of event which you're receiving is to try to case the object to the specific object you want it to be. This is for if event is InputEventMouseMotion: in the player.gd script. If you don't do a cast check you'll have to use the Object.is_class method which is a STRING COMPARE! You can't use the stringname compare because events don't seem to have names.
+
+Wound up just setting up some basic movements for the Player class and then did the rest in Godot. Felt weird going into the editor floundering as I didn't know how to find what I wanted in a ui environment.
+
+For this project you should copy the
+--player.tscn
+--node_2d.tscn
+--bullet.png
+--project.godot

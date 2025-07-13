@@ -73,6 +73,8 @@ Methods: struct {
     getMainLoop: GDE.MethodBindPtr,
     getSingleton: GDE.InterfaceGlobalGetSingleton,
     makeCallable: GDE.InterfaceCallableCustomCreate2,
+    ObjGetClassName: GDE.InterfaceObjectGetClassName,
+    checkCast: GDE.InterfaceObjectCastTo,
 }
 
 
@@ -174,6 +176,10 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Methods.objectEmitSignal = classDBGetMethodBind("Object", "emit_signal", 4047867050)
     Methods.getSingleton = cast(GDE.InterfaceGlobalGetSingleton)gdAPI.p_get_proc_address("global_get_singleton")
     Methods.makeCallable = cast(GDE.InterfaceCallableCustomCreate2)gdAPI.p_get_proc_address("callable_custom_create2")
+    Methods.ObjGetClassName = cast(GDE.InterfaceObjectGetClassName)gdAPI.p_get_proc_address("object_get_class_name")
+    Methods.checkCast = cast(GDE.InterfaceObjectCastTo)gdAPI.p_get_proc_address("object_cast_to")
+    //Methods.node2dSetPosition = classDBGetMethodBind("Node2D", "set_position", 743155724)
+
 
     gdAPI.regGetObj = cast(GDE.InterfaceRefGetObject)gdAPI.p_get_proc_address("ref_get_object")
 

@@ -92,6 +92,9 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
 
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &class_name, &parent_class_name, &class_info)
     registerSprite()
+    registerPlayer()
+
+
     //GDW.makePublic(treeHook, "timePassed")
     treeBindMethod()
 }
@@ -229,6 +232,8 @@ mainPhysTick :: proc "c" () {
 
 
         //GDW.gdAPI.objectMethodBindPtrCall(printTree, GDW.getMainLoop(), nil, &sceneTree)
+        //player:= CreatePlayer(nil, false)
+        //GDW.addChild(GDW.getRoot(), &player)
 
         spriteClassCreated = true
     }
