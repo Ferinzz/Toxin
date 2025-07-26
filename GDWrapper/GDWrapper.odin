@@ -497,6 +497,19 @@ setTexture :: proc "c" (dest: GDE.ObjectPtr, texture: ^GDE.ObjectPtr) {
 }
 
 
+//*************************\\
+//********Texture2D********\\
+//*************************\\
+
+
+getSizeTexture2D :: proc(object: GDE.ObjectPtr, r_size: ^GDE.Vector2) {
+    @(static)GetSize: GDE.MethodBindPtr
+    if GetSize == nil do GetSize = classDBGetMethodBind("Texture2D", "get_size", 3341600327)
+
+    
+    gdAPI.objectMethodBindPtrCall(GetSize, object, nil, r_size)
+}
+
 //**************************\\
 //*******Tree Methods*******\\
 //**************************\\
