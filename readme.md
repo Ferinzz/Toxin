@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 This repo is to provide a wrapper for Godot's API.
 Current features include :
 Create custom class
@@ -126,5 +125,4 @@ sceneTreeHook shows how I managed to set my own class as the mainLoop as a scene
 
 loadTextureToSceneTree shows how to setup a sprite from code. create, set texture, add to sceneTree's root.
 
->>>>>>> 1337e34b72ff576fef4c66c7aee17524cffce0c5
 src is the latest thing I am working on.
