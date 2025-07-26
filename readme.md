@@ -61,4 +61,6 @@ sceneTreeHook shows how I managed to set my own class as the mainLoop as a scene
 
 loadTextureToSceneTree shows how to setup a sprite from code. create, set texture, add to sceneTree's root.
 
+bulletshowerexample takes the GD script example of the same name and converts it to Odin code. Most interesting part is the bullet. Shows off some object pooling so that you don't need to create a node for every single entity you will be showing on the screen.
+
 src is the latest thing I am working on.
