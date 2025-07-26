@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://bys05dwnq5s4i"]
+
+[ext_resource type="Texture2D" uid="uid://bp458xmbwniyg" path="res://icon.svg" id="1_wtcfe"]
+
+[sub_resource type="GDScript" id="GDScript_y32ns"]
+script/source = "extends Node2D
+
+
+func _ready():
+	$GDExample.position_changed.connect(new_pos)
+
+func new_pos(delta):
+	prints(delta)
+"
+
+[node name="Node2D" type="Node2D"]
+script = SubResource("GDScript_y32ns")
+
+[node name="GDExample" type="GDExample" parent="."]
+position = Vector2(3.74043, 30.4252)
+texture = ExtResource("1_wtcfe")
