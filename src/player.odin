@@ -93,6 +93,11 @@ CreatePlayer :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GD
     
     fmt.println("My own Player", object)
 
+    //ORIGINALLY I wanted to connect with the signal via code but for whatever
+    //reason the bullet class doesn't exist when this would need it to..
+    //
+    //In Object of type 'Node2D': Attempt to connect nonexistent signal 'body_shape_entered' to callable '<CallableCustom>'.
+    //was there a connection error:  %!(BAD ENUM VALUE=31)
     enterShapeInfo: GDE.CallableCustomInfo2 ={
         callable_userdata= cast(rawptr)onBodyEntered,
 	    token= GDW.Library,
@@ -108,7 +113,7 @@ CreatePlayer :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GD
     //fmt.println("was there a connection error: ", connectErr)
 
     //Create extension object.
-    //Can replace mem_alloc with new(). Just need to create the struct and pass a pointer.
+    
     self: ^Player = cast(^Player)GDW.gdAPI.mem_alloc(size_of(Player))
     self.selfPtr = object
     
@@ -127,13 +132,16 @@ DestroyPlayer :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstan
     if (p_instance == nil){
         return
     }
+    self : ^Player = cast(^Player)p_instance
+    GDW.gdAPI.mem_free(self)
 
 }
 
 class_destructorPlayer :: proc "c" (self: ^Player) {
     context = runtime.default_context()
 
-    //delete(self.bullets)
+    //GDW.gdAPI.mem_free(self)
+    
 }
 
 
@@ -194,52 +202,6 @@ initializePlayer :: proc "c" (self: ^Player) {
     context = runtime.default_context()
 
 
-    //Godot is able to pre-load the image data. We would need to store it in a global to be able to do this, so just doing it in here for now.
-    cache_mode: GDW.cache_mode = .CACHE_MODE_IGNORE
-    //self.bullet_image = GDW.loadResource("res://bullet.png", "Texture2D", &cache_mode)
-    //fmt.println(self.bullet_image)
-
-    //Get PhysicsServer2D Singleton.
-    PhysicsServer2D_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&PhysicsServer2D_SN))
-    PhysicsServer2D:= GDW.Methods.getSingleton(&PhysicsServer2D_SN)
-    
-    circleShapeCreate:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "circle_shape_create", 529393457)
-    
-    dummyReturn: GDE.TypePtr
-    //GDW.gdAPI.objectMethodBindPtrCall(circleShapeCreate, PhysicsServer2D, nil, &self.shape)
-    //shape = PhysicsServer2D.circle_shape_create()
-    //fmt.println(self.shape)
-
-    shapeSetData:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "shape_set_data", 3175752987)
-    
-    bodyCreate:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_create", 529393457)
-
-    
-    
-    getViewport:= GDW.classDBGetMethodBind("Node", "get_viewport", 3596683776)
-    
-    viewport: GDE.TypePtr
-    GDW.gdAPI.objectMethodBindPtrCall(getViewport, self.selfPtr, nil, &viewport)
-    
-    getWorld2D:= GDW.classDBGetMethodBind("Viewport", "get_world_2d", 2339128592)
-    
-    world2d: GDE.TypePtr
-    GDW.gdAPI.objectMethodBindPtrCall(getWorld2D, cast(GDE.ObjectPtr)viewport, nil, &world2d)
-    
-    bodySetSpace:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_space", 395945892)
-    
-
-    
-    bodyAddSpace:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_add_shape", 339056240)
-    
-    
-    bodySetCollision:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_collision_mask", 3411492887)
-    
-                
-    bodySetState:= GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_state", 1706355209)
-    
 
 
 }
@@ -247,26 +209,11 @@ initializePlayer :: proc "c" (self: ^Player) {
 processPlayer :: proc "c" (self: ^Player) {
     context = runtime.default_context()
     
-    queueRedraw:= GDW.classDBGetMethodBind("CanvasItem", "queue_redraw", 3218959716)
-    
-    dummyReturn: GDE.TypePtr
-
-    //Acutal code starts here.
-    GDW.gdAPI.objectMethodBindPtrCall(queueRedraw, self.selfPtr, nil, &dummyReturn)
 }
 
 physics_processPlayer :: proc "c" (self: ^Player, delta: f64) {
     context = runtime.default_context()
 
-    PhysicsServer2D_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&PhysicsServer2D_SN))
-
-    PhysicsServer2D:= GDW.Methods.getSingleton(&PhysicsServer2D_SN)
-
-    if bodySetState == nil {
-        bodySetState = GDW.classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_state", 1706355209)
-    }
 
 }
 
@@ -274,16 +221,7 @@ drawPlayer :: proc "c" (self: ^Player) {
 
     context = runtime.default_context()
     
-    drawTexture:= GDW.classDBGetMethodBind("CanvasItem", "draw_texture", 520200117)
-        printTree:= GDW.classDBGetMethodBind("Node", "get_tree", 2958820483)
-        sceneTree: GDE.ObjectPtr
-        //GDW.gdAPI.objectMethodBindPtrCall(printTree, GDW.getMainLoop(), nil, &sceneTree)
-
-    color: GDE.Color = {1,1,1,1}
-    args: [3]rawptr
     
-
-
 }
 
 
@@ -298,38 +236,13 @@ exit_treePlayer :: proc "c" (self: ^Player) {
 //Will need to see if it matches with the input type you're looking for.
 //"name": "InputEventMouseMotion",
 //proc(p_object: ConstObjectPtr, p_library: ClassLibraryPtr, r_class_name: UninitializedStringNamePtr) -> Bool
-/*,
-				{
-					"name": "is_action",
-					"is_const": true,
-					"is_vararg": false,
-					"is_static": false,
-					"is_virtual": false,
-					"hash": 1558498928,
-					"return_value": {
-						"type": "bool"
-					},
-					"arguments": [
-						{
-							"name": "action",
-							"type": "StringName"
-						},
-						{
-							"name": "exact_match",
-							"type": "bool",
-							"default_value": "false"
-						}
-					]
-				},
-*/
 
 
 //Two methods of checking a class presented here. There's a third which uses the name of the
 //class, but at least the mousemotion event doesn't have a name.
 //First method commented out is the worst. It does a string compare between what you provide and
 //what it derives from the class.
-//Second method is more ideal as it simply does a compare between the types. Will need to check how
-//this is ref counted if this is.
+//Second method is more ideal as it simply does a compare between the types.
 inputPlayer :: proc "c" (self: ^Player, event: GDE.ObjectPtr) {
     context = runtime.default_context()
     //event:= event
