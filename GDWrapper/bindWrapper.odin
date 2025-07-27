@@ -22,7 +22,9 @@ import "core:log"
 * P: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-makePublic :: proc "c" ($P: typeid, $fieldName: cstring, loc:= #caller_location)
+makePublic :: proc "c" ($P: typeid, $fieldName: cstring,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
                         where sics.type_has_field(P, fieldName) //No point trying if the field doesn't exist. Typo safety.
     {
     context = runtime.default_context()
@@ -49,8 +51,8 @@ makePublic :: proc "c" ($P: typeid, $fieldName: cstring, loc:= #caller_location)
     defer delete(className)
 
     //These functions create the callbacks Godot will used to call set and get.
-    bindMethod(className, "set_"+fieldName, set, fieldName, loc = loc)
-    bindMethod(className, "get_"+fieldName, get, loc = loc)
+    bindMethod(className, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className, "get_"+fieldName, get, methodType, loc = loc)
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     bindProperty(className, fieldName, GDE.VariantType(index), "get_"+fieldName, "set_"+fieldName)
@@ -69,7 +71,9 @@ makePublic :: proc "c" ($P: typeid, $fieldName: cstring, loc:= #caller_location)
 */
 bindMethod :: proc "c" (className, methodName: cstring,
                         function: $T,
-                        argNames: ..cstring, loc:= #caller_location)
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        argNames: ..cstring, loc:= #caller_location
+                        )
                         where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
     {
     context = runtime.default_context()
@@ -153,7 +157,7 @@ bindMethod :: proc "c" (className, methodName: cstring,
 
         call_func = callFunc,
         ptrcall_func = ptrcallFunc,
-        method_flags = u32(GDE.ClassMethodFlags.STATIC),
+        method_flags = u32(methodType),
     }
 
     

@@ -5,7 +5,8 @@
 
 ::runs whatever odin main package there is in the folder you're in.
 ::probably better to have the main file in a src directory or something, but I wasn't planning on having more than one file at the start.
-odin build src -build-mode:dll -debug
+odin build src -build-mode:dll
+:: -debug
 
 rename src.dll libgdexample.dll
 
