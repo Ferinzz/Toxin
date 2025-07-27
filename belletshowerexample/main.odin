@@ -92,6 +92,9 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
 
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &class_name, &parent_class_name, &class_info)
     registerSprite()
+    registerPlayer()
+
+
     //GDW.makePublic(treeHook, "timePassed")
     treeBindMethod()
 }
@@ -125,6 +128,7 @@ treeHookCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: 
     GDW.gdAPI.object_set_instance(object, &class_name, self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
     mySceneTree = object
+    GDW.PhysServer2dObj = GDW.getPhysServer2dObj()
     return object
 
 }
@@ -174,7 +178,7 @@ initializeMainLoop :: proc "c" (self: ^treeHook) {
     mainLoop := GDW.getMainLoop()
 
 
-    rec_signal: GDE.CallableCustomInfo2 ={
+    rec_signal: GDE.CallableCustomInfo2 = {
         callable_userdata= cast(rawptr)mainPhysTick,
 	    token= GDW.Library,
 	    
@@ -191,23 +195,48 @@ initializeMainLoop :: proc "c" (self: ^treeHook) {
 }
 
 spriteClassCreated: bool= false
+
 mainPhysTick :: proc "c" () {
     context = runtime.default_context()
 
     //fmt.println("My phys tick.")
 
     if !spriteClassCreated {
+        printTree:= GDW.classDBGetMethodBind("Node", "get_tree", 2958820483)
+        sceneTree: GDE.ObjectPtr
+        //GDW.gdAPI.objectMethodBindPtrCall(printTree, GDW.getMainLoop(), nil, &sceneTree)
+
+        
 
         /**********
         * If the sprite hasn't been created we create it then add it as a child to our SceneTree's root.
         * To see that it is added we load the default icon.svg as a texture and set it on our Sprite2D object's texture.
         ***********/
-        mySprite:= SpriteCreate(nil, false)
 
+        mySprite:= SpriteCreate(nil, false)
         GDW.addChild(GDW.getRoot(), &mySprite)
-        //mySprite = SpriteCreate(nil, false)
-        //
-        //GDW.addChild(GDW.getRoot(), &mySprite)
+
+        //newSprite2 := SpriteCreate(nil, false)
+        //GDW.addChild(GDW.getRoot(), &newSprite2)
+        
+        /*
+        newSprite = SpriteCreate(nil, false)
+        GDW.addChild(GDW.getRoot(), &newSprite)
+        
+        newSprite = SpriteCreate(nil, false)
+        GDW.addChild(GDW.getRoot(), &newSprite)*/
+
+        removeChild:= GDW.classDBGetMethodBind("Node", "remove_child", 1078189570)
+
+        //arg:= [1]rawptr {&mySprite}
+        //dummyReturn:rawptr
+        //GDW.gdAPI.objectMethodBindPtrCall(removeChild, GDW.getRoot(), raw_data(arg[:]), dummyReturn)
+        //SpriteDestroy(nil, mySprite)
+
+
+        //GDW.gdAPI.objectMethodBindPtrCall(printTree, GDW.getMainLoop(), nil, &sceneTree)
+        //player:= CreatePlayer(nil, false)
+        //GDW.addChild(GDW.getRoot(), &player)
 
         spriteClassCreated = true
     }

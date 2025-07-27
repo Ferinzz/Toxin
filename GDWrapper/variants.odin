@@ -4,6 +4,7 @@ import GDE "gdextension"
 import "base:runtime"
 import "core:mem"
 import "core:slice"
+import "core:math/linalg"
 
 /*
 * Variants are Godot's special class of types.
@@ -241,7 +242,7 @@ variant_to :: proc {
     Transform2dtoVariant    :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Transform2d) {
         @(static) trans2d2V: GDE.VariantFromTypeConstructorFunc
         if trans2d2V == nil do trans2d2V = VariantGetters.getVariantFromTypeConstructor(.TRANSFORM2D)
-        trans2d2V(p_variant, p_from)
+        trans2d2V(p_variant, &(p_from[0]))
     }
 
     ColortoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Color) {

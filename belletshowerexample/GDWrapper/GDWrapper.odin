@@ -73,6 +73,8 @@ Methods: struct {
     getMainLoop: GDE.MethodBindPtr,
     getSingleton: GDE.InterfaceGlobalGetSingleton,
     makeCallable: GDE.InterfaceCallableCustomCreate2,
+    ObjGetClassName: GDE.InterfaceObjectGetClassName,
+    checkCast: GDE.InterfaceObjectCastTo,
 }
 
 
@@ -174,9 +176,17 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Methods.objectEmitSignal = classDBGetMethodBind("Object", "emit_signal", 4047867050)
     Methods.getSingleton = cast(GDE.InterfaceGlobalGetSingleton)gdAPI.p_get_proc_address("global_get_singleton")
     Methods.makeCallable = cast(GDE.InterfaceCallableCustomCreate2)gdAPI.p_get_proc_address("callable_custom_create2")
+    Methods.ObjGetClassName = cast(GDE.InterfaceObjectGetClassName)gdAPI.p_get_proc_address("object_get_class_name")
+    Methods.checkCast = cast(GDE.InterfaceObjectCastTo)gdAPI.p_get_proc_address("object_cast_to")
+    //Methods.node2dSetPosition = classDBGetMethodBind("Node2D", "set_position", 743155724)
+
 
     gdAPI.regGetObj = cast(GDE.InterfaceRefGetObject)gdAPI.p_get_proc_address("ref_get_object")
 
+    
+    StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
+    StringConstruct.stringNameNewLatin(&RenderServer_SN, "RenderingServer", false)
+    
 }
 
 /* Get a binding to a method from Godot's class DB.
@@ -200,6 +210,21 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: int, loc := #
     assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
     
     Destructors.stringNameDestructor(&native_class_name)
+    Destructors.stringNameDestructor(&method_name)
+
+    return methodBind
+}
+classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, hash: int, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+    //context = runtime.default_context()
+
+    method_name: GDE.StringName;
+    
+    StringConstruct.stringNameNewLatin(&method_name, methodName, false)
+    
+    methodBind = gdAPI.classDBGetMethodBind(className, &method_name, hash)
+    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+    
+    
     Destructors.stringNameDestructor(&method_name)
 
     return methodBind
@@ -281,7 +306,7 @@ stringNameCompare :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring
     r_name: GDE.StringName
     StringConstruct.stringNameNewLatin(&r_name, r_value, false)
     defer(Destructors.stringNameDestructor(&r_name))
-    return r_name[0] == (cast(^GDE.StringName)l_value)[0]
+    return r_name.ptr == (cast(^GDE.StringName)l_value).ptr
 }
 
 /*
@@ -346,7 +371,7 @@ cache_mode :: enum GDE.Int {
 //The Resource only works with files that have already been imported into the engine.
 //If you just have a file sitting in the directory and haven't interacted with the editor to import it 
 //use Image->load() instead. Jesus fucking christ.
-loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.RID{
+loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectPtr{
     @(static)load: GDE.MethodBindPtr
 
     if load == nil {
@@ -369,18 +394,89 @@ loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.RI
     defer(Destructors.stringDestruction(&hintS))
 
     args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
-    r_resource: GDE.RID
+    r_resource: GDE.ObjectPtr
 
     gdAPI.objectMethodBindPtrCall(load, getMainLoop(), raw_data(args_res[:]), &r_resource)
     return r_resource
+}
+
+getRid :: proc(ref: GDE.ObjectPtr, r_ret: ^GDE.RID) {
+    @(static)GetRID: GDE.MethodBindPtr
+    if GetRID == nil do GetRID = classDBGetMethodBind("Resource", "get_rid", 2944877500)
+    
+    gdAPI.objectMethodBindPtrCall(GetRID, ref, nil, r_ret)
+}
+    
+
+
+
+freeRID :: proc(body: ^GDE.RID) {
+    @(static)FreeRID: GDE.MethodBindPtr
+    if FreeRID == nil do FreeRID = classDBGetMethodBind("PhysicsServer2D", "free_rid", 2722037293)
+
+    assert(body.id != 0 && PhysServer2dObj != nil)
+    args:= [1]rawptr {body}
+    gdAPI.objectMethodBindPtrCall(FreeRID, PhysServer2dObj, raw_data(args[:]), nil)
+}
+
+
+
+
+//*************************\\
+//*****PhysicsServer2D*****\\
+//*************************\\
+
+
+queueRedraw :: proc(object: GDE.ObjectPtr) {
+    @(static)QueueRedraw: GDE.MethodBindPtr
+    if QueueRedraw == nil do QueueRedraw = classDBGetMethodBind("CanvasItem", "queue_redraw", 3218959716)
+    
+    //dummyReturn: GDE.TypePtr
+
+    //Acutal code starts here.
+    gdAPI.objectMethodBindPtrCall(QueueRedraw, object, nil, nil)
+}
+
+//**************************\\
+//******Canvas Item******\\
+//**************************\\
+
+drawTexture2D :: proc(object: GDE.ObjectPtr, image: ^GDE.ObjectPtr, position: ^GDE.Vector2, color: ^GDE.Color) {
+    @(static)DrawTexture: GDE.MethodBindPtr
+    if DrawTexture == nil do DrawTexture = classDBGetMethodBind("CanvasItem", "draw_texture", 520200117)
+
+    args :=  [3]rawptr{image, position, color}
+    gdAPI.objectMethodBindPtrCall(DrawTexture, object, raw_data(args[:]), nil)
+}
+
+
+//**************************\\
+//*********Viewport*********\\
+//**************************\\
+
+getWorld2D :: proc(viewport: GDE.TypePtr, r_world: ^GDE.TypePtr) {
+    @(static)GetWorld2D: GDE.MethodBindPtr
+    if GetWorld2D == nil do GetWorld2D = classDBGetMethodBind("Viewport", "get_world_2d", 2339128592)
+    
+    
+    gdAPI.objectMethodBindPtrCall(GetWorld2D, cast(GDE.ObjectPtr)viewport, nil, r_world)
+}
+
+//**************************\\
+//*******Canvas Group*******\\
+//**************************\\
+
+getViewpRect :: proc(object: GDE.ObjectPtr, r_rect: ^GDE.Rec2) {
+    @(static)GetViewpRect: GDE.MethodBindPtr
+    if GetViewpRect == nil do GetViewpRect = classDBGetMethodBind("CanvasGroup", "get_viewport_rect", 1639390495)
+
+    gdAPI.objectMethodBindPtrCall(GetViewpRect, object, nil, r_rect)
 }
 
 
 //**************************\\
 //******Sprite Methods******\\
 //**************************\\
-
-
 //Use Resource->loadResource to get the texture in the correct format. Remember to specify Texture as a hint when fetching.
 setTexture :: proc "c" (dest: GDE.ObjectPtr, texture: ^GDE.ObjectPtr) {    
     @(static)set_texture: GDE.MethodBindPtr
@@ -401,6 +497,19 @@ setTexture :: proc "c" (dest: GDE.ObjectPtr, texture: ^GDE.ObjectPtr) {
 }
 
 
+//*************************\\
+//********Texture2D********\\
+//*************************\\
+
+
+getSizeTexture2D :: proc(object: GDE.ObjectPtr, r_size: ^GDE.Vector2) {
+    @(static)GetSize: GDE.MethodBindPtr
+    if GetSize == nil do GetSize = classDBGetMethodBind("Texture2D", "get_size", 3341600327)
+
+    
+    gdAPI.objectMethodBindPtrCall(GetSize, object, nil, r_size)
+}
+
 //**************************\\
 //*******Tree Methods*******\\
 //**************************\\
@@ -412,6 +521,17 @@ InternalMode :: enum GDE.Int {
     INTERNAL_MODE_BACK,
 }
 
+//**************************\\
+//***********Node***********\\
+//**************************\\
+
+getViewport :: proc(object: GDE.ObjectPtr, r_viewport: ^GDE.TypePtr) {
+    @(static)GetViewport: GDE.MethodBindPtr
+    if GetViewport == nil do GetViewport = classDBGetMethodBind("Node", "get_viewport", 3596683776)
+    
+    viewport: GDE.TypePtr
+    gdAPI.objectMethodBindPtrCall(GetViewport, object, nil, r_viewport)
+}
 
 /*
 * https://docs.godotengine.org/en/stable/classes/class_node.html#class-node-method-add-child
@@ -446,8 +566,38 @@ addChild :: proc "c" (parent: GDE.ObjectPtr, child: ^GDE.ObjectPtr, force_readab
 
 
 //*************************\\
+//****Rendering Server*****\\
+//*************************\\
+
+RenderServerObj: GDE.ObjectPtr //Warning: not populated by default. Call getPhysServer2dObj to get its singleton.
+RenderServer_SN: GDE.StringName
+
+
+//Yes... It's a single line function because it doesn't exist at API startup.
+//You will need to call this at some point 
+getRenderServer2dObj :: proc() -> GDE.ObjectPtr {
+    if RenderServerObj == nil do RenderServerObj = Methods.getSingleton(&RenderServer_SN)
+    return RenderServerObj
+}
+
+/*If RenerServerObj is nil Godot will throw a memory access issue.
+* Make sure that you have called/set getRenderServer2dObj at
+* least once before using this function.
+*/
+freeRenderRID :: proc(resourceId: ^GDE.RID, renderServer: GDE.ObjectPtr = RenderServerObj) {
+    @(static)FreeRenderRID: GDE.MethodBindPtr
+    if FreeRenderRID ==nil do FreeRenderRID = classDBGetMethodBind("RenderingServer", "free_rid", 2722037293)
+    
+    assert(resourceId.id != 0)
+    args :=[?]rawptr {resourceId}
+    gdAPI.objectMethodBindPtrCall(FreeRenderRID, renderServer, raw_data(args[:]), nil)}
+
+//*************************\\
 //*****PhysicsServer2D*****\\
 //*************************\\
+
+PhysServer2dObj: GDE.ObjectPtr //Warning: not populated by default. Call getPhysServer2dObj to get its singleton.
+PhysicsServer2D_SN: GDE.StringName
 
 BodyState :: enum u32 {
     BODY_STATE_TRANSFORM,
@@ -455,6 +605,103 @@ BodyState :: enum u32 {
     BODY_STATE_ANGULAR_VELOCITY,
     BODY_STATE_SLEEPING,
     BODY_STATE_CAN_SLEEP,
+}
+
+//Yes... It's a single line function because it doesn't exist at API startup.
+//You will need to call this at some point 
+getPhysServer2dObj :: proc() -> GDE.ObjectPtr {
+    if PhysServer2dObj == nil do PhysServer2dObj = Methods.getSingleton(&PhysicsServer2D_SN)
+    return PhysServer2dObj
+}
+
+circleShapeCreate :: proc(r_shape: ^GDE.RID, physServer := PhysServer2dObj) {
+    @(static)CircleShapeCreate: GDE.MethodBindPtr
+    assert(PhysServer2dObj != nil)
+    if CircleShapeCreate == nil do CircleShapeCreate = classDBGetMethodBind2(&PhysicsServer2D_SN, "circle_shape_create", 529393457)
+    
+    
+    gdAPI.objectMethodBindPtrCall(CircleShapeCreate, PhysServer2dObj, nil, r_shape)
+}
+ 
+getSpace :: proc(world2d: GDE.TypePtr, r_space: ^GDE.TypePtr) {
+    @(static)GetSpace: GDE.MethodBindPtr
+    if GetSpace == nil do GetSpace = classDBGetMethodBind("World2D", "get_space", 2944877500)
+    
+    gdAPI.objectMethodBindPtrCall(GetSpace, cast(GDE.ObjectPtr)world2d, nil, r_space)
+}
+
+bodySetSpace :: proc(body: ^GDE.RID, space: ^GDE.TypePtr, physServer := PhysServer2dObj) {
+    @(static)SetSpace:GDE.MethodBindPtr
+    if SetSpace == nil do SetSpace = classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_space", 395945892)
+
+    assert(physServer != nil )
+    assert(body.id != 0)
+    assert(space != nil)
+
+    args:= [2]rawptr {body, space}
+
+    gdAPI.objectMethodBindPtrCall(SetSpace, physServer, raw_data(args[:]), nil)
+}
+
+bodyAddShape :: proc(body: ^GDE.RID, shape: ^GDE.RID, trans2d: GDE.Transform2d = {1,0,0,1,0,0}, disabled: ^GDE.Bool, physServer := PhysServer2dObj){
+    @(static)BodyAddShape: GDE.MethodBindPtr
+    if BodyAddShape == nil do BodyAddShape = classDBGetMethodBind2(&PhysicsServer2D_SN, "body_add_shape", 339056240)
+    assert(physServer != nil && body.id != 0 && shape.id != 0)
+
+    trans2d:=trans2d
+    args:= [?]rawptr {body, shape, &trans2d, disabled}
+
+    gdAPI.objectMethodBindPtrCall(BodyAddShape, physServer, raw_data(args[:]), nil)
+}
+
+shapeSetData :: proc(shape: ^GDE.RID, data: ^GDE.Int, physServer := PhysServer2dObj){
+    @(static)ShapeSetData: GDE.MethodBindPtr
+    if ShapeSetData == nil do ShapeSetData = classDBGetMethodBind2(&PhysicsServer2D_SN, "shape_set_data", 3175752987)
+
+    
+    shapedata: GDE.Variant
+    variant_from(&shapedata, data)
+    shape_data:= [?]rawptr {shape, &shapedata}
+    
+    gdAPI.objectMethodBindPtrCall(ShapeSetData, physServer, raw_data(shape_data[:]), nil)
+}
+
+bodyCreate :: proc(r_body: ^GDE.RID, physServer := PhysServer2dObj) {
+    @(static)BodyCreate: GDE.MethodBindPtr
+    if BodyCreate == nil do BodyCreate = classDBGetMethodBind2(&PhysicsServer2D_SN, "body_create", 529393457)
+
+    assert(physServer != nil)
+
+    gdAPI.objectMethodBindPtrCall(BodyCreate, physServer, nil, r_body)
+
+}
+
+/*Mask sets which layers this body checks against for collisions received.
+* Default is 1.
+* Set to 0 to ignore collision from other entities.
+* mask is a bitfield. 1, 2, 4, 8, 16 etc for each layer.
+* Use layer to specify where this body collides into.
+*/
+bodySetCollisionMask :: proc(body: ^GDE.RID, mask: ^u32, physServer:= PhysServer2dObj) {
+    @(static)BodySetCollisionMask: GDE.MethodBindPtr
+    if BodySetCollisionMask == nil do BodySetCollisionMask = classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_collision_mask", 3411492887)
+
+    assert(physServer != nil && body.id != 0 && mask^ >= 0)
+
+    args:= [2]rawptr {body, mask}
+
+    gdAPI.objectMethodBindPtrCall(BodySetCollisionMask, physServer, raw_data(args[:]), nil)
+}
+
+bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Variant, physServer:= PhysServer2dObj) {
+    @(static)BodySetState: GDE.MethodBindPtr
+    if BodySetState == nil do BodySetState = classDBGetMethodBind2(&PhysicsServer2D_SN, "body_set_state", 1706355209)
+
+    assert(physServer != nil && body.id != 0 && trans_v.VType == .TRANSFORM2D)
+    
+    args:= [?]rawptr {body, bodyState, trans_v}
+
+    gdAPI.objectMethodBindPtrCall(BodySetState, physServer, raw_data(args[:]), nil)
 }
 
 
