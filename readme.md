@@ -61,8 +61,6 @@ sceneTreeHook shows how I managed to set my own class as the mainLoop as a scene
 
 loadTextureToSceneTree shows how to setup a sprite from code. create, set texture, add to sceneTree's root.
 
-<<<<<<< HEAD
-=======
 This repo is to provide a wrapper for Godot's API.
 Current features include :
 Create custom class
@@ -125,8 +123,7 @@ Use typeExamples as a reference to how you can convert types to and from Godot's
 sceneTreeHook shows how I managed to set my own class as the mainLoop as a sceneTree type. I could then hook into Godot's physics_frame signal which fires every tick without adding any classes to the sceneTree itself.
 
 loadTextureToSceneTree shows how to setup a sprite from code. create, set texture, add to sceneTree's root.
-=======
+
 bulletshowerexample takes the GD script example of the same name and converts it to Odin code. Most interesting part is the bullet. Shows off some object pooling so that you don't need to create a node for every single entity you will be showing on the screen.
->>>>>>> 918b0f00942e3be36b070ea8ceeccb4afd2c6961
 
 src is the latest thing I am working on.
