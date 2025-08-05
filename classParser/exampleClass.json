@@ -1,122 +1,381 @@
-/*
-"name": "Control",
-"is_refcounted": false,
-"is_instantiable": true,
-"inherits": "CanvasItem",
-"api_type": "core",*/
 
-constants :: enum i32 { 
-    NOTIFICATION_RESIZED = 40,
-    NOTIFICATION_MOUSE_ENTER = 41,
-    NOTIFICATION_MOUSE_EXIT = 42,
-    NOTIFICATION_MOUSE_ENTER_SELF = 60,
-    NOTIFICATION_MOUSE_EXIT_SELF = 61,
-    NOTIFICATION_FOCUS_ENTER = 43,
-    NOTIFICATION_FOCUS_EXIT = 44,
-    NOTIFICATION_THEME_CHANGED = 45,
-    NOTIFICATION_SCROLL_BEGIN = 47,
-    NOTIFICATION_SCROLL_END = 48,
-    NOTIFICATION_LAYOUT_DIRECTION_CHANGED = 49
-}
-
-FocusMode :: enum i32{
-    FOCUS_NONE = 0,
-    FOCUS_CLICK = 1,
-    FOCUS_ALL = 2
-}
-
-CursorShape:: enum i32 {
-    CURSOR_ARROW = 0,
-    CURSOR_IBEAM = 1,
-    CURSOR_POINTING_HAND = 2,
-    CURSOR_CROSS = 3,
-    CURSOR_WAIT = 4,
-    CURSOR_BUSY = 5,
-    CURSOR_DRAG = 6,
-    CURSOR_CAN_DROP = 7,
-    CURSOR_FORBIDDEN = 8,
-    CURSOR_VSIZE = 9,
-    CURSOR_HSIZE = 10,
-    CURSOR_BDIAGSIZE = 11,
-    CURSOR_FDIAGSIZE = 12,
-    CURSOR_MOVE = 13,
-    CURSOR_VSPLIT = 14,
-    CURSOR_HSPLIT = 15,
-    CURSOR_HELP = 16
-}
-
-LayoutPreset :: enum i32 {
-    PRESET_TOP_LEFT = 0,
-    PRESET_TOP_RIGHT = 1,
-    PRESET_BOTTOM_LEFT = 2,
-    PRESET_BOTTOM_RIGHT = 3,
-    PRESET_CENTER_LEFT = 4,
-    PRESET_CENTER_TOP = 5,
-    PRESET_CENTER_RIGHT = 6,
-    PRESET_CENTER_BOTTOM = 7,
-    PRESET_CENTER = 8,
-    PRESET_LEFT_WIDE = 9,
-    PRESET_TOP_WIDE = 10,
-    PRESET_RIGHT_WIDE = 11,
-    PRESET_BOTTOM_WIDE = 12,
-    PRESET_VCENTER_WIDE = 13,
-    PRESET_HCENTER_WIDE = 14,
-    PRESET_FULL_RECT = 15
-}
-
-LayoutPresetMode :: enum i32 {
-    PRESET_MODE_MINSIZE = 0,
-    PRESET_MODE_KEEP_WIDTH = 1,
-    PRESET_MODE_KEEP_HEIGHT = 2,
-    PRESET_MODE_KEEP_SIZE = 3
-}
-
-SizeFlags :: enum i32 {
-    SIZE_SHRINK_BEGIN = 0,
-    SIZE_FILL = 1,
-    SIZE_EXPAND = 2,
-    SIZE_EXPAND_FILL = 3,
-    SIZE_SHRINK_CENTER = 4,
-    SIZE_SHRINK_END = 8
-}
-
-MouseFilter :: enum i32{
-    MOUSE_FILTER_STOP = 0,
-    MOUSE_FILTER_PASS = 1,
-    MOUSE_FILTER_IGNORE = 2
-}
-
-GrowDirection :: enum i32 {
-    GROW_DIRECTION_BEGIN = 0,
-    GROW_DIRECTION_END = 1,
-    GROW_DIRECTION_BOTH = 2
-}
-
-Anchor :: enum i32 {
-    ANCHOR_BEGIN = 0,
-    ANCHOR_END = 1
-}
-
-LayoutDirection :: enum i32 {
-    LAYOUT_DIRECTION_INHERITED = 0,
-    LAYOUT_DIRECTION_APPLICATION_LOCALE = 1,
-    LAYOUT_DIRECTION_LTR = 2,
-    LAYOUT_DIRECTION_RTL = 3,
-    LAYOUT_DIRECTION_SYSTEM_LOCALE = 4,
-    LAYOUT_DIRECTION_MAX = 5,
-    LAYOUT_DIRECTION_LOCALE = 1
-}
-
-TextDirection :: enum i32 {
-    TEXT_DIRECTION_INHERITED = 3,
-    TEXT_DIRECTION_AUTO = 0,
-    TEXT_DIRECTION_LTR = 1,
-    TEXT_DIRECTION_RTL = 2
-}
-
-"methods": [
-	{
-		"name": "_has_point",
+		{
+			"name": "Control",
+			"is_refcounted": false,
+			"is_instantiable": true,
+			"inherits": "CanvasItem",
+			"api_type": "core",
+			"constants": [
+				{
+					"name": "NOTIFICATION_RESIZED",
+					"value": 40
+				},
+				{
+					"name": "NOTIFICATION_MOUSE_ENTER",
+					"value": 41
+				},
+				{
+					"name": "NOTIFICATION_MOUSE_EXIT",
+					"value": 42
+				},
+				{
+					"name": "NOTIFICATION_MOUSE_ENTER_SELF",
+					"value": 60
+				},
+				{
+					"name": "NOTIFICATION_MOUSE_EXIT_SELF",
+					"value": 61
+				},
+				{
+					"name": "NOTIFICATION_FOCUS_ENTER",
+					"value": 43
+				},
+				{
+					"name": "NOTIFICATION_FOCUS_EXIT",
+					"value": 44
+				},
+				{
+					"name": "NOTIFICATION_THEME_CHANGED",
+					"value": 45
+				},
+				{
+					"name": "NOTIFICATION_SCROLL_BEGIN",
+					"value": 47
+				},
+				{
+					"name": "NOTIFICATION_SCROLL_END",
+					"value": 48
+				},
+				{
+					"name": "NOTIFICATION_LAYOUT_DIRECTION_CHANGED",
+					"value": 49
+				}
+			],
+			"enums": [
+				{
+					"name": "FocusMode",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "FOCUS_NONE",
+							"value": 0
+						},
+						{
+							"name": "FOCUS_CLICK",
+							"value": 1
+						},
+						{
+							"name": "FOCUS_ALL",
+							"value": 2
+						}
+					]
+				},
+				{
+					"name": "CursorShape",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "CURSOR_ARROW",
+							"value": 0
+						},
+						{
+							"name": "CURSOR_IBEAM",
+							"value": 1
+						},
+						{
+							"name": "CURSOR_POINTING_HAND",
+							"value": 2
+						},
+						{
+							"name": "CURSOR_CROSS",
+							"value": 3
+						},
+						{
+							"name": "CURSOR_WAIT",
+							"value": 4
+						},
+						{
+							"name": "CURSOR_BUSY",
+							"value": 5
+						},
+						{
+							"name": "CURSOR_DRAG",
+							"value": 6
+						},
+						{
+							"name": "CURSOR_CAN_DROP",
+							"value": 7
+						},
+						{
+							"name": "CURSOR_FORBIDDEN",
+							"value": 8
+						},
+						{
+							"name": "CURSOR_VSIZE",
+							"value": 9
+						},
+						{
+							"name": "CURSOR_HSIZE",
+							"value": 10
+						},
+						{
+							"name": "CURSOR_BDIAGSIZE",
+							"value": 11
+						},
+						{
+							"name": "CURSOR_FDIAGSIZE",
+							"value": 12
+						},
+						{
+							"name": "CURSOR_MOVE",
+							"value": 13
+						},
+						{
+							"name": "CURSOR_VSPLIT",
+							"value": 14
+						},
+						{
+							"name": "CURSOR_HSPLIT",
+							"value": 15
+						},
+						{
+							"name": "CURSOR_HELP",
+							"value": 16
+						}
+					]
+				},
+				{
+					"name": "LayoutPreset",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "PRESET_TOP_LEFT",
+							"value": 0
+						},
+						{
+							"name": "PRESET_TOP_RIGHT",
+							"value": 1
+						},
+						{
+							"name": "PRESET_BOTTOM_LEFT",
+							"value": 2
+						},
+						{
+							"name": "PRESET_BOTTOM_RIGHT",
+							"value": 3
+						},
+						{
+							"name": "PRESET_CENTER_LEFT",
+							"value": 4
+						},
+						{
+							"name": "PRESET_CENTER_TOP",
+							"value": 5
+						},
+						{
+							"name": "PRESET_CENTER_RIGHT",
+							"value": 6
+						},
+						{
+							"name": "PRESET_CENTER_BOTTOM",
+							"value": 7
+						},
+						{
+							"name": "PRESET_CENTER",
+							"value": 8
+						},
+						{
+							"name": "PRESET_LEFT_WIDE",
+							"value": 9
+						},
+						{
+							"name": "PRESET_TOP_WIDE",
+							"value": 10
+						},
+						{
+							"name": "PRESET_RIGHT_WIDE",
+							"value": 11
+						},
+						{
+							"name": "PRESET_BOTTOM_WIDE",
+							"value": 12
+						},
+						{
+							"name": "PRESET_VCENTER_WIDE",
+							"value": 13
+						},
+						{
+							"name": "PRESET_HCENTER_WIDE",
+							"value": 14
+						},
+						{
+							"name": "PRESET_FULL_RECT",
+							"value": 15
+						}
+					]
+				},
+				{
+					"name": "LayoutPresetMode",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "PRESET_MODE_MINSIZE",
+							"value": 0
+						},
+						{
+							"name": "PRESET_MODE_KEEP_WIDTH",
+							"value": 1
+						},
+						{
+							"name": "PRESET_MODE_KEEP_HEIGHT",
+							"value": 2
+						},
+						{
+							"name": "PRESET_MODE_KEEP_SIZE",
+							"value": 3
+						}
+					]
+				},
+				{
+					"name": "SizeFlags",
+					"is_bitfield": true,
+					"values": [
+						{
+							"name": "SIZE_SHRINK_BEGIN",
+							"value": 0
+						},
+						{
+							"name": "SIZE_FILL",
+							"value": 1
+						},
+						{
+							"name": "SIZE_EXPAND",
+							"value": 2
+						},
+						{
+							"name": "SIZE_EXPAND_FILL",
+							"value": 3
+						},
+						{
+							"name": "SIZE_SHRINK_CENTER",
+							"value": 4
+						},
+						{
+							"name": "SIZE_SHRINK_END",
+							"value": 8
+						}
+					]
+				},
+				{
+					"name": "MouseFilter",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "MOUSE_FILTER_STOP",
+							"value": 0
+						},
+						{
+							"name": "MOUSE_FILTER_PASS",
+							"value": 1
+						},
+						{
+							"name": "MOUSE_FILTER_IGNORE",
+							"value": 2
+						}
+					]
+				},
+				{
+					"name": "GrowDirection",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "GROW_DIRECTION_BEGIN",
+							"value": 0
+						},
+						{
+							"name": "GROW_DIRECTION_END",
+							"value": 1
+						},
+						{
+							"name": "GROW_DIRECTION_BOTH",
+							"value": 2
+						}
+					]
+				},
+				{
+					"name": "Anchor",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "ANCHOR_BEGIN",
+							"value": 0
+						},
+						{
+							"name": "ANCHOR_END",
+							"value": 1
+						}
+					]
+				},
+				{
+					"name": "LayoutDirection",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "LAYOUT_DIRECTION_INHERITED",
+							"value": 0
+						},
+						{
+							"name": "LAYOUT_DIRECTION_APPLICATION_LOCALE",
+							"value": 1
+						},
+						{
+							"name": "LAYOUT_DIRECTION_LTR",
+							"value": 2
+						},
+						{
+							"name": "LAYOUT_DIRECTION_RTL",
+							"value": 3
+						},
+						{
+							"name": "LAYOUT_DIRECTION_SYSTEM_LOCALE",
+							"value": 4
+						},
+						{
+							"name": "LAYOUT_DIRECTION_MAX",
+							"value": 5
+						},
+						{
+							"name": "LAYOUT_DIRECTION_LOCALE",
+							"value": 1
+						}
+					]
+				},
+				{
+					"name": "TextDirection",
+					"is_bitfield": false,
+					"values": [
+						{
+							"name": "TEXT_DIRECTION_INHERITED",
+							"value": 3
+						},
+						{
+							"name": "TEXT_DIRECTION_AUTO",
+							"value": 0
+						},
+						{
+							"name": "TEXT_DIRECTION_LTR",
+							"value": 1
+						},
+						{
+							"name": "TEXT_DIRECTION_RTL",
+							"value": 2
+						}
+					]
+				}
+			],
+			"methods": [
+				{
+					"name": "_has_point",
 					"is_const": true,
 					"is_static": false,
 					"is_required": false,
@@ -2526,5 +2785,4 @@ TextDirection :: enum i32 {
 					"getter": "get_theme_type_variation"
 				}
 			]
-		},
-		{
+		}

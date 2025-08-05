@@ -476,7 +476,7 @@ CallableCustomGetArgumentCount :: proc "c" (callable_userdata: rawptr, r_is_vali
 CallableCustomInfo :: struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
-	 * `token` should point to an address that uniquely identifies the  (for example, the
+	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
 	 * `ClassLibraryPtr` passed to the entry symbol function.
 	 *
 	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
@@ -503,7 +503,7 @@ CallableCustomInfo :: struct {
 CallableCustomInfo2 :: struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
-	 * `token` should point to an address that uniquely identifies the  (for example, the
+	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
 	 * `ClassLibraryPtr` passed to the entry symbol function.
 	 *
 	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
@@ -679,7 +679,7 @@ InterfaceFunctionPtr	:: proc "c" ();
 InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunctionPtr
 
 /*
- * Each  should define a C function that matches the signature of InitializationFunction,
+ * Each GDExtension should define a C function that matches the signature of InitializationFunction,
  * and export it so that it can be loaded via dlopen() or equivalent for the given platform.
  *
  * For example:
@@ -688,9 +688,9 @@ InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunct
  *
  * This function's name must be specified as the 'entry_symbol' in the .gdextension file.
  *
- * This makes it the entry point of the  and will be called on initialization.
+ * This makes it the entry point of the GDExtension and will be called on initialization.
  *
- * The  can then modify the r_initialization structure, setting the minimum initialization level,
+ * The GDExtension can then modify the r_initialization structure, setting the minimum initialization level,
  * and providing pointers to functions that will be called at various stages of initialization/shutdown.
  *
  * The rest of the 's interface to Godot consists of function pointers that can be loaded
@@ -727,7 +727,7 @@ GodotVersion :: struct {
  * @name get_godot_version
  * @since 4.1
  *
- * Gets the Godot version that the  was loaded into.
+ * Gets the Godot version that the GDExtension was loaded into.
  *
  * @param r_godot_version A pointer to the structure to write the version information into.
  */
@@ -2473,7 +2473,7 @@ InterfaceObjectSetInstance :: proc "c" (p_o: ObjectPtr, p_classname: ConstString
  *
  * Gets the class name of an Object.
  *
- * If the  wraps the Godot object in an abstraction specific to its class, this is the
+ * If the GDExtension wraps the Godot object in an abstraction specific to its class, this is the
  * function that should be used to determine which wrapper to use.
  *
  * @param p_object A pointer to the Object.
@@ -2964,7 +2964,7 @@ InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr
  * @name get_library_path
  * @since 4.1
  *
- * Gets the path to the current  library.
+ * Gets the path to the current GDExtension library.
  *
  * @param p_library A pointer the library received by the 's entry point function.
  * @param r_path A pointer to a String which will receive the path.
