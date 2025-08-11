@@ -14,3 +14,7 @@ ols.json
 .vs
 output.odin
 output.txt
+classParser.exe
+simplifiedCExample.exp
+simplifiedCExample.lib
+simplifiedCExample.pdb

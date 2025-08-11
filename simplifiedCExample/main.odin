@@ -71,8 +71,6 @@ initialize_gdexample_module :: proc "c" (p_userdata: rawptr, p_level:  GDE.Initi
     native_class_name: GDE.StringName;
     method_name: GDE.StringName;
 
-
-
     GDW.Methods.node2dGetPos = GDW.classDBGetMethodBind("Node2D", "get_position", 3341600327)
     GDW.Methods.node2dSetPosition = GDW.classDBGetMethodBind("Node2D", "set_position", 743155724)
 
@@ -250,7 +248,7 @@ classProcess :: proc "c" (self: ^GDExample, delta: f64) {
     newPosition: GDE.Vector2
     //Handle when to send a signal to Godot.
     vec2::[2]f32
-    myVec:vec2
+    myVec: GDE.Vector2//vec2
     
     // Set up the arguments for the Vector2 constructor.
     myVec.x = f32(self.amplitude + (self.amplitude * linalg.sin(self.timePassed * 2.0)))
