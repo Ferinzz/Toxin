@@ -1,5 +1,4 @@
-
-		{
+{
 			"name": "Control",
 			"is_refcounted": false,
 			"is_instantiable": true,
@@ -2498,7 +2497,17 @@
 					]
 				},
 				{
-					"name": "mouse_entered"
+					"name": "mouse_entered",
+					"arguments": [
+						{
+							"name": "event",
+							"type": "InputEvent"
+						},
+						{
+							"name": "event2",
+							"type": "InputEvent3"
+						}
+					]
 				},
 				{
 					"name": "mouse_exited"

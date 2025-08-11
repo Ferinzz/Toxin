@@ -398,6 +398,11 @@ ClassMethodFlags :: enum {
 	DEFAULT = NORMAL,
 }
 
+
+//In the api you'll see meta int32 or float or whatever else
+//I assume this is becauase you're supposed to use those types because something else might
+//need that specific type. I am feeling like I'm crazy because in the cpp code it's still an int.
+//Meaning you pass in an i64 and somewhere eventually it needs it to be a different sized type.
 ClassMethodArgumentMetadata :: enum c.int {
 	NONE,
 	INT_IS_INT8,
