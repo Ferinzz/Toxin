@@ -76,7 +76,7 @@ SpriteCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GD
     fmt.println("My own Sprite", object)
 
     //Create extension object.
-    //Can replace mem_alloc with new(). Just need to create the struct and pass a pointer.
+    //Maybe can replace mem_alloc with new(). This should be safe as we make the free in the destroy callback.
     self: ^mySprite = cast(^mySprite)GDW.gdAPI.mem_alloc(size_of(mySprite))
     self.selfPtr = object
     

@@ -7,8 +7,8 @@
 			"preLaunchTask": "extBuild",
 			"name": "Debug",
 			"program": "C:\/GodotSrc\/godot\/bin\/godot.windows.editor.dev.x86_64.exe",
-			"args": [ ".\/TopDown/project.godot"],
-			//"args": [ "--path ./TopDown --verbose"],
+			//"args": [ ".\/TopDown/project.godot"], //launch editor
+			"args": [ "--path ./TopDown --verbose"], //launch game
 			"cwd": "${workspaceFolder}/TopDown",
 			
 		}

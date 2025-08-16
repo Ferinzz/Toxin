@@ -79,6 +79,11 @@ main :: proc() {
 
     
     append(&output, `#+ignore
+package GDWrapper
+
+import GDE "gdextension"
+import "base:runtime"
+
 /*
 `)
     append(&output, string(filecontents[:dataStart]))
@@ -96,6 +101,9 @@ main :: proc() {
     //****Constants****\\
     //*****************\\
     if constStart > 0 {
+        constEntry:= fmt.aprintfln("\n%sConstants :: enum i64 {{", className[:])
+        append(&output, constEntry[:])
+        delete(constEntry)
         for char in filecontents[constStart:] {
             if char == '[' do break
             index+=1
@@ -109,17 +117,16 @@ main :: proc() {
         }
         
         append(&output, `
-
 `)
         for i:=0; i<len(contents.constants); i+=4 {
-            append(&output, fmt.aprintf(`   %s%s:i64: %s
+            append(&output, fmt.aprintf(`   %s%s = %s,
 `, className[:], contents.constants[i+1], contents.constants[i+3]))
         }
-        append(&output, `
+        append(&output, `}
 
 `)
     }
-    fmt.println(string(output[:]))
+    //fmt.println(string(output[:]))
     
     //**************\\
     //*****Enums****\\
@@ -147,7 +154,7 @@ main :: proc() {
             delete(contents.enums)
             
         }
-        fmt.println(string(output[:]))
+        //fmt.println(string(output[:]))
     }
     
     //*****************\\
@@ -191,6 +198,11 @@ main :: proc() {
         argPlace: [dynamic]int
         defer(delete(argPlace))
         defer(delete(comment))
+        hashIndex:int
+
+        for s, indx in contents.methods[:]{
+            if string(s[:]) == "hash" do hashIndex = indx +1
+        }
 
         for s, i in contents.methods {
             if string(s[:]) == "arguments" {
@@ -224,7 +236,7 @@ main :: proc() {
                 }
                     if (len(contents.methods) > i + 4 && string(contents.methods[i+4][:]) == "default_value") {
                     append(&comment, fmt.aprintf(`
-//default of %s : %s`, contents.methods[i+1-2*int(meta)][:], contents.methods[i+5-2*int(meta)][:]))
+//default of %s : %s`, contents.methods[i+1-2*int(meta)][:], contents.methods[i+5][:]))
                         i+=2
                     }
 
@@ -248,14 +260,14 @@ main :: proc() {
 
         append(&output, fmt.aprintf(`    context = runtime.default_context()
     @(static)%s: GDE.MethodBindPtr
-    if %s == nil do %s = classDBGetMethodBind2("%s", "%s", %s)
+    if %s == nil do %s = classDBGetMethodBind("%s", "%s", %s)
     assert(%s != nil)`,
             strings.to_upper(string(contents.methods[1][:])),
             strings.to_upper(string(contents.methods[1][:])),
             strings.to_upper(string(contents.methods[1][:])),
             className[:],
             contents.methods[1][:],
-            contents.methods[8][:],
+            contents.methods[hashIndex][:],
             className[:]
             )) //method name all caps, methodname all caps, classname, methodname, hash
         //fmt.println("isarguments: ", arguments)
@@ -327,7 +339,7 @@ main :: proc() {
                 switch string(contents.signals[i][:]) {
                     case "name":
                         append(&output, fmt.aprintf(`
-    .%s = "%s",`, contents.signals[i+1][:], contents.signals[i+1][:]))
+    %s = "%s",`, contents.signals[i+1][:], contents.signals[i+1][:]))
                     case "arguments":
                         append(&output, "//Args")
                         for args:=i+1; args<len(contents.signals)-3; args+=4{
@@ -529,8 +541,12 @@ replaceType :: proc (s: []u8) -> string {
 	    case "Variant": 
             return "GDE.Variant"
     }
-    if len(s) > 4 && (string(s[0:5]) == "enum" || string(s[0:5]) == "bitf") {
+    if len(s) >= 4 && (string(s[0:4]) == "enum" || string(s[0:4]) == "bitf") {
         start,_ := index_of_byte(s[:], '.')
+        if start == -1 {
+            start,_ = index_of_byte(s[:], ':')
+            start += 1
+        }
         return string(s[start+1:])
     }
     return "GDE.ObjectPtr"

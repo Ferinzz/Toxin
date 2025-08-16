@@ -404,7 +404,7 @@ ClassMethodFlags :: enum {
 //need that specific type. I am feeling like I'm crazy because in the cpp code it's still an int.
 //Meaning you pass in an i64 and somewhere eventually it needs it to be a different sized type.
 ClassMethodArgumentMetadata :: enum c.int {
-	NONE,
+	NONE = 0,
 	INT_IS_INT8,
 	INT_IS_INT16,
 	INT_IS_INT32,

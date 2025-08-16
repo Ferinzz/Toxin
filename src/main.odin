@@ -10,6 +10,8 @@ game :: struct {
     selfPtr: GDE.ObjectPtr
 }
 
+controlClass: GDE.ObjectPtr
+
 @export
 godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassLibraryPtr, initialization: ^GDE.Initialization) {
     context = runtime.default_context()
@@ -97,7 +99,7 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     //fmt.println("My own tree", object)
 
     //Create extension object.
-    //Can replace mem_alloc with new(). Just need to create the struct and pass a pointer.
+    //Maybe can replace mem_alloc with new(). This should be safe as we make the free in the destroy callback.
     self: ^game = cast(^game)GDW.gdAPI.mem_alloc(size_of(game))
     self.selfPtr = object
     
@@ -168,11 +170,23 @@ ready :: proc "c" (self: ^game) {
     GDW.getInputSingleton()
     GDW.getPhysServer2dObj()
     GDW.getRenderServer2dObj()
+    className:GDE.StringName
+    GDW.StringConstruct.stringNameNewLatin(&className, "Control", false)
+    defer(GDW.Destructors.stringNameDestructor(&className))
+    controlClass = GDW.gdAPI.classDBConstructObj(&className)
+
+    //create a random controlClass.
+    preset: GDW.LayoutPreset = .PRESET_BOTTOM_RIGHT
+    resize_mode: GDW.LayoutPresetMode = .PRESET_MODE_KEEP_WIDTH
+    //margin: GDE.Int = 9223372036854775807
+    //Godot will convert the i64 to i32 automatically as part of the extension's process. wew.
+    margin: GDE.Int = 2147483
+    GDW.set_offsets_preset(controlClass, &preset, &resize_mode, &margin)
 }
+
 physics :: proc "c" (self: ^game, delta: f64) {
     context = runtime.default_context()
     
-    GDW.getInputSingleton()
     button: GDE.MouseButton = .MOUSE_BUTTON_LEFT
     isPressed: GDE.Bool
     GDW.isMouseButtonPressed(&button, &isPressed)

@@ -212,7 +212,7 @@ gdexampleClassCreateInstance :: proc "c" (p_class_user_data: rawptr, p_notify_po
     GDW.destructors.stringNameDestructor(&class_name)
 
     //Create extension object.
-    //Can replace mem_alloc with new(). Just need to create the struct and pass a pointer.
+    //Maybe can replace mem_alloc with new(). This should be safe as we make the free in the destroy callback.
     self: ^GDExample = cast(^GDExample)GDW.api.mem_alloc(size_of(GDExample))
 
     //constructor is called after creation. Sets the defaults.

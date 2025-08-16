@@ -227,7 +227,7 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: int, loc := #
 
 classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, hash: int, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
     //context = runtime.default_context()
-
+    assert(className != nil, "ClassName is nil. Did you accidentally free this early?")
     method_name: GDE.StringName;
     
     StringConstruct.stringNameNewLatin(&method_name, methodName, false)
@@ -320,6 +320,29 @@ stringNameCompare :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring
     return r_name.ptr == (cast(^GDE.StringName)l_value).ptr
 }
 
+//**********************\\
+//********globals*******\\
+//**********************\\
+
+ProcessThreadMessages :: enum i64 {
+    FLAG_PROCESS_THREAD_MESSAGES = 1,
+    //Allows this node to process threaded messages created with call_deferred_thread_group() right before _process() is called.
+    FLAG_PROCESS_THREAD_MESSAGES_PHYSICS = 2,
+    //Allows this node to process threaded messages created with call_deferred_thread_group() right before _physics_process() is called.
+    FLAG_PROCESS_THREAD_MESSAGES_ALL = 3,
+    //Allows this node to process threaded messages created with call_deferred_thread_group() right before either _process() or _physics_process() are called.
+}
+
+AutoTranslateMode :: enum i64 {
+    AUTO_TRANSLATE_MODE_INHERIT = 0,
+//Inherits auto_translate_mode from the nodes parent. This is the default for any newly created node.
+    AUTO_TRANSLATE_MODE_ALWAYS = 1,
+//Always automatically translate. This is the inverse of AUTO_TRANSLATE_MODE_DISABLED, and the default for the root node.
+    AUTO_TRANSLATE_MODE_DISABLED = 2,
+//Never automatically translate. This is the inverse of AUTO_TRANSLATE_MODE_ALWAYS.
+//String parsing for POT generation will be skipped for this node and children that are set to AUTO_TRANSLATE_MODE_INHERIT.
+}
+
 /*
 * MainLoop is a class that Godot uses to tick through the program logic.
 * This function returns a pointer to the object. If SceneTree is your mainLoop (or your own version of it) call
@@ -375,7 +398,6 @@ getInputSingleton :: proc "c" () {
     
     
     StringConstruct.stringNameNewLatin(&Input_SN, "Input", false)
-    defer(Destructors.stringNameDestructor(&Input_SN))
     InputSingleton = Methods.getSingleton(&Input_SN)
 
 }
@@ -778,6 +800,14 @@ InternalMode :: enum GDE.Int {
 //**************************\\
 //***********Node***********\\
 //**************************\\
+
+Side :: enum i64 {
+    SIDE_LEFT = 0,
+    SIDE_TOP = 1,
+    SIDE_RIGHT = 2,
+    SIDE_BOTTOM = 3,
+}
+
 
 getViewport :: proc(object: GDE.ObjectPtr, r_viewport: ^GDE.TypePtr) {
     @(static)GetViewport: GDE.MethodBindPtr

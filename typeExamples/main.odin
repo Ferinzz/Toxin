@@ -9,6 +9,9 @@ import str "core:strings"
 import s "core:slice"
 import "core:unicode/utf8"
 
+//WARNING
+//Types have changed from arrays to structs so the Odin side of accessing is wrong.
+
 @export
 godot_entry_init :: proc "c" (p_get_proc_address : GDE.InterfaceGetProcAddress, p_library: GDE.ClassLibraryPtr, r_initialization: ^GDE.Initialization) {
     context = runtime.default_context()
@@ -607,7 +610,7 @@ gdexampleClassCreateInstance :: proc "c" (p_class_user_data: rawptr, p_notify_po
     GDW.destructors.stringNameDestructor(&class_name)
 
     //Create extension object.
-    //Can replace mem_alloc with new(). Just need to create the struct and pass a pointer.
+    //Maybe can replace mem_alloc with new(). This should be safe as we make the free in the destroy callback.
     //self: ^GDExample = cast(^GDExample)GDW.api.mem_alloc(size_of(GDExample))
     self: ^GDExample = new(GDExample)
 
