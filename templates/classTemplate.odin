@@ -19,7 +19,11 @@ THIS_CLASS_NAME__SN : GDE.StringName
 
 //Technically can have a single massive function to init everything, but having one in each is easier?
 //Make sure to add this to the init of the extension otherwise you won't be able to access this class.
-THIS_CLASS_NAME_Init :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
+//p_userdata and initLevel are optional.
+//p_userdata: I'm assuming this is best used to pass the context around. If context is set in the calling class this should be implicitly passed to this one.
+//initLevel: should probably be handled by the calling proc, but also safety check is nice.
+//See where registerSprite is called in the loadTextureToSceneTree main.odin
+THIS_CLASS_NAME_Init :: proc "c" (p_userdata: rawptr, initLevel: GDE.InitializationLevel) {
     context = runtime.default_context()
 
     if initLevel != .INITIALIZATION_SCENE{
@@ -107,7 +111,7 @@ THIS_CLASS_NAME_Create :: proc "c" (p_class_user_data: rawptr, p_notify_postinit
 }
 
 //Only need this once in a project unless you will be overriding these defaults.
-//I still don't know what these are for :/ Maybe some more C# specific things considering create free and reference are in the class struct.
+//I still don't know what these are for :/ Maybe some more C# specific things considering create free and reference are in the classInfo struct.
 classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     create_callback    = nil,
     free_callback      = nil,
@@ -175,7 +179,7 @@ THIS_CLASS_NAME_callVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIn
 THIS_CLASS_NAME__ready :: proc "c" (self: ^THIS_CLASS_NAME_) {
     context = runtime.default_context()//These are good to set in a singleton at some point.
     //These are statically stored and thus only need to be called once when the game engine is fully initialize.
-    //GDW.getInputSingleton()
+    GDW.getInputSingleton()
     //GDW.getPhysServer2dObj()
     //GDW.getRenderServer2dObj()
 
@@ -192,8 +196,6 @@ THIS_CLASS_NAME__physics :: proc "c" (self: ^THIS_CLASS_NAME_, delta: f64) {
 
 THIS_CLASS_NAME__process :: proc "c" (self: ^THIS_CLASS_NAME_, delta: f64) {
     context = runtime.default_context()
-    GDW.queueRedraw(self.selfPtr)
-
 
 }
 
