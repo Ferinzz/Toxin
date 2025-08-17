@@ -1,6 +1,6 @@
 ::@echo off
 ::echo on
-C:\GodotSrc\godot\bin\godot.windows.editor.dev.x86_64.exe --headless --dump-gdextension-interface
+::C:\GodotSrc\godot\bin\godot.windows.editor.dev.x86_64.exe --headless --dump-gdextension-interface
 ::C:\GodotSrc\godot\bin\godot.windows.editor.dev.x86_64.exe --headless --dump-extension-api
 
 ::runs whatever odin main package there is in the folder you're in.

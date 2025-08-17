@@ -74,6 +74,8 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
     
     //GDW.makePublic(treeHook, "timePassed")
     gameBindMethod()
+
+    remapButtonInit(userdata, initLevel)
 }
 
 
@@ -129,16 +131,16 @@ getVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStrin
         return cast(rawptr)ready
     }
     if GDW.stringNameCompare(p_name, "_process"){
-        return cast(rawptr)process
+        return cast(rawptr)gameprocess
     }
     if GDW.stringNameCompare(p_name, "_physics_process"){
-        return cast(rawptr)physics
+        return cast(rawptr)gamephysics
     }
     if GDW.stringNameCompare(p_name, "_draw"){
-        return cast(rawptr)draw
+        return cast(rawptr)gamedraw
     }
     if GDW.stringNameCompare(p_name, "_input"){
-        return cast(rawptr)inputPlayer
+        return cast(rawptr)game_Input
     }
     return nil
 }
@@ -148,17 +150,17 @@ getVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStrin
 //unfortunately the more events a class has the more times this thing is called.
 callVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_name: GDE.ConstStringNamePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
     
-    if virtualProcPtr == cast(rawptr)physics {
-        GDW.virtualProcCall(physics, p_instance, p_args, r_ret)
+    if virtualProcPtr == cast(rawptr)gamephysics {
+        GDW.virtualProcCall(gamephysics, p_instance, p_args, r_ret)
     }
-    if virtualProcPtr == cast(rawptr)process {
-        GDW.virtualProcCall(process, p_instance, p_args, r_ret)
+    if virtualProcPtr == cast(rawptr)gameprocess {
+        GDW.virtualProcCall(gameprocess, p_instance, p_args, r_ret)
     }
-    if virtualProcPtr == cast(rawptr)draw {
-        GDW.virtualProcCall(draw, p_instance, p_args, r_ret)
+    if virtualProcPtr == cast(rawptr)gamedraw {
+        GDW.virtualProcCall(gamedraw, p_instance, p_args, r_ret)
     }
-    if virtualProcPtr == cast(rawptr)inputPlayer {
-        GDW.virtualProcCall(inputPlayer, p_instance, p_args, r_ret)
+    if virtualProcPtr == cast(rawptr)game_Input {
+        GDW.virtualProcCall(game_Input, p_instance, p_args, r_ret)
     }
     if virtualProcPtr == cast(rawptr)ready {
         GDW.virtualProcCall(ready, p_instance, p_args, r_ret)
@@ -180,11 +182,12 @@ ready :: proc "c" (self: ^game) {
     resize_mode: GDW.LayoutPresetMode = .PRESET_MODE_KEEP_WIDTH
     //margin: GDE.Int = 9223372036854775807
     //Godot will convert the i64 to i32 automatically as part of the extension's process. wew.
+    //If it is out of bounds for the value it will set it to 0 or -1 if the value was at uint max.
     margin: GDE.Int = 2147483
     GDW.set_offsets_preset(controlClass, &preset, &resize_mode, &margin)
 }
 
-physics :: proc "c" (self: ^game, delta: f64) {
+gamephysics :: proc "c" (self: ^game, delta: f64) {
     context = runtime.default_context()
     
     button: GDE.MouseButton = .MOUSE_BUTTON_LEFT
@@ -193,25 +196,25 @@ physics :: proc "c" (self: ^game, delta: f64) {
     fmt.println(isPressed)    
 }
 
-process :: proc "c" (self: ^game, delta: f64) {
+gameprocess :: proc "c" (self: ^game, delta: f64) {
     context = runtime.default_context()
     GDW.queueRedraw(self.selfPtr)
 
 
 }
 
-draw :: proc "c" (self: ^game) {
+gamedraw :: proc "c" (self: ^game) {
 
 }
 
 
-inputPlayer :: proc "c" (self: ^game, event: GDE.ObjectPtr) {
+game_Input :: proc "c" (self: ^game, event: GDE.ObjectPtr) {
     context = runtime.default_context()
 
 
 }
 
-signalCalback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
+gamesignalCalback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
     context = runtime.default_context()
 
     /*

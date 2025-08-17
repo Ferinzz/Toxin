@@ -398,8 +398,13 @@ ClassMethodFlags :: enum {
 	DEFAULT = NORMAL,
 }
 
+
+//In the api you'll see meta int32 or float or whatever else
+//I assume this is becauase you're supposed to use those types because something else might
+//need that specific type. I am feeling like I'm crazy because in the cpp code it's still an int.
+//Meaning you pass in an i64 and somewhere eventually it needs it to be a different sized type.
 ClassMethodArgumentMetadata :: enum c.int {
-	NONE,
+	NONE = 0,
 	INT_IS_INT8,
 	INT_IS_INT16,
 	INT_IS_INT32,
@@ -476,7 +481,7 @@ CallableCustomGetArgumentCount :: proc "c" (callable_userdata: rawptr, r_is_vali
 CallableCustomInfo :: struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
-	 * `token` should point to an address that uniquely identifies the  (for example, the
+	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
 	 * `ClassLibraryPtr` passed to the entry symbol function.
 	 *
 	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
@@ -503,7 +508,7 @@ CallableCustomInfo :: struct {
 CallableCustomInfo2 :: struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
-	 * `token` should point to an address that uniquely identifies the  (for example, the
+	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
 	 * `ClassLibraryPtr` passed to the entry symbol function.
 	 *
 	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
@@ -679,7 +684,7 @@ InterfaceFunctionPtr	:: proc "c" ();
 InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunctionPtr
 
 /*
- * Each  should define a C function that matches the signature of InitializationFunction,
+ * Each GDExtension should define a C function that matches the signature of InitializationFunction,
  * and export it so that it can be loaded via dlopen() or equivalent for the given platform.
  *
  * For example:
@@ -688,12 +693,12 @@ InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunct
  *
  * This function's name must be specified as the 'entry_symbol' in the .gdextension file.
  *
- * This makes it the entry point of the  and will be called on initialization.
+ * This makes it the entry point of the GDExtension and will be called on initialization.
  *
- * The  can then modify the r_initialization structure, setting the minimum initialization level,
+ * The GDExtension can then modify the r_initialization structure, setting the minimum initialization level,
  * and providing pointers to functions that will be called at various stages of initialization/shutdown.
  *
- * The rest of the GDExtension's interface to Godot consists of function pointers that can be loaded
+ * The rest of the 's interface to Godot consists of function pointers that can be loaded
  * by calling p_get_proc_address("...") with the name of the function.
  *
  * For example:
@@ -727,7 +732,7 @@ GodotVersion :: struct {
  * @name get_godot_version
  * @since 4.1
  *
- * Gets the Godot version that the  was loaded into.
+ * Gets the Godot version that the GDExtension was loaded into.
  *
  * @param r_godot_version A pointer to the structure to write the version information into.
  */
@@ -2424,7 +2429,7 @@ InterfaceGlobalGetSingleton :: proc "c" (p_name: StringNamePtr) -> ObjectPtr;
  * Gets a pointer representing an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the GDExtension's entry point function.
+ * @param p_library A token the library received by the 's entry point function.
  * @param p_callbacks A pointer to a InstanceBindingCallbacks struct.
  *
  * @return
@@ -2438,7 +2443,7 @@ InterfaceObjectGetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, 
  * Sets an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the GDExtension's entry point function.
+ * @param p_library A token the library received by the 's entry point function.
  * @param p_binding A pointer to the instance binding.
  * @param p_callbacks A pointer to a InstanceBindingCallbacks struct.
  */
@@ -2451,7 +2456,7 @@ InterfaceObjectSetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, 
  * Free an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the GDExtension's entry point function.
+ * @param p_library A token the library received by the 's entry point function.
  */
 InterfaceObjectFreeInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr);
 
@@ -2473,11 +2478,11 @@ InterfaceObjectSetInstance :: proc "c" (p_o: ObjectPtr, p_classname: ConstString
  *
  * Gets the class name of an Object.
  *
- * If the  wraps the Godot object in an abstraction specific to its class, this is the
+ * If the GDExtension wraps the Godot object in an abstraction specific to its class, this is the
  * function that should be used to determine which wrapper to use.
  *
  * @param p_object A pointer to the Object.
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param r_class_name A pointer to a String to receive the class name.
  *
  * @return true if successful in getting the class name; otherwise false.
@@ -2773,7 +2778,7 @@ InterfaceClassdbGetClassTag :: proc "c" (p_classname: ConstStringNamePtr) -> raw
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo struct.
@@ -2789,7 +2794,7 @@ InterfaceClassdbRegisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr, 
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
@@ -2805,7 +2810,7 @@ InterfaceClassdbRegisterExtensionClass2 :: proc "c" (p_library: ClassLibraryPtr,
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
@@ -2820,7 +2825,7 @@ InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassLibraryPtr,
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
@@ -2835,7 +2840,7 @@ InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassLibraryPtr,
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
@@ -2849,7 +2854,7 @@ InterfaceClassdbRegisterExtensionClassMethod :: proc "c" (p_library: ClassLibrar
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
@@ -2864,15 +2869,8 @@ InterfaceClassdbRegisterExtensionClassVirtualMethod :: proc "c" (p_library: Clas
  * Note about registering bitfield values (if p_is_bitfield is true): even though p_constant_value is signed, language bindings are
  * advised to treat bitfields as uint64_t, since this is generally clearer and can prevent mistakes like using -1 for setting all bits.
  * Language APIs should thus provide an abstraction that registers bitfields (uint64_t) separately from regular constants (int64_t).
- * What this means for Odin:
- * --If you want it to be a bitfield, use the bit_field type and set the size to u64
- * --If you want to use it as a 'normal' enum you must specify the integer to use a u64 because Odin's enums by default use bits instead of counting
- * --For normal ass constants you cannot just declare a constant. In C++ code all true constants (ones found in the api json) are enums.
- * Other constants may be in structs with a default set in code. see line_spacing : https://github.com/godotengine/godot/blob/0c51ede2434d99d2c80dc87b7df179db66537f1c/scene/gui/button.h#L103
- * I'm not certain if this works for the second type, as these struct constants do have getters available. I believe these are const in
- * the sense that they did not specify a setter.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_enum_name A pointer to a StringName with the enum name.
  * @param p_constant_name A pointer to a StringName with the constant name.
@@ -2889,7 +2887,7 @@ InterfaceClassdbRegisterExtensionClassIntegerConstant :: proc "c" (p_library: Cl
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_info A pointer to a PropertyInfo struct.
  * @param p_setter A pointer to a StringName with the name of the setter method.
@@ -2905,7 +2903,7 @@ InterfaceClassdbRegisterExtensionClassProperty :: proc "c" (p_library: ClassLibr
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_info A pointer to a PropertyInfo struct.
  * @param p_setter A pointer to a StringName with the name of the setter method.
@@ -2920,7 +2918,7 @@ InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: Cl
  *
  * Registers a property group on an extension class in the ClassDB.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_group_name A pointer to a String with the group name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this group.
@@ -2933,7 +2931,7 @@ InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: Clas
  *
  * Registers a property subgroup on an extension class in the ClassDB.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_subgroup_name A pointer to a String with the subgroup name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this subgroup.
@@ -2948,7 +2946,7 @@ InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: C
  *
  * Provided structs can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_signal_name A pointer to a StringName with the signal name.
  * @param p_argument_info A pointer to a PropertyInfo struct.
@@ -2962,7 +2960,7 @@ InterfaceClassdbRegisterExtensionClassSignal :: proc "c" (p_library: ClassLibrar
  *
  * Unregisters an extension class in the ClassDB.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  */
 InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
@@ -2971,9 +2969,9 @@ InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr
  * @name get_library_path
  * @since 4.1
  *
- * Gets the path to the current  library.
+ * Gets the path to the current GDExtension library.
  *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
+ * @param p_library A pointer the library received by the 's entry point function.
  * @param r_path A pointer to a String which will receive the path.
  */
 InterfaceGetLibraryPath :: proc "c" (p_library: ClassLibraryPtr, r_path: UninitializedStringPtr);

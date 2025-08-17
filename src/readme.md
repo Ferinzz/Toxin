@@ -1,7 +1,7 @@
 Taking from some examples from the UI demos here. https://github.com/godotengine/godot-demo-projects/tree/master/gui\
 
 
-###rebind logic
+#rebind logic
 
 First oddity comes with the VBoxContainer. You can search all you want for this class and not find it anywhere except the docs and the C++ code. What is it? It's a normal ass box_container class but with the constructor specifying that vertical is true or false. This controls the way it will be appending things.\
 
@@ -36,7 +36,7 @@ The override example is to show how you can specify the settings for buttons.\
 
 This example uses signals to send up to the parent control node the notification that it was pressed. Then the parent sets the theme changes. This may be good practice for connecting to other entities in the tree and taking action on them.\
 
-###DRAG and drop:
+#DRAG and drop:
 use control's _get_drag_data virtual to set the data that you will be sending to the other whatever which may receive it. return seems to be anything. in GDScript you set the return in the function declaration. In GDE it's just a variant.\
 Also specify what will be the preview by calling set_drag_preview during the _get_drag_data function callback. The example generates a new control object and adds a color picker child to it to be able to render something.\
 Docs say Shows the given control at the mouse pointer. A good time to call this method is in _get_drag_data(). The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended. So don't heap allocate anything unless you're adding it to a specific custom class of your own with your own destruction property.\
@@ -44,7 +44,7 @@ _can_drop_data returns whether the value dropped is something that the destinati
 _drop_data accepts the data to process it however this particular object will want to process it.\
 
 
-###RESIZING
+#RESIZING
 Interesting note in the update container example.\
 The code within this function needs to be run deferred to work around an issue with containers\
 having a 1-frame delay with updates.\
@@ -56,19 +56,19 @@ This would be a good test to see how well call deferred could work? call_deferre
 Overall this will be useful because understanding window resizing is usually one of the last things I look into XD\
 
 
-###BiDi fonts
+#BiDi fonts
 Kind of interesting? There's not a ton to do here it's mostly a demo about the various settings and what they achieve. Interesting aspect is the BiDi override setting. This allows you to change the default unicode orientation reading right to left text to instead be read left to right as it is for a filepath.\
 
 Otherwise this is a bunch of the same. Many signals going up to the main control section where it will directly impact specific other objects in the tree. ie the slider sending a signal to control which will modify the VariableFontPreview object.\
 
-###UI Mirror 
+#UI Mirror 
 I don't really see working as intended. The main takazay is the fact that you can set the Container to be right to left or left to right. The localization options doesn't appear to do anything apparent.\
 According to the TranslationServer it's supposed to be a root API that is meant to be used to offer localization features for users. It warns that it's mainly for making plugins. There's also a OS.get_locale() instead of the one in TranslationServer to get OS level data.\
 
-###Translations
+#Translations
 Maigc! It's just Magic! No not actually. It checks the end of a file name to determine if it's the translated version of the file that it was setup with. _en for english _es for when the locale is set to "es" etc. If you rename the file and REIMPORT (important because it will see the old import and reference to the same file) it will break the system.\
 If there is no localized version of a file then it will use the default file. This is actually pretty good so that when someone is playing the game in another language it will be immediately apparent when something is missing instead of having a blank section.\
 
-###PseudoLocalization
+#PseudoLocalization
 https://docs.godotengine.org/en/stable/tutorials/i18n/pseudolocalization.html
 Basically just there to test out who the strings are being rendered. Would be good to make sure that the GDE is working as you want it. It's all project settings though. No need to do anything in the code itself unless you want to set some dev options in the game itself. Can update how strings are rendered dynamically? But needs a call to the TranslationServer.reload_pseudolocalization() so pretty nice.\
