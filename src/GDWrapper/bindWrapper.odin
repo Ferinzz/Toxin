@@ -22,40 +22,45 @@ import "core:log"
 * P: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-makePublic :: proc "c" ($P: typeid, $fieldName: cstring,
+makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
-                        where sics.type_has_field(P, fieldName) //No point trying if the field doesn't exist. Typo safety.
+                        where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
     {
     context = runtime.default_context()
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
-    index, ok := slice.linear_search(GDE.GDTypes[:], sics.type_field_type(P, fieldName))
+    index, ok := slice.linear_search(GDE.GDTypes[:], sics.type_field_type(classStruct, fieldName))
     if ok == false {
         panic("The type sent to makePublic was not found in GDW.GDTypes. Please check the list of valid Godot types.", loc)
     }
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^P, godotValue: sics.type_field_type(P, fieldName)) {
-        (cast(^sics.type_field_type(P, fieldName))(cast(uintptr)p_classData+offset_of_by_string(P, fieldName)))^ = godotValue
+    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = godotValue
     }
     
-    get :: proc "c" (p_classData: ^P) -> sics.type_field_type(P, fieldName) {
+    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
         
-        return (cast(^sics.type_field_type(P, fieldName))(cast(uintptr)p_classData+offset_of_by_string(P, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
 
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
-    className := fmt.caprint(type_info_of(P))
+    className := fmt.caprint(type_info_of(classStruct))
     defer delete(className)
 
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewLatin(&className_SN, className, false)
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+
     //These functions create the callbacks Godot will used to call set and get.
-    bindMethod(className, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
-    bindProperty(className, fieldName, GDE.VariantType(index), "get_"+fieldName, "set_"+fieldName)
+    bindProperty(&className_SN, fieldName, GDE.VariantType(index), "get_"+fieldName, "set_"+fieldName)
 }
 
 /*
@@ -69,7 +74,7 @@ makePublic :: proc "c" ($P: typeid, $fieldName: cstring,
 * function: Pointer to the function you are binding to Godot
 * argNames: Names of the arguments; shown in the Editor
 */
-bindMethod :: proc "c" (className, methodName: cstring,
+bindMethod :: proc "c" (className: ^GDE.StringName, methodName: cstring,
                         function: $T,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         argNames: ..cstring, loc:= #caller_location
@@ -175,14 +180,11 @@ bindMethod :: proc "c" (className, methodName: cstring,
         methodInfo.arguments_metadata = &args_metadata[0]
     }
 
-    classNameString: GDE.StringName
-    StringConstruct.stringNameNewLatin(&classNameString, className, false)
-
-    gdAPI.classdbRegisterExtensionClassMethod(Library, &classNameString, &methodInfo)
+    gdAPI.classdbRegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
     Destructors.stringNameDestructor(&methodStringName)
-    Destructors.stringNameDestructor(&classNameString)
+    //Destructors.stringNameDestructor(&classNameString)
     destructProperty(&returnInfo)
 
 }
@@ -194,11 +196,9 @@ bindMethod :: proc "c" (className, methodName: cstring,
 * Provide their names as cstrings. Check the makePublic function for a general workflow.
 * Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
 */
-bindProperty :: proc "c" (className, name: cstring, type: GDE.VariantType, getter, setter: cstring) {
+bindProperty :: proc "c" (className: ^GDE.StringName, name: cstring, type: GDE.VariantType, getter, setter: cstring) {
     //context = runtime.default_context()
     
-    classNameString: GDE.StringName
-    StringConstruct.stringNameNewLatin(&classNameString, className, false)
     info: GDE.PropertyInfo = make_property(type, name)
 
     getterName: GDE.StringName
@@ -208,7 +208,7 @@ bindProperty :: proc "c" (className, name: cstring, type: GDE.VariantType, gette
     StringConstruct.stringNameNewLatin(&setterName, setter, false)
     
     //fmt.println("register property")
-    gdAPI.classDBRegisterExtensionClassProperty(Library, &classNameString, &info, &setterName, &getterName)
+    gdAPI.classDBRegisterExtensionClassProperty(Library, className, &info, &setterName, &getterName)
     //fmt.println("register property complete")
 
     //Destructor stuff

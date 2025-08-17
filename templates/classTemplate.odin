@@ -5,16 +5,20 @@ import GDE "GDWrapper/gdextension"
 import "base:runtime"
 import "core:fmt"
 
+//Find and Replace THIS_CLASS_NAME_ with the name that you will be giving to the GDE class.
+//Find and Replace Godot_Class_Name with the name of the class from Godot. (2 instances)
 
 //Godot will be passing us a pointer to this struct during callbacks.
 //MUST match what is used in the init function used to name our class. THIS_CLASS_NAME__SN
 THIS_CLASS_NAME_ :: struct {
     selfPtr: GDE.ObjectPtr, //always keep. Self-reference to this object's memory in Godot.
-    keyBind: GDE.gdstring,
+    someProperty: GDE.Int,
 }
 
 THIS_CLASS_NAME__SN : GDE.StringName
 
+//Technically can have a single massive function to init everything, but having one in each is easier?
+//Make sure to add this to the init of the extension otherwise you won't be able to access this class.
 THIS_CLASS_NAME_Init :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
     context = runtime.default_context()
 
@@ -67,11 +71,18 @@ THIS_CLASS_NAME_Init :: proc "c" (userdata: rawptr, initLevel: GDE.Initializatio
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
 THIS_CLASS_NAME_BindMethod :: proc "c" (){
     className:cstring= "THIS_CLASS_NAME_"
-    GDW.bindMethod(className, "Some_method_name", somePublicFunction, GDE.ClassMethodFlags.NORMAL, "arg1")
 
+    //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
+    GDW.bindMethod(&THIS_CLASS_NAME__SN, "Some_method_name", somePublicFunction, GDE.ClassMethodFlags.NORMAL, "arg1")
+    
+    //Same with this. It creates 4 extra functions. Getter, Setter, and variant callback, pointer callback.
+    //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
+    //as normal and call bindMethod and then bindProperty.
+    GDW.makePublic(THIS_CLASS_NAME_, "someProperty")
 }
 
-somePublicFunction :: proc "c" (arg1: GDE.RID) {
+//Godot only supports once return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific.
+somePublicFunction :: proc "c" (classStruct: ^THIS_CLASS_NAME_, arg1: GDE.RID) {
     //do stuff
 }
 

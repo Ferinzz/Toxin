@@ -13,6 +13,7 @@ Warnings:
 
 ENUMS
 Enums can be present in more than one class. Odin should catch the duplicate names and provide a compilation error.
+Class functions may use an enum from another class. example enum::Node.someEnum or global enum::Global.someEnum.
 
 Methods
-There will be methods with the same name as those in other classes. The name, the hash, eveything will be the same. You may not notice the problem until you attempt to use it and it provides the wrong data. This is why everything is pre-pended with the class name. It's not a choice I like, but otherwise... I'm not sure what else there could be to differentiate them.
+There will be methods with the same name as those in other classes. The name, the hash, everything will be the same. You may not notice the problem until you attempt to use it and it provides the wrong data. This is why everything is pre-pended with the class name. (hahah, not implemented yet. Whoops.) It's not a choice I like, but otherwise... I'm not sure what else there could be to differentiate them.
