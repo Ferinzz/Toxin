@@ -12,3 +12,17 @@ As a result we need to do extra allocations from our base types to variant types
 
 Seeing as vararg only applies to the last variable a different helper function from Godot would likely be the better way to treat these. ie, send a Array of something instead of [^]rawptr.
 
+### Odin Arrays in Godot
+Actually shouldn't be too difficult? Thanks Rat for reminding me about the parapoly. Not sure why I was blanking on that so hard.
+
+Testing takes time to make sure that things work as I expect and figure out the best way to do this.
+
+Originally thought of making a singleton that has a bunch of functions but in the end there's little point. Just make a RefCounted class which takes care of each individual array type. KISS design.
+
+So far it seems rather reliable to create and destroy the arrays based on the scope of things which have referenced them. Could include a 'DESTROY' function to delete the array data, but can't deref everything or else Godot will yell when it goes negative.
+
+Slices I might go with the Go method where they increment the ref count of the original array. Though this could lead to hidden memory holds instead of obvious broken memory lifetimes. I do prefer the latter.
+
+This is an interesting benchmark for working with this though. Checking lifetimes, making things hoepfully more ergonomic with the class creation?? Can add in some debug compile specific settings which would keep track of what Node is allocating it for maybe some easier debugging. Every time it's reference take the node name and when dereffed remove it. If something doesn't go right you can know exactly who is owning it at what time. (mostly)
+
+Printing should be rather straight forward. I can set a specific to_string function in the classinfostruct itself which should simply return the correct string to Godot. Simply use our own fmt function to create a cstring.

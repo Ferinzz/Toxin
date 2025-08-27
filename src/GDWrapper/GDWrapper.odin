@@ -320,6 +320,7 @@ variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: [^]rawptr, r_erro
     for type, index in typeList {
         if type != VariantGetters.variantGetType(argList[index]) {
             r_error.error = .CALL_ERROR_INVALID_ARGUMENT
+            r_error.argument = i32(VariantGetters.variantGetType(argList[index]))
             r_error.expected = i32(type)
             return
         }
