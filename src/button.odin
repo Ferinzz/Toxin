@@ -89,7 +89,7 @@ remapButtonCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitializ
     self: ^remapButton = cast(^remapButton)GDW.gdAPI.mem_alloc(size_of(remapButton))
     self.selfPtr = object
     
-    GDW.gdAPI.object_set_instance(object, &remapButton_SN, self)
+    GDW.gdAPI.object_set_instance(object, &remapButton_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
 
     return object

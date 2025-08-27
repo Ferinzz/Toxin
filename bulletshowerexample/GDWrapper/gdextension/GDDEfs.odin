@@ -25,7 +25,7 @@ VariantData :: union #align(16) {
 		Bool,
 		i64,
 		f64,
-		^Transform2d,
+		^Transform2D,
 		^AABB,
 		^Basis,
 		^Transform3D,
@@ -134,8 +134,8 @@ Projection :: distinct #row_major matrix[4,4]f32
 /*2×3 matrix. three Vector2 values: x, y, and origin.
 Will need to test to determine if major or minor. Likely reimplements C# version.
  */
-Transform2d ::  distinct #row_major matrix[3,2]f32
-//Transform2d :: distinct [6]f32
+Transform2D ::  distinct #row_major matrix[3,2]f32
+//Transform2D :: distinct [6]f32
 
 /*3×4 matrix. A Basis, scale and shear. Combine with origin to do translations.
 Will need to test to determine if major or minor. Likely reimplements C# version.
@@ -269,7 +269,7 @@ typeid_of(Rec2),
 typeid_of(Rec2i),
 typeid_of(Vector3),
 typeid_of(Vector3i),
-typeid_of(Transform2d),
+typeid_of(Transform2D),
 typeid_of(Vector4),
 typeid_of(Vector4i),
 typeid_of(Plane),

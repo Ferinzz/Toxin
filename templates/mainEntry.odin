@@ -34,8 +34,9 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
 
     /*
     Initialize the different classes.
+    classInitProc(classStruct)
     */
-    initialize_gdexample_module(userdata, initLevel)
+    THIS_CLASS_NAMEInit(THIS_CLASS_NAME)
     
 }
 

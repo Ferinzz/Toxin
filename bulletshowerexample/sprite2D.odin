@@ -27,7 +27,7 @@ mySprite :: struct {
 }
 
 bullet:: struct {
-    position: GDE.Transform2d,
+    position: GDE.Transform2D,
     speed: f64,
     body: GDE.RID
 }
@@ -225,8 +225,8 @@ initializeSprite :: proc "c" (self: ^mySprite) {
         GDW.bodySetSpace(&abullet.body, &space)
         //PhysicsServer2D.body_set_space(bullet.body, get_world_2d().get_space())
         
-        trans2D: GDE.Transform2d 
-        trans2D = GDE.Transform2d {1,0,0,1,0,0}
+        trans2D: GDE.Transform2D 
+        trans2D = GDE.Transform2D {1,0,0,1,0,0}
         
         disabled: GDE.Bool = false
         GDW.bodyAddShape(&abullet.body, &self.shape, trans2D, &disabled)
@@ -241,7 +241,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
         abullet.position = {0, 0, 0, 0, 1000*rand.float32(), 1000*rand.float32()}
         bodyState: GDW.BodyState = .BODY_STATE_TRANSFORM
         //This is for the collision position.
-        //trans: GDE.Transform2d = {0,0,0,0,120,120}
+        //trans: GDE.Transform2D = {0,0,0,0,120,120}
         trans_v: GDE.Variant
         GDW.variant_from(&trans_v, &abullet.position)
         

@@ -132,7 +132,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     VariantFrom.Vec2ToVariant = VariantGetters.getVariantFromTypeConstructor(.VECTOR2)
     VariantFrom.boolToVariant = VariantGetters.getVariantFromTypeConstructor(.BOOL)
     VariantFrom.rec2ToVariant = VariantGetters.getVariantFromTypeConstructor(.RECT2)
-    VariantFrom.Transform2dToVariant = VariantGetters.getVariantFromTypeConstructor(.TRANSFORM2D)
+    VariantFrom.Transform2DToVariant = VariantGetters.getVariantFromTypeConstructor(.TRANSFORM2D)
     VariantFrom.packedf32arrayToVariant = VariantGetters.getVariantFromTypeConstructor(.PACKED_INT64_ARRAY)
 
     gdAPI.indexGetBind = cast(GDE.InterfaceVariantGetPtrIndexedGetter)p_get_proc_address("variant_get_ptr_indexed_getter")
@@ -643,7 +643,7 @@ bodySetSpace :: proc(body: ^GDE.RID, space: ^GDE.TypePtr, physServer := PhysServ
     gdAPI.objectMethodBindPtrCall(SetSpace, physServer, raw_data(args[:]), nil)
 }
 
-bodyAddShape :: proc(body: ^GDE.RID, shape: ^GDE.RID, trans2d: GDE.Transform2d = {1,0,0,1,0,0}, disabled: ^GDE.Bool, physServer := PhysServer2dObj){
+bodyAddShape :: proc(body: ^GDE.RID, shape: ^GDE.RID, trans2d: GDE.Transform2D = {1,0,0,1,0,0}, disabled: ^GDE.Bool, physServer := PhysServer2dObj){
     @(static)BodyAddShape: GDE.MethodBindPtr
     if BodyAddShape == nil do BodyAddShape = classDBGetMethodBind2(&PhysicsServer2D_SN, "body_add_shape", 339056240)
     assert(physServer != nil && body.id != 0 && shape.id != 0)

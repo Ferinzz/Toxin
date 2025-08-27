@@ -59,7 +59,7 @@ VariantFrom : struct {
     Vec2ToVariant: GDE.VariantFromTypeConstructorFunc,
     boolToVariant: GDE.VariantFromTypeConstructorFunc,
     rec2ToVariant: GDE.VariantFromTypeConstructorFunc,
-    Transform2dToVariant: GDE.VariantFromTypeConstructorFunc,
+    Transform2DToVariant: GDE.VariantFromTypeConstructorFunc,
     packedf32arrayToVariant: GDE.VariantFromTypeConstructorFunc,
     
 }
@@ -78,7 +78,7 @@ variant_from :: proc {
     Rec2itoVariant,
     Vec3toVariant,
     Vec3itoVariant,
-    Transform2dtoVariant,
+    Transform2DtoVariant,
     Vec4toVariant,
     Vec4itoVariant,
     PlanetoVariant,
@@ -121,7 +121,7 @@ variant_to :: proc {
     Rec2iFromVariant,
     Vec3FromVariant,
     Vec3iFromVariant,
-    Transform2dFromVariant,
+    Transform2DFromVariant,
     Vec4FromVariant,
     Vec4iFromVariant,
     PlaneFromVariant,
@@ -239,7 +239,7 @@ variant_to :: proc {
         if proj2v == nil do proj2v = VariantGetters.getVariantFromTypeConstructor(.PROJECTION)
         proj2v(p_variant, p_from)
     }
-    Transform2dtoVariant    :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Transform2d) {
+    Transform2DtoVariant    :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Transform2D) {
         @(static) trans2d2V: GDE.VariantFromTypeConstructorFunc
         if trans2d2V == nil do trans2d2V = VariantGetters.getVariantFromTypeConstructor(.TRANSFORM2D)
         trans2d2V(p_variant, &(p_from[0]))
@@ -430,7 +430,7 @@ variant_to :: proc {
         if proj2v == nil do proj2v = VariantGetters.getVariantToTypeConstuctor(.PROJECTION)
         proj2v(p_dest, p_variant)
     }
-    Transform2dFromVariant    :: proc(p_variant: ^GDE.Variant, p_dest: ^GDE.Transform2d, loc := #caller_location) {
+    Transform2DFromVariant    :: proc(p_variant: ^GDE.Variant, p_dest: ^GDE.Transform2D, loc := #caller_location) {
         assert(p_variant.VType == .TRANSFORM2D, loc = loc)
         @(static) trans2d2V: GDE.TypeFromVariantConstructorFunc
         if trans2d2V == nil do trans2d2V = VariantGetters.getVariantToTypeConstuctor(.TRANSFORM2D)
@@ -633,7 +633,7 @@ fromvariant :: proc(variant: GDE.VariantPtr, $T: typeid) -> T {
         if construct == nil do construct = VariantGetters.getVariantToTypeConstuctor(.STRING)
         
         construct(&ret, variant)
-    } else when T == GDE.Transform2d{
+    } else when T == GDE.Transform2D{
         @(static)construct: GDE.TypeFromVariantConstructorFunc
         if construct == nil do construct = VariantGetters.getVariantToTypeConstuctor(.STRING)
         
