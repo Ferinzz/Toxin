@@ -12,131 +12,133 @@ import sics "base:intrinsics"
 //Godot will be passing us a pointer to this struct during callbacks.
 //MUST match what is used in the init function used to name our class. OdinArrays_SN
 
+//These will not be freed 
+
 when ODIN_DEBUG {
-    isCreated: bool
+    isCreatedNoRef: bool
     
 }
 
 
-Class_String: cstring = "RefCounted"
+Class_StringNoRef: cstring = "Object"
 
-OdinArrays :: struct (T: typeid) {
+OdinArrayNoRefs :: struct (T: typeid) {
     selfPtr: ^GDE.Object,
     data: [dynamic]T
 }
 
-Odini64Array :: OdinArrays(GDE.Int)
-Odini64Array_SN: GDE.StringName
-Odini64Array_CString:: "Odini64Array"
+Odini64ArrayNoRef :: OdinArrayNoRefs(GDE.Int)
+Odini64ArrayNoRef_SN: GDE.StringName
+Odini64ArrayNoRef_CString:: "Odini64ArrayNoRef"
 
-OdinBoolArray :: OdinArrays(GDE.Bool)
-OdinBoolArray_SN: GDE.StringName
-OdinBoolArray_CString:: "OdinBoolArray"
+OdinBoolArrayNoRef :: OdinArrayNoRefs(GDE.Bool)
+OdinBoolArrayNoRef_SN: GDE.StringName
+OdinBoolArrayNoRef_CString:: "OdinBoolArrayNoRef"
 
-Odinf64Array :: OdinArrays(GDE.float)
-Odinf64Array_SN: GDE.StringName
-Odinf64Array_CString:: "Odinf64Array"
+Odinf64ArrayNoRef :: OdinArrayNoRefs(GDE.float)
+Odinf64ArrayNoRef_SN: GDE.StringName
+Odinf64ArrayNoRef_CString:: "Odinf64ArrayNoRef"
 
-OdinGDStringArray :: OdinArrays(GDE.gdstring)
-OdinGDStringArray_SN: GDE.StringName
-OdinGDStringArray_CString:: "OdinGDStringArray"
+OdinGDStringArrayNoRef :: OdinArrayNoRefs(GDE.gdstring)
+OdinGDStringArrayNoRef_SN: GDE.StringName
+OdinGDStringArrayNoRef_CString:: "OdinGDStringArrayNoRef"
 
-OdinVec2Array :: OdinArrays(GDE.Vector2)
-OdinVec2Array_SN: GDE.StringName
-OdinVec2Array_CString:: "OdinVec2Array"
+OdinVec2ArrayNoRef :: OdinArrayNoRefs(GDE.Vector2)
+OdinVec2ArrayNoRef_SN: GDE.StringName
+OdinVec2ArrayNoRef_CString:: "OdinVec2ArrayNoRef"
 
-OdinVec2iArray :: OdinArrays(GDE.Vector2i)
-OdinVec2iArray_SN: GDE.StringName
-OdinVec2iArray_CString:: "OdinVec2iArray"
+OdinVec2iArrayNoRef :: OdinArrayNoRefs(GDE.Vector2i)
+OdinVec2iArrayNoRef_SN: GDE.StringName
+OdinVec2iArrayNoRef_CString:: "OdinVec2iArrayNoRef"
 
-OdinRec2Array :: OdinArrays(GDE.Rec2)
-OdinRec2Array_SN: GDE.StringName
-OdinRec2Array_CString:: "OdinRec2Array"
+OdinRec2ArrayNoRef :: OdinArrayNoRefs(GDE.Rec2)
+OdinRec2ArrayNoRef_SN: GDE.StringName
+OdinRec2ArrayNoRef_CString:: "OdinRec2ArrayNoRef"
 
-OdinRec2iArray :: OdinArrays(GDE.Rec2i)
-OdinRec2iArray_SN: GDE.StringName
-OdinRec2iArray_CString:: "OdinRec2iArray"
+OdinRec2iArrayNoRef :: OdinArrayNoRefs(GDE.Rec2i)
+OdinRec2iArrayNoRef_SN: GDE.StringName
+OdinRec2iArrayNoRef_CString:: "OdinRec2iArrayNoRef"
 
-OdinVec3Array :: OdinArrays(GDE.Vector3)
-OdinVec3Array_SN: GDE.StringName
-OdinVec3Array_CString:: "OdinVec3Array"
+OdinVec3ArrayNoRef :: OdinArrayNoRefs(GDE.Vector3)
+OdinVec3ArrayNoRef_SN: GDE.StringName
+OdinVec3ArrayNoRef_CString:: "OdinVec3ArrayNoRef"
 
-OdinVec3iArray :: OdinArrays(GDE.Vector3i)
-OdinVec3iArray_SN: GDE.StringName
-OdinVec3iArray_CString:: "OdinVec3iArray"
+OdinVec3iArrayNoRef :: OdinArrayNoRefs(GDE.Vector3i)
+OdinVec3iArrayNoRef_SN: GDE.StringName
+OdinVec3iArrayNoRef_CString:: "OdinVec3iArrayNoRef"
 
-OdinTrans2DArray :: OdinArrays(GDE.Transform2D)
-OdinTrans2DArray_SN: GDE.StringName
-OdinTrans2DArray_CString:: "OdinTrans2DArray"
+OdinTrans2DArrayNoRef :: OdinArrayNoRefs(GDE.Transform2D)
+OdinTrans2DArrayNoRef_SN: GDE.StringName
+OdinTrans2DArrayNoRef_CString:: "OdinTrans2DArrayNoRef"
 
-OdinVec4Array :: OdinArrays(GDE.Vector4)
-OdinVec4Array_SN: GDE.StringName
-OdinVec4Array_CString:: "OdinVec4Array"
+OdinVec4ArrayNoRef :: OdinArrayNoRefs(GDE.Vector4)
+OdinVec4ArrayNoRef_SN: GDE.StringName
+OdinVec4ArrayNoRef_CString:: "OdinVec4ArrayNoRef"
 
-OdinVec4iArray :: OdinArrays(GDE.Vector4i)
-OdinVec4iArray_SN: GDE.StringName
-OdinVec4iArray_CString:: "OdinVec4iArray"
+OdinVec4iArrayNoRef :: OdinArrayNoRefs(GDE.Vector4i)
+OdinVec4iArrayNoRef_SN: GDE.StringName
+OdinVec4iArrayNoRef_CString:: "OdinVec4iArrayNoRef"
 
-OdinPlaneArray :: OdinArrays(GDE.Plane)
-OdinPlaneArray_SN: GDE.StringName
-OdinPlaneArray_CString:: "OdinPlaneArray"
+OdinPlaneArrayNoRef :: OdinArrayNoRefs(GDE.Plane)
+OdinPlaneArrayNoRef_SN: GDE.StringName
+OdinPlaneArrayNoRef_CString:: "OdinPlaneArrayNoRef"
 
-OdinQuatArray :: OdinArrays(GDE.Quaternion)
-OdinQuatArray_SN: GDE.StringName
-OdinQuatArray_CString:: "OdinQuatArray"
+OdinQuatArrayNoRef :: OdinArrayNoRefs(GDE.Quaternion)
+OdinQuatArrayNoRef_SN: GDE.StringName
+OdinQuatArrayNoRef_CString:: "OdinQuatArrayNoRef"
 
-OdinAABBArray :: OdinArrays(GDE.AABB)
-OdinAABBArray_SN: GDE.StringName
-OdinAABBArray_CString:: "OdinAABBArray"
+OdinAABBArrayNoRef :: OdinArrayNoRefs(GDE.AABB)
+OdinAABBArrayNoRef_SN: GDE.StringName
+OdinAABBArrayNoRef_CString:: "OdinAABBArrayNoRef"
 
-OdinBasisArray :: OdinArrays(GDE.Basis)
-OdinBasisArray_SN: GDE.StringName
-OdinBasisArray_CString:: "OdinBasisArray"
+OdinBasisArrayNoRef :: OdinArrayNoRefs(GDE.Basis)
+OdinBasisArrayNoRef_SN: GDE.StringName
+OdinBasisArrayNoRef_CString:: "OdinBasisArrayNoRef"
 
-OdinTrans3DArray :: OdinArrays(GDE.Transform3D)
-OdinTrans3DArray_SN: GDE.StringName
-OdinTrans3DArray_CString:: "OdinTrans3DArray"
+OdinTrans3DArrayNoRef :: OdinArrayNoRefs(GDE.Transform3D)
+OdinTrans3DArrayNoRef_SN: GDE.StringName
+OdinTrans3DArrayNoRef_CString:: "OdinTrans3DArrayNoRef"
 
-OdinProjectionArray :: OdinArrays(GDE.Projection)
-OdinProjArray_SN: GDE.StringName
-OdinProjArray_CString:: "OdinProjectionArray"
+OdinProjectionArrayNoRef :: OdinArrayNoRefs(GDE.Projection)
+OdinProjArrayNoRef_SN: GDE.StringName
+OdinProjArrayNoRef_CString:: "OdinProjectionArrayNoRef"
 
-OdinColorArray :: OdinArrays(GDE.Color)
-OdinColorArray_SN: GDE.StringName
-OdinColorArray_CString:: "OdinColorArray"
+OdinColorArrayNoRef :: OdinArrayNoRefs(GDE.Color)
+OdinColorArrayNoRef_SN: GDE.StringName
+OdinColorArrayNoRef_CString:: "OdinColorArrayNoRef"
 
-OdinStringNameArray :: OdinArrays(GDE.StringName)
-OdinStringNameArray_SN: GDE.StringName
-OdinStringNameArray_CString:: "OdinStrinNameArray"
+OdinStringNameArrayNoRef :: OdinArrayNoRefs(GDE.StringName)
+OdinStringNameArrayNoRef_SN: GDE.StringName
+OdinStringNameArrayNoRef_CString:: "OdinStrinNameArrayNoRef"
 
-OdinNodePathArray :: OdinArrays(GDE.NodePath)
-OdinNodePathArray_SN: GDE.StringName
-OdinNodePathArray_CString:: "OdinNodePathArray"
+OdinNodePathArrayNoRef :: OdinArrayNoRefs(GDE.NodePath)
+OdinNodePathArrayNoRef_SN: GDE.StringName
+OdinNodePathArrayNoRef_CString:: "OdinNodePathArrayNoRef"
 
-OdinRIDArray :: OdinArrays(GDE.RID)
-OdinRIDArray_SN: GDE.StringName
-OdinRIDArray_CString:: "OdinRIDArray"
+OdinRIDArrayNoRef :: OdinArrayNoRefs(GDE.RID)
+OdinRIDArrayNoRef_SN: GDE.StringName
+OdinRIDArrayNoRef_CString:: "OdinRIDArrayNoRef"
 
-OdinObjectArray :: OdinArrays(GDE.Object)
-OdinObjectArray_SN: GDE.StringName
-OdinObjectArray_CString:: "OdinObjectArray"
+OdinObjectArrayNoRef :: OdinArrayNoRefs(GDE.Object)
+OdinObjectArrayNoRef_SN: GDE.StringName
+OdinObjectArrayNoRef_CString:: "OdinObjectArrayNoRef"
 
-OdinCallableArray :: OdinArrays(GDE.Callable)
-OdinCallableArray_SN: GDE.StringName
-OdinCallableArray_CString:: "OdinCallableArray"
+OdinCallableArrayNoRef :: OdinArrayNoRefs(GDE.Callable)
+OdinCallableArrayNoRef_SN: GDE.StringName
+OdinCallableArrayNoRef_CString:: "OdinCallableArrayNoRef"
 
-OdinSignalArray :: OdinArrays(GDE.Signal)
-OdinSignalArray_SN: GDE.StringName
-OdinSignalArray_CString:: "OdinSignalArray"
+OdinSignalArrayNoRef :: OdinArrayNoRefs(GDE.Signal)
+OdinSignalArrayNoRef_SN: GDE.StringName
+OdinSignalArrayNoRef_CString:: "OdinSignalArrayNoRef"
 
-OdinDicArray :: OdinArrays(GDE.Dictionary)
-OdinDicArray_SN: GDE.StringName
-OdinDicArray_CString:: "OdinDicArray"
+OdinDicArrayNoRef :: OdinArrayNoRefs(GDE.Dictionary)
+OdinDicArrayNoRef_SN: GDE.StringName
+OdinDicArrayNoRef_CString:: "OdinDicArrayNoRef"
 
 
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
-OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, className_SN: ^GDE.StringName){
+OdinArrayNoRefBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, className_SN: ^GDE.StringName){
     context = runtime.default_context()
 
 
@@ -144,7 +146,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     GDW.StringConstruct.stringNameNewLatin(className_SN, className, false)
 
     parent_class_name: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, Class_String, false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
+    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, Class_StringNoRef, false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
     defer(GDW.Destructors.stringNameDestructor(&parent_class_name))
 
     stringraw:GDE.gdstring
@@ -161,8 +163,8 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
             }
             //Destroy(nil, p_instance)
             //GDW.Destructors.ObjectDestroy(p_instance)
-            
-            /*retVariant: GDE.Variant
+            retVariant: GDE.Variant
+            /*
             MethodName: GDE.StringName
             GDW.StringConstruct.stringNameNewLatin(&MethodName, "free", false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
             defer(GDW.Destructors.stringNameDestructor(&MethodName))*/
@@ -184,7 +186,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
         context = runtime.default_context()
 
         class_name : GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&class_name, Class_String, false)
+        GDW.StringConstruct.stringNameNewLatin(&class_name, Class_StringNoRef, false)
         defer(GDW.Destructors.stringNameDestructor(&class_name))
         object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(&class_name)
 
@@ -232,6 +234,18 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, className_SN, &parent_class_name, &class_info)
     
+    
+    Odini64Array_create :: proc "c" (classStruct: ^classStruct) {
+        context = runtime.default_context()
+        error: runtime.Allocator_Error
+        classStruct.data, error = make_dynamic_array(type_of(classStruct.data))
+        if error != nil {
+
+        }
+        fmt.println(classStruct.data)
+    }
+
+    GDW.bindMethod(className_SN, "Some_method_name", Odini64Array_create, GDE.ClassMethodFlags.NORMAL)
     //Same with this. It creates 4 extra functions. Getter, Setter, and variant callback, pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
@@ -242,7 +256,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
         context = runtime.default_context()
         error: runtime.Allocator_Error
         when ODIN_DEBUG {
-            if isCreated == true {
+            if isCreatedNoRef == true {
                 GDW.Print.ErrorWithMessage("OdinArray", "Do not create array on existing array", "create", "OdinArrays", 258, true)
                 return
             }
@@ -252,7 +266,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
         }
         when ODIN_DEBUG {
-            isCreated = true
+            isCreatedNoRef = true
         }
         fmt.println(classStruct.data)
     }
@@ -265,8 +279,8 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
         error: runtime.Allocator_Error
         count: int
         when ODIN_DEBUG {
-            if isCreated == false {
-                isCreated = true
+            if isCreatedNoRef == false {
+                isCreatedNoRef = true
                 GDW.Print.WarningWithMessage("OdinArray", "Array being created via append", "append", "OdinArrays", 282, true)
             }
         }
@@ -364,10 +378,6 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     //*************\\
     arpop_front :: proc "c" (aclassStruct: ^classStruct) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
         context = runtime.default_context()
-        when ODIN_DEBUG {
-            if len(aclassStruct.data) < 1 do GDW.Print.ErrorWithMessage("OdinArray", "array length < 0", "append", "OdinArrays", 378, true)
-            return
-        }
         ret = pop_front(&aclassStruct.data)
         return 
     }
@@ -377,10 +387,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     //*************\\
     arpop_front_safe :: proc "c" (aclassStruct: ^classStruct) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
         context = runtime.default_context()
-        ok: bool
-        if ret, ok = pop_front_safe(&aclassStruct.data); ok == false {
-            GDW.Print.WarningWithMessage("OdinArray", "nothing to pop", "append", "OdinArrays", 378, true)
-        }
+        ret, _ = pop_front_safe(&aclassStruct.data)
         return 
     }
 
@@ -389,10 +396,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     //*************\\
     ardelete :: proc "c" (aclassStruct: ^classStruct) {
         context = runtime.default_context()
-        when ODIN_DEBUG {
-            if isCreated == true do isCreated = false
-        }
-        if aclassStruct.data != nil do delete(aclassStruct.data)
+        delete(aclassStruct.data)
          
     }
 
@@ -478,17 +482,4 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     GDW.bindMethod(className_SN, "arget", argetind, GDE.ClassMethodFlags.NORMAL, "index")
     
-}
-
-
-getRefCount :: proc(class: $T, $typeOf: typeid, r_int: ^GDE.Int) {
-    @(static)getRefCount: GDE.MethodBindPtr
-    if getRefCount == nil {
-        GDClass_Name: GDE.StringName
-        GDW.StringConstruct.stringNameNewLatin(&GDClass_Name, Class_String, false)
-        getRefCount = GDW.classDBGetMethodBind2(&GDClass_Name, "get_reference_count", 3905245786)
-    }
-    
-    
-    GDW.gdAPI.objectMethodBindPtrCall(getRefCount, (cast(typeOf)class).selfPtr, nil, r_int)
 }

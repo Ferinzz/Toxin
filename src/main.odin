@@ -31,7 +31,10 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
     if initLevel != .INITIALIZATION_SCENE{
         return
     }
-
+    when ODIN_DEBUG {
+        fmt.println(`RUNNING ODIN ARRAYS LIBRARY IN DEBUNG MODE
+    ADDITIONAL WARNINGS WILL BE SHOWN`)
+    }
     /*
     Initialize the different classes.
     classInitProc(classStruct)
@@ -70,6 +73,12 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
     OdinArrayBindMethod(OdinCallableArray, OdinCallableArray_CString, &OdinCallableArray_SN)
     OdinArrayBindMethod(OdinSignalArray, OdinSignalArray_CString, &OdinSignalArray_SN)
     OdinArrayBindMethod(OdinDicArray, OdinDicArray_CString, &OdinDicArray_SN)
+
+
+    
+    OdinArrayNoRefBindMethod(Odini64ArrayNoRef, Odini64ArrayNoRef_CString, &Odini64ArrayNoRef_SN)
+    OdinArrayNoRefBindMethod(OdinBoolArrayNoRef, OdinBoolArrayNoRef_CString, &OdinBoolArrayNoRef_SN)
+    OdinArrayNoRefBindMethod(Odinf64ArrayNoRef, Odinf64ArrayNoRef_CString, &Odinf64ArrayNoRef_SN)
     
 }
 
