@@ -15,8 +15,8 @@ odini64Arrayprocs: ArrayProcs(Odini64Array) == holds all the procedures. Without
 
 /*
 * Odin arrays are a struct with three values cap, len, [^]data. Do not copy the struct, only reference it.
-* newData = data will get out of sync and cause memory issues if either of them resize the cap of the array.
-* 
+* newData = data will get out of sync and cause memory issues if either of the [^]data resize the cap of the array.
+* typeid is an internal value determined at compile-time.. Maybe could just use an enum?
 */
 OdinArrays :: struct ($T: typeid){
     selfPtr: ^GDE.Object,
@@ -31,39 +31,39 @@ OdinArrays :: struct ($T: typeid){
 * are not available directly. Also name collisions.
 */
 ArrayProcs :: struct ($T: typeid) {
-    unref : proc "c" (p_instance: GDE.ClassInstancePtr),
-    Destroy : proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr),
-    Create : proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr,
-    arcreate : proc "c" (T: ^T),
-    arappend : proc "c" (aclassStruct: ^T, value: sics.type_elem_type(type_of(aclassStruct.data))),
-    arpop : proc "c" (aclassStruct: ^T) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
-    arset : proc "c" (aclassStruct: ^T, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))),
-    arlength : proc "c" (aclassStruct: ^T) -> GDE.Int,
-    arraw_data : proc "c" (aclassStruct: ^T) -> GDE.Int,
-    arcap : proc "c" (aclassStruct: ^T) -> GDE.Int,
-    arunordered_remove : proc "c" (aclassStruct: ^T, index: int),
-    arordered_remove : proc "c" (aclassStruct: ^T, index: int),
-    arremove_range : proc "c" (aclassStruct: ^T, low: int, high: int),
-    arpop_safe : proc "c" (aclassStruct: ^T) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
-    arpop_front : proc "c" (aclassStruct: ^T) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
-    arpop_front_safe : proc "c" (aclassStruct: ^T) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
-    ardelete : proc "c" (aclassStruct: ^T),
-    armake_len : proc "c" (aclassStruct: ^T, len: int),
-    arappend_nothing : proc "c" (aclassStruct: ^T),
-    arinject_at_elem : proc "c" (aclassStruct: ^T, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))),
-    arassign_at_elem : proc "c" (aclassStruct: ^T, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))),
-    arclear : proc "c" (aclassStruct: ^T),
-    arresize : proc "c" (aclassStruct: ^T, size: int),
-    arreserve : proc "c" (aclassStruct: ^T, size: int),
-    arshrink : proc "c" (aclassStruct: ^T),
-    argetIndex : proc "c" (aclassStruct: ^T, index: GDE.Int) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
-    arforAll : proc "c" (aclassStruct: ^T),
-    arforEachbyStringName : proc "c" (aclassStruct: ^T, object: GDE.Object, func_SN: GDE.StringName),
-    arforEach : proc "c" (aclassStruct: ^T, func: GDE.Callable),
-    arFill : proc "c" (aclassStruct: ^T, value: sics.type_elem_type(type_of(aclassStruct.data))),
-    arFillEach : proc "c" (aclassStruct: ^T, func: GDE.Callable),
-    arSlice : proc "c" (aclassStruct: ^T) -> GDE.Object,
-    arSliceRange : proc "c" (aclassStruct: ^T, min: GDE.Int, max: GDE.Int),
+    unref : proc "c" (p_instance: GDE.ClassInstancePtr, loc:=#caller_location, ctx:=GDW.godotContext),
+    Destroy : proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr, loc:=#caller_location, ctx:=GDW.godotContext),
+    Create : proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDE.Bool, loc:=#caller_location, ctx:=GDW.godotContext) -> GDE.ObjectPtr,
+    arcreate : proc "c" (T: ^T, loc:=#caller_location, ctx:=GDW.godotContext),
+    arappend : proc "c" (aclassStruct: ^T, value: sics.type_elem_type(type_of(aclassStruct.data)), loc:=#caller_location, ctx:=GDW.godotContext),
+    arpop : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
+    arset : proc "c" (aclassStruct: ^T, index: int, value: sics.type_elem_type(type_of(aclassStruct.data)), loc:=#caller_location, ctx:=GDW.godotContext),
+    arlength : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> GDE.Int,
+    arraw_data : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> GDE.Int,
+    arcap : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> GDE.Int,
+    arunordered_remove : proc "c" (aclassStruct: ^T, index: int, loc:=#caller_location, ctx:=GDW.godotContext),
+    arordered_remove : proc "c" (aclassStruct: ^T, index: int, loc:=#caller_location, ctx:=GDW.godotContext),
+    arremove_range : proc "c" (aclassStruct: ^T, low: int, high: int, loc:=#caller_location, ctx:=GDW.godotContext),
+    arpop_safe : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
+    arpop_front : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
+    arpop_front_safe : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
+    ardelete : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext),
+    armake_len : proc "c" (aclassStruct: ^T, len: int, loc:=#caller_location, ctx:=GDW.godotContext),
+    arappend_nothing : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext),
+    arinject_at_elem : proc "c" (aclassStruct: ^T, index: int, value: sics.type_elem_type(type_of(aclassStruct.data)), loc:=#caller_location, ctx:=GDW.godotContext),
+    arassign_at_elem : proc "c" (aclassStruct: ^T, index: int, value: sics.type_elem_type(type_of(aclassStruct.data)), loc:=#caller_location, ctx:=GDW.godotContext),
+    arclear : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext),
+    arresize : proc "c" (aclassStruct: ^T, size: int, loc:=#caller_location, ctx:=GDW.godotContext),
+    arreserve : proc "c" (aclassStruct: ^T, size: int, loc:=#caller_location, ctx:=GDW.godotContext),
+    arshrink : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext),
+    argetIndex : proc "c" (aclassStruct: ^T, index: GDE.Int, loc:=#caller_location, ctx:=GDW.godotContext) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))),
+    arforAll : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext),
+    arforEachbyStringName : proc "c" (aclassStruct: ^T, object: GDE.Object, func_SN: GDE.StringName, loc:=#caller_location, ctx:=GDW.godotContext),
+    arforEach : proc "c" (aclassStruct: ^T, func: GDE.Callable, loc:=#caller_location, ctx:=GDW.godotContext),
+    arFill : proc "c" (aclassStruct: ^T, value: sics.type_elem_type(type_of(aclassStruct.data)), loc:=#caller_location, ctx:=GDW.godotContext),
+    arFillEach : proc "c" (aclassStruct: ^T, func: GDE.Callable, loc:=#caller_location, ctx:=GDW.godotContext),
+    arSlice : proc "c" (aclassStruct: ^T, loc:=#caller_location, ctx:=GDW.godotContext) -> GDE.Object,
+    arSliceRange : proc "c" (aclassStruct: ^T, min: GDE.Int, max: GDE.Int, loc:=#caller_location, ctx:=GDW.godotContext),
 }
 
 Odini64Array :: OdinArrays(GDE.Int)

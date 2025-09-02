@@ -25,4 +25,20 @@ Slices I might go with the Go method where they increment the ref count of the o
 
 This is an interesting benchmark for working with this though. Checking lifetimes, making things hoepfully more ergonomic with the class creation?? Can add in some debug compile specific settings which would keep track of what Node is allocating it for maybe some easier debugging. Every time it's reference take the node name and when dereffed remove it. If something doesn't go right you can know exactly who is owning it at what time. (mostly)
 
-Printing should be rather straight forward. I can set a specific to_string function in the classinfostruct itself which should simply return the correct string to Godot. Simply use our own fmt function to create a cstring.
+Printing should be rather straight forward. I can set a specific to_string function in the classinfostruct itself which should simply return the correct string to Godot. Simply use our own fmt.caprint function to create a cstring from out type.
+
+Trouble came when trying to create a string from the array. The problem is that with this single function which generates other functions, it simply exposes them to Godot. For them to be exposed in Odin or even in another library in case someone wants to hook into this via C it would be impossible to use any of these functions without passing through Godot.. Ew. Created a struct which holds all the functions. Should mean that any other lanuage which can bind into C should be able to access all the same functions? proc groups would almost work, except for the fact that several of these have the same proc parameters...
+
+TODO: update the generator function to save the procs into the @export proc struct.
+
+TODO: expose the Slice's create proc so that I can create the correct slice from an array.
+
+TODO: create a Slice
+
+TODO: add a forEach for C code share a function pointer to receive Odin's value and index so they don't need to go through Godot.
+
+TODO: Go through the slice package docs and add the corresponding procs for slice support.
+
+TODO: Support smaller built-in types like u8, i8, u/i/f32. Requires casting to/from the correct types. May want to have separate functions for these exposed to C so that they can go directly to the correct type. Or just have a type conversion wrapper which is what is exposed to Godot.
+
+TODO: Add _ seperators for less seach collisions. I hate typing them, but it does help a ton when searching a large lib...
