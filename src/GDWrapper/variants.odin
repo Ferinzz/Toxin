@@ -569,7 +569,7 @@ ArrayHelp : struct {
     packedi32Get: GDE.PtrBuiltInMethod,
     packedi32Set: GDE.PtrBuiltInMethod,
     packedi32GetIndex: GDE.PtrIndexedGetter,
-    packedi32SetIndex: GDE.PtrIndexedGetter,
+    packedi32SetIndex: GDE.PtrIndexedSetter,
     packedi32Destroy: GDE.PtrDestructor,
 }
 
@@ -588,7 +588,7 @@ variantto: variantTo
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.
 fromvariant :: proc(variant: GDE.VariantPtr, $T: typeid) -> T {
-    context = runtime.default_context()
+    //context = runtime.default_context()
     ret: T
 
     when T == bool || T == GDE.Bool{

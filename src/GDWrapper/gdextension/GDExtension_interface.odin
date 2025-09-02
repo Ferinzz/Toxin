@@ -129,18 +129,18 @@ ConstVariantPtr 					:: rawptr
 ConstVariantPtrargs 				:: [^]rawptr 
 UninitializedVariantPtr 			:: rawptr       
 StringNamePtr 						:: rawptr       
-ConstStringNamePtr 					:: rawptr 
-UninitializedStringNamePtr          :: rawptr       
-StringPtr 							:: rawptr
-ConstStringPtr 						:: rawptr
-UninitializedStringPtr 				:: rawptr
+ConstStringNamePtr 					:: [^]StringName 
+UninitializedStringNamePtr          :: ^StringName
+StringPtr 							:: ^gdstring
+ConstStringPtr 						:: [^]gdstring
+UninitializedStringPtr 				:: ^gdstring
 ObjectPtr 							:: ^Object
-ConstObjectPtr 						:: rawptr
-UninitializedObjectPtr 				:: rawptr
+ConstObjectPtr 						:: [^]Object
+UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
-ConstTypePtr 						:: rawptr 
+ConstTypePtr 						:: [^]rawptr 
 UninitializedTypePtr 				:: rawptr
-MethodBindPtr 						:: rawptr
+MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64  
 
 RefPtr 								:: rawptr
@@ -2450,7 +2450,7 @@ InterfaceGlobalGetSingleton :: proc "c" (p_name: StringNamePtr) -> ObjectPtr;
  * Gets a pointer representing an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the 's entry point function.
+ * @param p_library A token the library received by the GDExtension's entry point function.
  * @param p_callbacks A pointer to a InstanceBindingCallbacks struct.
  *
  * @return

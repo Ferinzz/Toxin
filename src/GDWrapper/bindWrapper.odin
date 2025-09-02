@@ -319,7 +319,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
 
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1))
-                    variant_from(r_return, &result)
+                    variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1))
             }
@@ -365,7 +365,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                             fromvariant(cast(GDE.VariantPtr)p_args[1], argT2))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2))
             }
@@ -412,7 +412,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3))
             }
@@ -460,7 +460,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4))
@@ -510,7 +510,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5))
@@ -562,7 +562,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
                     fromvariant(cast(GDE.VariantPtr)p_args[5], argT6))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6))
@@ -614,7 +614,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
                     fromvariant(cast(GDE.VariantPtr)p_args[5], argT6), fromvariant(cast(GDE.VariantPtr)p_args[6], argT7))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6), fromvariant(cast(^GDE.Variant)p_args[6], argT7))

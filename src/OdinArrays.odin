@@ -5,6 +5,10 @@ import GDE "GDWrapper/gdextension"
 import "base:runtime"
 import "core:fmt"
 import sics "base:intrinsics"
+import "core:time"
+import "core:strconv"
+import "core:slice"
+
 
 //Find and Replace OdinArrays with the name that you will be giving to the GDE class.
 //Find and Replace Node with the name of the class from Godot. (2 instances)
@@ -14,130 +18,24 @@ import sics "base:intrinsics"
 
 when ODIN_DEBUG {
     isCreated: bool
-    
 }
 
 
 Class_String: cstring = "RefCounted"
 
-OdinArrays :: struct (T: typeid) {
-    selfPtr: ^GDE.Object,
-    data: [dynamic]T
-}
 
-Odini64Array :: OdinArrays(GDE.Int)
-Odini64Array_SN: GDE.StringName
-Odini64Array_CString:: "Odini64Array"
 
-OdinBoolArray :: OdinArrays(GDE.Bool)
-OdinBoolArray_SN: GDE.StringName
-OdinBoolArray_CString:: "OdinBoolArray"
 
-Odinf64Array :: OdinArrays(GDE.float)
-Odinf64Array_SN: GDE.StringName
-Odinf64Array_CString:: "Odinf64Array"
+// ArrayProcs :: struct ($T: typeid) {
+//     arcreate: proc "c" (T)
+//}
 
-OdinGDStringArray :: OdinArrays(GDE.gdstring)
-OdinGDStringArray_SN: GDE.StringName
-OdinGDStringArray_CString:: "OdinGDStringArray"
-
-OdinVec2Array :: OdinArrays(GDE.Vector2)
-OdinVec2Array_SN: GDE.StringName
-OdinVec2Array_CString:: "OdinVec2Array"
-
-OdinVec2iArray :: OdinArrays(GDE.Vector2i)
-OdinVec2iArray_SN: GDE.StringName
-OdinVec2iArray_CString:: "OdinVec2iArray"
-
-OdinRec2Array :: OdinArrays(GDE.Rec2)
-OdinRec2Array_SN: GDE.StringName
-OdinRec2Array_CString:: "OdinRec2Array"
-
-OdinRec2iArray :: OdinArrays(GDE.Rec2i)
-OdinRec2iArray_SN: GDE.StringName
-OdinRec2iArray_CString:: "OdinRec2iArray"
-
-OdinVec3Array :: OdinArrays(GDE.Vector3)
-OdinVec3Array_SN: GDE.StringName
-OdinVec3Array_CString:: "OdinVec3Array"
-
-OdinVec3iArray :: OdinArrays(GDE.Vector3i)
-OdinVec3iArray_SN: GDE.StringName
-OdinVec3iArray_CString:: "OdinVec3iArray"
-
-OdinTrans2DArray :: OdinArrays(GDE.Transform2D)
-OdinTrans2DArray_SN: GDE.StringName
-OdinTrans2DArray_CString:: "OdinTrans2DArray"
-
-OdinVec4Array :: OdinArrays(GDE.Vector4)
-OdinVec4Array_SN: GDE.StringName
-OdinVec4Array_CString:: "OdinVec4Array"
-
-OdinVec4iArray :: OdinArrays(GDE.Vector4i)
-OdinVec4iArray_SN: GDE.StringName
-OdinVec4iArray_CString:: "OdinVec4iArray"
-
-OdinPlaneArray :: OdinArrays(GDE.Plane)
-OdinPlaneArray_SN: GDE.StringName
-OdinPlaneArray_CString:: "OdinPlaneArray"
-
-OdinQuatArray :: OdinArrays(GDE.Quaternion)
-OdinQuatArray_SN: GDE.StringName
-OdinQuatArray_CString:: "OdinQuatArray"
-
-OdinAABBArray :: OdinArrays(GDE.AABB)
-OdinAABBArray_SN: GDE.StringName
-OdinAABBArray_CString:: "OdinAABBArray"
-
-OdinBasisArray :: OdinArrays(GDE.Basis)
-OdinBasisArray_SN: GDE.StringName
-OdinBasisArray_CString:: "OdinBasisArray"
-
-OdinTrans3DArray :: OdinArrays(GDE.Transform3D)
-OdinTrans3DArray_SN: GDE.StringName
-OdinTrans3DArray_CString:: "OdinTrans3DArray"
-
-OdinProjectionArray :: OdinArrays(GDE.Projection)
-OdinProjArray_SN: GDE.StringName
-OdinProjArray_CString:: "OdinProjectionArray"
-
-OdinColorArray :: OdinArrays(GDE.Color)
-OdinColorArray_SN: GDE.StringName
-OdinColorArray_CString:: "OdinColorArray"
-
-OdinStringNameArray :: OdinArrays(GDE.StringName)
-OdinStringNameArray_SN: GDE.StringName
-OdinStringNameArray_CString:: "OdinStrinNameArray"
-
-OdinNodePathArray :: OdinArrays(GDE.NodePath)
-OdinNodePathArray_SN: GDE.StringName
-OdinNodePathArray_CString:: "OdinNodePathArray"
-
-OdinRIDArray :: OdinArrays(GDE.RID)
-OdinRIDArray_SN: GDE.StringName
-OdinRIDArray_CString:: "OdinRIDArray"
-
-OdinObjectArray :: OdinArrays(GDE.Object)
-OdinObjectArray_SN: GDE.StringName
-OdinObjectArray_CString:: "OdinObjectArray"
-
-OdinCallableArray :: OdinArrays(GDE.Callable)
-OdinCallableArray_SN: GDE.StringName
-OdinCallableArray_CString:: "OdinCallableArray"
-
-OdinSignalArray :: OdinArrays(GDE.Signal)
-OdinSignalArray_SN: GDE.StringName
-OdinSignalArray_CString:: "OdinSignalArray"
-
-OdinDicArray :: OdinArrays(GDE.Dictionary)
-OdinDicArray_SN: GDE.StringName
-OdinDicArray_CString:: "OdinDicArray"
 
 
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
 OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, className_SN: ^GDE.StringName){
-    context = runtime.default_context()
+    context = GDW.godotContext
 
 
     //Matching the name to the class struct is vital as it will be used in some binding helpers. If the name doesn't match things will break.
@@ -151,52 +49,48 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     GDW.StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
 
     unref :: proc "c" (p_instance: GDE.ClassInstancePtr) {
-        context = runtime.default_context()
-        someArray:=(cast(^classStruct)p_instance).data
+        context = GDW.godotContext
+        
         count: GDE.Int
         getRefCount(p_instance, ^classStruct, &count)
         if count <= 0 {
             if (cast(^classStruct)p_instance).data != nil {
                 delete((cast(^classStruct)p_instance).data)
             }
-            //Destroy(nil, p_instance)
-            //GDW.Destructors.ObjectDestroy(p_instance)
-            
-            /*retVariant: GDE.Variant
-            MethodName: GDE.StringName
-            GDW.StringConstruct.stringNameNewLatin(&MethodName, "free", false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
-            defer(GDW.Destructors.stringNameDestructor(&MethodName))*/
-            //GDW.callDeferred(p_instance, &MethodName, &retVariant)
+
         }
     }
 
     //Delete all the heap allocated aspects of the class along with the class struct as well as any
     //additional nodes, canvasitems, area2d that you created. Like how bulletshower needs to do cleanup on the textures and phys objects.
     Destroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         if (p_instance == nil){
             return
         }
+        when ODIN_DEBUG {
+            isCreated = false
+        }
         free(p_instance)
     }
-
+    
     Create :: proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
-        context = runtime.default_context()
-
+        context = GDW.godotContext
+        
+        //time.accurate_sleep(5000000000)
         class_name : GDE.StringName
         GDW.StringConstruct.stringNameNewLatin(&class_name, Class_String, false)
         defer(GDW.Destructors.stringNameDestructor(&class_name))
-        object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(&class_name)
-
+        object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(&class_name)        
         
         className_SN : GDE.StringName
         GDW.StringConstruct.stringNameNewLatin(&className_SN, className, false)
         defer(GDW.Destructors.stringNameDestructor(&className_SN))
+
         //Create our containing struct.
-        //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-        //self: ^classStruct = cast(^classStruct)GDW.gdAPI.mem_alloc(size_of(classStruct))
         self:= new(classStruct)
         self.selfPtr = object
+        self.type = sics.type_elem_type(type_of(self.data))
 
         GDW.gdAPI.object_set_instance(object, &className_SN, cast(^GDE.Object)self)
         GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
@@ -239,7 +133,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     //*************\\
     arcreate :: proc "c" (classStruct: ^classStruct) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         error: runtime.Allocator_Error
         when ODIN_DEBUG {
             if isCreated == true {
@@ -254,14 +148,13 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
         when ODIN_DEBUG {
             isCreated = true
         }
-        fmt.println(classStruct.data)
     }
 
     GDW.bindMethod(className_SN, "create", arcreate, GDE.ClassMethodFlags.NORMAL)
 
     //*************\\
     arappend :: proc "c" (aclassStruct: ^classStruct, value: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         error: runtime.Allocator_Error
         count: int
         when ODIN_DEBUG {
@@ -270,6 +163,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
                 GDW.Print.WarningWithMessage("OdinArray", "Array being created via append", "append", "OdinArrays", 282, true)
             }
         }
+        //time.accurate_sleep(5000000000)
         count, error = append_elem(&aclassStruct.data, value)
         if error != nil {
 
@@ -280,13 +174,9 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     //*************\\
     arpop :: proc "c" (aclassStruct: ^classStruct) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
-        error: runtime.Allocator_Error
-        count: int
+        context = GDW.godotContext
+        
         ret = pop(&aclassStruct.data)
-        if error != nil {
-
-        }
         return
     }
 
@@ -294,10 +184,11 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     //*************\\
     arset :: proc "c" (aclassStruct: ^classStruct, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         if len(aclassStruct.data) < index{ 
             aclassStruct.data[index] = value
         }
+        //time.accurate_sleep(5000000000)
         
     }
 
@@ -305,7 +196,8 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     //*************\\
     arlength :: proc "c" (aclassStruct: ^classStruct) -> GDE.Int {
-        context = runtime.default_context()
+        context = GDW.godotContext
+        //time.accurate_sleep(5000000000)
         return len(aclassStruct.data)
     }
 
@@ -313,7 +205,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     //*************\\
     arraw_data :: proc "c" (aclassStruct: ^classStruct) -> GDE.Int {
-        context = runtime.default_context()
+        context = GDW.godotContext
         return int(uintptr(raw_data(aclassStruct.data[:])))
     }
 
@@ -321,7 +213,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
     //*************\\
     arcap :: proc "c" (aclassStruct: ^classStruct) -> GDE.Int {
-        context = runtime.default_context()
+        context = GDW.godotContext
         return cap(aclassStruct.data)
     }
 
@@ -330,7 +222,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arunordered_remove :: proc "c" (aclassStruct: ^classStruct, index: int) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         unordered_remove(&aclassStruct.data, index)
     }
 
@@ -338,7 +230,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arordered_remove :: proc "c" (aclassStruct: ^classStruct, index: int) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         ordered_remove(&aclassStruct.data, index)
     }
 
@@ -346,7 +238,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arremove_range :: proc "c" (aclassStruct: ^classStruct, low: int, high: int) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         remove_range(&aclassStruct.data, low, high)
     }
 
@@ -354,7 +246,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arpop_safe :: proc "c" (aclassStruct: ^classStruct) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         ret, _ = pop_safe(&aclassStruct.data)
         return 
     }
@@ -363,7 +255,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arpop_front :: proc "c" (aclassStruct: ^classStruct) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         when ODIN_DEBUG {
             if len(aclassStruct.data) < 1 do GDW.Print.ErrorWithMessage("OdinArray", "array length < 0", "append", "OdinArrays", 378, true)
             return
@@ -376,7 +268,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arpop_front_safe :: proc "c" (aclassStruct: ^classStruct) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         ok: bool
         if ret, ok = pop_front_safe(&aclassStruct.data); ok == false {
             GDW.Print.WarningWithMessage("OdinArray", "nothing to pop", "append", "OdinArrays", 378, true)
@@ -388,19 +280,22 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     ardelete :: proc "c" (aclassStruct: ^classStruct) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         when ODIN_DEBUG {
             if isCreated == true do isCreated = false
         }
-        if aclassStruct.data != nil do delete(aclassStruct.data)
-         
+        if aclassStruct.data != nil {
+            delete(aclassStruct.data)
+            aclassStruct.data = nil
+        }
+        
     }
 
     GDW.bindMethod(className_SN, "delete", ardelete, GDE.ClassMethodFlags.NORMAL)
     
     //*************\\
     armake_len :: proc "c" (aclassStruct: ^classStruct, len: int) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         aclassStruct.data, _ = make_dynamic_array_len(type_of(aclassStruct.data), len)
          
     }
@@ -409,7 +304,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arappend_nothing :: proc "c" (aclassStruct: ^classStruct) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         append_nothing(&aclassStruct.data)
          
     }
@@ -418,7 +313,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arinject_at_elem :: proc "c" (aclassStruct: ^classStruct, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         inject_at_elem(&aclassStruct.data, index, value)
          
     }
@@ -427,7 +322,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arassign_at_elem :: proc "c" (aclassStruct: ^classStruct, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         assign_at_elem(&aclassStruct.data, index, value)
         
     }
@@ -436,7 +331,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arclear :: proc "c" (aclassStruct: ^classStruct) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         clear(&aclassStruct.data)
         
     }
@@ -445,7 +340,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arresize :: proc "c" (aclassStruct: ^classStruct, size: int) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         resize(&aclassStruct.data, size)
         
     }
@@ -454,7 +349,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arreserve :: proc "c" (aclassStruct: ^classStruct, size: int) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         reserve(&aclassStruct.data, size)
         
     }
@@ -463,7 +358,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     
     //*************\\
     arshrink :: proc "c" (aclassStruct: ^classStruct) {
-        context = runtime.default_context()
+        context = GDW.godotContext
         shrink(&aclassStruct.data)
         
     }
@@ -471,16 +366,112 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     GDW.bindMethod(className_SN, "shrink", arshrink, GDE.ClassMethodFlags.NORMAL)
     
     //*************\\
-    argetind :: proc "c" (aclassStruct: ^classStruct, index: int) -> sics.type_elem_type(type_of(aclassStruct.data)) {
-        context = runtime.default_context()
-        return aclassStruct.data[index]
+    argetIndex :: proc "c" (aclassStruct: ^classStruct, index: GDE.Int) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
+        context = GDW.godotContext
+        ret = aclassStruct.data[index]
+        return
     }
 
-    GDW.bindMethod(className_SN, "arget", argetind, GDE.ClassMethodFlags.NORMAL, "index")
+    GDW.bindMethod(className_SN, "getIndex", argetIndex, GDE.ClassMethodFlags.NORMAL, "index")
+    
+    //*************\\
+    arforAll :: proc "c" (aclassStruct: ^classStruct) {
+        context = GDW.godotContext
+        for i, index in aclassStruct.data {
+            fmt.printfln("value: %v  at index: %v", i, index)
+        }
+    }
+
+    GDW.bindMethod(className_SN, "forAll", arforAll, GDE.ClassMethodFlags.NORMAL)
+
+    //*************\\
+    arforEachbyStringName :: proc "c" (aclassStruct: ^classStruct, object: GDE.Object, func_SN: GDE.StringName) {
+        context = GDW.godotContext
+        error: GDE.CallError
+        funcPtr:=func_SN
+        for &i, index in aclassStruct.data {
+            ind:= index
+            args: [2]rawptr = {&i, &ind}
+            dummyReturn:rawptr= nil
+            GDW.gdAPI.callScript(cast(^GDE.Object)(object.proxy), &funcPtr, raw_data(args[:]), 0, &dummyReturn, &error)
+        }
+    }
+
+    GDW.bindMethod(className_SN, "forEachby_SN", arforEachbyStringName, GDE.ClassMethodFlags.NORMAL, "object", "func")
+    
+    arforEach :: proc "c" (aclassStruct: ^classStruct, func: GDE.Callable) {
+        context = GDW.godotContext
+        
+        error: GDE.CallError
+        function:= func
+
+        args:= [0]rawptr {}
+        Object: GDE.ObjectPtr
+
+        GDW.Callable.get_object(&function, raw_data(args[:]), &Object, 0)
+        for &i, index in aclassStruct.data {
+            ind:= index
+            args: [2]rawptr = {&i, &ind}
+            dummyReturn2: GDE.Variant
+            GDW.gdAPI.callScript(Object, &function.stringName, raw_data(args[:]), 0, &dummyReturn2, &error)
+            GDW.fromvariant(&dummyReturn2, sics.type_elem_type(type_of(aclassStruct.data)))
+            
+        }
+    }
+
+    GDW.bindMethod(className_SN, "forEach", arforEach, GDE.ClassMethodFlags.NORMAL, "func")
+    
+    arFill :: proc "c" (aclassStruct: ^classStruct, value: sics.type_elem_type(type_of(aclassStruct.data))) {
+        context = GDW.godotContext
+        
+        for &i, index in aclassStruct.data {
+            i = value
+        }
+    }
+
+    GDW.bindMethod(className_SN, "fill", arFill, GDE.ClassMethodFlags.NORMAL, "value")
+    
+    arFillEach :: proc "c" (aclassStruct: ^classStruct, func: GDE.Callable) {
+        context = GDW.godotContext
+            
+        error: GDE.CallError
+        function:= func
+
+        args:= [0]rawptr {}
+        Object: GDE.ObjectPtr
+
+        GDW.Callable.get_object(&function, raw_data(args[:]), &Object, 0)
+        for &i, index in aclassStruct.data {
+            ind:= index
+            args: [2]rawptr = {&i, &ind}
+            dummyReturn2: GDE.Variant
+            GDW.gdAPI.callScript(Object, &function.stringName, raw_data(args[:]), 0, &dummyReturn2, &error)
+            i = GDW.fromvariant(&dummyReturn2, sics.type_elem_type(type_of(aclassStruct.data)))
+            
+        }
+    }
+
+    GDW.bindMethod(className_SN, "fillEach", arFillEach, GDE.ClassMethodFlags.NORMAL, "func")
+    
+    arSlice :: proc "c" (aclassStruct: ^classStruct) -> GDE.Object {
+        context = GDW.godotContext
+        some: GDE.Object
+        //CreateObject(aclassStruct.data)
+        return some
+    }
+
+    GDW.bindMethod(className_SN, "Slice", arSlice, GDE.ClassMethodFlags.NORMAL)
+    
+    arSliceRange :: proc "c" (aclassStruct: ^classStruct, min: GDE.Int, max: GDE.Int) {
+        context = GDW.godotContext
+        
+    }
+
+    GDW.bindMethod(className_SN, "SliceRange", arSliceRange, GDE.ClassMethodFlags.NORMAL, "min", "max")
     
 }
 
-
+@export
 getRefCount :: proc(class: $T, $typeOf: typeid, r_int: ^GDE.Int) {
     @(static)getRefCount: GDE.MethodBindPtr
     if getRefCount == nil {

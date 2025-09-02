@@ -4,96 +4,94 @@ import GDW "GDWrapper"
 import GDE "GDWrapper/gdextension"
 import "base:runtime"
 import "core:fmt"
+import sics "base:intrinsics"
+import "core:time"
+import "core:strconv"
 import "core:slice"
 
-//Find and Replace SliceObject with the name that you will be giving to the GDE class.
-//Find and Replace RefCounted with the name of the class from Godot.
+
+//Find and Replace OdinArrays with the name that you will be giving to the GDE class.
+//Find and Replace Node with the name of the class from Godot. (2 instances)
 
 //Godot will be passing us a pointer to this struct during callbacks.
-//MUST match what is used in the init function used to name our class. SliceObject_SN
-SliceObject :: struct {
-    selfPtr: GDE.ObjectPtr, //always keep. Self-reference to this object's memory in Godot.
-    OdinSlice: Slice,
-    Error: sliceErrors,
-}
+//MUST match what is used in the init function used to name our class. OdinArrays_SN
 
-//nil is ok
-sliceErrors :: enum {
-    OUT_OF_BOUNDS,
-    ARRAY_IS_NIL,
-    SLICE_IS_NIL,
-}
 
-Slice :: union {
-    []i64,
-    []f64,
-    []u8,
-}
+OdinSliceParentClass: cstring = "RefCounted"
 
-SliceObject_byteSize :: proc "c" (self: ^SliceObject) -> GDE.Int {
-    context = runtime.default_context()
-    #partial switch type in self.OdinSlice {
-    case []i64:
-        return slice.size(self.OdinSlice.([]i64))
-    case []f64:
-        return slice.size(self.OdinSlice.([]f64))
-    case []u8:
-        return slice.size(self.OdinSlice.([]u8))
-    }
-    return 0
-}
 
-SliceObject_all_of :: proc "c" (self: ^SliceObject, value: GDE.Variant) -> GDE.Bool {
-    context = runtime.default_context()
-    value:= value
-    ret: GDE.Int
-    GDW.variant_to(&value, &ret)
-    return b8(slice.all_of(self.OdinSlice.([]i64), i64(ret)))
-}
 
-SliceObject_index_of :: proc "c" (self: ^SliceObject, index: GDE.Int) -> GDE.Variant {
-    context = runtime.default_context()
-    #partial switch type in self.OdinSlice {
-    case []i64:
-        val: GDE.Variant = GDW.tovariant(&(self.OdinSlice.([]i64))[index], i64)
-        return val
-    case []f64:
-        val: GDE.Variant = GDW.tovariant(&(self.OdinSlice.([]f64))[index], f64)
-        return val
-    case []u8:
-        val: GDE.Variant = GDW.tovariant(&(self.OdinSlice.([]u8))[index], u8)
-        return val
-    }
-    ret: GDE.Int = -1
-    return GDW.tovariant(&ret, GDE.Int)
-}
+//make some function public to Godot's scripts.
+//Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
+OdinSliceBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, className_SN: ^GDE.StringName){
+    context = GDW.godotContext
 
-SliceObject_SN : GDE.StringName
-SliceObject_CString: cstring = "SliceObject"
-SliceObject_GDClass_String: cstring = "RefCounted"
-
-//Technically can have a single massive function to init everything, but having one in each is easier?
-//Make sure to add this to the init of the extension otherwise you won't be able to access this class.
-//p_userdata and initLevel are optional.
-//p_userdata: I'm assuming this is best used to pass the context around. If context is set in the calling class this should be implicitly passed to this one.
-//initLevel: should probably be handled by the calling proc, but also safety check is nice.
-//See where registerSprite is called in the loadTextureToSceneTree main.odin
-SliceObjectInit :: proc "c" (p_userdata: rawptr, initLevel: GDE.InitializationLevel) {
-    context = runtime.default_context()
-
-    if initLevel != .INITIALIZATION_SCENE{
-        return
-    }
 
     //Matching the name to the class struct is vital as it will be used in some binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct.stringNameNewLatin(&SliceObject_SN, SliceObject_CString, false)
+    GDW.StringConstruct.stringNameNewLatin(className_SN, className, false)
 
     parent_class_name: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, SliceObject_GDClass_String, false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
+    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, OdinSliceParentClass, false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
     defer(GDW.Destructors.stringNameDestructor(&parent_class_name))
 
     stringraw:GDE.gdstring
     GDW.StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
+
+    unref :: proc "c" (p_instance: GDE.ClassInstancePtr) {
+        context = GDW.godotContext
+        
+        count: GDE.Int
+        getRefCount(p_instance, ^classStruct, &count)
+        if count <= 0 {
+            if (cast(^classStruct)p_instance).data != nil {
+                delete((cast(^classStruct)p_instance).data)
+            }
+
+        }
+    }
+
+    //Delete all the heap allocated aspects of the class along with the class struct as well as any
+    //additional nodes, canvasitems, area2d that you created. Like how bulletshower needs to do cleanup on the textures and phys objects.
+    Destroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr) {
+        context = GDW.godotContext
+        if (p_instance == nil){
+            return
+        }
+        when ODIN_DEBUG {
+            isCreated = false
+        }
+        free(p_instance)
+    }
+
+    Create :: proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
+        context = GDW.godotContext
+        
+        //time.accurate_sleep(5000000000)
+        class_name : GDE.StringName
+        GDW.StringConstruct.stringNameNewLatin(&class_name, OdinSliceParentClass, false)
+        defer(GDW.Destructors.stringNameDestructor(&class_name))
+        object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(&class_name)        
+        
+        className_SN : GDE.StringName
+        GDW.StringConstruct.stringNameNewLatin(&className_SN, className, false)
+        defer(GDW.Destructors.stringNameDestructor(&className_SN))
+
+        //Create our containing struct.
+        self:= new(classStruct)
+        self.selfPtr = object
+        self.type = sics.type_elem_type(type_of(self.data))
+
+        GDW.gdAPI.object_set_instance(object, &className_SN, cast(^GDE.Object)self)
+        GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
+
+        return object
+    }
+
+    CreateObject :: proc (array: $E/[dynamic]$T) -> GDE.ObjectPtr {
+        return Create(nil, false)
+
+    }
+
 
     class_info: GDE.ClassCreationInfo4 = {
         is_virtual = false,
@@ -111,160 +109,185 @@ SliceObjectInit :: proc "c" (p_userdata: rawptr, initLevel: GDE.InitializationLe
         notification_func = nil,
         to_string_func = nil,
         reference_func = nil,
-        unreference_func = nil,
-        create_instance_func = SliceObjectCreate,
-        free_instance_func = SliceObjectDestroy,
+        unreference_func = unref,
+        create_instance_func = Create,
+        free_instance_func = Destroy,
         recreate_instance_func = nil,
         get_virtual_func = nil,
-        get_virtual_call_data_func =  SliceObjectgetVirtualWithData,
-        call_virtual_with_data_func = SliceObjectcallVirtualFunctionWithData,
+        get_virtual_call_data_func =  nil,
+        call_virtual_with_data_func = nil,
         class_userdata = nil, 
     }
 
-    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &SliceObject_SN, &parent_class_name, &class_info)
-    
-    SliceObjectBindMethod()
-}
-
-//make some function public to Godot's scripts.
-//Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
-SliceObjectBindMethod :: proc "c" (){
-
-    //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    //GDW.bindMethod(&SliceObject_SN, "Some_method_name", somePublicFunction, GDE.ClassMethodFlags.NORMAL, "arg1")
+    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, className_SN, &parent_class_name, &class_info)
     
     //Same with this. It creates 4 extra functions. Getter, Setter, and variant callback, pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
-}
+    //GDW.makePublic(Odini64Array, "someProperty")
 
-//Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific.
+    //*************\\
+    arcreate :: proc "c" (classStruct: ^classStruct) {
+        context = GDW.godotContext
+        error: runtime.Allocator_Error
+        when ODIN_DEBUG {
+            if isCreated == true {
+                GDW.Print.ErrorWithMessage("OdinArray", "Do not create array on existing array", "create", "OdinSlice", 258, true)
+                return
+            }
+        }
+        if error != nil {
 
+        }
+        when ODIN_DEBUG {
+            isCreated = true
+        }
+    }
 
-//This runs when the class is created before it gets added to a tree.
-//init your class struct, heap allocated variables, any class children.
-SliceObjectCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
+    GDW.bindMethod(className_SN, "create", arcreate, GDE.ClassMethodFlags.NORMAL)
 
-    context = runtime.default_context()
+    //*************\\
+    arset :: proc "c" (aclassStruct: ^classStruct, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))) {
+        context = GDW.godotContext
+        if len(aclassStruct.data) < index{ 
+            aclassStruct.data[index] = value
+        }
+        //time.accurate_sleep(5000000000)
+        
+    }
 
-    class_name : GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&class_name, SliceObject_GDClass_String, false)
-    defer(GDW.Destructors.stringNameDestructor(&class_name))
-    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(&class_name)
+    GDW.bindMethod(className_SN, "set", arset, GDE.ClassMethodFlags.NORMAL, "index", "value")
 
-    //Create our containing struct.
-    //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: ^SliceObject = cast(^SliceObject)GDW.gdAPI.mem_alloc(size_of(SliceObject))
-    self.selfPtr = object
+    //*************\\
+    arlength :: proc "c" (aclassStruct: ^classStruct) -> GDE.Int {
+        context = GDW.godotContext
+        //time.accurate_sleep(5000000000)
+        return len(aclassStruct.data)
+    }
+
+    GDW.bindMethod(className_SN, "length", arlength, GDE.ClassMethodFlags.NORMAL)
+
+    //*************\\
+    arraw_data :: proc "c" (aclassStruct: ^classStruct) -> GDE.Int {
+        context = GDW.godotContext
+        return int(uintptr(raw_data(aclassStruct.data[:])))
+    }
+
+    GDW.bindMethod(className_SN, "raw_data", arraw_data, GDE.ClassMethodFlags.NORMAL)
+
+    //*************\\
+    ardelete :: proc "c" (aclassStruct: ^classStruct) {
+        context = GDW.godotContext
+        when ODIN_DEBUG {
+            if isCreated == true do isCreated = false
+        }
+        if aclassStruct.data != nil {
+            delete(aclassStruct.data)
+            aclassStruct.data = nil
+        }
+        
+    }
+
+    GDW.bindMethod(className_SN, "delete", ardelete, GDE.ClassMethodFlags.NORMAL)
     
-    GDW.gdAPI.object_set_instance(object, &SliceObject_SN, cast(^GDE.Object)self)
-    GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
 
-    return object
-}
+    //*************\\
+    arassign_at_elem :: proc "c" (aclassStruct: ^classStruct, index: int, value: sics.type_elem_type(type_of(aclassStruct.data))) {
+        context = GDW.godotContext
+        if index < len(aclassStruct.data) {
+            aclassStruct.data[index] = value
+        }
+        
+    }
 
-//Delete all the heap allocated aspects of the class along with the class struct as well as any
-//additional nodes, canvasitems, area2d that you created. Like how bulletshower needs to do cleanup on the textures and phys objects.
-SliceObjectDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr) {
-    context = runtime.default_context()
-    if (p_instance == nil){
+    GDW.bindMethod(className_SN, "assign_elem", arassign_at_elem, GDE.ClassMethodFlags.NORMAL, "index", "value")
+    
+    //*************\\
+    argetIndex :: proc "c" (aclassStruct: ^classStruct, index: GDE.Int) -> (ret: sics.type_elem_type(type_of(aclassStruct.data))) {
+        context = GDW.godotContext
+        ret = aclassStruct.data[index]
         return
     }
+
+    GDW.bindMethod(className_SN, "getIndex", argetIndex, GDE.ClassMethodFlags.NORMAL, "index")
     
-    GDW.gdAPI.mem_free(cast(^SliceObject)p_instance)
-
-}
-
-//If you ever rename a virtual function (method callback) you will need to update it in three places.
-//Here, SliceObjectcallVirtualFunctionWithData, the function itself.
-//Look at Godot docs to know what is supported by a certain class. If it inherits from another, it will also inherit its methods.
-//ie something that inherits canvas item will have draw.
-SliceObjectgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-
-    if GDW.stringNameCompare(p_name, "_ready"){
-        return cast(rawptr)SliceObject_ready
+    //*************\\
+    arforAll :: proc "c" (aclassStruct: ^classStruct) {
+        context = GDW.godotContext
+        for i, index in aclassStruct.data {
+            fmt.printfln("value: %v  at index: %v", i, index)
+        }
     }
-    if GDW.stringNameCompare(p_name, "_process"){
-        return cast(rawptr)SliceObject_process
-    }
-    if GDW.stringNameCompare(p_name, "_physics_process"){
-        return cast(rawptr)SliceObject_physics
-    }
-    if GDW.stringNameCompare(p_name, "_draw"){
-        return cast(rawptr)SliceObject_draw
-    }
-    if GDW.stringNameCompare(p_name, "_input"){
-        return cast(rawptr)SliceObject_Input
-    }
-    return nil
-}
 
+    GDW.bindMethod(className_SN, "forAll", arforAll, GDE.ClassMethodFlags.NORMAL)
 
-//Thinking it's good to keep this in a particular order. The least likely or one-time event should be last.
-//Unfortunately the more methods you registered in SliceObjectgetVirtualWithData the more times this thing is called.
-SliceObjectcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_name: GDE.ConstStringNamePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
+    //*************\\
+    arforEachbyStringName :: proc "c" (aclassStruct: ^classStruct, object: GDE.Object, func_SN: GDE.StringName) {
+        context = GDW.godotContext
+        error: GDE.CallError
+        funcPtr:=func_SN
+        for &i, index in aclassStruct.data {
+            ind:= index
+            args: [2]rawptr = {&i, &ind}
+            dummyReturn:rawptr= nil
+            GDW.gdAPI.callScript(cast(^GDE.Object)(object.proxy), &funcPtr, raw_data(args[:]), 0, &dummyReturn, &error)
+        }
+    }
+
+    GDW.bindMethod(className_SN, "forEachby_SN", arforEachbyStringName, GDE.ClassMethodFlags.NORMAL, "object", "func")
     
-    if virtualProcPtr == cast(rawptr)SliceObject_physics {
-        GDW.virtualProcCall(SliceObject_physics, p_instance, p_args, r_ret)
-    }
-    if virtualProcPtr == cast(rawptr)SliceObject_process {
-        GDW.virtualProcCall(SliceObject_process, p_instance, p_args, r_ret)
-    }
-    if virtualProcPtr == cast(rawptr)SliceObject_draw {
-        GDW.virtualProcCall(SliceObject_draw, p_instance, p_args, r_ret)
-    }
-    if virtualProcPtr == cast(rawptr)SliceObject_Input {
-        GDW.virtualProcCall(SliceObject_Input, p_instance, p_args, r_ret)
-    }
-    if virtualProcPtr == cast(rawptr)SliceObject_ready {
-        GDW.virtualProcCall(SliceObject_ready, p_instance, p_args, r_ret)
-    }
-}
+    forEach :: proc "c" (aclassStruct: ^classStruct, func: GDE.Callable) {
+        context = GDW.godotContext
+        
+        error: GDE.CallError
+        function:= func
 
-SliceObject_ready :: proc "c" (self: ^SliceObject) {
-    context = runtime.default_context()//These are good to set in a singleton at some point.
-    //These are statically stored and thus only need to be called once when the game engine is fully initialize.
-    GDW.getInputSingleton()
-    //GDW.getPhysServer2dObj()
-    //GDW.getRenderServer2dObj()
+        args:= [0]rawptr {}
+        Object: GDE.ObjectPtr
 
-}
+        GDW.Callable.get_object(&function, raw_data(args[:]), &Object, 0)
+        for &i, index in aclassStruct.data {
+            ind:= index
+            args: [2]rawptr = {&i, &ind}
+            dummyReturn2: GDE.Variant
+            GDW.gdAPI.callScript(Object, &function.stringName, raw_data(args[:]), 0, &dummyReturn2, &error)
+            GDW.fromvariant(&dummyReturn2, sics.type_elem_type(type_of(aclassStruct.data)))
+            
+        }
+    }
 
-SliceObject_physics :: proc "c" (self: ^SliceObject, delta: f64) {
-    context = runtime.default_context()
+    GDW.bindMethod(className_SN, "forEach", forEach, GDE.ClassMethodFlags.NORMAL, "func")
     
-    SliceObject: GDE.MouseButton = .MOUSE_BUTTON_LEFT
-    isPressed: GDE.Bool
-    GDW.isMouseButtonPressed(&SliceObject, &isPressed)
-    fmt.println(isPressed)
-}
+    arFill :: proc "c" (aclassStruct: ^classStruct, value: sics.type_elem_type(type_of(aclassStruct.data))) {
+        context = GDW.godotContext
+        
+        for &i, index in aclassStruct.data {
+            i = value
+        }
+    }
 
-SliceObject_process :: proc "c" (self: ^SliceObject, delta: f64) {
-    context = runtime.default_context()
+    GDW.bindMethod(className_SN, "fill", arFill, GDE.ClassMethodFlags.NORMAL, "value")
+    
+    arFillEach :: proc "c" (aclassStruct: ^classStruct, func: GDE.Callable) {
+        context = GDW.godotContext
+            
+        error: GDE.CallError
+        function:= func
 
-}
+        args:= [0]rawptr {}
+        Object: GDE.ObjectPtr
 
-SliceObject_draw :: proc "c" (self: ^SliceObject) {
+        GDW.Callable.get_object(&function, raw_data(args[:]), &Object, 0)
+        for &i, index in aclassStruct.data {
+            ind:= index
+            args: [2]rawptr = {&i, &ind}
+            dummyReturn2: GDE.Variant
+            GDW.gdAPI.callScript(Object, &function.stringName, raw_data(args[:]), 0, &dummyReturn2, &error)
+            i = GDW.fromvariant(&dummyReturn2, sics.type_elem_type(type_of(aclassStruct.data)))
+            
+        }
+    }
 
-}
-
-
-SliceObject_Input :: proc "c" (self: ^SliceObject, event: GDE.ObjectPtr) {
-    context = runtime.default_context()
-
-
-}
-
-SliceObject_signalCallback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
-    context = runtime.default_context()
-
-    /*
-    if callable_userdata == cast(rawptr)mainPhysTick {
-        mainPhysTick()
-        r_error.error=.CALL_OK
-        return
-    }*/
-
-    r_error.error = .CALL_ERROR_INSTANCE_IS_NULL
-    return
+    GDW.bindMethod(className_SN, "fillEach", arFillEach, GDE.ClassMethodFlags.NORMAL, "func")
+    
 }

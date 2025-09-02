@@ -179,11 +179,13 @@ Object :: distinct struct{
 
 /*Represents a function. It can either be a method within an Object instance,
 or a custom callable used for different purposes.
-object is a union of u64 (object) or ^custom callable.*/
+object is a union of u64 (objectID) or ^custom callable.
+Use gdAPI.ObjectGetInstanceFromId to get the ObjectPtr
+*/
 //https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L47
 Callable :: distinct struct{
     stringName: StringName,
-    object: u64,
+    objectId: u64,
 }
 
 /*Represents a signal of an Object instance. Like all Variant types,

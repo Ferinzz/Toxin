@@ -1,6 +1,12 @@
 { 
 	"debug.allowBreakpointsEverywhere": true,
 	"files.associations": {
-		"atomic": "cpp"
+		"atomic": "cpp",
+		"list": "cpp",
+		"system_error": "cpp",
+		"vector": "cpp",
+		"xhash": "cpp",
+		"xiosbase": "cpp",
+		"xstring": "cpp"
 	}
 }

@@ -46,6 +46,9 @@ gdAPI : struct  {
     call_deferred_callable: GDE.PtrBuiltInMethod,
 
     regGetObj: GDE.InterfaceRefGetObject,
+    //Do not need ot validate the object or string name yourself, Godot does this during the call process.
+    callScript: GDE.InterfaceObjectCallScriptMethod,
+    ObjectGetInstanceFromId: GDE.InterfaceObjectGetInstanceFromId,
 }
 
 
@@ -68,7 +71,6 @@ Destructors: struct {
     ObjectDestroy: GDE.InterfaceObjectDestroy,
 } 
 
-//: Destructors
 
 Methods: struct {
     node2dSetPosition: GDE.MethodBindPtr,
@@ -88,14 +90,22 @@ Print: struct {
     WarningWithMessage: GDE.InterfacePrintWarningWithMessage,
 }
 
+Callable: struct {
+    is_custom: GDE.PtrBuiltInMethod,
+    get_object: GDE.PtrBuiltInMethod,
+}
+
 
 
 loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
-
-    StringConstruct.stringNameNewLatin = cast(GDE.InterfaceStringNameNewWithLatin1Chars)p_get_proc_address("string_name_new_with_latin1_chars")
-    // Get helper functions first.
+    //These are required for setup. Adding these at the very beginning to ensure they are available for the rest of the init.
     //Gets a pointer to the function that will return the pointer to the function that destroys the specific variable type.
     variant_get_ptr_destructor: GDE.InterfaceVariantGetPtrDestructor  = cast(GDE.InterfaceVariantGetPtrDestructor)p_get_proc_address("variant_get_ptr_destructor")
+    StringConstruct.stringNameNewLatin = cast(GDE.InterfaceStringNameNewWithLatin1Chars)p_get_proc_address("string_name_new_with_latin1_chars")
+    Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
+    Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
+    
+    // Get helper functions first.
     //Gets a pointer to the function that will return the pointer to the function that will evaluate the variable types under the specified condition.
     gdAPI.variantGetPtrOperatorEvaluator = cast(GDE.InterfaceVariantGetPtrOperatorEvaluator)p_get_proc_address("variant_get_ptr_operator_evaluator")
     variantGetPtrConstructor: GDE.InterfaceVariantGetPtrConstructor = cast(GDE.InterfaceVariantGetPtrConstructor)p_get_proc_address("variant_get_ptr_constructor")
@@ -121,19 +131,29 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     gdAPI.classBDRegistClassSignal = cast(GDE.InterfaceClassdbRegisterExtensionClassSignal)p_get_proc_address("classdb_register_extension_class_signal")
     gdAPI.objectMethodBindCall = cast(GDE.InterfaceObjectMethodBindCall)p_get_proc_address("object_method_bind_call")
     gdAPI.builtinMethodBindCall = cast(GDE.InterfaceVariantGetPtrBuiltinMethod)p_get_proc_address("variant_get_ptr_builtin_method")
-
+    gdAPI.callScript = cast(GDE.InterfaceObjectCallScriptMethod)p_get_proc_address("object_call_script_method")
+    gdAPI.ObjectGetInstanceFromId = cast(GDE.InterfaceObjectGetInstanceFromId)p_get_proc_address("object_get_instance_from_id")
 
     
     MethodName: GDE.StringName
     StringConstruct.stringNameNewLatin(&MethodName, "call_deferred", false)
-    defer(Destructors.stringNameDestructor(&MethodName))
     gdAPI.call_deferred_callable = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 3286317445)
+    Destructors.stringNameDestructor(&MethodName)
 
     //constructors.
     StringConstruct.stringNewUTF8 = cast(GDE.InterfaceStringNewWithUtf8Chars)gdAPI.p_get_proc_address("string_new_with_utf8_chars")
     StringConstruct.stringNewLatin = cast(GDE.InterfaceStringNewWithLatin1Chars)gdAPI.p_get_proc_address("string_new_with_latin1_chars")
     StringConstruct.utf8FromString = cast(GDE.InterfaceStringToUtf8Chars)gdAPI.p_get_proc_address("string_to_utf8_chars")
 
+
+    StringConstruct.stringNameNewLatin(&MethodName, "is_custom", false)
+    Callable.is_custom = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 3918633141)
+    Destructors.stringNameDestructor(&MethodName)
+    
+    StringConstruct.stringNameNewLatin(&MethodName, "get_object", false)
+    Callable.get_object = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 4008621732)
+    Destructors.stringNameDestructor(&MethodName)
+    
 
     VariantGetters.getVariantFromTypeConstructor = cast(GDE.InterfaceGetVariantFromTypeConstructor)p_get_proc_address("get_variant_from_type_constructor")
     VariantGetters.getVariantToTypeConstuctor = cast(GDE.InterfaceGetVariantToTypeConstructor)p_get_proc_address("get_variant_to_type_constructor")
@@ -183,8 +203,6 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //constructor.variantToVec2Constructor = cast(GDE.TypeFromVariantConstructorFunc)gdAPI.getVariantToTypeConstuctor(.VECTOR2)
 
     //Destructors.
-    Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
-    Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
     Destructors.variantDestroy = cast(GDE.InterfaceVariantDestroy)p_get_proc_address("variant_destroy")
     Destructors.ObjectDestroy = cast(GDE.InterfaceObjectDestroy)p_get_proc_address("object_destroy")
 
