@@ -120,7 +120,7 @@ treeHookCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: 
     fmt.println("My own tree", object)
 
     //Create extension object.
-    //Can replace mem_alloc with new(). Just need to create the struct and pass a pointer.
+    //Maybe can replace mem_alloc with new(). This should be safe as we make the free in the destroy callback.
     self: ^treeHook = cast(^treeHook)GDW.gdAPI.mem_alloc(size_of(treeHook))
     self.selfPtr = object
     

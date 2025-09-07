@@ -1,3 +1,4 @@
+WARNING: I have not reviewed this since the breaking change to the type update. Change was to make the arrays into structs to simplify things when passing to procedures.
 Trying to reverse engineer the type system for variants. 
 
 For all of the types which are not dynamically allocated you can more or less freely convert these to and from variant. These aren't ref counted, but to/from variant is thread safe through Godot.

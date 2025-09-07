@@ -1,0 +1,9 @@
+[configuration]
+
+entry_symbol = "godot_entry_init"
+compatibility_minimum = "4.4"
+
+[libraries]
+macos.debug = "res://bin/libgdexample.dylib"
+linux.debug = "res://bin/libgdexample.so"
+windows.debug = "res://bin/libgdexample.dll"
