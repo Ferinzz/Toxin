@@ -13,7 +13,7 @@ import "core:c"
 
 //VARIANT_MAX is used in Godot as a bounds value. There's some functions and arrays that use this to set/check for out of bounds settings.
 ////WARNING: if the order of the variantType enum changes, GDTypes needs to be updated in GDDEfs file.
-VariantType ::  enum {
+VariantType :: enum {
 	NIL,
 
 	/*  atomic types */
@@ -124,23 +124,23 @@ VariantOperator :: enum {
 //   them it is always safe to skip the constructor for the return value if you are in a hurry ;-)
 
 
-VariantPtr 							:: rawptr       
+VariantPtr 							:: ^Variant       
 ConstVariantPtr 					:: rawptr 
 ConstVariantPtrargs 				:: [^]rawptr 
 UninitializedVariantPtr 			:: rawptr       
 StringNamePtr 						:: rawptr       
-ConstStringNamePtr 					:: rawptr 
-UninitializedStringNamePtr          :: rawptr       
-StringPtr 							:: rawptr
-ConstStringPtr 						:: rawptr
-UninitializedStringPtr 				:: rawptr
-ObjectPtr 							:: distinct rawptr
-ConstObjectPtr 						:: rawptr
-UninitializedObjectPtr 				:: rawptr
+ConstStringNamePtr 					:: [^]StringName 
+UninitializedStringNamePtr          :: ^StringName
+StringPtr 							:: ^gdstring
+ConstStringPtr 						:: [^]gdstring
+UninitializedStringPtr 				:: ^gdstring
+ObjectPtr 							:: ^Object
+ConstObjectPtr 						:: [^]Object
+UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
-ConstTypePtr 						:: rawptr 
+ConstTypePtr 						:: [^]rawptr 
 UninitializedTypePtr 				:: rawptr
-MethodBindPtr 						:: rawptr
+MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64  
 
 RefPtr 								:: rawptr
@@ -298,8 +298,8 @@ ClassCreationInfo4 :: struct {
 	validate_property_func:	ClassValidateProperty, //Validates property edits?
 	notification_func:     ClassNotification2, //Called when the object receives a NOTIFICATION_*. Like _notification in GDScript.
 	to_string_func:        ClassToString, //Custom function to create strings. For debugging/printing/etc.
-	reference_func:        ClassReference, //If the class can/should be ref counted, provide a funtion for Godot to call and increment the ref
-	unreference_func:      ClassUnreference, //decrement the ref count and deallocate when necessary.
+	reference_func:        ClassReference, //If the class can/should be ref counted, provide a funtion for Godot to call when it does make a reference
+	unreference_func:      ClassUnreference, //Called when Godot also calls unref 
 	create_instance_func:  ClassCreateInstance2, // (Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract.
 	free_instance_func:    ClassFreeInstance, // Destructor; mandatory.
 	recreate_instance_func:ClassRecreateInstance,
@@ -331,12 +331,14 @@ InstanceBindingReferenceCallback :: proc "c" (p_token: rawptr, p_binding: rawptr
 
 /* EXTENSION CLASSES */
 
-ClassInstancePtr :: rawptr;
+//p_instance is a pointer to allocated memory of our custom class's struct.
+ClassInstancePtr :: ObjectPtr;
 
 ClassSet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_value: ConstVariantPtr) -> Bool
 ClassGet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> Bool
 ClassGetRID  				:: proc "c" (p_instance: ClassInstancePtr) -> u64
 
+//p_instance is a pointer to allocated memory of our custom class's struct.
 ClassGetPropertyList 		:: proc "c" (p_instance: ClassInstancePtr, r_count: ^u32) -> [^]PropertyInfo;
 ClassFreePropertyList 		:: proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo);
 ClassFreePropertyList2 		:: proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo , p_count: u32);
@@ -349,6 +351,8 @@ ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: Bool, p
 ClassReference 				:: proc "c" (p_instance: ClassInstancePtr);
 ClassUnreference 			:: proc "c" (p_instance: ClassInstancePtr);
 ClassCallVirtual 			:: proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtr ,  r_ret: TypePtr);
+//p_class_userdata is a pointer to whatever you make which should live the whole lifetime of the class.
+//I believe this is typically used to pass context in C.
 ClassCreateInstance 		:: proc "c" (p_class_userdata: rawptr) -> ObjectPtr;
 ClassCreateInstance2 		:: proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: Bool) -> ObjectPtr;
 ClassFreeInstance 			:: proc "c" (p_class_userdata: rawptr, p_instance: ClassInstancePtr);
@@ -360,14 +364,18 @@ ClassGetVirtualCallData2 	:: proc "c" (p_class_userdata: rawptr, p_name: ConstSt
 ClassCallVirtualWithData  	:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_virtual_call_userdata: rawptr, p_args: ConstTypePtrargs, r_ret: TypePtr);
 
 
-
+/*a custom property info to a property. The dictionary must contain
+* "name": String (the property's name)
+* "type": int (see Variant.Type)
+* optionally "hint": int (see PropertyHint) and "hint_string": String
+*/
 PropertyInfo  :: struct {
 	type:       VariantType,
 	name:       StringNamePtr,
 	class_name: StringNamePtr,
-	hint:       u32, // Bitfield of `PropertyHint` (defined in `extension_gdAPI.json`).
-	hint_string:StringPtr,
-	usage:      u32, // Bitfield of `PropertyUsageFlags` (defined in `extension_gdAPI.json`).
+	hint:       u32, //PropertyHint, // Bitfield of `PropertyHint` (defined in `extension_gdAPI.json`). https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#enum-globalscope-propertyhint
+	hint_string: StringPtr, //Depends on what hint was specified.
+	usage:      u32, //PropertyUsageFlags, // Bitfield of `PropertyUsageFlags` (defined in `extension_gdAPI.json`). https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#enum-globalscope-propertyusageflags
 }
 
 
@@ -420,6 +428,13 @@ ClassMethodArgumentMetadata :: enum c.int {
 }
 
 ClassMethodCall			:: proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
+/*
+* Actual source code. Fun fact, there's no way to actually pass this ClassMethodValidatedCall callback to Godot meaning there is no way to even provide it.
+* It's not that it's unlikely, it's that it's Impossible.
+if (validated_call_func) {
+  // This is added here, but it's unlikely to be provided by most extensions.
+  validated_call_func
+*/
 ClassMethodValidatedCall :: proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstVariantPtrargs, r_return: VariantPtr);
 ClassMethodPtrCall		:: proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstTypePtrargs, r_ret: TypePtr);
 
@@ -535,6 +550,12 @@ CallableCustomInfo2 :: struct {
 }
 
 /* SCRIPT INSTANCE EXTENSION */
+
+/*
+* ScriptInstanceDataPtr is a type definition for a pointer to a ScriptInstanceData object.
+* It's used internally by the engine to manage script instances and their associated data.
+* This pointer provides a way to access and manipulate script-related information within the engine's core functionality.
+*/
 
 ScriptInstanceDataPtr :: rawptr; // Pointer to custom ScriptInstance native implementation.
 
@@ -2429,7 +2450,7 @@ InterfaceGlobalGetSingleton :: proc "c" (p_name: StringNamePtr) -> ObjectPtr;
  * Gets a pointer representing an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the 's entry point function.
+ * @param p_library A token the library received by the GDExtension's entry point function.
  * @param p_callbacks A pointer to a InstanceBindingCallbacks struct.
  *
  * @return

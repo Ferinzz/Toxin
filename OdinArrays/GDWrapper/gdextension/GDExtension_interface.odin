@@ -129,18 +129,18 @@ ConstVariantPtr 					:: rawptr
 ConstVariantPtrargs 				:: [^]rawptr 
 UninitializedVariantPtr 			:: rawptr       
 StringNamePtr 						:: rawptr       
-ConstStringNamePtr 					:: rawptr 
-UninitializedStringNamePtr          :: rawptr       
-StringPtr 							:: rawptr
-ConstStringPtr 						:: rawptr
-UninitializedStringPtr 				:: rawptr
+ConstStringNamePtr 					:: [^]StringName 
+UninitializedStringNamePtr          :: ^StringName
+StringPtr 							:: ^gdstring
+ConstStringPtr 						:: [^]gdstring
+UninitializedStringPtr 				:: ^gdstring
 ObjectPtr 							:: ^Object
-ConstObjectPtr 						:: rawptr
-UninitializedObjectPtr 				:: rawptr
+ConstObjectPtr 						:: [^]Object
+UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
-ConstTypePtr 						:: rawptr 
+ConstTypePtr 						:: [^]rawptr 
 UninitializedTypePtr 				:: rawptr
-MethodBindPtr 						:: rawptr
+MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64  
 
 RefPtr 								:: rawptr
@@ -298,8 +298,8 @@ ClassCreationInfo4 :: struct {
 	validate_property_func:	ClassValidateProperty, //Validates property edits?
 	notification_func:     ClassNotification2, //Called when the object receives a NOTIFICATION_*. Like _notification in GDScript.
 	to_string_func:        ClassToString, //Custom function to create strings. For debugging/printing/etc.
-	reference_func:        ClassReference, //If the class can/should be ref counted, provide a funtion for Godot to call and increment the ref
-	unreference_func:      ClassUnreference, //decrement the ref count and deallocate when necessary.
+	reference_func:        ClassReference, //If the class can/should be ref counted, provide a funtion for Godot to call when it does make a reference
+	unreference_func:      ClassUnreference, //Called when Godot also calls unref 
 	create_instance_func:  ClassCreateInstance2, // (Default) constructor; mandatory. If the class is not instantiable, consider making it virtual or abstract.
 	free_instance_func:    ClassFreeInstance, // Destructor; mandatory.
 	recreate_instance_func:ClassRecreateInstance,
@@ -2450,7 +2450,7 @@ InterfaceGlobalGetSingleton :: proc "c" (p_name: StringNamePtr) -> ObjectPtr;
  * Gets a pointer representing an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the 's entry point function.
+ * @param p_library A token the library received by the GDExtension's entry point function.
  * @param p_callbacks A pointer to a InstanceBindingCallbacks struct.
  *
  * @return

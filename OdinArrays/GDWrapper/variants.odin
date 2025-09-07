@@ -573,6 +573,18 @@ ArrayHelp : struct {
     packedi32Destroy: GDE.PtrDestructor,
 }
 
+PackedStringArray : struct {
+    Create0: GDE.PtrConstructor,
+    Size: GDE.PtrBuiltInMethod,
+    Resize: GDE.PtrBuiltInMethod,
+    Append: GDE.PtrBuiltInMethod,
+    Get: GDE.PtrBuiltInMethod,
+    Set: GDE.PtrBuiltInMethod,
+    GetIndex: GDE.PtrIndexedGetter,
+    SetIndex: GDE.PtrIndexedSetter,
+    Destroy: GDE.PtrDestructor,
+}
+
 
 //Convert Godot's Variant type to a C type.
 variantTo :: struct {
@@ -835,6 +847,11 @@ tovariant :: proc(variant: rawptr, $T: typeid) -> GDE.Variant {
     } else when T == GDE.Transform2D{
         @(static)construct: GDE.VariantFromTypeConstructorFunc
         if construct == nil do construct = VariantGetters.getVariantFromTypeConstructor(.TRANSFORM2D)
+        
+        construct(&ret, variant)
+    } else when T == GDE.Transform3D{
+        @(static)construct: GDE.VariantFromTypeConstructorFunc
+        if construct == nil do construct = VariantGetters.getVariantFromTypeConstructor(.TRANSFORM3D)
         
         construct(&ret, variant)
     } else when T == GDE.Vector4{

@@ -27,7 +27,7 @@ makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
     {
-    context = runtime.default_context()
+    context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     index, ok := slice.linear_search(GDE.GDTypes[:], sics.type_field_type(classStruct, fieldName))
     if ok == false {
@@ -37,7 +37,7 @@ makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = runtime.default_context()
+        context = godotContext
         fmt.println(godotValue)
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = godotValue
     }
@@ -49,7 +49,7 @@ makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = runtime.default_context()
+        context = godotContext
 
         fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
@@ -97,7 +97,7 @@ bindMethod :: proc "c" (className: ^GDE.StringName, methodName: cstring,
                         )
                         where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
     {
-    context = runtime.default_context()
+    context = godotContext
 
     methodStringName: GDE.StringName
     StringConstruct.stringNameNewLatin(&methodStringName, methodName, false)
@@ -213,8 +213,8 @@ bindMethod :: proc "c" (className: ^GDE.StringName, methodName: cstring,
 * Provide their names as cstrings. Check the makePublic function for a general workflow.
 * Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
 */
-bindProperty :: proc "c" (className: ^GDE.StringName, name: cstring, type: GDE.VariantType, getter, setter: cstring) {
-    //context = runtime.default_context()
+bindProperty :: proc "c" (className: ^GDE.StringName, name: cstring, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
+    //context = godotContext
     
     info: GDE.PropertyInfo = make_property(type, name)
 
@@ -237,14 +237,14 @@ bindProperty :: proc "c" (className: ^GDE.StringName, name: cstring, type: GDE.V
 //This is messy. I dunno if this is better or worse than having 7 individual functions... Lots of casting. Eh.
 //This is also using some really old functions for the variant conversion since they provide a return instead of needing an empty pointer.
 bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMethodPtrCall, GDE.ClassMethodCall) {
-    context = runtime.default_context()
+    context = godotContext
     argcount:: sics.type_proc_parameter_count(P)
     argT0 :: sics.type_proc_parameter_type(P, 0)
     
 
     when argcount == 1 {
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -256,7 +256,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -285,7 +285,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         when argcount == 2 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -297,7 +297,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -319,7 +319,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
 
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1))
-                    variant_from(r_return, &result)
+                    variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1))
             }
@@ -330,7 +330,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         when argcount == 3 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -342,7 +342,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -365,7 +365,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                             fromvariant(cast(GDE.VariantPtr)p_args[1], argT2))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2))
             }
@@ -376,7 +376,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         when argcount == 4 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -389,7 +389,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -412,7 +412,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3))
             }
@@ -423,7 +423,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         when argcount == 5 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -436,7 +436,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -460,7 +460,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4))
@@ -472,7 +472,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         when argcount == 6 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -486,7 +486,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
                 
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -510,7 +510,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5))
@@ -522,7 +522,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         when argcount == 7 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -536,7 +536,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -562,7 +562,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
                     fromvariant(cast(GDE.VariantPtr)p_args[5], argT6))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6))
@@ -574,7 +574,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         when argcount == 8 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
+            context = godotContext
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -588,7 +588,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = runtime.default_context()
+            context = godotContext
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -614,7 +614,7 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
                     fromvariant(cast(GDE.VariantPtr)p_args[5], argT6), fromvariant(cast(GDE.VariantPtr)p_args[6], argT7))
-                variant_from(r_return, &result)
+                variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6), fromvariant(cast(^GDE.Variant)p_args[6], argT7))

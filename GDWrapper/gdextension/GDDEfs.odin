@@ -168,22 +168,24 @@ which means they do not grant access to the resource by themselves. They are use
 server classes, such as DisplayServer, RenderingServer, TextServer, etc.
 */
 RID :: distinct struct{
-id:u64,
-ptr:u64 //probaby?? or it's a u128.
+    id:u64,
+    ptr:u64 //probaby?? or it's a u128.
 }
 
 //extension_api says size is dependent on the build config, but callable uses u64 with no typedef.
 Object :: distinct struct{
-    proxy:u64,
+    proxy:rawptr,
 }
 
 /*Represents a function. It can either be a method within an Object instance,
 or a custom callable used for different purposes.
-object is a union of u64 (object) or ^custom callable.*/
+object is a union of u64 (objectID) or ^custom callable.
+Use gdAPI.ObjectGetInstanceFromId to get the ObjectPtr
+*/
 //https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L47
 Callable :: distinct struct{
     stringName: StringName,
-    object: u64,
+    objectId: u64,
 }
 
 /*Represents a signal of an Object instance. Like all Variant types,
@@ -243,13 +245,94 @@ packedArray :: struct($T: typeid) {
 
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyhint
-PropertyHint :: enum {
-    PROPERTY_HINT_NONE
+PropertyHint :: enum i64 {
+    //The property has no hint for the editor.
+    PROPERTY_HINT_NONE = 0,
+    
+    //Hints that an int or float property should be within a range specified via the hint string "min,max" or "min,max,step". The hint string can optionally include "or_greater" and/or "or_less" to allow manual input going respectively above the max or below the min values.
+    //Example: "-360,360,1,or_greater,or_less".
+    //Additionally, other keywords can be included: "exp" for exponential range editing, "radians_as_degrees" for editing radian angles in degrees (the range values are also in degrees), "degrees" to hint at an angle and "hide_slider" to hide the slider.
+    PROPERTY_HINT_RANGE = 1,
+    
+    //Hints that an int or String property is an enumerated value to pick in a list specified via a hint string.
+    //The hint string is a comma separated list of names such as "Hello,Something,Else". Whitespaces are not removed from either end of a name. For integer properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending :integer to the name, e.g. "Zero,One,Three:3,Four,Six:6".
+    PROPERTY_HINT_ENUM = 2,
+
+    //Hints that a String property can be an enumerated value to pick in a list specified via a hint string such as "Hello,Something,Else".
+    //Unlike PROPERTY_HINT_ENUM, a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
+    PROPERTY_HINT_ENUM_SUGGESTION = 3,
+
+    //Hints that a float property should be edited via an exponential easing function. The hint string can include "attenuation" to flip the curve horizontally and/or "positive_only" to exclude in/out easing and limit values to be greater than or equal to zero.
+    PROPERTY_HINT_EXP_EASING = 4,
+
+    //Hints that a vector property should allow its components to be linked. For example, this allows Vector2.x and Vector2.y to be edited together.
+    PROPERTY_HINT_LINK = 5,
+
+    //Hints that an int property is a bitmask with named bit flags.
+    //The hint string is a comma separated list of names such as "Bit0,Bit1,Bit2,Bit3". Whitespaces are not removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending :integer to the name, e.g. "A:4,B:8,C:16". You can also combine several flags ("A:4,B:8,AB:12,C:16").
+    //Note: A flag value must be at least 1 and at most 2 ** 32 - 1.
+    //Note: Unlike PROPERTY_HINT_ENUM, the previous explicit value is not taken into account. For the hint "A:16,B,C", A is 16, B is 2, C is 4.
+    PROPERTY_HINT_FLAGS = 6,
+
+    //Hints that an int property is a bitmask using the optionally named 2D render layers.
+    PROPERTY_HINT_LAYERS_2D_RENDER = 7,
+
+    //Hints that an int property is a bitmask using the optionally named 2D physics layers.
+    PROPERTY_HINT_LAYERS_2D_PHYSICS = 8,
+
+    //Hints that an int property is a bitmask using the optionally named 2D navigation layers.
+    PROPERTY_HINT_LAYERS_2D_NAVIGATION = 9,
+
+    //Hints that an int property is a bitmask using the optionally named 3D render layers.
+    PROPERTY_HINT_LAYERS_3D_RENDER = 10,
+
+    //Hints that an int property is a bitmask using the optionally named 3D physics layers.
+    PROPERTY_HINT_LAYERS_3D_PHYSICS = 11,
+
+    //Hints that an int property is a bitmask using the optionally named 3D navigation layers.
+    PROPERTY_HINT_LAYERS_3D_NAVIGATION = 12,
+
+    //Hints that an integer property is a bitmask using the optionally named avoidance layers.
+    PROPERTY_HINT_LAYERS_AVOIDANCE = 37,
+
+    //Hints that a String property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like "*.png,*.jpg".
+    PROPERTY_HINT_FILE = 13,
+
+    //Hints that a String property is a path to a directory. Editing it will show a file dialog for picking the path.
+    PROPERTY_HINT_DIR = 14,
+
+    //Hints that a String property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like "*.png,*.jpg".
+    PROPERTY_HINT_GLOBAL_FILE = 15,
+
+    //Hints that a String property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
+    PROPERTY_HINT_GLOBAL_DIR = 16,
+
+    //Hints that a property is an instance of a Resource-derived type, optionally specified via the hint string (e.g. "Texture2D"). Editing it will show a popup menu of valid resource types to instantiate.
+    PROPERTY_HINT_RESOURCE_TYPE = 17,
+
+    //Hints that a String property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+    PROPERTY_HINT_MULTILINE_TEXT = 18,
+
+    //Hints that a String property is an Expression.
+    PROPERTY_HINT_EXPRESSION = 19,
+
+    //Hints that a String property should show a placeholder text on its input field, if empty. The hint string is the placeholder text to use.
+    PROPERTY_HINT_PLACEHOLDER_TEXT = 20,
+
+    //Hints that a Color property should be edited without affecting its transparency (Color.a is not editable).
+    PROPERTY_HINT_COLOR_NO_ALPHA = 21,
+
+    //Hints that the property's value is an object encoded as object ID, with its type specified in the hint string. Used by the debugger.
+    PROPERTY_HINT_OBJECT_ID = 22,
+
+    //If a property is String, hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
+    //If a property is Array, hints the editor how to show elements. The hint_string must encode nested types using ":" and "/".
+    PROPERTY_HINT_TYPE_STRING = 23,
 }
 
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyusageflags
-PropertyUsageFlags :: enum {
+PropertyUsageFlags :: enum i64 {
     PROPERTY_USAGE_NONE,
     PROPERTY_USAGE_STORAGE = 2,
     PROPERTY_USAGE_EDITOR = 4,
@@ -260,9 +343,10 @@ PropertyUsageFlags :: enum {
 //WARNING: if the order of the variantType enum changes, this needs to be updated as well.
 GDTypes := [?]typeid {
 nil,
-typeid_of(Int),
 typeid_of(Bool),
+typeid_of(Int),
 typeid_of(float),
+typeid_of(gdstring),
 typeid_of(Vector2),
 typeid_of(Vector2i),
 typeid_of(Rec2),
@@ -276,10 +360,10 @@ typeid_of(Plane),
 typeid_of(Quaternion),
 typeid_of(AABB),
 typeid_of(Basis),
+typeid_of(Transform3D),
 typeid_of(Projection),
 typeid_of(Color),
 typeid_of(StringName),
-typeid_of(gdstring),
 typeid_of(NodePath),
 typeid_of(RID),
 typeid_of(Object),
