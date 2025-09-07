@@ -330,7 +330,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
         context = GDW.godotContext
         error: runtime.Allocator_Error
         when ODIN_DEBUG {
-            if isCreated == true {
+            if classStruct.isCreated == true {
                 GDW.Print.ErrorWithMessage("OdinArray", "Do not create array on existing array", "create", "OdinArrays", 258, true)
                 return
             }
@@ -340,7 +340,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
 
         }
         when ODIN_DEBUG {
-            isCreated = true
+            classStruct.isCreated = true
         }
     }
 
@@ -353,8 +353,8 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
         error: runtime.Allocator_Error
         count: int
         when ODIN_DEBUG {
-            if isCreated == false {
-                isCreated = true
+            if classStruct.isCreated == false {
+                classStruct.isCreated = true
                 GDW.Print.WarningWithMessage("OdinArray", "Array being created via append", "append", "OdinArrays", 282, true)
             }
         }
@@ -481,7 +481,7 @@ OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, clas
     ardelete :: proc "c" (aclassStruct: ^classStruct) {
         context = GDW.godotContext
         when ODIN_DEBUG {
-            if isCreated == true do isCreated = false
+            if classStruct.isCreated == true do classStruct.isCreated = false
         }
         if aclassStruct.data != nil {
             delete(aclassStruct.data)
