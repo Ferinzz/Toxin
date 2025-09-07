@@ -1,73 +1,44 @@
-Taking from some examples from the UI demos here. https://github.com/godotengine/godot-demo-projects/tree/master/gui
+### RefCount
+Pretty cool. The reference is counted in scope of the script. If it is referenced outside of a function then the reference increment will last as long as the node lasts. If the reference is within a function then the reference will last as long as the scope of the function.
 
-### rebind logic
+This means that if I were to create Slices they would behave similar to Odin slices. ie with the scope of where they were declared.
 
-First oddity comes with the VBoxContainer. You can search all you want for this class and not find it anywhere except the docs and the C++ code. What is it? It's a normal ass box_container class but with the constructor specifying that vertical is true or false. This controls the way it will be appending things.
+When you're creating a ref counted object you get to have a virtual on the ref and unref methods. I assume this is to handle dependencies or whaterver else. It's neat, but in our use case we only need the destruction. Maybe could be used for tracking handles more specifically in a configuration which works reverse to this?
 
-Other point is that the container functions on children. Not children that are part of a specific set of data. Nope. Direct children designated by the get_child* functions from Node.
+### Multiargs
+Godot itself says it is a bug. Multi-arg functions can't be used with the method pointer :/ Will need to adjust the class parser accordingly.
 
-Looking at what is happening in this example. What is the role of GDE in here? I want to keep the design part of the program in the designer accessible sections. Meaning the UI layout will use the classes from Godot to structure itself.
+As a result we need to do extra allocations from our base types to variant types and count out how many arguments will be sent along with it.
 
-In that case what is left? Lowering the scope of what to do with GDE I can just go back to the basics of what was introduced in the C Example. Make a custom class. Instead of having the workflow to be to create a scene from a single button and a script the workflow could be to have a custom class for the rebind button. It would still need to inherit the whole button > control > canvasItem system but... Not sure what the total benefit is.
+Seeing as vararg only applies to the last variable a different helper function from Godot would likely be the better way to treat these. ie, send a Array of something instead of [^]rawptr.
 
-For styling you need to set it via the inspector or via code. In the Inspector is Theme Overrides. In the code its add_theme_stylebox_override. Took far too long to make the link between that setting and what I was seeing in the tscn of the theming_override example. Spent a long time trying to figure out where it was used only to find that the main control node has a special kind of theme setting that applies globally to its children. I assume.
+### Odin Arrays in Godot
+Actually shouldn't be too difficult? Thanks Rat for reminding me about the parapoly. Not sure why I was blanking on that so hard.
 
-Key note is that these are numbered. The number at the end of the theme res path is the id of the resource in the tscn. A resource can reference another resource by number within itself.
+Testing takes time to make sure that things work as I expect and figure out the best way to do this.
 
+Originally thought of making a singleton that has a bunch of functions but in the end there's little point. Just make a RefCounted class which takes care of each individual array type. KISS design.
 
-```
-[sub_resource type="Theme" id="5"]
-Button/colors/font_color = Color(0.88, 0.88, 0.88, 1)
-Button/colors/font_color_disabled = Color(0.9, 0.9, 0.9, 0.2)
-Button/colors/font_color_hover = Color(0.94, 0.94, 0.94, 1)
-Button/colors/font_color_pressed = Color(1, 1, 1, 1)
-Button/constants/h_separation = 2
-Button/fonts/font = null
-Button/styles/disabled = null
-Button/styles/focus = SubResource("1")
-Button/styles/hover = SubResource("2")
-Button/styles/normal = SubResource("3")
-Button/styles/pressed = SubResource("4")
-```
+So far it seems rather reliable to create and destroy the arrays based on the scope of things which have referenced them. Could include a 'DESTROY' function to delete the array data, but can't deref everything or else Godot will yell when it goes negative.
 
+Slices I might go with the Go method where they increment the ref count of the original array. Though this could lead to hidden memory holds instead of obvious broken memory lifetimes. I do prefer the latter.
 
-The override example is to show how you can specify the settings for buttons.
+This is an interesting benchmark for working with this though. Checking lifetimes, making things hoepfully more ergonomic with the class creation?? Can add in some debug compile specific settings which would keep track of what Node is allocating it for maybe some easier debugging. Every time it's reference take the node name and when dereffed remove it. If something doesn't go right you can know exactly who is owning it at what time. (mostly)
 
-This example uses signals to send up to the parent control node the notification that it was pressed. Then the parent sets the theme changes. This may be good practice for connecting to other entities in the tree and taking action on them.
+Printing should be rather straight forward. I can set a specific to_string function in the classinfostruct itself which should simply return the correct string to Godot. Simply use our own fmt.caprint function to create a cstring from out type.
 
-### DRAG and drop:
-use control's _get_drag_data virtual to set the data that you will be sending to the other whatever which may receive it. return seems to be anything. in GDScript you set the return in the function declaration. In GDE it's just a variant.
-Also specify what will be the preview by calling set_drag_preview during the _get_drag_data function callback. The example generates a new control object and adds a color picker child to it to be able to render something.
-Docs say Shows the given control at the mouse pointer. A good time to call this method is in _get_drag_data(). The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended. So don't heap allocate anything unless you're adding it to a specific custom class of your own with your own destruction property.
-_can_drop_data returns whether the value dropped is something that the destination can accept. It only provides the variant info, so more complex logic will need extra info in the variant that it passes.
-_drop_data accepts the data to process it however this particular object will want to process it.
+Trouble came when trying to create a string from the array. The problem is that with this single function which generates other functions, it simply exposes them to Godot. For them to be exposed in Odin or even in another library in case someone wants to hook into this via C it would be impossible to use any of these functions without passing through Godot.. Ew. Created a struct which holds all the functions. Should mean that any other lanuage which can bind into C should be able to access all the same functions? proc groups would almost work, except for the fact that several of these have the same proc parameters...
 
+TODO: update the generator function to save the procs into the @export proc struct.
 
-### RESIZING
-Interesting note in the update container example.
-The code within this function needs to be run deferred to work around an issue with containers
-having a 1-frame delay with updates.
-Otherwise, `panel.size` returns a value of the previous frame, which results in incorrect
-sizing of the inner AspectRatioContainer when using the Fit to Window setting.
+TODO: expose the Slice's create proc so that I can create the correct slice from an array.
 
-This would be a good test to see how well call deferred could work? call_deferred (3776071444) is a Object method, so every class should have this. Specify the stringname of your registered function and it works? Also means you must register the function to the class DB for it to work.
+TODO: create a Slice
 
-Overall this will be useful because understanding window resizing is usually one of the last things I look into XD
+TODO: add a forEach for C code share a function pointer to receive Odin's value and index so they don't need to go through Godot.
 
+TODO: Go through the slice package docs and add the corresponding procs for slice support.
 
-### BiDi fonts
-Kind of interesting? There's not a ton to do here it's mostly a demo about the various settings and what they achieve. Interesting aspect is the BiDi override setting. This allows you to change the default unicode orientation reading right to left text to instead be read left to right as it is for a filepath.
+TODO: Support smaller built-in types like u8, i8, u/i/f32. Requires casting to/from the correct types. May want to have separate functions for these exposed to C so that they can go directly to the correct type. Or just have a type conversion wrapper which is what is exposed to Godot.
 
-Otherwise this is a bunch of the same. Many signals going up to the main control section where it will directly impact specific other objects in the tree. ie the slider sending a signal to control which will modify the VariableFontPreview object.
-
-### UI Mirror 
-I don't really see working as intended. The main takazay is the fact that you can set the Container to be right to left or left to right. The localization options doesn't appear to do anything apparent.
-According to the TranslationServer it's supposed to be a root API that is meant to be used to offer localization features for users. It warns that it's mainly for making plugins. There's also a OS.get_locale() instead of the one in TranslationServer to get OS level data.
-
-# Translations
-Maigc! It's just Magic! No not actually. It checks the end of a file name to determine if it's the translated version of the file that it was setup with. _en for english _es for when the locale is set to "es" etc. If you rename the file and REIMPORT (important because it will see the old import and reference to the same file) it will break the system.\
-If there is no localized version of a file then it will use the default file. This is actually pretty good so that when someone is playing the game in another language it will be immediately apparent when something is missing instead of having a blank section.
-
-# PseudoLocalization
-https://docs.godotengine.org/en/stable/tutorials/i18n/pseudolocalization.html
-Basically just there to test out who the strings are being rendered. Would be good to make sure that the GDE is working as you want it. It's all project settings though. No need to do anything in the code itself unless you want to set some dev options in the game itself. Can update how strings are rendered dynamically? But needs a call to the TranslationServer.reload_pseudolocalization() so pretty nice.
+TODO: Add _ seperators for less seach collisions. I hate typing them, but it does help a ton when searching a large lib...

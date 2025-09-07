@@ -25,3 +25,6 @@ bulletshowerexample.pdb
 classParser.exe
 top-down-4_5
 bulletshowerexample.dll
+.vs
+classParser.exe
+src.rdi
