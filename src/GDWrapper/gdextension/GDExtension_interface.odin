@@ -395,15 +395,25 @@ MethodInfo :: struct {
 }
 
 /* Method */
-
+Method_Flags_DEFAULT :: ClassMethodFlags.NORMAL
 ClassMethodFlags :: enum {
 	NORMAL  = 1,
+//Flag for a normal method.
 	EDITOR  = 2,
+//Flag for an editor method.
 	CONST   = 4,
+//Flag for a constant method.
 	VIRTUAL = 8,
+//Flag for a virtual method.
 	VARARG  = 16,
+//Flag for a method with a variable number of arguments.
 	STATIC  = 32,
-	DEFAULT = NORMAL,
+//Flag for a static method.
+	OBJECT_CORE = 64,
+//Used internally. Allows to not dump core virtual methods (such as Object._notification()) to the JSON API.
+	VIRTUAL_REQUIRED = 128,
+//Flag for a virtual method that is required. In GDScript, this flag is set for abstract functions.
+	
 }
 
 
@@ -411,6 +421,7 @@ ClassMethodFlags :: enum {
 //I assume this is becauase you're supposed to use those types because something else might
 //need that specific type. I am feeling like I'm crazy because in the cpp code it's still an int.
 //Meaning you pass in an i64 and somewhere eventually it needs it to be a different sized type.
+//Also GDScript doesn't care about this and it does not appear in the docs section.
 ClassMethodArgumentMetadata :: enum c.int {
 	NONE = 0,
 	INT_IS_INT8,
