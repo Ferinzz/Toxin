@@ -16,9 +16,6 @@ import "core:slice"
 //Godot will be passing us a pointer to this struct during callbacks.
 //MUST match what is used in the init function used to name our class. OdinArrays_SN
 
-when ODIN_DEBUG {
-    isCreated: bool
-}
 
 
 OdinArrayBindMethod :: proc "c" ($classStruct: typeid, $className: cstring, className_SN: ^GDE.StringName, arrayProcs: ^$T/ArrayProcs, Class_String: cstring, loc:=#caller_location, ctx:=GDW.godotContext){
