@@ -22,7 +22,7 @@ gameInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
     parent_class_name: GDE.StringName
 
     GDW.StringConstruct.stringNameNewLatin(&class_name, "game", false)
-    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, "Node2D", false)
+    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, GDW.ClassNameStrings[.Node2D], false)
     defer(GDW.Destructors.stringNameDestructor(&class_name))
     defer(GDW.Destructors.stringNameDestructor(&parent_class_name))
 

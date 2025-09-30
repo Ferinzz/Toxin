@@ -373,7 +373,7 @@ PropertyInfo  :: struct {
 	type:       VariantType,
 	name:       StringNamePtr,
 	class_name: StringNamePtr,
-	hint:       u32, //PropertyHint, // Bitfield of `PropertyHint` (defined in `extension_gdAPI.json`). https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#enum-globalscope-propertyhint
+	hint:       PropertyHint, // enum of `PropertyHint` (defined in `extension_gdAPI.json`). https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#enum-globalscope-propertyhint
 	hint_string: StringPtr, //Depends on what hint was specified.
 	usage:      PropertyUsageFlagsbits, //PropertyUsageFlags, // Bitfield of `PropertyUsageFlags` (defined in `extension_gdAPI.json`). https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#enum-globalscope-propertyusageflags
 }

@@ -331,107 +331,113 @@ PropertyHint :: enum u32 {
 }
 
 
-
-PropertyUsageFlagsbits::bit_set [PropertyUsageFlags; u32]
+PROPERTY_USAGE_DEFAULT : PropertyUsageFlagsbits: {PropertyUsageFlags.PROPERTY_USAGE_STORAGE, PropertyUsageFlags.PROPERTY_USAGE_EDITOR}
+PropertyUsageFlagsbits:: bit_set [PropertyUsageFlags; u32]
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyusageflags
-//PROPERTY_USAGE_DEFAULT = 8,
+//PROPERTY_USAGE_DEFAULT = 6,
 //An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 
 PropertyUsageFlags:: enum u32 {
     
 //The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 //Odin calls this nil
-//PROPERTY_USAGE_NONE = 0
+//PROPERTY_USAGE_NONE = 0,
 
 //Default usage but without showing the property in the editor (storage).
   PROPERTY_USAGE_STORAGE,
-//Default usage (storage and editor).
   //PROPERTY_USAGE_NO_EDITOR = 2
-
-  PROPERTY_USAGE_EDITOR,
+//Default usage but without showing the property in the editor (storage).
 //The property is serialized and saved in the scene file (default for exported properties).
 
 
-  PROPERTY_USAGE_INTERNAL,
+  PROPERTY_USAGE_EDITOR,
 //The property is shown in the EditorInspector (default for exported properties).
 
-  PROPERTY_USAGE_CHECKABLE, 
+  //PROPERTY_USAGE_DEFAULT = 6,
+//Default usage (storage and editor).
+
+  PROPERTY_USAGE_INTERNAL,
 //The property is excluded from the class reference.
 
-  PROPERTY_USAGE_CHECKED, 
+  PROPERTY_USAGE_CHECKABLE, 
 //The property can be checked in the EditorInspector.
 
-  PROPERTY_USAGE_GROUP, 
+  PROPERTY_USAGE_CHECKED, 
 //The property is checked in the EditorInspector.
 
-  PROPERTY_USAGE_CATEGORY, 
+  PROPERTY_USAGE_GROUP, 
 //Used to group properties together in the editor. See EditorInspector.
 
-  PROPERTY_USAGE_SUBGROUP, 
-//Used to categorize properties together in the editor.
+  PROPERTY_USAGE_CATEGORY, 
+//Used to categorize properties together in the editor
 
-  PROPERTY_USAGE_CLASS_IS_BITFIELD, 
+  PROPERTY_USAGE_SUBGROUP, 
 //Used to group properties together in the editor in a subgroup (under a group). See EditorInspector.
 
-  PROPERTY_USAGE_NO_INSTANCE_STATE, 
+  PROPERTY_USAGE_CLASS_IS_BITFIELD,
 //The property is a bitfield, i.e. it contains multiple flags represented as bits.
 
-  PROPERTY_USAGE_RESTART_IF_CHANGED, 
+  PROPERTY_USAGE_NO_INSTANCE_STATE,
 //The property does not save its state in PackedScene.
 
-  PROPERTY_USAGE_SCRIPT_VARIABLE, 
+  PROPERTY_USAGE_RESTART_IF_CHANGED,
 //Editing the property prompts the user for restarting the editor.
 
-  PROPERTY_USAGE_STORE_IF_NULL, 
+  PROPERTY_USAGE_SCRIPT_VARIABLE,
 //The property is a script variable. PROPERTY_USAGE_SCRIPT_VARIABLE can be used to distinguish between exported script variables from built-in variables (which don't have this usage flag). By default, PROPERTY_USAGE_SCRIPT_VARIABLE is not applied to variables that are created by overriding Object._get_property_list() in a script.
 
-  PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, 
+  PROPERTY_USAGE_STORE_IF_NULL,
 //The property value of type Object will be stored even if its value is null.
 
-  PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE, 
+  PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, 
 //If this property is modified, all inspector fields will be refreshed.
 
-  PROPERTY_USAGE_CLASS_IS_ENUM, 
+  PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE,
 //Deprecated: This flag is not used by the engine.
 
-  PROPERTY_USAGE_NIL_IS_VARIANT, 
+  PROPERTY_USAGE_CLASS_IS_ENUM,
 //The property is a variable of enum type, i.e. it only takes named integer constants from its associated enumeration.
 
-  PROPERTY_USAGE_ARRAY, 
+  PROPERTY_USAGE_NIL_IS_VARIANT,
 //If property has nil as default value, its type will be Variant.
 
-  PROPERTY_USAGE_ALWAYS_DUPLICATE, 
+  PROPERTY_USAGE_ARRAY,
 //The property is an array.
 
-  PROPERTY_USAGE_NEVER_DUPLICATE, 
+  PROPERTY_USAGE_ALWAYS_DUPLICATE, 
 //When duplicating a resource with Resource.duplicate(), and this flag is set on a property of that resource, the property should always be duplicated, regardless of the subresources bool parameter.
 
-  PROPERTY_USAGE_HIGH_END_GFX, 
+  PROPERTY_USAGE_NEVER_DUPLICATE, 
 //When duplicating a resource with Resource.duplicate(), and this flag is set on a property of that resource, the property should never be duplicated, regardless of the subresources bool parameter.
 
-  PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT, 
+  PROPERTY_USAGE_HIGH_END_GFX, 
 //The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
 
-  PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT, 
+  PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT, 
 //The NodePath property will always be relative to the scene's root. Mostly useful for local resources.
 
-  PROPERTY_USAGE_KEYING_INCREMENTS, 
+  PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT, 
 //Use when a resource is created on the fly, i.e. the getter will always return a different instance. ResourceSaver needs this information to properly save such resources.
 
-  PROPERTY_USAGE_DEFERRED_SET_RESOURCE, 
-///Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
+  PROPERTY_USAGE_KEYING_INCREMENTS, 
+//Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 
-  PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT, 
+  PROPERTY_USAGE_DEFERRED_SET_RESOURCE, 
 //Deprecated: This flag is not used by the engine.
 
-  PROPERTY_USAGE_EDITOR_BASIC_SETTING, 
+  PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT, 
 //When this property is a Resource and base object is a Node, a resource instance will be automatically created whenever the node is created in the editor.
 
+  PROPERTY_USAGE_EDITOR_BASIC_SETTING, 
+//The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
+
   PROPERTY_USAGE_READ_ONLY, 
-///The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
+//The property is read-only in the EditorInspector.
 
   PROPERTY_USAGE_SECRET, 
+//An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
+
 //The property is read-only in the EditorInspector.
 }
 

@@ -321,11 +321,11 @@ classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, h
 
 make_property :: proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
     
-    return makePropertyFull(type, name, GDE.PropertyHint.PROPERTY_HINT_NONE, "", "", GDE.PropertyUsageFlags.PROPERTY_USAGE_DEFAULT)
+    return makePropertyFull(type, name, GDE.PropertyHint.PROPERTY_HINT_NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
 }
 
 //Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
-makePropertyFull :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlags) -> GDE.PropertyInfo {
+makePropertyFull :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
     context = runtime.default_context()
 
     prop_name:= new(GDE.StringName)
@@ -340,10 +340,10 @@ makePropertyFull :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.Pr
     info: GDE.PropertyInfo = {
         name = prop_name,
         type = type, //is an enum specifying type. Meh.
-        hint = u32(hint), //Not certain what the hints do :thinking:
+        hint = hint, //Not certain what the hints do :thinking:
         hint_string = propHintString,
         class_name = propClassName,
-        usage = u32(usageFlags)
+        usage = usageFlags
     }
 
     return info
