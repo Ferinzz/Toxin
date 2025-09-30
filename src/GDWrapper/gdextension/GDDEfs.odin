@@ -438,7 +438,6 @@ PropertyUsageFlags:: enum u32 {
   PROPERTY_USAGE_SECRET, 
 //An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 
-//The property is read-only in the EditorInspector.
 }
 
 
