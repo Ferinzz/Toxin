@@ -36,7 +36,7 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
     Initialize the different classes.
     classInitProc(classStruct)
     */
-    THIS_CLASS_NAMEInit(THIS_CLASS_NAME)
+    gameInit(game)
     
 }
 

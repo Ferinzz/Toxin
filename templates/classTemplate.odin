@@ -18,6 +18,7 @@ THIS_CLASS_NAME :: struct {
 THIS_CLASS_NAME_SN : GDE.StringName
 THIS_CLASS_NAME_CString: cstring = "THIS_CLASS_NAME"
 THIS_CLASS_NAME_GDClass_String: cstring = "Godot_Class_Name"
+THIS_CLASS_NAME_GDClass_StringName: GDE.StringName
 
 //Technically can have a single massive function to init everything, but having one in each is easier?
 //Make sure to add this to the init of the extension otherwise you won't be able to access this class.
@@ -28,12 +29,6 @@ THIS_CLASS_NAME_GDClass_String: cstring = "Godot_Class_Name"
 THIS_CLASS_NAMEInit :: proc "c" ($classStruct: typeid) {
     context = runtime.default_context()
 
-    //Matching the name to the class struct is vital as it will be used in some binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct.stringNameNewLatin(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString, false)
-
-    parent_class_name: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, THIS_CLASS_NAME_GDClass_String, false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
-    defer(GDW.Destructors.stringNameDestructor(&parent_class_name))
 
     stringraw:GDE.gdstring
     GDW.StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
@@ -63,6 +58,14 @@ THIS_CLASS_NAMEInit :: proc "c" ($classStruct: typeid) {
         call_virtual_with_data_func = THIS_CLASS_NAMEcallVirtualFunctionWithData,
         class_userdata = nil, 
     }
+
+    //Matching the name to the class struct is vital as it will be used in some binding helpers. If the name doesn't match things will break.
+    GDW.StringConstruct.stringNameNewLatin(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString, false)
+
+    parent_class_name: GDE.StringName
+    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, THIS_CLASS_NAME_GDClass_String, false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
+    defer(GDW.Destructors.stringNameDestructor(&parent_class_name))
+
 
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_SN, &parent_class_name, &class_info)
     

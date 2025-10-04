@@ -6,9 +6,11 @@ import "core:strings"
 import "base:intrinsics"
 import "core:time"
 
+//Mainly just here to have a way to output errors to Godot's editor console.
+//Editor console is not the greatest because it outputs text very slow.
+//If you get a assert failure it won't output the error. (For me at least.)
 
 godotContext: runtime.Context
-
 
 initGodotContext :: proc "contextless" () {
     godotContext = runtime.default_context()

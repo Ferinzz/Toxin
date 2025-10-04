@@ -70,7 +70,7 @@ makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
-
+    fmt.println(type_info_of(classStruct))
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     className := fmt.caprint(type_info_of(classStruct))
     defer delete(className)

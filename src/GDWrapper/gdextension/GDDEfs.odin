@@ -406,8 +406,7 @@ PropertyUsageFlagsbits:: bit_set [PropertyUsageFlags; u32]
 //PROPERTY_USAGE_DEFAULT = 6,
 //An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 
-PropertyUsageFlags:: enum u32 {
-    
+PropertyUsageFlags:: enum u32 {    
 //The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 //Odin calls this nil
 //PROPERTY_USAGE_NONE = 0,

@@ -10,21 +10,12 @@ game :: struct {
     exampleInt: GDE.Int,
 }
 
+controlClass: GDE.ObjectPtr
 
-gameInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
+game_GDClass_StringName: ^GDE.StringName
 
+gameInit :: proc "c" ($classStruct: typeid) {
     context = runtime.default_context()
-    if initLevel != .INITIALIZATION_SCENE{
-        return
-    }
-
-    class_name: GDE.StringName
-    parent_class_name: GDE.StringName
-
-    GDW.StringConstruct.stringNameNewLatin(&class_name, "game", false)
-    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, GDW.ClassNameStrings[.Node2D], false)
-    defer(GDW.Destructors.stringNameDestructor(&class_name))
-    defer(GDW.Destructors.stringNameDestructor(&parent_class_name))
 
     stringraw:GDE.gdstring
     GDW.StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
@@ -54,10 +45,15 @@ gameInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
         call_virtual_with_data_func = callVirtualFunctionWithData,
         class_userdata = nil, 
     }
-
-    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &class_name, &parent_class_name, &class_info)
     
-    //GDW.makePublic(treeHook, "timePassed")
+    class_name: GDE.StringName
+    parent_class_name: GDE.StringName
+
+    GDW.StringConstruct.stringNameNewLatin(&class_name, "game", false)
+
+    game_GDClass_StringName = GDW.ClassName_StringName_get(.Node2D)
+
+    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &class_name, game_GDClass_StringName, &class_info)
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     className_SN: GDE.StringName
@@ -70,7 +66,7 @@ gameInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
     GDW.bindMethod(&className_SN, "set_testHints", set, GDE.ClassMethodFlags.NORMAL, "testHints")
     GDW.bindMethod(&className_SN, "get_testHints", get, GDE.ClassMethodFlags.NORMAL)
 
-    info:= GDW.makePropertyFull(.INT, "testHints", .PROPERTY_HINT_RANGE, "0,255", "game", .PROPERTY_USAGE_DEFAULT)
+    info:= GDW.makePropertyFull(.INT, "testHints", .RANGE, "0,255", "game", GDE.PROPERTY_USAGE_DEFAULT)
     info2: GDE.PropertyInfo = GDW.make_property(.INT, "testHints")
 
     getterName: GDE.StringName
@@ -81,6 +77,8 @@ gameInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
     
     //fmt.println("register property")
     GDW.gdAPI.classDBRegisterExtensionClassProperty(GDW.Library, &className_SN, &info, &setterName, &getterName)
+
+    
     gameBindMethod()
 }
 
@@ -101,7 +99,7 @@ get :: proc "c" (yourclassstruct: ^game) -> GDE.Int {
 
 gameBindMethod :: proc "c" (){
     argsInfo: [1]GDE.PropertyInfo
-    argsInfo[0] = GDW.makePropertyFull(.INT, "testvalue", .PROPERTY_HINT_RANGE, "0, 455", "game", .PROPERTY_USAGE_DEFAULT)
+    argsInfo[0] = GDW.makePropertyFull(.INT, "testvalue", .RANGE, "0, 455", "game", GDE.PROPERTY_USAGE_DEFAULT)
     
     args_metadata: [1]GDE.ClassMethodArgumentMetadata
     args_metadata[0]= GDE.ClassMethodArgumentMetadata.INT_IS_UINT8
@@ -119,7 +117,7 @@ gameBindMethod :: proc "c" (){
         method_flags = u32(GDE.ClassMethodFlags.NORMAL),
     }
 
-    returnInfo:= GDW.makePropertyFull(.INT, "return", .PROPERTY_HINT_RANGE, "0, 455", "game", .PROPERTY_USAGE_DEFAULT)
+    returnInfo:= GDW.makePropertyFull(.INT, "return", .RANGE, "0, 455", "game", GDE.PROPERTY_USAGE_DEFAULT)
     
     methodInfo.has_return_value = true
     methodInfo.return_value_info = &returnInfo

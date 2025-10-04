@@ -56,12 +56,11 @@ gdAPI : struct  {
 //Use these to build a C++ String or StringName that Godot can use.
 StringConstruct : struct {
     stringNameNewLatin: GDE.InterfaceStringNameNewWithLatin1Chars,
+    stringNewLatinLen: GDE.InterfaceStringNewWithLatin1CharsAndLen,
     stringNewUTF8: GDE.InterfaceStringNewWithUtf8Chars,
     stringNewLatin: GDE.InterfaceStringNewWithLatin1Chars,
     utf8FromString: GDE.InterfaceStringToUtf8Chars,
 }
-
-
 
 //Destructors :: struct {
 Destructors: struct {
@@ -102,6 +101,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //Gets a pointer to the function that will return the pointer to the function that destroys the specific variable type.
     variant_get_ptr_destructor: GDE.InterfaceVariantGetPtrDestructor  = cast(GDE.InterfaceVariantGetPtrDestructor)p_get_proc_address("variant_get_ptr_destructor")
     StringConstruct.stringNameNewLatin = cast(GDE.InterfaceStringNameNewWithLatin1Chars)p_get_proc_address("string_name_new_with_latin1_chars")
+    StringConstruct.stringNewLatinLen = cast(GDE.InterfaceStringNewWithLatin1CharsAndLen)p_get_proc_address("string_new_with_latin1_chars_and_len")
     Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
     Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
     
@@ -321,7 +321,7 @@ classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, h
 
 make_property :: proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
     
-    return makePropertyFull(type, name, GDE.PropertyHint.PROPERTY_HINT_NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
+    return makePropertyFull(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
 }
 
 //Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
