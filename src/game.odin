@@ -1,5 +1,6 @@
 package main
 
+import "core:hash"
 import GDW "GDWrapper"
 import GDE "GDWrapper/gdextension"
 import "base:runtime"
@@ -12,6 +13,9 @@ game :: struct {
 
 controlClass: GDE.ObjectPtr
 
+game_SN : GDE.StringName
+game_CString: cstring = "game"
+game_GDClass_Index: GDW.ClassName_Index = .Node2D
 game_GDClass_StringName: ^GDE.StringName
 
 gameInit :: proc "c" ($classStruct: typeid) {
@@ -46,25 +50,18 @@ gameInit :: proc "c" ($classStruct: typeid) {
         class_userdata = nil, 
     }
     
-    class_name: GDE.StringName
     parent_class_name: GDE.StringName
 
-    GDW.StringConstruct.stringNameNewLatin(&class_name, "game", false)
+    GDW.StringConstruct.stringNameNewLatin(&game_SN, "game", false)
+    game_GDClass_StringName = GDW.ClassName_StringName_get(game_GDClass_Index)
 
-    game_GDClass_StringName = GDW.ClassName_StringName_get(.Node2D)
-
-    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &class_name, game_GDClass_StringName, &class_info)
-    
-    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
-    className_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&className_SN, "game", false)
-    defer(GDW.Destructors.stringNameDestructor(&className_SN))
+    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &game_SN, game_GDClass_StringName, &class_info)
     
     GDW.makePublic(game, "exampleInt")
 
     //These functions create the callbacks Godot will used to call set and get.
-    GDW.bindMethod(&className_SN, "set_testHints", set, GDE.ClassMethodFlags.NORMAL, "testHints")
-    GDW.bindMethod(&className_SN, "get_testHints", get, GDE.ClassMethodFlags.NORMAL)
+    GDW.bindMethod(&game_SN, "set_testHints", set, GDE.ClassMethodFlags.NORMAL, "testHints")
+    GDW.bindMethod(&game_SN, "get_testHints", get, GDE.ClassMethodFlags.NORMAL)
 
     info:= GDW.makePropertyFull(.INT, "testHints", .RANGE, "0,255", "game", GDE.PROPERTY_USAGE_DEFAULT)
     info2: GDE.PropertyInfo = GDW.make_property(.INT, "testHints")
@@ -76,9 +73,9 @@ gameInit :: proc "c" ($classStruct: typeid) {
     GDW.StringConstruct.stringNameNewLatin(&setterName, "set_testHints", false)
     
     //fmt.println("register property")
-    GDW.gdAPI.classDBRegisterExtensionClassProperty(GDW.Library, &className_SN, &info, &setterName, &getterName)
+    GDW.gdAPI.classDBRegisterExtensionClassProperty(GDW.Library, &game_SN, &info, &setterName, &getterName)
 
-    
+
     gameBindMethod()
 }
 
@@ -127,40 +124,27 @@ gameBindMethod :: proc "c" (){
     methodInfo.arguments_info = &argsInfo[0]
     methodInfo.arguments_metadata = &args_metadata[0]
     
-    className_SN: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&className_SN, "game", false)
-    defer(GDW.Destructors.stringNameDestructor(&className_SN))
-    
-    GDW.gdAPI.classdbRegisterExtensionClassMethod(GDW.Library, &className_SN, &methodInfo)
+    GDW.gdAPI.classdbRegisterExtensionClassMethod(GDW.Library, &game_SN, &methodInfo)
 
 }
 
 
 gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
-
     context = runtime.default_context()
 
-    class_name : GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&class_name, "Node2D", false)
-    defer(GDW.Destructors.stringNameDestructor(&class_name))
-    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(&class_name)
-
-    
-    //fmt.println("My own tree", object)
+    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(game_GDClass_StringName)
 
     //Create extension object.
-    //Maybe can replace mem_alloc with new(). This should be safe as we make the free in the destroy callback.
+    //Maybe can replace mem_alloc with new(). This should be safe as we make the free in the destroy callback which stays in Odin memory.
     self: ^game = cast(^game)GDW.gdAPI.mem_alloc(size_of(game))
     self.selfPtr = object
     
     self.exampleInt = 0
 
-    GDW.StringConstruct.stringNameNewLatin(&class_name, "game", false)
-    GDW.gdAPI.object_set_instance(object, &class_name, cast(^GDE.Object)self)
+    GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
 
     return object
-    
 }
 
 testProc :: proc "c" (self: ^game, testvalue: u8) -> GDE.Int {
@@ -210,8 +194,10 @@ gameDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstance
 
 
 getVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-
-    if GDW.stringNameCompare(p_name, "_ready"){
+    context = runtime.default_context()
+    
+    //This is safe because there's only one _ready method in all of the classes.
+    if p_hash == 3218959716 {
         return cast(rawptr)ready
     }
     if GDW.stringNameCompare(p_name, "_process"){
@@ -223,7 +209,8 @@ getVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStrin
     if GDW.stringNameCompare(p_name, "_draw"){
         return cast(rawptr)gamedraw
     }
-    if GDW.stringNameCompare(p_name, "_input"){
+    //Only one _input method exists in Godot classes.
+    if p_hash == 3754044979 {
         return cast(rawptr)game_Input
     }
     return nil
@@ -249,6 +236,7 @@ callVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_nam
     if virtualProcPtr == cast(rawptr)ready {
         GDW.virtualProcCall(ready, p_instance, p_args, r_ret)
     }
+    
 }
 
 ready :: proc "c" (self: ^game) {
@@ -294,8 +282,7 @@ gamedraw :: proc "c" (self: ^game) {
 
 game_Input :: proc "c" (self: ^game, event: GDE.ObjectPtr) {
     context = runtime.default_context()
-
-
+    
 }
 
 gamesignalCalback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){

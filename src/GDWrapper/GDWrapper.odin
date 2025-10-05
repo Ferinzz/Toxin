@@ -94,7 +94,9 @@ Callable: struct {
     get_object: GDE.PtrBuiltInMethod,
 }
 
-
+operator: struct {
+    stringNameEqual: GDE.PtrOperatorEvaluator,
+}
 
 loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //These are required for setup. Adding these at the very beginning to ensure they are available for the rest of the init.
@@ -112,7 +114,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 
     //Operators
     //Do not get confused with the function that we run on our end that will return whether a StringName is equal. This just runs the compare on Godot Side.
-    //operator.stringNameEqual = variantGetPtrOperatorEvaluator(.VARIANT_OP_EQUAL, .STRING_NAME, .STRING_NAME)
+    operator.stringNameEqual = gdAPI.variantGetPtrOperatorEvaluator(.VARIANT_OP_EQUAL, .STRING_NAME, .STRING_NAME)
 
     //API.
     gdAPI.p_get_proc_address = p_get_proc_address
@@ -232,6 +234,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     StringConstruct.stringNameNewLatin(&arraySize, "set", false)
     PackedStringArray.Set = gdAPI.builtinMethodBindCall(.PACKED_STRING_ARRAY, &arraySize, 725585539)
     Destructors.stringNameDestructor(&arraySize)
+
     Destructors.stringNameDestructor(&arrayClass)
 
     //constructor.variantNil = cast(GDE.InterfaceVariantNewNil)gdAPI.p_get_proc_address("variant_new_nil")
@@ -324,6 +327,7 @@ make_property :: proc "c" (type: GDE.VariantType, name: cstring) -> GDE.Property
     return makePropertyFull(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
 }
 
+//TODO : See if I really need to malloc these variables or if that's just something for C to do.
 //Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
 makePropertyFull :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
     context = runtime.default_context()
@@ -340,7 +344,7 @@ makePropertyFull :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.Pr
     info: GDE.PropertyInfo = {
         name = prop_name,
         type = type, //is an enum specifying type. Meh.
-        hint = hint, //Not certain what the hints do :thinking:
+        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
         hint_string = propHintString,
         class_name = propClassName,
         usage = usageFlags
@@ -351,7 +355,7 @@ makePropertyFull :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.Pr
 
 destructProperty :: proc "c" (info: ^GDE.PropertyInfo) {
     context = runtime.default_context()
-    //fmt.println("destruct property ", info^)
+    
     if info.name != nil{
         Destructors.stringNameDestructor(info.name)
     }
@@ -362,15 +366,13 @@ destructProperty :: proc "c" (info: ^GDE.PropertyInfo) {
         Destructors.stringDestruction(info.hint_string)
     }
     
-    //fmt.println("destruct property ", info^)
-    
+    //See above TODO. If malloc is not needed, wouldn't need to free.
     if info.name != nil{
     free(info.name)}
     if info.hint_string != nil {
     free(info.class_name)}
     if info.class_name != nil {
     free(info.hint_string)}
-    //fmt.println("property destroyed")
 }
 
 
@@ -394,11 +396,14 @@ variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: [^]rawptr, r_erro
 
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring) -> bool {
+stringNameCompare :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring) -> (ret: bool) {
     r_name: GDE.StringName
     StringConstruct.stringNameNewLatin(&r_name, r_value, false)
     defer(Destructors.stringNameDestructor(&r_name))
-    return r_name.ptr == (cast(^GDE.StringName)l_value).ptr
+
+    //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
+    operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    return ret
 }
 
 StringNameGetBasename :: proc "c" (StringName: ^GDE.StringName, r_String: ^GDE.gdstring) {

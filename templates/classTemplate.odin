@@ -17,7 +17,7 @@ THIS_CLASS_NAME :: struct {
 
 THIS_CLASS_NAME_SN : GDE.StringName
 THIS_CLASS_NAME_CString: cstring = "THIS_CLASS_NAME"
-THIS_CLASS_NAME_GDClass_String: cstring = "Godot_Class_Name"
+THIS_CLASS_NAME_GDClass_Index: GDW.ClassName_Index = .Node2D
 THIS_CLASS_NAME_GDClass_StringName: GDE.StringName
 
 //Technically can have a single massive function to init everything, but having one in each is easier?
@@ -62,12 +62,11 @@ THIS_CLASS_NAMEInit :: proc "c" ($classStruct: typeid) {
     //Matching the name to the class struct is vital as it will be used in some binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct.stringNameNewLatin(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString, false)
 
-    parent_class_name: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&parent_class_name, THIS_CLASS_NAME_GDClass_String, false) //Node, Node2D, Sprite2D etc. MUST match what is used in class create.
-    defer(GDW.Destructors.stringNameDestructor(&parent_class_name))
+    
+    THIS_CLASS_NAME_GDClass_StringName = GDW.ClassName_StringName_get(THIS_CLASS_NAME_GDClass_Index)
 
 
-    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_SN, &parent_class_name, &class_info)
+    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_SN, THIS_CLASS_NAME_GDClass_StringName, &class_info)
     
     THIS_CLASS_NAMEBindMethod()
 }
@@ -97,10 +96,7 @@ THIS_CLASS_NAMECreate :: proc "c" (p_class_user_data: rawptr, p_notify_postiniti
 
     context = runtime.default_context()
 
-    class_name : GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&class_name, THIS_CLASS_NAME_GDClass_String, false)
-    defer(GDW.Destructors.stringNameDestructor(&class_name))
-    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(&class_name)
+    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(THIS_CLASS_NAME_GDClass_StringName)
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
@@ -128,9 +124,11 @@ THIS_CLASS_NAMEDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.Cl
 //Here, THIS_CLASS_NAMEcallVirtualFunctionWithData, the function itself.
 //Look at Godot docs to know what is supported by a certain class. If it inherits from another, it will also inherit its methods.
 //ie something that inherits canvas item will have draw.
+//Can replace the StringName compare (which is slower) with a compare to the p_hash. This would require checking the extension_api.json for the correct hash.
 THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
 
-    if GDW.stringNameCompare(p_name, "_ready"){
+    //This is safe because there's only one _ready method in all of the classes.
+    if p_hash == 3218959716 {
         return cast(rawptr)THIS_CLASS_NAME_ready
     }
     if GDW.stringNameCompare(p_name, "_process"){
@@ -142,7 +140,8 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
     if GDW.stringNameCompare(p_name, "_draw"){
         return cast(rawptr)THIS_CLASS_NAME_draw
     }
-    if GDW.stringNameCompare(p_name, "_input"){
+    //Only one _input method exists in Godot classes, so this is safe.
+    if p_hash == 3754044979 {
         return cast(rawptr)THIS_CLASS_NAME_Input
     }
     return nil

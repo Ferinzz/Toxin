@@ -399,7 +399,7 @@ PropertyHint :: enum u32 {
 }
 
 
-PROPERTY_USAGE_DEFAULT : PropertyUsageFlagsbits: {PropertyUsageFlags.PROPERTY_USAGE_STORAGE, PropertyUsageFlags.PROPERTY_USAGE_EDITOR}
+PROPERTY_USAGE_DEFAULT : PropertyUsageFlagsbits: {PropertyUsageFlags.STORAGE, PropertyUsageFlags.EDITOR}
 PropertyUsageFlagsbits:: bit_set [PropertyUsageFlags; u32]
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyusageflags
@@ -411,103 +411,121 @@ PropertyUsageFlags:: enum u32 {
 //Odin calls this nil
 //PROPERTY_USAGE_NONE = 0,
 
-Not_A_Value, //Because there is no '1'
+  Not_A_Value, //Because there is no '1'
 
-  PROPERTY_USAGE_STORAGE,
-  //PROPERTY_USAGE_NO_EDITOR = 2
+  STORAGE,
+  //NO_EDITOR = 2
 //Default usage but without showing the property in the editor (storage).
 //The property is serialized and saved in the scene file (default for exported properties).
 
 
-  PROPERTY_USAGE_EDITOR,
+  EDITOR,
 //The property is shown in the EditorInspector (default for exported properties).
 
   //PROPERTY_USAGE_DEFAULT = 6,
 //Default usage (storage and editor).
 
-  PROPERTY_USAGE_INTERNAL,
+  INTERNAL,
 //The property is excluded from the class reference.
 
-  PROPERTY_USAGE_CHECKABLE, 
+  CHECKABLE, 
 //The property can be checked in the EditorInspector.
 
-  PROPERTY_USAGE_CHECKED, 
+  CHECKED, 
 //The property is checked in the EditorInspector.
 
-  PROPERTY_USAGE_GROUP, 
+  GROUP, 
 //Used to group properties together in the editor. See EditorInspector.
 
-  PROPERTY_USAGE_CATEGORY, 
+  CATEGORY, 
 //Used to categorize properties together in the editor
 
-  PROPERTY_USAGE_SUBGROUP, 
+  SUBGROUP, 
 //Used to group properties together in the editor in a subgroup (under a group). See EditorInspector.
 
-  PROPERTY_USAGE_CLASS_IS_BITFIELD,
+  CLASS_IS_BITFIELD,
 //The property is a bitfield, i.e. it contains multiple flags represented as bits.
 
-  PROPERTY_USAGE_NO_INSTANCE_STATE,
+  NO_INSTANCE_STATE,
 //The property does not save its state in PackedScene.
 
-  PROPERTY_USAGE_RESTART_IF_CHANGED,
+  RESTART_IF_CHANGED,
 //Editing the property prompts the user for restarting the editor.
 
-  PROPERTY_USAGE_SCRIPT_VARIABLE,
+  SCRIPT_VARIABLE,
 //The property is a script variable. PROPERTY_USAGE_SCRIPT_VARIABLE can be used to distinguish between exported script variables from built-in variables (which don't have this usage flag). By default, PROPERTY_USAGE_SCRIPT_VARIABLE is not applied to variables that are created by overriding Object._get_property_list() in a script.
 
-  PROPERTY_USAGE_STORE_IF_NULL,
+  STORE_IF_NULL,
 //The property value of type Object will be stored even if its value is null.
 
-  PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, 
+  UPDATE_ALL_IF_MODIFIED, 
 //If this property is modified, all inspector fields will be refreshed.
 
-  PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE,
+  SCRIPT_DEFAULT_VALUE,
 //Deprecated: This flag is not used by the engine.
 
-  PROPERTY_USAGE_CLASS_IS_ENUM,
+  CLASS_IS_ENUM,
 //The property is a variable of enum type, i.e. it only takes named integer constants from its associated enumeration.
 
-  PROPERTY_USAGE_NIL_IS_VARIANT,
+  NIL_IS_VARIANT,
 //If property has nil as default value, its type will be Variant.
 
-  PROPERTY_USAGE_ARRAY,
+  ARRAY,
 //The property is an array.
 
-  PROPERTY_USAGE_ALWAYS_DUPLICATE, 
+  ALWAYS_DUPLICATE, 
 //When duplicating a resource with Resource.duplicate(), and this flag is set on a property of that resource, the property should always be duplicated, regardless of the subresources bool parameter.
 
-  PROPERTY_USAGE_NEVER_DUPLICATE, 
+  NEVER_DUPLICATE, 
 //When duplicating a resource with Resource.duplicate(), and this flag is set on a property of that resource, the property should never be duplicated, regardless of the subresources bool parameter.
 
-  PROPERTY_USAGE_HIGH_END_GFX, 
+  HIGH_END_GFX, 
 //The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
 
-  PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT, 
+  NODE_PATH_FROM_SCENE_ROOT, 
 //The NodePath property will always be relative to the scene's root. Mostly useful for local resources.
 
-  PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT, 
+  RESOURCE_NOT_PERSISTENT, 
 //Use when a resource is created on the fly, i.e. the getter will always return a different instance. ResourceSaver needs this information to properly save such resources.
 
-  PROPERTY_USAGE_KEYING_INCREMENTS, 
+  KEYING_INCREMENTS, 
 //Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
 
-  PROPERTY_USAGE_DEFERRED_SET_RESOURCE, 
+  DEFERRED_SET_RESOURCE, 
 //Deprecated: This flag is not used by the engine.
 
-  PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT, 
+  EDITOR_INSTANTIATE_OBJECT, 
 //When this property is a Resource and base object is a Node, a resource instance will be automatically created whenever the node is created in the editor.
 
-  PROPERTY_USAGE_EDITOR_BASIC_SETTING, 
+  EDITOR_BASIC_SETTING, 
 //The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
 
-  PROPERTY_USAGE_READ_ONLY, 
+  READ_ONLY, 
 //The property is read-only in the EditorInspector.
 
-  PROPERTY_USAGE_SECRET, 
+  SECRET, 
 //An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 
 }
 
+ConnectFlags :: bit_set [Connect; u32]
+
+Connect:: enum {
+  DEFERRED = 1,
+  //Deferred connections trigger their Callables on idle time (at the end of the frame), rather than instantly.
+
+  PERSIST = 2,
+  //Persisting connections are stored when the object is serialized (such as when using PackedScene.pack()). In the editor, connections created through the Node dock are always persisting.
+
+  ONE_SHOT = 4,
+  //One-shot connections disconnect themselves after emission.
+
+  REFERENCE_COUNTED = 8,
+  //Reference-counted connections can be assigned to the same Callable multiple times. Each disconnection decreases the internal counter. The signal fully disconnects only when the counter reaches 0.
+
+  APPEND_SOURCE_OBJECT = 16,
+  //The source object is automatically bound when a PackedScene is instantiated. If this flag bit is enabled, the source object will be appended right after the original arguments of the signal.
+}
 
 //WARNING: if the order of the variantType enum changes, this needs to be updated as well.
 GDTypes := [?]typeid {

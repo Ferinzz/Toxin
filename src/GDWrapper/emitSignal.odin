@@ -19,28 +19,30 @@ mySignalName: GDE.StringName
 */
 
 @require_results
-connectToSignal :: proc "c" (callback: ^GDE.CallableCustomInfo2, signal_name: ^GDE.StringName, object: GDE.ObjectPtr, loc := #caller_location) -> GDE.CallErrorType {
+connectToSignal :: proc "c" (callback: ^GDE.CallableCustomInfo2, signal_name: ^GDE.StringName, object: GDE.ObjectPtr, flags: GDE.ConnectFlags = nil, loc := #caller_location) -> GDE.CallErrorType {
     context = runtime.default_context()
-    @(static) connect_to: GDE.MethodBindPtr
 
+    //Keep a static pointer to the connect_to method. If not already assigned, fetch it.
+    @(static) connect_to: GDE.MethodBindPtr
     if connect_to == nil{
-    
         sn_SceneTree:GDE.StringName
         StringConstruct.stringNameNewLatin(&sn_SceneTree, "Object", false)
-        defer(Destructors.stringNameDestructor(&sn_SceneTree))
         Connect: GDE.StringName
         StringConstruct.stringNameNewLatin(&Connect, "connect", false)
-        defer(Destructors.stringNameDestructor(&Connect))
+        
         connect_to = gdAPI.classDBGetMethodBind(&sn_SceneTree, &Connect, 1518946055)
+
+        Destructors.stringNameDestructor(&sn_SceneTree)
+        Destructors.stringNameDestructor(&Connect)
     }
 
     
     myCallable:GDE.Callable
     Methods.makeCallable(&myCallable, callback)
 
-    ret_err:GDE.CallErrorType
-    flags:=0
+    flags:=flags
     args:= [?]rawptr {signal_name, &myCallable, &flags}
+    ret_err:GDE.CallErrorType
     gdAPI.objectMethodBindPtrCall(connect_to, object, raw_data(args[:]), &ret_err)
 
     //assert(ret_err == .CALL_OK, loc = loc)

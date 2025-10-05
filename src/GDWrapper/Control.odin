@@ -1392,6 +1392,11 @@ is_localizing_numeral_system :: proc "c" (Control: GDE.ObjectPtr, r_ret: ^GDE.Bo
     gdAPI.objectMethodBindPtrCall(IS_LOCALIZING_NUMERAL_SYSTEM, Control, nil, r_ret)
 }
 
+
+//***********************\\
+//********Signals********\\
+//***********************\\
+
 ControlSignals :: enum {
     resized, // = "resized",
     gui_input, // = "gui_input",//Args //name: GDE.ObjectPtr
@@ -1403,3 +1408,19 @@ ControlSignals :: enum {
     minimum_size_changed, // = "minimum_size_changed",
     theme_changed, // = "theme_changed",
 }
+
+@(rodata)
+ControlSignals_String : [ControlSignals]string = {
+    .resized = "resized",
+    .gui_input = "gui_input",//Args //name: GDE.ObjectPtr
+    .mouse_entered = "mouse_entered",//Args //name: GDE.ObjectPtr
+    .mouse_exited = "mouse_exited",
+    .focus_entered = "focus_entered",
+    .focus_exited = "focus_exited",
+    .size_flags_changed = "size_flags_changed",
+    .minimum_size_changed = "minimum_size_changed",
+    .theme_changed = "theme_changed",
+}
+
+Controlgui_input:= [?]typeid {GDE.ObjectPtr}
+Controlmouse_entered:= [?]typeid {GDE.ObjectPtr}
