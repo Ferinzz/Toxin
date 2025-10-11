@@ -29,7 +29,7 @@ import "core:strconv"
 //To make an enum for Godot you need to create a property hint and make it public.
 //Enums are just a fancy set of strings which are associated with an int value.
 //Public_Enum :: proc($anEmun: typeid, class: string, allocator := context.allocator) where sics.type_is_enum(anEmun) {
-Public_Enum :: proc ($classStruct: typeid, $fieldName: string,
+Public_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location) {
     
@@ -63,8 +63,7 @@ Public_Enum :: proc ($classStruct: typeid, $fieldName: string,
     }
     //fmt.println(string(output[:]))
 
-    prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), "game", GDE.PROPERTY_USAGE_DEFAULT)
-
+    prop_info:= Make_Property_Full(.INT, string(fieldName), .ENUM, string(output[:]), "game", GDE.PROPERTY_USAGE_DEFAULT)
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -93,69 +92,18 @@ Public_Enum :: proc ($classStruct: typeid, $fieldName: string,
     }
     */
     
-    get_ptrcallFunc, get_callFunc:= bindNoReturn2(get)
-    set_ptrcallFunc, set_callFunc:= bindNoReturn2(set)
-
-    args_metadata: [1]GDE.ClassMethodArgumentMetadata
-    args_metadata[0]= GDE.ClassMethodArgumentMetadata.NONE
-
-    returnInfo: GDE.PropertyInfo = make_property(.INT, "123")
-
-    methodStringName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&methodStringName, "get_enum", false)
-
-    
-    methodInfo : GDE.ClassMethodInfo = {
-        name = &methodStringName,
-        method_userdata = cast(rawptr)get,
-
-        call_func = get_callFunc,
-        ptrcall_func = get_ptrcallFunc,
-        method_flags = u32(GDE.ClassMethodFlags.NORMAL),
-        argument_count = 0,
-        arguments_info = &prop_info,
-        arguments_metadata = &args_metadata[0],
-        has_return_value = true,
-        return_value_info = &returnInfo,
-        return_value_metadata = GDE.ClassMethodArgumentMetadata.NONE,
-    }
-    
-    
     className := fmt.caprint(type_info_of(classStruct))
     defer delete(className)
-
-
     className_SN: GDE.StringName
     StringConstruct.stringNameNewLatin(&className_SN, className, false)
     defer(Destructors.stringNameDestructor(&className_SN))
 
-    gdAPI.classdbRegisterExtensionClassMethod(Library, &className_SN, &methodInfo)
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
-
-    Destructors.stringNameDestructor(&methodStringName)
-    StringConstruct.stringNameNewLatin(&methodStringName, "set_enum", false)
-
-    methodInfo = {
-        name = &methodStringName,
-        method_userdata = cast(rawptr)set,
-
-        call_func = set_callFunc,
-        ptrcall_func = set_ptrcallFunc,
-        method_flags = u32(GDE.ClassMethodFlags.NORMAL),
-        argument_count = 1,
-        arguments_info = &prop_info,
-        arguments_metadata = &args_metadata[0],
-        has_return_value = false,
-        return_value_info = &returnInfo,
-        return_value_metadata = GDE.ClassMethodArgumentMetadata.NONE,
-    }
-    
-    gdAPI.classdbRegisterExtensionClassMethod(Library, &className_SN, &methodInfo)
-
-    Destructors.stringNameDestructor(&methodStringName)
-
-    Bind_Property(&className_SN, "enum", .INT, &prop_info, "get_enum", "set_enum")
-    
+    //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
+    Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)
 }
 
 
@@ -170,49 +118,8 @@ makePublic2 :: proc "c" ($classStruct: typeid, $fieldName: typeid, prop_hint: GD
     if ok == false {
         panic("The type sent to makePublic was not found in GDW.GDTypes. Please check the list of valid Godot types.", loc)
     }
+
     
-    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
-    //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
-        //fmt.println(godotValue)
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = godotValue
-    }
-    /*
-    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
-        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
-    }
-    */
-    
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
-
-        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
-    }
-    /*
-    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
-        return yourclassstruct.someField^ //someField is of type GDE.Int
-    }
-    */
-    fmt.println(type_info_of(classStruct))
-    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
-    className := fmt.caprint(type_info_of(classStruct))
-    defer delete(className)
-
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewLatin(&className_SN, className, false)
-    defer(Destructors.stringNameDestructor(&className_SN))
-    
-
-    //These functions create the callbacks Godot will used to call set and get.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
-
-    //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
-    bindProperty(&className_SN, fieldName, GDE.VariantType(index), "get_"+fieldName, "set_"+fieldName)
 }
 
 /*

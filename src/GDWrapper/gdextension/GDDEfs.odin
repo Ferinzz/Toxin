@@ -211,21 +211,28 @@ Array :: distinct struct{
     id: u32
 }
 
+
 /*
 * Variables here are not defined by Godot but are useful for defining Properties.
 * Primarily centered around differing versions of int or strings
 */
 
-//specifies what the int/bitmask represents; render/physics/navigation layers
-LAYERS :: enum {
-  RENDER_2D,
-  RENDER_3D,
-  PHYSICS_2D,
-  PHYSICS_3D,
-  NAVIGATION_2D,
-  NAVIGATIONS_3D,
-  AVOIDANCE,
-}
+//Godot's layers are limited by the engine. Check below link for their values.
+//https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-property-layer-names-2d-navigation-layer-1
+//bit flag field for layers.
+//The widget in the Inspector dock will use the layer names defined in ProjectSettings.layer_names
+
+layers_2d_render:: bit_set[0..=20; Int]
+layers_3d_render:: bit_set[0..=20; Int]
+
+layers_2d_physics:: bit_set[0..=32; Int]
+layers_3d_physics:: bit_set[0..=32; Int]
+
+layers_2d_navigation:: bit_set[0..=32; Int]
+layers_3d_navigation:: bit_set[0..=32; Int]
+
+layers_avoidance:: bit_set[0..=32; Int]
+
 
 //Specifies a locale.
 //Editing will show locale dialog for picking language and country.
@@ -252,7 +259,10 @@ INPUT_NAME_STRINGNAME :: distinct gdstring
 
 //Specifies a path to something.
 //When making public specify what kind of path it is.
-PATH :: distinct gdstring
+PATH :: struct {
+  path: gdstring,
+  type: PATH_TYPES,
+}
 
 PATH_TYPES :: enum {
   DIR, //path to a directory
