@@ -9,13 +9,14 @@ import "core:fmt"
 game :: struct {
     selfPtr: GDE.ObjectPtr,
     exampleInt: GDE.Int,
+    publicEnum: myEnum,
 }
 
 controlClass: GDE.ObjectPtr
 
 game_SN : GDE.StringName
 game_CString: cstring = "game"
-game_GDClass_Index: GDW.ClassName_Index = .Node2D
+game_GDClass_Index: GDW.ClassName_Index = .Sprite2D
 game_GDClass_StringName: ^GDE.StringName
 
 gameInit :: proc "c" ($classStruct: typeid) {
@@ -52,18 +53,20 @@ gameInit :: proc "c" ($classStruct: typeid) {
     
     parent_class_name: GDE.StringName
 
-    GDW.StringConstruct.stringNameNewLatin(&game_SN, "game", false)
+    //GDW.StringConstruct.stringNameNewLatin(&game_SN, "game", false)
+    GDW.StringConstruct.stringNameNewUTF8andLen(&game_SN, raw_data(string("game")), 4)
     game_GDClass_StringName = GDW.ClassName_StringName_get(game_GDClass_Index)
 
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &game_SN, game_GDClass_StringName, &class_info)
     
     GDW.makePublic(game, "exampleInt")
-
+    //GDW.makePublic2(game, "exampleInt")
+    
     //These functions create the callbacks Godot will used to call set and get.
     GDW.bindMethod(&game_SN, "set_testHints", set, GDE.ClassMethodFlags.NORMAL, "testHints")
     GDW.bindMethod(&game_SN, "get_testHints", get, GDE.ClassMethodFlags.NORMAL)
 
-    info:= GDW.makePropertyFull(.INT, "testHints", .RANGE, "0,255", "game", GDE.PROPERTY_USAGE_DEFAULT)
+    info:= GDW.Make_Property_Full(.INT, "testHints", .RANGE, cstring("0,255"), "game", GDE.PROPERTY_USAGE_DEFAULT)
     info2: GDE.PropertyInfo = GDW.make_property(.INT, "testHints")
 
     getterName: GDE.StringName
@@ -75,7 +78,9 @@ gameInit :: proc "c" ($classStruct: typeid) {
     //fmt.println("register property")
     GDW.gdAPI.classDBRegisterExtensionClassProperty(GDW.Library, &game_SN, &info, &setterName, &getterName)
 
+    GDW.Public_Enum(game, "publicEnum")
 
+    //GDW.Public_Enum(myEnum, game_CString)
     gameBindMethod()
 }
 
@@ -96,7 +101,7 @@ get :: proc "c" (yourclassstruct: ^game) -> GDE.Int {
 
 gameBindMethod :: proc "c" (){
     argsInfo: [1]GDE.PropertyInfo
-    argsInfo[0] = GDW.makePropertyFull(.INT, "testvalue", .RANGE, "0, 455", "game", GDE.PROPERTY_USAGE_DEFAULT)
+    argsInfo[0] = GDW.Make_Property_Full(.INT, "testvalue", .RANGE, string("0, 455"), "game", GDE.PROPERTY_USAGE_DEFAULT)
     
     args_metadata: [1]GDE.ClassMethodArgumentMetadata
     args_metadata[0]= GDE.ClassMethodArgumentMetadata.INT_IS_UINT8
@@ -114,7 +119,7 @@ gameBindMethod :: proc "c" (){
         method_flags = u32(GDE.ClassMethodFlags.NORMAL),
     }
 
-    returnInfo:= GDW.makePropertyFull(.INT, "return", .RANGE, "0, 455", "game", GDE.PROPERTY_USAGE_DEFAULT)
+    returnInfo:= GDW.Make_Property_Full(.INT, "return", .RANGE, string("0, 455"), "game", GDE.PROPERTY_USAGE_DEFAULT)
     
     methodInfo.has_return_value = true
     methodInfo.return_value_info = &returnInfo
@@ -140,6 +145,8 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     self.selfPtr = object
     
     self.exampleInt = 0
+
+    self.publicEnum = .one
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
@@ -244,10 +251,10 @@ ready :: proc "c" (self: ^game) {
     GDW.getInputSingleton()
     GDW.getPhysServer2dObj()
     GDW.getRenderServer2dObj()
-    className:GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&className, "Control", false)
-    defer(GDW.Destructors.stringNameDestructor(&className))
-    controlClass = GDW.gdAPI.classDBConstructObj(&className)
+    //className:GDE.StringName
+    //GDW.StringConstruct.stringNameNewLatin(&className, "Control", false)
+    //defer(GDW.Destructors.stringNameDestructor(&className))
+    controlClass = GDW.gdAPI.classDBConstructObj(GDW.ClassName_StringName_get(.Control))
 
     //create a random controlClass.
     preset: GDW.LayoutPreset = .PRESET_BOTTOM_RIGHT
@@ -270,7 +277,7 @@ gamephysics :: proc "c" (self: ^game, delta: f64) {
 
 gameprocess :: proc "c" (self: ^game, delta: f64) {
     context = runtime.default_context()
-    GDW.queueRedraw(self.selfPtr)
+    //GDW.queueRedraw(self.selfPtr)
 
 
 }
@@ -297,4 +304,10 @@ gamesignalCalback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVaria
 
     r_error.error = .CALL_ERROR_INSTANCE_IS_NULL
     return
+}
+
+myEnum :: enum {
+    one,
+    two,
+    three,
 }

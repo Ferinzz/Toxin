@@ -1633,7 +1633,7 @@ InterfaceStringNewWithLatin1CharsAndLen :: proc "c" (r_dest: UninitializedString
  * @param p_contents A pointer to a UTF-8 encoded C string.
  * @param p_size The number of bytes (not code units).
  */
-InterfaceStringNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_size: Int);
+InterfaceStringNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStringPtr, p_contents: [^]u8, p_size: Int);
 
 /**
  * @name string_new_with_utf8_chars_and_len2
@@ -1923,7 +1923,7 @@ InterfaceStringNameNewWithUtf8Chars :: proc "c" (r_dest: UninitializedStringName
  * @param p_contents A pointer to a C string (null terminated and UTF-8 encoded).
  * @param p_size The number of bytes (not UTF-8 code points).
  */
-InterfaceStringNameNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStringNamePtr, p_contents: cstring, p_size: Int);
+InterfaceStringNameNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStringNamePtr, p_contents: [^]u8, p_size: Int);
 
 /* INTERFACE: XMLParser Utilities */
 

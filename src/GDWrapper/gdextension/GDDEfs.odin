@@ -211,6 +211,59 @@ Array :: distinct struct{
     id: u32
 }
 
+/*
+* Variables here are not defined by Godot but are useful for defining Properties.
+* Primarily centered around differing versions of int or strings
+*/
+
+//specifies what the int/bitmask represents; render/physics/navigation layers
+LAYERS :: enum {
+  RENDER_2D,
+  RENDER_3D,
+  PHYSICS_2D,
+  PHYSICS_3D,
+  NAVIGATION_2D,
+  NAVIGATIONS_3D,
+  AVOIDANCE,
+}
+
+//Specifies a locale.
+//Editing will show locale dialog for picking language and country.
+LOCALE_ID :: distinct gdstring
+
+//Specifies a password
+PASSWORD :: distinct gdstring
+
+//gdstring with a placeholder text specified in the propertyHints
+GDSTRING_WITH_PLACEHOLDER_TEXT :: struct{
+  input_string: gdstring,
+  placeholder: gdstring,
+}
+
+//gdstring with multiple lines
+MULTILINE_TEXT :: distinct gdstring
+
+//Specifies that an string is the name of an input action.
+//may contain two options separated by comma
+//If it contains "show_builtin", built-in input actions are included in the selection.
+//If it contains "loose_mode", loose mode is enabled. This allows inserting any action name even if it's not present in the input map.
+INPUT_NAME_STRING :: distinct gdstring
+INPUT_NAME_STRINGNAME :: distinct gdstring
+
+//Specifies a path to something.
+//When making public specify what kind of path it is.
+PATH :: distinct gdstring
+
+PATH_TYPES :: enum {
+  DIR, //path to a directory
+  FILE, //path to a file filters with wildcards like "*.png,*.jpg"
+  FILE_PATH, //stored as raw path instead of UID
+  GLOBAL_DIR, //absolute path to directory
+  GLOBAL_FILE, //absolute path to file
+  SAVE_FILE, //file path. can have wildcards like "*.png,*.jpg".
+  GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
+}
+
 /*First value is not used by anything other tha C#. Second value is where the data begins.
 The size and ref count are offset -1uintptr to the left of where the data begins.
 Use Godot's built-ins to make and manage these. Otherwise you risk heap corruption if/when Godot tries writing memory in your dynlib.

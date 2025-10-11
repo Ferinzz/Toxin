@@ -6,6 +6,9 @@ import sics "base:intrinsics"
 import "core:fmt"
 import "core:slice"
 import "core:log"
+import "core:reflect"
+import "core:strings"
+import "core:strconv"
 
 
 /*
@@ -23,23 +26,147 @@ import "core:log"
 //Specific to make Public add an extra layer for hingts
 //Metadata seems useless?
 
-
-
-/*
-* Godot will need a getter and setter to be able to handle variables 'made public'
-* This function will generate basic get and set functions for you. Register their callbacks, register them for use in the editor or GDScripts.
-* Assumption: you are setting all the information in a struct. You will provide the name of the field as you've declared it.
-* P: the class struct which holds your variable.
-* fieldName: the name that matches the field in the struct as you've named it.
-*/
-makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+//To make an enum for Godot you need to create a property hint and make it public.
+//Enums are just a fancy set of strings which are associated with an int value.
+//Public_Enum :: proc($anEmun: typeid, class: string, allocator := context.allocator) where sics.type_is_enum(anEmun) {
+Public_Enum :: proc ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
-                        loc:= #caller_location)
-                        where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) {
+    
+    anEnum:typeid= sics.type_field_type(classStruct, fieldName)
+    type_info:= type_info_of(anEnum)
+    //Loop through each to add the enum value to the hint string.
+    //runtime.Type_Info.variant.(Type_Info_Enum)
+    infoNamed := type_info.variant.(runtime.Type_Info_Named)
+    //values:= info.variant.values
+    infoBase:= infoNamed.base
+    info:=infoBase.variant.(runtime.Type_Info_Enum)
+    //output:[dynamic]u8
+
+    //random estimate of how long it might need to be. Based off of nothing.
+    output: = make_dynamic_array_len_cap([dynamic]u8, 0, len(info.names)*16)
+    
+    for field, ind in info.names {
+        if ind > 0 do append(&output, ',')
+        buf:[30]u8
+        //strconv.write_int(buf[:], i64(info.values[ind]), 10)
+        group:[3][]u8
+        group[0] = transmute([]u8)field
+        group[1] = []u8 {':'}
+        //allocated the string into the buffer, so the slice is a slice into the buffer.
+        //No need to delete.?
+        group[2] = transmute([]u8)(strconv.write_int(buf[:], i64(info.values[ind]), 10))
+        final:= slice.concatenate(group[:])
+        //fmt.println(string(final))
+        append(&output, string(final[:]))
+        delete(final)
+    }
+    //fmt.println(string(output[:]))
+
+    prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), "game", GDE.PROPERTY_USAGE_DEFAULT)
+
+
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
+        context = godotContext
+        ////fmt.println(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+        context = godotContext
+
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+    
+    get_ptrcallFunc, get_callFunc:= bindNoReturn2(get)
+    set_ptrcallFunc, set_callFunc:= bindNoReturn2(set)
+
+    args_metadata: [1]GDE.ClassMethodArgumentMetadata
+    args_metadata[0]= GDE.ClassMethodArgumentMetadata.NONE
+
+    returnInfo: GDE.PropertyInfo = make_property(.INT, "123")
+
+    methodStringName: GDE.StringName
+    StringConstruct.stringNameNewLatin(&methodStringName, "get_enum", false)
+
+    
+    methodInfo : GDE.ClassMethodInfo = {
+        name = &methodStringName,
+        method_userdata = cast(rawptr)get,
+
+        call_func = get_callFunc,
+        ptrcall_func = get_ptrcallFunc,
+        method_flags = u32(GDE.ClassMethodFlags.NORMAL),
+        argument_count = 0,
+        arguments_info = &prop_info,
+        arguments_metadata = &args_metadata[0],
+        has_return_value = true,
+        return_value_info = &returnInfo,
+        return_value_metadata = GDE.ClassMethodArgumentMetadata.NONE,
+    }
+    
+    
+    className := fmt.caprint(type_info_of(classStruct))
+    defer delete(className)
+
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewLatin(&className_SN, className, false)
+    defer(Destructors.stringNameDestructor(&className_SN))
+
+    gdAPI.classdbRegisterExtensionClassMethod(Library, &className_SN, &methodInfo)
+
+
+    Destructors.stringNameDestructor(&methodStringName)
+    StringConstruct.stringNameNewLatin(&methodStringName, "set_enum", false)
+
+    methodInfo = {
+        name = &methodStringName,
+        method_userdata = cast(rawptr)set,
+
+        call_func = set_callFunc,
+        ptrcall_func = set_ptrcallFunc,
+        method_flags = u32(GDE.ClassMethodFlags.NORMAL),
+        argument_count = 1,
+        arguments_info = &prop_info,
+        arguments_metadata = &args_metadata[0],
+        has_return_value = false,
+        return_value_info = &returnInfo,
+        return_value_metadata = GDE.ClassMethodArgumentMetadata.NONE,
+    }
+    
+    gdAPI.classdbRegisterExtensionClassMethod(Library, &className_SN, &methodInfo)
+
+    Destructors.stringNameDestructor(&methodStringName)
+
+    Bind_Property(&className_SN, "enum", .INT, &prop_info, "get_enum", "set_enum")
+    
+}
+
+
+makePublic2 :: proc "c" ($classStruct: typeid, $fieldName: typeid, prop_hint: GDE.PropertyInfo,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)\
+                         //where sics.type_has_field(classStruct) //, fieldName) //No point trying if the field doesn't exist. Typo safety.
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
-    index, ok := slice.linear_search(GDE.GDTypes[:], sics.type_field_type(classStruct, fieldName))
+    index, ok := slice.linear_search(GDE.GDTypes[:], fieldName)
     if ok == false {
         panic("The type sent to makePublic was not found in GDW.GDTypes. Please check the list of valid Godot types.", loc)
     }
@@ -48,7 +175,7 @@ makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = godotContext
-        fmt.println(godotValue)
+        //fmt.println(godotValue)
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = godotValue
     }
     /*
@@ -61,7 +188,7 @@ makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
         context = godotContext
 
-        fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -86,6 +213,130 @@ makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     bindProperty(&className_SN, fieldName, GDE.VariantType(index), "get_"+fieldName, "set_"+fieldName)
+}
+
+/*
+* Godot will need a getter and setter to be able to handle variables 'made public'
+* This function will generate basic get and set functions for you. Register their callbacks, register them for use in the editor or GDScripts.
+* Assumption: you are setting all the information in a struct. You will provide the name of the field as you've declared it.
+* P: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+*/
+makePublic :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
+    {
+    context = godotContext
+    //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
+    index, ok := slice.linear_search(GDE.GDTypes[:], sics.type_field_type(classStruct, fieldName))
+    if ok == false {
+        panic("The type sent to makePublic was not found in GDW.GDTypes. Please check the list of valid Godot types.", loc)
+    }
+    
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+        context = godotContext
+        //fmt.println(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = godotValue
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+        context = godotContext
+
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+    fmt.println(type_info_of(classStruct))
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.caprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewLatin(&className_SN, className, false)
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
+    bindProperty(&className_SN, fieldName, GDE.VariantType(index), "get_"+fieldName, "set_"+fieldName)
+}
+
+
+make_property :: proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
+    
+    return makePropertyFull_cstring(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
+}
+
+//TODO : See if I really need to malloc these variables or if that's just something for C to do.
+//Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
+makePropertyFull_cstring :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+    context = runtime.default_context()
+
+    prop_name:= new(GDE.StringName)
+    StringConstruct.stringNameNewLatin(prop_name, name, false)
+
+    propHintString:= new(GDE.gdstring)
+    StringConstruct.stringNewUTF8(propHintString, hintString)
+
+    propClassName:= new(GDE.StringName)
+    StringConstruct.stringNameNewLatin(propClassName, className, false)
+    
+    info: GDE.PropertyInfo = {
+        name = prop_name,
+        type = type, //is an enum specifying type. Meh.
+        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
+        hint_string = propHintString,
+        class_name = propClassName,
+        usage = usageFlags
+    }
+
+    return info
+}
+
+makePropertyFull_string :: proc "c" (type: GDE.VariantType, name: string, hint: GDE.PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+    context = runtime.default_context()
+
+    prop_name:= new(GDE.StringName)
+    StringConstruct.stringNameNewUTF8andLen(prop_name, raw_data(name), len(name))
+
+    propHintString:= new(GDE.gdstring)
+    StringConstruct.stringNewUTF8_len(propHintString, raw_data(hintString), len(hintString))
+
+    propClassName:= new(GDE.StringName)
+    StringConstruct.stringNameNewUTF8andLen(propClassName, raw_data(className), len(className))
+    
+    info: GDE.PropertyInfo = {
+        name = prop_name,
+        type = type, //is an enum specifying type. Meh.
+        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
+        hint_string = propHintString,
+        class_name = propClassName,
+        usage = usageFlags
+    }
+
+    return info
+}
+
+Make_Property_Full :: proc {
+    makePropertyFull_cstring,
+    makePropertyFull_string,
 }
 
 /*
@@ -216,6 +467,23 @@ bindMethod :: proc "c" (className: ^GDE.StringName, methodName: cstring,
 
 }
 
+Bind_Property :: proc {
+    bindProperty,
+    Bind_Property_Prop_Info,
+}
+
+Bind_Property_Prop_Info :: proc(className: ^GDE.StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: cstring, loc:=#caller_location) {
+
+    getterName: GDE.StringName
+    StringConstruct.stringNameNewLatin(&getterName, getter, false)
+
+    setterName: GDE.StringName
+    StringConstruct.stringNameNewLatin(&setterName, setter, false)
+    
+    //fmt.println("register property")
+    gdAPI.classDBRegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
+    
+}
 
 /*
 * bindProperty is used to make your variable public.

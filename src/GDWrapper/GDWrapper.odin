@@ -56,8 +56,10 @@ gdAPI : struct  {
 //Use these to build a C++ String or StringName that Godot can use.
 StringConstruct : struct {
     stringNameNewLatin: GDE.InterfaceStringNameNewWithLatin1Chars,
+    stringNameNewUTF8andLen: GDE.InterfaceStringNameNewWithUtf8CharsAndLen,
     stringNewLatinLen: GDE.InterfaceStringNewWithLatin1CharsAndLen,
     stringNewUTF8: GDE.InterfaceStringNewWithUtf8Chars,
+    stringNewUTF8_len: GDE.InterfaceStringNewWithUtf8CharsAndLen,
     stringNewLatin: GDE.InterfaceStringNewWithLatin1Chars,
     utf8FromString: GDE.InterfaceStringToUtf8Chars,
 }
@@ -103,6 +105,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //Gets a pointer to the function that will return the pointer to the function that destroys the specific variable type.
     variant_get_ptr_destructor: GDE.InterfaceVariantGetPtrDestructor  = cast(GDE.InterfaceVariantGetPtrDestructor)p_get_proc_address("variant_get_ptr_destructor")
     StringConstruct.stringNameNewLatin = cast(GDE.InterfaceStringNameNewWithLatin1Chars)p_get_proc_address("string_name_new_with_latin1_chars")
+    StringConstruct.stringNameNewUTF8andLen = cast(GDE.InterfaceStringNameNewWithUtf8CharsAndLen)p_get_proc_address("string_name_new_with_utf8_chars_and_len")
     StringConstruct.stringNewLatinLen = cast(GDE.InterfaceStringNewWithLatin1CharsAndLen)p_get_proc_address("string_new_with_latin1_chars_and_len")
     Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
     Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
@@ -144,6 +147,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 
     //constructors.
     StringConstruct.stringNewUTF8 = cast(GDE.InterfaceStringNewWithUtf8Chars)gdAPI.p_get_proc_address("string_new_with_utf8_chars")
+    StringConstruct.stringNewUTF8_len = cast(GDE.InterfaceStringNewWithUtf8CharsAndLen)gdAPI.p_get_proc_address("string_new_with_utf8_chars_and_len")
     StringConstruct.stringNewLatin = cast(GDE.InterfaceStringNewWithLatin1Chars)gdAPI.p_get_proc_address("string_new_with_latin1_chars")
     StringConstruct.utf8FromString = cast(GDE.InterfaceStringToUtf8Chars)gdAPI.p_get_proc_address("string_to_utf8_chars")
 
@@ -322,36 +326,6 @@ classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, h
 }
 
 
-make_property :: proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
-    
-    return makePropertyFull(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
-}
-
-//TODO : See if I really need to malloc these variables or if that's just something for C to do.
-//Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
-makePropertyFull :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-    context = runtime.default_context()
-
-    prop_name:= new(GDE.StringName)
-    StringConstruct.stringNameNewLatin(prop_name, name, false)
-
-    propHintString:= new(GDE.gdstring)
-    StringConstruct.stringNewUTF8(propHintString, hintString)
-
-    propClassName:= new(GDE.StringName)
-    StringConstruct.stringNameNewLatin(propClassName, className, false)
-    
-    info: GDE.PropertyInfo = {
-        name = prop_name,
-        type = type, //is an enum specifying type. Meh.
-        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
-        hint_string = propHintString,
-        class_name = propClassName,
-        usage = usageFlags
-    }
-
-    return info
-}
 
 destructProperty :: proc "c" (info: ^GDE.PropertyInfo) {
     context = runtime.default_context()
