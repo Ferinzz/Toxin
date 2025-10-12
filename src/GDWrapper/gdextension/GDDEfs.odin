@@ -247,6 +247,11 @@ GDSTRING_WITH_PLACEHOLDER_TEXT :: struct{
   placeholder: gdstring,
 }
 
+STRINGARRAY_WITH_PLACEHOLDER_TEXT :: struct{
+  input_string: Array,
+  placeholder: gdstring,
+}
+
 //gdstring with multiple lines
 MULTILINE_TEXT :: distinct gdstring
 
@@ -257,10 +262,13 @@ MULTILINE_TEXT :: distinct gdstring
 INPUT_NAME_STRING :: distinct gdstring
 INPUT_NAME_STRINGNAME :: distinct gdstring
 
+//String to a path to a file or directory.
+Path:: gdstring
+
 //Specifies a path to something.
 //When making public specify what kind of path it is.
 PATH :: struct {
-  path: gdstring,
+  path: Path,
   type: PATH_TYPES,
 }
 
@@ -272,6 +280,52 @@ PATH_TYPES :: enum {
   GLOBAL_FILE, //absolute path to file
   SAVE_FILE, //file path. can have wildcards like "*.png,*.jpg".
   GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
+}
+
+//Struct to pass data for a ranged variable.
+//float, int
+Ranged_Num :: struct ($T: typeid) {
+  number: T,
+  step: T,
+  flags: Range_Flags,
+}
+
+//Array[int], Array[float], PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, or PackedFloat64Array
+Ranged_Array :: struct ($T: typeid, $F: typeid) {
+  number: T,
+  step: F,
+  flags: Range_Flags,
+}
+
+Range_Flags :: bit_set [Range; Int]
+
+Range :: enum {
+  or_greater,
+  or_less,
+  exp,
+  hide_slider,
+  radians_as_degrees,
+  degrees,
+}
+
+//struct holding NodePath and allowed node info.
+//Allowed Nodes is comma separated stringof valid node types
+NodePath_Hint :: struct {
+  Path: NodePath,
+  Allowed_Nodes: gdstring,
+}
+
+//struct holding Array[NodePath] and allowed node info.
+//Allowed Nodes is comma separated stringof valid node types
+NodePathArray_Hint :: struct {
+  Path: Array,
+  Allowed_Nodes: gdstring,
+}
+
+Tool_Button :: struct {
+  call: Callable,
+  text: gdstring,
+  icon: Path,
 }
 
 /*First value is not used by anything other tha C#. Second value is where the data begins.
