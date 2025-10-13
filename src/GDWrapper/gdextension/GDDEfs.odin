@@ -285,16 +285,20 @@ PATH_TYPES :: enum {
 //Struct to pass data for a ranged variable.
 //float, int
 Ranged_Num :: struct ($T: typeid) {
-  number: T,
+  min: T,
+  max: T,
   step: T,
   flags: Range_Flags,
+  validate: bool, //Specify if you want Odin callbacks to validate the range.
 }
 
 //Array[int], Array[float], PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, or PackedFloat64Array
-Ranged_Array :: struct ($T: typeid, $F: typeid) {
-  number: T,
-  step: F,
+Ranged_Array :: struct ($ArrayType: typeid, $indexType: typeid) {
+  min: indexType,
+  max: indexType,
+  step: indexType,
   flags: Range_Flags,
+  validate: bool, //Specify if you want Odin callbacks to validate the range.
 }
 
 Range_Flags :: bit_set [Range; Int]
@@ -322,6 +326,8 @@ NodePathArray_Hint :: struct {
   Allowed_Nodes: gdstring,
 }
 
+//Use to export a callable as a clickable button with a lable and icon.
+//When the button is pressed the callable is called.
 Tool_Button :: struct {
   call: Callable,
   text: gdstring,

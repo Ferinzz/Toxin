@@ -5,11 +5,13 @@ import GDW "GDWrapper"
 import GDE "GDWrapper/gdextension"
 import "base:runtime"
 import "core:fmt"
+import sics "base:intrinsics"
 
 game :: struct {
     selfPtr: GDE.ObjectPtr,
     exampleInt: GDE.Int,
     publicEnum: myEnum,
+    my_range_num: GDE.Ranged_Num(GDE.Int),
 }
 
 controlClass: GDE.ObjectPtr
@@ -88,18 +90,28 @@ testHints:i8=0
 
 set :: proc "c" (yourclassstruct: ^game, valuePassedInByGodot: GDE.Int) {
     context = runtime.default_context()
-    fmt.println(i8(valuePassedInByGodot))
+    //fmt.println(i8(valuePassedInByGodot))
     //fmt.println(u8(valuePassedInByGodot))
     testHints = i8(valuePassedInByGodot) //someField is of type GDE.Int
 }
 
 get :: proc "c" (yourclassstruct: ^game) -> GDE.Int {
     context = runtime.default_context()
-    fmt.println("restHints get: ", testHints)
+    //fmt.println("restHints get: ", testHints)
     return GDE.Int(testHints) //someField is of type GDE.Int
 }
 
 gameBindMethod :: proc "c" (){
+    context = runtime.default_context()
+
+    range_type:typeid= sics.type_field_type(game, "my_range_num")
+
+    fmt.println(range_type)
+
+    number_type:typeid= sics.type_field_type(sics.type_field_type(game, "my_range_num"), "number")
+
+    fmt.println(number_type)
+    
     argsInfo: [1]GDE.PropertyInfo
     argsInfo[0] = GDW.Make_Property_Full(.INT, "testvalue", .RANGE, string("0, 455"), "game", GDE.PROPERTY_USAGE_DEFAULT)
     
