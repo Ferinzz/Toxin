@@ -348,6 +348,13 @@ Tool_Button :: struct {
   icon: Path,
 }
 
+
+
+Easing_Options :: enum {
+  attenuation,
+  positive_only,
+}
+
 /*First value is not used by anything other tha C#. Second value is where the data begins.
 The size and ref count are offset -1uintptr to the left of where the data begins.
 Use Godot's built-ins to make and manage these. Otherwise you risk heap corruption if/when Godot tries writing memory in your dynlib.
