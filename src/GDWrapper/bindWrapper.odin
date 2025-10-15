@@ -30,7 +30,7 @@ import "core:strconv"
 * Godot will need a getter and setter to be able to handle variables 'made public'
 * This function will generate basic get and set functions for you. Register their callbacks, register them for use in the editor or GDScripts.
 * Assumption: you are setting all the information in a struct. You will provide the name of the field as you've declared it.
-* P: the class struct which holds your variable.
+* classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
 Export :: proc "c" ($classStruct: typeid, $fieldName: cstring,
@@ -94,23 +94,15 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
         delete(final)
     }
     
-    className := fmt.caprint(type_info_of(classStruct))
+    className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewLatin(&className_SN, className, false)
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
 
-    prop_info:= Make_Property_Full(.INT, string(fieldName), .ENUM, string(output[:]), "game", GDE.PROPERTY_USAGE_DEFAULT)
-    /*
-    get,set:= make_getter_and_setter(classStruct, GDE.Int, (fieldName))
 
-    //These functions create the callbacks Godot will used to call set and get.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    prop_info:= Make_Property_Full(.INT, string(fieldName), .ENUM, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
 
-    //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
-    Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)
-    */
     bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
 
     destructProperty(&prop_info)
@@ -134,10 +126,10 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
     
     methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL
 
-    className := fmt.caprint(type_info_of(classStruct))
+    className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewLatin(&className_SN, className, false)
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
 
     output: string
@@ -197,7 +189,9 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
     } else {
         output = strings.concatenate({min,",",max,",",step})
     }
-    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, output, "game", GDE.PROPERTY_USAGE_DEFAULT)
+    
+
+    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
 
     bind_export(classStruct, &className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
 
@@ -310,7 +304,11 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
     } else {
         output = strings.concatenate({min,",",max,",",step})
     }
-    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, output, "game", GDE.PROPERTY_USAGE_DEFAULT)
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     if !rodata {
@@ -322,6 +320,38 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
 }
 
 
+/*
+* Export a float to the editor and specify that it is a float for the easing curve. (assumption)
+* I believe that this is intended to be used with the ease() function as the curve value.
+* READ THIS! : https://byteatatime.dev/posts/easings/
+* classStruct: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+* easing: The restrictions which should be applied to the easing.
+*/
+Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: GDE.Easing_Options,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
+    {
+    context = godotContext
+    //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
+    OType : typeid = sics.type_field_type(classStruct, fieldName)
+    
+    if OType != GDE.float {return}
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+    info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, string(fieldName), .EXP_EASING, GDE.Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
+    
+    bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    destructProperty(&info)
+}
 
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.

@@ -221,7 +221,6 @@ Array :: distinct struct{
 //https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-property-layer-names-2d-navigation-layer-1
 //bit flag field for layers.
 //The widget in the Inspector dock will use the layer names defined in ProjectSettings.layer_names
-
 layers_2d_render:: bit_set[0..=20; Int]
 layers_3d_render:: bit_set[0..=20; Int]
 
@@ -348,9 +347,14 @@ Tool_Button :: struct {
   icon: Path,
 }
 
-
+Easing_Type: [Easing_Options]string = {
+  .none = "",
+  .attenuation= "attenuation",
+  .positive_only = "positive_only",
+}
 
 Easing_Options :: enum {
+  none,
   attenuation,
   positive_only,
 }

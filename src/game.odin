@@ -12,6 +12,9 @@ game :: struct {
     exampleInt: GDE.Int,
     publicEnum: myEnum,
     my_range_num: GDE.Int,
+    easing_float: GDE.float,
+    pos_float: GDE.float,
+    exp_float: GDE.float,
 }
 
 controlClass: GDE.ObjectPtr
@@ -137,6 +140,9 @@ gameExport :: proc "c" (){
     GDW.Export_Range(game, "exampleInt", GDE.Ranged_Num(GDE.Int){0, 45, 1, {}})
     GDW.Export(game, "my_range_num")
     GDW.Export_Enum(game, "publicEnum")
+    GDW.Export_Easing(game, "easing_float", .attenuation)
+    GDW.Export_Easing(game, "pos_float", .positive_only)
+    GDW.Export_Easing(game, "exp_float", .none)
 
 }
 
