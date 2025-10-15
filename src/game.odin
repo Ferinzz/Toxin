@@ -15,6 +15,7 @@ game :: struct {
     easing_float: GDE.float,
     pos_float: GDE.float,
     exp_float: GDE.float,
+    an_array: GDE.Array,
 }
 
 controlClass: GDE.ObjectPtr
@@ -137,12 +138,14 @@ gameExport :: proc "c" (){
     GDW.gdAPI.classdbRegisterExtensionClassMethod(GDW.Library, &game_SN, &methodInfo)
     */
 
-    GDW.Export_Range(game, "exampleInt", GDE.Ranged_Num(GDE.Int){0, 45, 1, {}})
     GDW.Export(game, "my_range_num")
+    GDW.Export_Range(game, "exampleInt", GDE.Ranged_Num(GDE.Int){0, 45, 1, {}})
     GDW.Export_Enum(game, "publicEnum")
     GDW.Export_Easing(game, "easing_float", .attenuation)
     GDW.Export_Easing(game, "pos_float", .positive_only)
     GDW.Export_Easing(game, "exp_float", .none)
+    //GDW.Export_Array_Type(game, "an_array", "Node2D", .Object)
+    //GDW.Export(game, "an_array")
 
 }
 
