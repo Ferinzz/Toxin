@@ -102,23 +102,29 @@ Public_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    
+    destructProperty(&prop_info)
 }
 
 
-Range_Public :: proc ($classStruct: typeid, $fieldName: cstring,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
+                        range_info: GDE.Ranged_Num(GDE.Int),
+                        rodata: bool,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName)
     {
-        
-    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, string(output[:]), "game", GDE.PROPERTY_USAGE_DEFAULT)
+    
+    methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
-        context = godotContext
-        ////fmt.println(godotValue)
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+    set: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName))
+    if rodata == false {
+        set = proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+            context = godotContext
+            ////fmt.println(godotValue)
+            (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        }
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
@@ -127,11 +133,11 @@ Range_Public :: proc ($classStruct: typeid, $fieldName: cstring,
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
         context = godotContext
 
         //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
@@ -150,9 +156,74 @@ Range_Public :: proc ($classStruct: typeid, $fieldName: cstring,
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
-    //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
-    Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    output: string
+
+    min:= fmt.aprint(range_info.min)
+    max:= fmt.aprint(range_info.max)
+    step:string 
+    if range_info.step !=0 {
+        step = fmt.aprint(range_info.step)
     }
+    flag_string: [dynamic]u8
+    prev_true:bool=false
+    switch range_info.flags {
+        case {.or_greater}:
+            append(&flag_string, "or_greater")
+            prev_true = true
+            fallthrough
+        case {.or_less}:
+            append(&flag_string, "or_less")
+            if prev_true == true do append(&flag_string,",")
+            prev_true = true
+            fallthrough
+        case {.exp}:
+            append(&flag_string, "exp")
+            if prev_true == true do append(&flag_string,",")
+            prev_true = true
+            fallthrough
+        case {.hide_slider}:
+            append(&flag_string, "hide_slider")
+            if prev_true == true do append(&flag_string,",")
+            prev_true = true
+            fallthrough
+        case {.radians_as_degrees}:
+            append(&flag_string, "radians_as_degrees")
+            if prev_true == true do append(&flag_string,",")
+            prev_true = true
+            fallthrough
+        case {.degrees}:
+            append(&flag_string, "degrees")
+            if prev_true == true do append(&flag_string,",")
+            prev_true = true
+            fallthrough
+    }
+
+    field_type:GDE.VariantType
+    if sics.type_field_type(classStruct, fieldName) == GDE.Int {
+        field_type = .INT
+    }
+    else if sics.type_field_type(classStruct, fieldName) == GDE.float {
+        field_type = .FLOAT
+    } else {
+        failureProc("", "unsupported type in Export_Range", loc)
+        
+    }
+    if len(flag_string) > 0{
+        output = strings.concatenate({min,",",max,",",step,",",string(flag_string[:])})
+    } else {
+        output = strings.concatenate({min,",",max,",",step})
+    }
+    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, output, "game", GDE.PROPERTY_USAGE_DEFAULT)
+
+    //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
+    if !rodata {
+        Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)}
+    else {
+        Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "")
+    }
+    destructProperty(&prop_info)
+}
+
 
 /*
 * Godot will need a getter and setter to be able to handle variables 'made public'

@@ -61,7 +61,7 @@ gameInit :: proc "c" ($classStruct: typeid) {
 
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &game_SN, game_GDClass_StringName, &class_info)
     
-    GDW.makePublic(game, "exampleInt")
+    //GDW.makePublic(game, "exampleInt")
     //GDW.makePublic2(game, "exampleInt")
     
     //These functions create the callbacks Godot will used to call set and get.
@@ -104,13 +104,6 @@ get :: proc "c" (yourclassstruct: ^game) -> GDE.Int {
 gameBindMethod :: proc "c" (){
     context = runtime.default_context()
 
-    range_type:typeid= sics.type_field_type(game, "my_range_num")
-
-    fmt.println(range_type)
-
-    number_type:typeid= sics.type_field_type(sics.type_field_type(game, "my_range_num"), "number")
-
-    fmt.println(number_type)
     
     argsInfo: [1]GDE.PropertyInfo
     argsInfo[0] = GDW.Make_Property_Full(.INT, "testvalue", .RANGE, string("0, 455"), "game", GDE.PROPERTY_USAGE_DEFAULT)
@@ -142,6 +135,9 @@ gameBindMethod :: proc "c" (){
     methodInfo.arguments_metadata = &args_metadata[0]
     
     GDW.gdAPI.classdbRegisterExtensionClassMethod(GDW.Library, &game_SN, &methodInfo)
+
+
+    GDW.Export_Range(game, "exampleInt", GDE.Ranged_Num(GDE.Int){0, 45, 1, {}}, false)
 
 }
 

@@ -282,23 +282,37 @@ PATH_TYPES :: enum {
   GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
 }
 
-//Struct to pass data for a ranged variable.
-//float, int
+/*Struct to pass data for a ranged variable.
+* Supports: float, int
+* min: lowest value allowed by the editor.
+* max: largest value allowed by the editor.
+* step: by how much it should increment. 0 will be ignored.
+* flags: additional usage information.
+* validate: Not implemented. if Odin's callback should verify the range.
+*/
 Ranged_Num :: struct ($T: typeid) {
   min: T,
   max: T,
   step: T,
   flags: Range_Flags,
-  validate: bool, //Specify if you want Odin callbacks to validate the range.
+  //validate: bool, //Specify if you want Odin callbacks to validate the range.
 }
 
-//Array[int], Array[float], PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, or PackedFloat64Array
-Ranged_Array :: struct ($ArrayType: typeid, $indexType: typeid) {
+/*
+* Supports: Array[int], Array[float], PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, or PackedFloat64Array
+* indexType should be one of GDE.Int or GDE.float
+* min: lowest value allowed by the editor.
+* max: largest value allowed by the editor.
+* step: by how much it should increment. 0 will be ignored.
+* flags: additional usage information.
+* validate: Not implemented. if Odin's callback should verify the range.
+*/
+Ranged_Array :: struct ($indexType: typeid) {
   min: indexType,
   max: indexType,
   step: indexType,
   flags: Range_Flags,
-  validate: bool, //Specify if you want Odin callbacks to validate the range.
+  //validate: bool, //Specify if you want Odin callbacks to validate the range.
 }
 
 Range_Flags :: bit_set [Range; Int]
