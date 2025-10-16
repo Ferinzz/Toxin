@@ -201,12 +201,14 @@ Signal :: distinct struct {
 /*Dictionaries are associative containers that contain values referenced by unique keys.
 Dictionaries will preserve the insertion order when adding new entries.
 Size changes based on Godot build config.*/
+//WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 Dictionary :: distinct struct{
     id: u32
 }
 
 /*An array of Variants.
 Size changes based on Godot build config.*/
+//WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 Array :: distinct struct{
     id: u32
 }
@@ -369,6 +371,7 @@ Index_SubType :: enum{
 The size and ref count are offset -1uintptr to the left of where the data begins.
 Use Godot's built-ins to make and manage these. Otherwise you risk heap corruption if/when Godot tries writing memory in your dynlib.
 */
+//WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 PackedByteArray :: packedArray(u8)
 
 PackedInt32Array :: packedArray(i32)

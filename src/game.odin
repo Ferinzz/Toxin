@@ -15,7 +15,7 @@ game :: struct {
     easing_float: GDE.float,
     pos_float: GDE.float,
     exp_float: GDE.float,
-    an_array: GDE.Array,
+    an_array: GDE.PackedInt32Array,
 }
 
 controlClass: GDE.ObjectPtr
@@ -145,7 +145,7 @@ gameExport :: proc "c" (){
     GDW.Export_Easing(game, "pos_float", .positive_only)
     GDW.Export_Easing(game, "exp_float", .none)
     //GDW.Export_Array_Type(game, "an_array", "Node2D", .Object)
-    //GDW.Export(game, "an_array")
+    GDW.Export(game, "an_array")
 
 }
 
@@ -163,6 +163,9 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     self.exampleInt = 0
 
     self.publicEnum = .one
+    //self.an_array.data = 0
+
+    //GDW.ArrayHelp.packedi32create0(&self.an_array, nil)
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)

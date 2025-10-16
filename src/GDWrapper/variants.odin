@@ -52,22 +52,6 @@ variantOperator :: proc(p_operator: GDE.VariantOperator, p_type_a: ^GDE.Variant,
 }
 
 
-//Convert your variable to Godot's Variant type.
-VariantFrom : struct {
-	
-    FloatToVariant: GDE.VariantFromTypeConstructorFunc,
-    StringNameToVariant: GDE.VariantFromTypeConstructorFunc,
-    Vec2ToVariant: GDE.VariantFromTypeConstructorFunc,
-    boolToVariant: GDE.VariantFromTypeConstructorFunc,
-    rec2ToVariant: GDE.VariantFromTypeConstructorFunc,
-    Transform2DToVariant: GDE.VariantFromTypeConstructorFunc,
-    packedf32arrayToVariant: GDE.VariantFromTypeConstructorFunc,
-    
-}
-
-
-
-
 variant_from :: proc {
     BooltoVariant,
     InttoVariant,
@@ -556,11 +540,11 @@ variant_to :: proc {
     }
 
 
-
+//WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 
 ArrayHelp : struct {
     //Godot needs to allocate memory for the array and track it on its side.
-    packedi32create0: GDE.PtrConstructor,
+    packedi32create0: GDE.PtrConstructor, //Initialize. Required to initialize at creation if Exported
     packedi32create1: GDE.PtrConstructor, //create from another packedf32
     packedi32create2: GDE.PtrConstructor, //create from an Array.
     packedi32size: GDE.PtrBuiltInMethod,
@@ -586,16 +570,6 @@ PackedStringArray : struct {
 }
 
 
-//Convert Godot's Variant type to a C type.
-variantTo :: struct {
-    floatFromVariant: GDE.TypeFromVariantConstructorFunc,
-    intFromVariant: GDE.TypeFromVariantConstructorFunc,
-    Vec2FromVariant: GDE.TypeFromVariantConstructorFunc,
-    packedf32arrayFromVariant: GDE.TypeFromVariantConstructorFunc,
-    
-}
-
-variantto: variantTo
 
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.

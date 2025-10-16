@@ -164,20 +164,6 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     VariantGetters.getVariantFromTypeConstructor = cast(GDE.InterfaceGetVariantFromTypeConstructor)p_get_proc_address("get_variant_from_type_constructor")
     VariantGetters.getVariantToTypeConstuctor = cast(GDE.InterfaceGetVariantToTypeConstructor)p_get_proc_address("get_variant_to_type_constructor")
     VariantGetters.variantGetType = cast(GDE.InterfaceVariantGetType)p_get_proc_address("variant_get_type")
-    VariantFrom.FloatToVariant = VariantGetters.getVariantFromTypeConstructor(.FLOAT)
-    variantto.floatFromVariant = VariantGetters.getVariantToTypeConstuctor(.FLOAT)
-    variantto.intFromVariant = VariantGetters.getVariantToTypeConstuctor(.INT)
-    variantto.packedf32arrayFromVariant = VariantGetters.getVariantToTypeConstuctor(.PACKED_INT64_ARRAY)
-    
-    //constructor.vector2ConstructorXY = variantGetPtrConstructor(.VECTOR2, 3) // See extension_gdAPI.json for indices. ??? So... a Vector2 isn't generic like it is in Raylib. It has specific names for each use case. Madness.
-    //What happens if you don't use the correct index? Does Godot throw a fit because the names aren't exactly the same?
-    //Is this what a dynamic language ends up being?
-    VariantFrom.StringNameToVariant = VariantGetters.getVariantFromTypeConstructor(.STRING_NAME)
-    VariantFrom.Vec2ToVariant = VariantGetters.getVariantFromTypeConstructor(.VECTOR2)
-    VariantFrom.boolToVariant = VariantGetters.getVariantFromTypeConstructor(.BOOL)
-    VariantFrom.rec2ToVariant = VariantGetters.getVariantFromTypeConstructor(.RECT2)
-    VariantFrom.Transform2DToVariant = VariantGetters.getVariantFromTypeConstructor(.TRANSFORM2D)
-    VariantFrom.packedf32arrayToVariant = VariantGetters.getVariantFromTypeConstructor(.PACKED_INT64_ARRAY)
 
     gdAPI.indexGetBind = cast(GDE.InterfaceVariantGetPtrIndexedGetter)p_get_proc_address("variant_get_ptr_indexed_getter")
     gdAPI.indexSetBind = cast(GDE.InterfaceVariantGetPtrIndexedSetter)p_get_proc_address("variant_get_ptr_indexed_setter")
@@ -275,10 +261,11 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     
 }
 
+/*
 classCreate :: proc "c" () {
 
 }
-
+*/
 
 
 /* Get a binding to a method from Godot's class DB.
@@ -1163,6 +1150,7 @@ bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Varian
 * Use this function to generate a ptr call for your virutal functions.
 * Can have up to 10 variables + the classInstancePointer.
 * First variable of your procPointer should always be a pointer to your class struct. p_instance will be used there.
+*
 * procPointer : The proc to your variable. Passed from your callVirtualFunctionWithData
 * p_instance : The instance pointer that Godot included in callVirtualFunctionWithData
 * p_args : An array of args sent by Godot in callVirtualFunctionWithData
