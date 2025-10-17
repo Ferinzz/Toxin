@@ -124,12 +124,12 @@ VariantOperator :: enum {
 //   them it is always safe to skip the constructor for the return value if you are in a hurry ;-)
 
 
-VariantPtr 							:: ^Variant       
-ConstVariantPtr 					:: rawptr 
-ConstVariantPtrargs 				:: [^]rawptr 
-UninitializedVariantPtr 			:: rawptr       
-StringNamePtr 						:: rawptr       
-ConstStringNamePtr 					:: [^]StringName 
+VariantPtr 							:: ^Variant
+ConstVariantPtr 					:: rawptr
+ConstVariantPtrargs 				:: [^]rawptr
+UninitializedVariantPtr 			:: rawptr
+StringNamePtr 						:: rawptr
+ConstStringNamePtr 					:: [^]StringName
 UninitializedStringNamePtr          :: ^StringName
 StringPtr 							:: ^gdstring
 ConstStringPtr 						:: [^]gdstring
@@ -138,13 +138,13 @@ ObjectPtr 							:: ^Object
 ConstObjectPtr 						:: [^]Object
 UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
-ConstTypePtr 						:: [^]rawptr 
+ConstTypePtr 						:: [^]rawptr
 UninitializedTypePtr 				:: rawptr
 MethodBindPtr 						:: distinct rawptr
-GDObjectInstanceID 					:: u64  
+GDObjectInstanceID 					:: u64
 
 RefPtr 								:: rawptr
-ConstRefPtr 						:: rawptr 
+ConstRefPtr 						:: rawptr
 ClassLibraryPtr  					:: distinct rawptr
 ConstTypePtrargs					:: [^]rawptr
 

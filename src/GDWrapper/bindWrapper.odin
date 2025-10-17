@@ -90,9 +90,13 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     destructProperty(&info)
 }
 
-//To make an enum for Godot you need to create a property hint and make it public.
-//Enums are just a fancy set of strings which are associated with an int value.
-//Public_Enum :: proc($anEmun: typeid, class: string, allocator := context.allocator) where sics.type_is_enum(anEmun) {
+/*
+* To make an enum for Godot you need to create a property hint and make it public.
+* Enums are just a fancy set of strings which are associated with an int value.
+* Godot will save the value it chooses as an int in the scene or script file.
+* classStruct: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+*/
 Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location) {
@@ -107,7 +111,7 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
     //random estimate of how long it might need to be. Based off of nothing.
     output: = make_dynamic_array_len_cap([dynamic]u8, 0, len(info.names)*16)
     
-    //Loop through each to add the enum value to the hint string.
+    //Loop through each entry in the enum to add their name and value to the hint string.
     for field, ind in info.names {
         if ind > 0 do append(&output, ',')
         buf:[30]u8
@@ -426,7 +430,7 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: cstring,
 * prop_info: the property information to be passed to Godot. Used for the editor to properly manage the type.
 * loc: location this proc was called from.
 */
-bind_export :: proc($classStruct: typeid, className_SN: ^GDE.StringName, $fieldName: cstring,
+bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^GDE.StringName, $fieldName: cstring,
     variant_type: GDE.VariantType, $GDType: typeid, methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
     prop_info: ^GDE.PropertyInfo, loc:= #caller_location) {
     
@@ -441,7 +445,7 @@ bind_export :: proc($classStruct: typeid, className_SN: ^GDE.StringName, $fieldN
     Bind_Property_Prop_Info(className_SN, string(fieldName), variant_type, prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 }
 
-make_getter_and_setter :: proc ($classStruct: typeid, $field_Type: typeid, $fieldName: cstring) -> (getter: proc "c" (p_classData: ^classStruct) -> field_Type, setter: proc "c" (p_classData: ^classStruct, godotValue: field_Type)) {
+make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: typeid, $fieldName: cstring) -> (getter: proc "c" (p_classData: ^classStruct) -> field_Type, setter: proc "c" (p_classData: ^classStruct, godotValue: field_Type)) {
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: field_Type) {
@@ -496,7 +500,7 @@ makePropertyFull_cstring :: proc "c" (type: GDE.VariantType, name: cstring, hint
         hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
         hint_string = propHintString,
         class_name = propClassName,
-        usage = usageFlags
+        usage = usageFlags,
     }
 
     return info

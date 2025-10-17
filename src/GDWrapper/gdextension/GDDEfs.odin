@@ -203,14 +203,14 @@ Dictionaries will preserve the insertion order when adding new entries.
 Size changes based on Godot build config.*/
 //WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 Dictionary :: distinct struct{
-    id: u32
+    id: rawptr
 }
 
 /*An array of Variants.
 Size changes based on Godot build config.*/
 //WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 Array :: distinct struct{
-    id: u32
+    id: rawptr
 }
 
 

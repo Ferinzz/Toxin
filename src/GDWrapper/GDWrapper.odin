@@ -168,32 +168,32 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     gdAPI.indexGetBind = cast(GDE.InterfaceVariantGetPtrIndexedGetter)p_get_proc_address("variant_get_ptr_indexed_getter")
     gdAPI.indexSetBind = cast(GDE.InterfaceVariantGetPtrIndexedSetter)p_get_proc_address("variant_get_ptr_indexed_setter")
     
-    ArrayHelp.packedi32GetIndex = gdAPI.indexGetBind(.PACKED_INT64_ARRAY)
-    ArrayHelp.packedi32SetIndex = gdAPI.indexSetBind(.PACKED_INT64_ARRAY)
-    ArrayHelp.packedi32create0 = variantGetPtrConstructor(.PACKED_INT64_ARRAY, 0)
-    ArrayHelp.packedi32create1 = variantGetPtrConstructor(.PACKED_INT64_ARRAY, 1)
+    ArrayHelp.packedi32GetIndex = gdAPI.indexGetBind(.PACKED_INT32_ARRAY)
+    ArrayHelp.packedi32SetIndex = gdAPI.indexSetBind(.PACKED_INT32_ARRAY)
+    ArrayHelp.packedi32create0 = variantGetPtrConstructor(.PACKED_INT32_ARRAY, 0)
+    ArrayHelp.packedi32create1 = variantGetPtrConstructor(.PACKED_INT32_ARRAY, 1)
     
     arrayClass: GDE.StringName
     StringConstruct.stringNameNewLatin(&arrayClass, "PackedInt64Array", false)
     arraySize: GDE.StringName
     StringConstruct.stringNameNewLatin(&arraySize, "size", false)
-    ArrayHelp.packedi32size = gdAPI.builtinMethodBindCall(.PACKED_INT64_ARRAY, &arraySize, 3173160232)
+    ArrayHelp.packedi32size = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 3173160232)
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "resize", false)
-    ArrayHelp.packedi32REsize = gdAPI.builtinMethodBindCall(.PACKED_INT64_ARRAY, &arraySize, 848867239)
+    ArrayHelp.packedi32REsize = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 848867239)
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "append", false)
-    ArrayHelp.packedi32Append = gdAPI.builtinMethodBindCall(.PACKED_INT64_ARRAY, &arraySize, 694024632)
+    ArrayHelp.packedi32Append = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 694024632)
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "get", false)
-    ArrayHelp.packedi32Get = gdAPI.builtinMethodBindCall(.PACKED_INT64_ARRAY, &arraySize, 4103005248)
+    ArrayHelp.packedi32Get = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 4103005248)
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "set", false)
-    ArrayHelp.packedi32Set = gdAPI.builtinMethodBindCall(.PACKED_INT64_ARRAY, &arraySize, 3638975848)
+    ArrayHelp.packedi32Set = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 3638975848)
     Destructors.stringNameDestructor(&arraySize)
     
     Destructors.stringNameDestructor(&arrayClass)
@@ -227,6 +227,251 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 
     Destructors.stringNameDestructor(&arrayClass)
 
+    //Fetch Godot's methods for Array class.
+    StringConstruct.stringNameNewLatin(&arrayClass, "Array", false)
+
+    
+    GDArray.create0 = variantGetPtrConstructor(.ARRAY, 0)
+    GDArray.create1 = variantGetPtrConstructor(.ARRAY, 1)
+    GDArray.create2 = variantGetPtrConstructor(.ARRAY, 2)
+    GDArray.create3 = variantGetPtrConstructor(.ARRAY, 3)
+    GDArray.create4 = variantGetPtrConstructor(.ARRAY, 4)
+    GDArray.create5 = variantGetPtrConstructor(.ARRAY, 5)
+    GDArray.create6 = variantGetPtrConstructor(.ARRAY, 6)
+    GDArray.create7 = variantGetPtrConstructor(.ARRAY, 7)
+    GDArray.create8 = variantGetPtrConstructor(.ARRAY, 8)
+    GDArray.create9 = variantGetPtrConstructor(.ARRAY, 9)
+    GDArray.create10 = variantGetPtrConstructor(.ARRAY, 10)
+    GDArray.create11 = variantGetPtrConstructor(.ARRAY, 11)
+    GDArray.create11 = variantGetPtrConstructor(.ARRAY, 12)
+    
+    GDArray.GetIndex = gdAPI.indexGetBind(.ARRAY)
+    GDArray.SetIndex = gdAPI.indexSetBind(.ARRAY)
+    GDArray.Destroy = variant_get_ptr_destructor(.ARRAY)
+    /*
+
+    StringConstruct.stringNameNewLatin(&arraySize, "Size", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "Resize", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "Append", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "Get", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "Set", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2162347432)
+    Destructors.stringNameDestructor(&arraySize)*/
+
+    StringConstruct.stringNameNewLatin(&arraySize, "size", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "is_empty", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "clear", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "hash", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "assign", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2162347432)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "get", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 708700221)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "set", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3798478031)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "push_back", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "push_front", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "append", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "append_array", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2307260970)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "resize", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 848867239)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "insert", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3176316662)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "remove_at", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2823966027)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "fill", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "erase", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "front", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "back", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "pick_random", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "find", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2336346817)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "find_custom", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2145562546)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "rfind", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2336346817)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "rfind_custom", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2145562546)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "count", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1481661226)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "has", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3680194679)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "pop_back", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1321915136)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "pop_front", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1321915136)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "pop_at", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3518259424)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "sort", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "sort_custom", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3470848906)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "shuffle", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "bsearch", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3372222236)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "bsearch_custom", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 161317131)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "reverse", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "duplicate", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 636440122)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "slice", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1393718243)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "filter", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4075186556)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "gdmap", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4075186556)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "reduce", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4272450342)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "any", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4129521963)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "all", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4129521963)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "max", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "min", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "is_typed", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "is_same_typed", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2988181878)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "get_typed_builtin", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "get_typed_class_name", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1825232092)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "get_typed_script", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "make_read_only", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
+    Destructors.stringNameDestructor(&arraySize)
+
+    StringConstruct.stringNameNewLatin(&arraySize, "is_read_only", false)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
+    Destructors.stringNameDestructor(&arraySize)
+
+    Destructors.stringNameDestructor(&arrayClass)
+
     //constructor.variantNil = cast(GDE.InterfaceVariantNewNil)gdAPI.p_get_proc_address("variant_new_nil")
     //constructor.variantToVec2Constructor = cast(GDE.TypeFromVariantConstructorFunc)gdAPI.getVariantToTypeConstuctor(.VECTOR2)
 
@@ -234,7 +479,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Destructors.variantDestroy = cast(GDE.InterfaceVariantDestroy)p_get_proc_address("variant_destroy")
     Destructors.ObjectDestroy = cast(GDE.InterfaceObjectDestroy)p_get_proc_address("object_destroy")
 
-    ArrayHelp.packedi32Destroy = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.PACKED_INT64_ARRAY)
+    ArrayHelp.packedi32Destroy = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.PACKED_INT32_ARRAY)
 
     //Destructors.stringNameDestructor(arraySize)
     //Destructors.stringNameDestructor(arrayClass)
