@@ -17,6 +17,7 @@ game :: struct {
     exp_float: GDE.float,
     an_array: GDE.PackedInt32Array,
     a_real_array: GDE.Array,
+    is_Pointer: rawptr,
 }
 
 controlClass: GDE.ObjectPtr
@@ -148,6 +149,7 @@ gameExport :: proc "c" (){
     GDW.Export_Array_Type(game, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
     GDW.Export(game, "an_array")
     //GDW.Export(game, "a_real_array")
+    GDW.Export_Pointer(game, "is_Pointer")
     
 
 }
@@ -171,6 +173,11 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
 
     GDW.ArrayHelp.packedi32create0(&self.an_array, nil)
     GDW.GDArray.create0(&self.a_real_array, nil)
+
+    fmt.println(self.is_Pointer)
+    self.is_Pointer = transmute(rawptr)(u64(45))
+    //self.is_Pointer = 45
+    fmt.println(self.is_Pointer)
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)

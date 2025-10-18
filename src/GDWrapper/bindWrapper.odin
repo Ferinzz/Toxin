@@ -99,7 +99,9 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: cstring,
 */
 Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
-                        loc:= #caller_location) {
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_is_enum(sics.type_field_type(classStruct, fieldName)))
+    {
     
     anEnum:typeid= sics.type_field_type(classStruct, fieldName)
     type_info:= type_info_of(anEnum)
@@ -155,7 +157,7 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
 Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
                         range_info: $T/Ranged_Num,
                         loc:= #caller_location)
-                        where sics.type_has_field(classStruct, fieldName)
+                        where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.float) || (sics.type_field_type(classStruct, fieldName) == GDE.Int)))
     {
     
     methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL
@@ -409,7 +411,7 @@ Ranged_Array :: struct ($indexType: typeid) {
 Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: Easing_Options,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
-                        where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
+                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.float)) //No point trying if the field doesn't exist. Typo safety.
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
@@ -456,7 +458,7 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: cstring,
                         Index: ..Array_Type_Hint_Info,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
-                        where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
+                        where (sics.type_has_field(classStruct, fieldName)) //No point trying if the field doesn't exist. Typo safety.
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
@@ -517,6 +519,64 @@ Array_Type_Hint_Info :: struct{
   hint_string: string,
 }
 
+
+/*
+* Export a GDE.Int and tell Godot that it's a pointer.. I guess.
+* Not sure why you'd want this, but it's here. Interop between plugins/libraries I guess?
+*/
+Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.Int) || (sics.type_is_pointer(sics.type_field_type(classStruct, fieldName))))) //No point trying if the field doesn't exist. Typo safety.
+    {
+    context = godotContext
+    //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
+    OType : typeid = sics.type_field_type(classStruct, fieldName)
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+    info: GDE.PropertyInfo = Make_Property_Full(.INT, string(fieldName), .INT_IS_POINTER, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    
+    
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
+        context = godotContext
+
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(godotValue)
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+        context = godotContext
+        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    Bind_Property(&className_SN, string(fieldName), .INT, &info, "get_"+fieldName, "set_"+fieldName)
+    destructProperty(&info)
+}
+
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.
 * classStruct: struct of the custom class.
@@ -573,14 +633,14 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
     return get, set
 }
 
-make_property :: proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
+make_property :: #force_inline proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
     
     return makePropertyFull_cstring(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
 }
 
 //TODO : See if I really need to malloc these variables or if that's just something for C to do.
 //Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
-makePropertyFull_cstring :: proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+makePropertyFull_cstring :: #force_inline proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
     context = runtime.default_context()
 
     prop_name:= new(GDE.StringName)
@@ -604,7 +664,7 @@ makePropertyFull_cstring :: proc "c" (type: GDE.VariantType, name: cstring, hint
     return info
 }
 
-makePropertyFull_string :: proc "c" (type: GDE.VariantType, name: string, hint: GDE.PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+makePropertyFull_string :: #force_inline proc "c" (type: GDE.VariantType, name: string, hint: GDE.PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
     context = runtime.default_context()
 
     prop_name:= new(GDE.StringName)
@@ -893,6 +953,8 @@ bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMet
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1))
                     variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
+                fmt.println(fromvariant(cast(^GDE.Variant)p_args[0], argT1))
+                fmt.println((cast(^GDE.Variant)p_args[0]).data)
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1))
             }
         }

@@ -55,6 +55,7 @@ variantOperator :: proc(p_operator: GDE.VariantOperator, p_type_a: ^GDE.Variant,
 variant_from :: proc {
     BooltoVariant,
     InttoVariant,
+    PtrtoVariant,
     FloattoVariant,
     StringtoVariant,
     Vec2toVariant,
@@ -152,6 +153,10 @@ variant_to :: proc {
         mem.copy(&p_variant.data[0], p_from, 1)
     }
     InttoVariant       :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Int, loc:=#caller_location) {
+        p_variant.VType = .INT
+        mem.copy(&p_variant.data, p_from, 8)
+    }
+    PtrtoVariant       :: proc(p_variant: ^GDE.Variant, p_from: ^rawptr, loc:=#caller_location) {
         p_variant.VType = .INT
         mem.copy(&p_variant.data, p_from, 8)
     }
