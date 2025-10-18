@@ -153,7 +153,7 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
 * If this will be used by a function in GDScript you will need to add validation for the ranges, as GDScript does not respect this.
 */
 Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
-                        range_info: $T/GDE.Ranged_Num,
+                        range_info: $T/Ranged_Num,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName)
     {
@@ -236,10 +236,37 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
     delete(flag_string)
 }
 
+/*Struct to pass data for a ranged variable.
+* Supports: float, int
+* min: lowest value allowed by the editor.
+* max: largest value allowed by the editor.
+* step: by how much it should increment. 0 will be ignored.
+* flags: additional usage information.
+* validate: Not implemented. if Odin's callback should verify the range.
+*/
+Ranged_Num :: struct ($T: typeid) {
+  min: T,
+  max: T,
+  step: T,
+  flags: Range_Flags,
+  //validate: bool, //Specify if you want Odin callbacks to validate the range.
+}
+
+Range_Flags :: bit_set [Range; GDE.Int]
+
+Range :: enum {
+  or_greater,
+  or_less,
+  exp,
+  hide_slider,
+  radians_as_degrees,
+  degrees,
+}
+
 //Warning untested, does not properly clear the array before being set by Godot.
 //Memory leaky!!
 Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
-                        range_info: $T/GDE.Ranged_Array,
+                        range_info: $T/Ranged_Array,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName)
     {
@@ -353,6 +380,23 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
     destructProperty(&prop_info)
 }
 
+/*
+* Supports: Array[int], Array[float], PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, or PackedFloat64Array
+* indexType should be one of GDE.Int or GDE.float
+* min: lowest value allowed by the editor.
+* max: largest value allowed by the editor.
+* step: by how much it should increment. 0 will be ignored.
+* flags: additional usage information.
+* validate: Not implemented. if Odin's callback should verify the range.
+*/
+Ranged_Array :: struct ($indexType: typeid) {
+  min: indexType,
+  max: indexType,
+  step: indexType,
+  flags: Range_Flags,
+  //validate: bool, //Specify if you want Odin callbacks to validate the range.
+}
+
 
 /*
 * Export a float to the editor and specify that it is a float for the easing curve. (assumption)
@@ -362,7 +406,7 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
 * fieldName: the name that matches the field in the struct as you've named it.
 * easing: The restrictions which should be applied to the easing.
 */
-Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: GDE.Easing_Options,
+Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: Easing_Options,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
@@ -381,20 +425,35 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: GD
     StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
     
-    info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, string(fieldName), .EXP_EASING, GDE.Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, string(fieldName), .EXP_EASING, Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
     
     bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
+}
+
+
+Easing_Type: [Easing_Options]string = {
+  .none = "",
+  .attenuation= "attenuation",
+  .positive_only = "positive_only",
+}
+
+Easing_Options :: enum {
+  none,
+  attenuation,
+  positive_only,
 }
 
 /*
 * Specify the type which should be allocated into the array when working with Godot editor/script.
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
-* Array_Type: a string which is the name of the class, type etc which should be allowed in the Array.
+* Index: a struct containing the type [dynamic]T of the Array as well as an optional hint which can be included.
+* Index is vararg in order to support multi-dimensional Arrays.
+* Final string will be "%d/%d:%s" type/hint:hint_string. See Array_Type_Hint_Info for more examples.
 */
 Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: cstring,
-                        Index_Name: string, Index_Type: GDE.Index_SubType,
+                        Index: ..Array_Type_Hint_Info,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
@@ -412,11 +471,50 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     className_SN: GDE.StringName
     StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
+
+    hints: [dynamic]string
+
+    for l in Index {
+        if l.hint == .NONE {
+            hint:= fmt.aprintf("%d:", l.type)
+            append(&hints, hint)
+            delete(hint)
+        } else {
+            hint:= fmt.aprintf("%d/%d:%s", GDE.Int(l.type), GDE.Int(l.hint), l.hint_string)
+            append(&hints, hint)
+            delete(hint)
+        }
+    }
     
-    info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, string(fieldName), .ARRAY_TYPE, Index_Name, className, GDE.PROPERTY_USAGE_DEFAULT)
+    final_hint_string, ok:= strings.concatenate(hints[:])
+    if ok !=nil { return }
+
+    info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, string(fieldName), .ARRAY_TYPE, final_hint_string, className, GDE.PROPERTY_USAGE_DEFAULT)
     
     bind_export(classStruct, &className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
+    delete(final_hint_string)
+}
+
+
+/*
+* Values provided will be formatted into a string which Godot will understand.
+* Provide the string values that would make sense for the hint property included.
+* Godot supports multidimensional arrays, to specify this set type as .ARRAY
+* type: VariantType that should be used for this index. .OBJECT will be some sort of node.
+* hint: specifies the kind of hint that the string represents.
+* hint_string: the specifics that configure the hint
+* {.INT, .RANGE, "1,10,1"} -> result is an Array which should contain Ints with range specified to min: 1, max: 10, step: 1
+* {.ARRAY, .NONE, ""} -> a multidimensional Array of unspecified Arrays.
+* {.INT, .ENUM, "Zero,One,Two"} -> an array with a hint to use named values during selection.
+* {.OBJECT, .RESOURCE_TYPE, "Texture2D"} -> An Array of Texture2D
+* If you want to specify the type of the Array of Arrays include two in the export proc.
+* {.ARRAY, .NONE, ""}, {.STRING, .MULTILINE_TEXT, ""} -> if both are passed Godot will know this should be an Array of Array of gdstrings, which are multiline gdstrings
+*/
+Array_Type_Hint_Info :: struct{
+  type: GDE.VariantType,
+  hint: GDE.PropertyHint,
+  hint_string: string,
 }
 
 /*

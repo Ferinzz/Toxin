@@ -201,14 +201,14 @@ Signal :: distinct struct {
 /*Dictionaries are associative containers that contain values referenced by unique keys.
 Dictionaries will preserve the insertion order when adding new entries.
 Size changes based on Godot build config.*/
-//WARNING: if Exported you must initialize arrays them with at least create0 at some point.
+//WARNING: set id to nil during creation step. Godot allocation does not zero allocate by default.
 Dictionary :: distinct struct{
     id: rawptr
 }
 
 /*An array of Variants.
 Size changes based on Godot build config.*/
-//WARNING: if Exported you must initialize arrays them with at least create0 at some point.
+//WARNING: set id to nil during creation step. Godot allocation does not zero allocate by default.
 Array :: distinct struct{
     id: rawptr
 }
@@ -283,50 +283,6 @@ PATH_TYPES :: enum {
   GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
 }
 
-/*Struct to pass data for a ranged variable.
-* Supports: float, int
-* min: lowest value allowed by the editor.
-* max: largest value allowed by the editor.
-* step: by how much it should increment. 0 will be ignored.
-* flags: additional usage information.
-* validate: Not implemented. if Odin's callback should verify the range.
-*/
-Ranged_Num :: struct ($T: typeid) {
-  min: T,
-  max: T,
-  step: T,
-  flags: Range_Flags,
-  //validate: bool, //Specify if you want Odin callbacks to validate the range.
-}
-
-/*
-* Supports: Array[int], Array[float], PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, or PackedFloat64Array
-* indexType should be one of GDE.Int or GDE.float
-* min: lowest value allowed by the editor.
-* max: largest value allowed by the editor.
-* step: by how much it should increment. 0 will be ignored.
-* flags: additional usage information.
-* validate: Not implemented. if Odin's callback should verify the range.
-*/
-Ranged_Array :: struct ($indexType: typeid) {
-  min: indexType,
-  max: indexType,
-  step: indexType,
-  flags: Range_Flags,
-  //validate: bool, //Specify if you want Odin callbacks to validate the range.
-}
-
-Range_Flags :: bit_set [Range; Int]
-
-Range :: enum {
-  or_greater,
-  or_less,
-  exp,
-  hide_slider,
-  radians_as_degrees,
-  degrees,
-}
-
 //struct holding NodePath and allowed node info.
 //Allowed Nodes is comma separated stringof valid node types
 NodePath_Hint :: struct {
@@ -348,25 +304,6 @@ Tool_Button :: struct {
   text: gdstring,
   icon: Path,
 }
-
-Easing_Type: [Easing_Options]string = {
-  .none = "",
-  .attenuation= "attenuation",
-  .positive_only = "positive_only",
-}
-
-Easing_Options :: enum {
-  none,
-  attenuation,
-  positive_only,
-}
-
-Index_SubType :: enum{
-  Object,
-  Type,
-  RefCounted,
-}
-
 /*First value is not used by anything other tha C#. Second value is where the data begins.
 The size and ref count are offset -1uintptr to the left of where the data begins.
 Use Godot's built-ins to make and manage these. Otherwise you risk heap corruption if/when Godot tries writing memory in your dynlib.

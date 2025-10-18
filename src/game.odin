@@ -140,12 +140,12 @@ gameExport :: proc "c" (){
     */
 
     GDW.Export(game, "my_range_num")
-    GDW.Export_Range(game, "exampleInt", GDE.Ranged_Num(GDE.Int){0, 45, 1, {}})
+    GDW.Export_Range(game, "exampleInt", GDW.Ranged_Num(GDE.Int){0, 45, 1, {}})
     GDW.Export_Enum(game, "publicEnum")
     GDW.Export_Easing(game, "easing_float", .attenuation)
     GDW.Export_Easing(game, "pos_float", .positive_only)
     GDW.Export_Easing(game, "exp_float", .none)
-    GDW.Export_Array_Type(game, "a_real_array", "24/17:Texture2D", .Object)
+    GDW.Export_Array_Type(game, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
     GDW.Export(game, "an_array")
     //GDW.Export(game, "a_real_array")
     
