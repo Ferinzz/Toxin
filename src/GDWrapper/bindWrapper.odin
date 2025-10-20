@@ -417,8 +417,6 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: Ea
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
-    if OType != GDE.float {return}
-    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
@@ -546,6 +544,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
+    //Since I can't cast from int to a pointer I swapped to doing a transmute instead.
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
         context = godotContext
 
@@ -575,6 +574,117 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: cstring,
 
     Bind_Property(&className_SN, string(fieldName), .INT, &info, "get_"+fieldName, "set_"+fieldName)
     destructProperty(&info)
+}
+
+/*
+* Prevents the editor from allowing a user to set the Alpha channel.
+*/
+Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Color)) //No point trying if the field doesn't exist. Typo safety.
+    {
+    context = godotContext
+    
+    OType : typeid = sics.type_field_type(classStruct, fieldName)
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+    info: GDE.PropertyInfo = Make_Property_Full(.COLOR, string(fieldName), .COLOR_NO_ALPHA, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    
+    bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    destructProperty(&info)
+}
+
+Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
+{
+    context = godotContext
+    OType : typeid = sics.type_field_type(classStruct, fieldName)
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+    someFlags:typeid= sics.type_field_type(classStruct, fieldName)
+    typeInfo:= type_info_of(someFlags)
+    output:[dynamic]u8
+
+    //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
+    when sics.type_is_enum((sics.type_bit_set_elem_type(sics.type_field_type(classStruct, fieldName)))) {
+        flag_enum:=(type_info_of(sics.type_bit_set_elem_type(sics.type_field_type(classStruct, fieldName))).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum))
+
+
+        for name,index in flag_enum.names {
+            append(&output, name[:])
+            append(&output, ':')
+            buf:[64]u8
+            //The index of an enum represents the index of the bool in a bit_set.
+            //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
+            intermediate:[]u8= transmute([]u8)(strconv.write_int(buf[:],i64(1<<u64(flag_enum.values[index])), 10))
+            append(&output, string(intermediate[:]))
+            append(&output, ',')
+        }
+
+        prop_info:= Make_Property_Full(.INT, string(fieldName), .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+    } else {
+
+        append(&output, fmt.tprintf("%d", type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).lower))
+
+        //When not backed by an enum still need to provide some values to Godot.
+        //Just creating a string of coma separated numbers.
+        for i:= type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).lower+1; i< type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
+            append(&output, fmt.tprintf(",%v", i))
+        }
+        prop_info:= Make_Property_Full(.INT, string(fieldName), .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+    }
+    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
+        context = godotContext
+        ////fmt.println(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+        context = godotContext
+
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
+    Bind_Property_Prop_Info(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
+
+    destructProperty(&prop_info)
+    delete(output)
+
 }
 
 /*
