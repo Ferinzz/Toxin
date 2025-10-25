@@ -33,7 +33,7 @@ import "core:strconv"
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-Export :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+Export :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
@@ -46,11 +46,11 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     }
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
-    className := fmt.caprint(type_info_of(classStruct))
+    className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewLatin(&className_SN, className, false)
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
     
     variant_type:=GDE.VariantType(index)
@@ -85,7 +85,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
-    Bind_Property(&className_SN, string(fieldName), variant_type, &info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(&className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
@@ -97,7 +97,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: cstring,
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
+Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_enum(sics.type_field_type(classStruct, fieldName)))
@@ -137,7 +137,7 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
     defer(Destructors.stringNameDestructor(&className_SN))
 
 
-    prop_info:= Make_Property_Full(.INT, string(fieldName), .ENUM, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+    prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
 
     bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
 
@@ -154,7 +154,7 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: cstring,
 * SPECIAL WARNING the export functions themselves do not validate the ranges set.
 * If this will be used by a function in GDScript you will need to add validation for the ranges, as GDScript does not respect this.
 */
-Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
+Export_Range :: proc ($classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Num,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.float) || (sics.type_field_type(classStruct, fieldName) == GDE.Int)))
@@ -227,7 +227,7 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: cstring,
     }
     
 
-    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
+    prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
 
     bind_export(classStruct, &className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
 
@@ -267,7 +267,7 @@ Range :: enum {
 
 //Warning untested, does not properly clear the array before being set by Godot.
 //Memory leaky!!
-Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
+Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Array,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName)
@@ -303,7 +303,7 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
     className := fmt.caprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewLatin(&className_SN, className, false)
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
 
     //These functions create the callbacks Godot will used to call set and get.
@@ -371,13 +371,13 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: cstring,
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
-    prop_info:= Make_Property_Full(.INT, string(fieldName), .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
+    prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     if !rodata {
-        Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)}
+        Bind_Property(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)}
     else {
-        Bind_Property(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "")
+        Bind_Property(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "")
     }
     destructProperty(&prop_info)
 }
@@ -408,7 +408,7 @@ Ranged_Array :: struct ($indexType: typeid) {
 * fieldName: the name that matches the field in the struct as you've named it.
 * easing: The restrictions which should be applied to the easing.
 */
-Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: Easing_Options,
+Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Easing_Options,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.float)) //No point trying if the field doesn't exist. Typo safety.
@@ -425,7 +425,7 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: cstring, easing: Ea
     StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
     
-    info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, string(fieldName), .EXP_EASING, Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
     
     bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -452,7 +452,7 @@ Easing_Options :: enum {
 * Index is vararg in order to support multi-dimensional Arrays.
 * Final string will be "%d/%d:%s" type/hint:hint_string. See Array_Type_Hint_Info for more examples.
 */
-Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
                         Index: ..Array_Type_Hint_Info,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
@@ -489,7 +489,7 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     final_hint_string, ok:= strings.concatenate(hints[:])
     if ok !=nil { return }
 
-    info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, string(fieldName), .ARRAY_TYPE, final_hint_string, className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, fieldName, .ARRAY_TYPE, final_hint_string, className, GDE.PROPERTY_USAGE_DEFAULT)
     
     bind_export(classStruct, &className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -522,7 +522,7 @@ Array_Type_Hint_Info :: struct{
 * Export a GDE.Int and tell Godot that it's a pointer.. I guess.
 * Not sure why you'd want this, but it's here. Interop between plugins/libraries I guess?
 */
-Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.Int) || (sics.type_is_pointer(sics.type_field_type(classStruct, fieldName))))) //No point trying if the field doesn't exist. Typo safety.
@@ -539,7 +539,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
     
-    info: GDE.PropertyInfo = Make_Property_Full(.INT, string(fieldName), .INT_IS_POINTER, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_IS_POINTER, "", className, GDE.PROPERTY_USAGE_DEFAULT)
     
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
@@ -572,14 +572,14 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
-    Bind_Property(&className_SN, string(fieldName), .INT, &info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(&className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
     destructProperty(&info)
 }
 
 /*
 * Prevents the editor from allowing a user to set the Alpha channel.
 */
-Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Color)) //No point trying if the field doesn't exist. Typo safety.
@@ -596,7 +596,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     defer(Destructors.stringNameDestructor(&className_SN))
     
-    info: GDE.PropertyInfo = Make_Property_Full(.COLOR, string(fieldName), .COLOR_NO_ALPHA, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, GDE.PROPERTY_USAGE_DEFAULT)
     
     bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -606,7 +606,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: cstring,
 * Export a bit_set. Can be backed by an enum or not. If not backed by an enum will label fields as numbers from lower to upper.
 
 */
-Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
+Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
@@ -642,7 +642,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
             append(&output, ',')
         }
 
-        prop_info:= Make_Property_Full(.INT, string(fieldName), .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+        prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
     } else {
 
         append(&output, fmt.tprintf("%d", type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).lower))
@@ -652,7 +652,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
         for i:= type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).lower+1; i< type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
             append(&output, fmt.tprintf(",%v", i))
         }
-        prop_info:= Make_Property_Full(.INT, string(fieldName), .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+        prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
     }
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
         context = godotContext
@@ -684,7 +684,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
-    Bind_Property_Prop_Info(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
+    Bind_Property_Prop_Info(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 
     destructProperty(&prop_info)
     delete(output)
@@ -701,7 +701,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
 * fieldName: the name that matches the field in the struct as you've named it.
 * layer: Specify the type of layer that is being exported to Godot.
 */
-Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: cstring, layer: Layer_Type,
+Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Layer_Type,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
@@ -731,7 +731,7 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: cstring, layer: Lay
         case .LAYERS_AVOIDANCE: hint = .LAYERS_AVOIDANCE
     }
 
-    prop_info:= Make_Property_Full(.INT, string(fieldName), hint, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, GDE.PROPERTY_USAGE_DEFAULT)
 
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
         context = godotContext
@@ -763,7 +763,7 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: cstring, layer: Lay
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
-    Bind_Property_Prop_Info(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
+    Bind_Property_Prop_Info(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 
     destructProperty(&prop_info)
 }
@@ -793,6 +793,88 @@ Layer_Type :: enum {
 
 
 /*
+* Specify the type of path that your Path is representing.
+* Godot will provide hints in the editor for available files to select from.
+* classStruct: struct representing the class that has the property being exported
+* fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
+* type: an enum (PATH_TYPES) representing the types of paths. Specify which kind of path you are exporting.
+*/
+Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Path) //No point trying if the field doesn't exist. Typo safety.
+    {
+    context = godotContext
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+    hint: GDE.PropertyHint
+    switch  type {
+        case .DIR: hint = .DIR
+        case .FILE: hint = .FILE
+        case .FILE_PATH: hint = .FILE_PATH
+        case .GLOBAL_DIR: hint = .GLOBAL_DIR
+        case .GLOBAL_FILE: hint = .GLOBAL_FILE
+        case .GLOBAL_SAVE_FILE: hint = .GLOBAL_SAVE_FILE
+        case .SAVE_FILE: hint = .SAVE_FILE
+    }
+
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+        context = godotContext
+
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+        context = godotContext
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    Bind_Property(&className_SN, fieldName, .STRING, &info, "get_"+fieldName, "set_"+fieldName)
+    //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    destructProperty(&info)
+}
+
+//gdstring to a path to a file or directory.
+Path:: GDE.gdstring
+
+PATH_TYPES :: enum {
+  DIR, //path to a directory
+  FILE, //path to a file filters with wildcards like "*.png,*.jpg"
+  FILE_PATH, //stored as raw path instead of UID
+  GLOBAL_DIR, //absolute path to directory
+  GLOBAL_FILE, //absolute path to file
+  SAVE_FILE, //file path. can have wildcards like "*.png,*.jpg".
+  GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
+}
+
+/*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.
 * classStruct: struct of the custom class.
 * className: StringName of the custom class.
@@ -803,11 +885,11 @@ Layer_Type :: enum {
 * prop_info: the property information to be passed to Godot. Used for the editor to properly manage the type.
 * loc: location this proc was called from.
 */
-bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^GDE.StringName, $fieldName: cstring,
+bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^GDE.StringName, $fieldName: string,
     variant_type: GDE.VariantType, $GDType: typeid, methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
     prop_info: ^GDE.PropertyInfo, loc:= #caller_location) {
     
-    get,set:= make_getter_and_setter(classStruct, GDType, (fieldName))
+    get,set:= make_getter_and_setter(classStruct, GDType, fieldName)
 
     //These functions create the callbacks Godot will used to call set and get.
     bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
@@ -815,10 +897,10 @@ bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^GDE.Strin
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     //bindProperty(className_SN, fieldName, variant_type, "get_"+fieldName, "set_"+fieldName)
-    Bind_Property_Prop_Info(className_SN, string(fieldName), variant_type, prop_info, "get_"+fieldName, "set_"+fieldName, loc)
+    Bind_Property_Prop_Info(className_SN, fieldName, variant_type, prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 }
 
-make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: typeid, $fieldName: cstring) -> (getter: proc "c" (p_classData: ^classStruct) -> field_Type, setter: proc "c" (p_classData: ^classStruct, godotValue: field_Type)) {
+make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: typeid, $fieldName: string) -> (getter: proc "c" (p_classData: ^classStruct) -> field_Type, setter: proc "c" (p_classData: ^classStruct, godotValue: field_Type)) {
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: field_Type) {
@@ -848,9 +930,9 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
     return get, set
 }
 
-make_property :: #force_inline proc "c" (type: GDE.VariantType, name: cstring) -> GDE.PropertyInfo {
+make_property :: #force_inline proc "c" (type: GDE.VariantType, name: string) -> GDE.PropertyInfo {
     
-    return makePropertyFull_cstring(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
+    return makePropertyFull_string(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
 }
 
 //TODO : See if I really need to malloc these variables or if that's just something for C to do.
@@ -920,17 +1002,17 @@ Make_Property_Full :: proc {
 * argNames: Names of the arguments; shown in the Editor
 * This creates 2 functions.
 */
-bindMethod :: proc "c" (className: ^GDE.StringName, methodName: cstring,
+bindMethod :: #force_inline proc "c" (className: ^GDE.StringName, methodName: string,
                         function: $T,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
-                        argNames: ..cstring, loc:= #caller_location
+                        argNames: ..string, loc:= #caller_location
                         )
                         where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
     {
     context = godotContext
 
     methodStringName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&methodStringName, methodName, false)
+    StringConstruct.stringNameNewUTF8andLen(&methodStringName, raw_data(methodName), len(methodName))
 
     argcount:: sics.type_proc_parameter_count(T) - 1
 
@@ -1041,13 +1123,13 @@ Bind_Property :: proc {
     Bind_Property_Prop_Info,
 }
 
-Bind_Property_Prop_Info :: proc(className: ^GDE.StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: cstring, loc:=#caller_location) {
+Bind_Property_Prop_Info :: #force_inline proc(className: ^GDE.StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: string, loc:=#caller_location) {
 
     getterName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&getterName, getter, false)
+    StringConstruct.stringNameNewUTF8andLen(&getterName, raw_data(getter[:]), len(getter))
 
     setterName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&setterName, setter, false)
+    StringConstruct.stringNameNewUTF8andLen(&setterName, raw_data(setter[:]), len(setter))
     
     //fmt.println("register property")
     gdAPI.classDBRegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
@@ -1060,7 +1142,7 @@ Bind_Property_Prop_Info :: proc(className: ^GDE.StringName, name: string, type: 
 * Provide their names as cstrings. Check the makePublic function for a general workflow.
 * Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
 */
-bindProperty :: proc "c" (className: ^GDE.StringName, name: cstring, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
+bindProperty :: #force_inline proc "c" (className: ^GDE.StringName, name: string, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
     //context = godotContext
     
     info: GDE.PropertyInfo = make_property(type, name)
@@ -1083,7 +1165,7 @@ bindProperty :: proc "c" (className: ^GDE.StringName, name: cstring, type: GDE.V
 
 //This is messy. I dunno if this is better or worse than having 7 individual functions... Lots of casting. Eh.
 //This is also using some really old functions for the variant conversion since they provide a return instead of needing an empty pointer.
-bindNoReturn2 :: proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMethodPtrCall, GDE.ClassMethodCall) {
+bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMethodPtrCall, GDE.ClassMethodCall) {
     context = godotContext
     argcount:: sics.type_proc_parameter_count(P)
     argT0 :: sics.type_proc_parameter_type(P, 0)

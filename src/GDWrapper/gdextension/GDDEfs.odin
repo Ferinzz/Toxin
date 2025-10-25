@@ -152,15 +152,20 @@ StringName :: distinct struct{
     ptr: rawptr
 }
 
-/*Pointer to a string stored in Godot. Format Unicode.
-Variable size.*/
+/*
+* Pointer to a string stored in Godot. Format Unicode.
+* Variable size.
+* Warning: during class create process set ptr to nil
+*/
 gdstring :: distinct struct{
-    ptr:rawptr
+    ptr: rawptr
 }
 
 /*https://docs.godotengine.org/en/stable/classes/class_nodepath.html
 A filesystem representation of the node tree. Is not a direct pointer to the Node.
-Represented by a String.*/
+Represented by a String.
+* Warning: during class create process set ptr to nil
+*/
 NodePath :: distinct gdstring
 
 /*The RID Variant type is used to access a low-level resource by its unique ID. RIDs are opaque,
@@ -248,25 +253,6 @@ MULTILINE_TEXT :: distinct gdstring
 INPUT_NAME_STRING :: distinct gdstring
 INPUT_NAME_STRINGNAME :: distinct gdstring
 
-//String to a path to a file or directory.
-Path:: gdstring
-
-//Specifies a path to something.
-//When making public specify what kind of path it is.
-PATH :: struct {
-  path: Path,
-  type: PATH_TYPES,
-}
-
-PATH_TYPES :: enum {
-  DIR, //path to a directory
-  FILE, //path to a file filters with wildcards like "*.png,*.jpg"
-  FILE_PATH, //stored as raw path instead of UID
-  GLOBAL_DIR, //absolute path to directory
-  GLOBAL_FILE, //absolute path to file
-  SAVE_FILE, //file path. can have wildcards like "*.png,*.jpg".
-  GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
-}
 
 //struct holding NodePath and allowed node info.
 //Allowed Nodes is comma separated stringof valid node types
@@ -287,8 +273,9 @@ NodePathArray_Hint :: struct {
 Tool_Button :: struct {
   call: Callable,
   text: gdstring,
-  icon: Path,
+  //icon: Path,
 }
+
 /*First value is not used by anything other tha C#. Second value is where the data begins.
 The size and ref count are offset -1uintptr to the left of where the data begins.
 Use Godot's built-ins to make and manage these. Otherwise you risk heap corruption if/when Godot tries writing memory in your dynlib.
