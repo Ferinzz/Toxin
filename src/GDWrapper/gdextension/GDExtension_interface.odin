@@ -395,23 +395,24 @@ MethodInfo :: struct {
 }
 
 /* Method */
-Method_Flags_DEFAULT :: ClassMethodFlags.NORMAL
-ClassMethodFlags :: enum {
-	NORMAL  = 1,
+Method_Flags_DEFAULT : ClassMethodFlags : {ClassMethodFlags.NORMAL}
+ClassMethodFlags :: bit_set [ClassMethodFlagNames; u32]
+ClassMethodFlagNames :: enum u32 {
+	NORMAL,
 //Flag for a normal method.
-	EDITOR  = 2,
+	EDITOR,
 //Flag for an editor method.
-	CONST   = 4,
+	CONST,
 //Flag for a constant method.
-	VIRTUAL = 8,
+	VIRTUAL,
 //Flag for a virtual method.
-	VARARG  = 16,
+	VARARG,
 //Flag for a method with a variable number of arguments.
-	STATIC  = 32,
+	STATIC,
 //Flag for a static method.
-	OBJECT_CORE = 64,
+	OBJECT_CORE,
 //Used internally. Allows to not dump core virtual methods (such as Object._notification()) to the JSON API.
-	VIRTUAL_REQUIRED = 128,
+	VIRTUAL_REQUIRED,
 //Flag for a virtual method that is required. In GDScript, this flag is set for abstract functions.
 	
 }
@@ -455,7 +456,7 @@ ClassMethodInfo :: struct {
 	method_userdata: rawptr,
 	call_func: ClassMethodCall,
 	ptrcall_func: ClassMethodPtrCall,
-	method_flags: u32, // Bitfield of `ClassMethodFlags`.
+	method_flags: ClassMethodFlags, // Bitfield of `ClassMethodFlags`.
 
 	/* If `has_return_value` is false, `return_value_info` and `return_value_metadata` are ignored.
 	 *

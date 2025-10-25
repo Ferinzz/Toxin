@@ -34,7 +34,7 @@ import "core:strconv"
 * fieldName: the name that matches the field in the struct as you've named it.
 */
 Export :: proc "c" ($classStruct: typeid, $fieldName: string,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
     {
@@ -99,7 +99,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 * fieldName: the name that matches the field in the struct as you've named it.
 */
 Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_enum(sics.type_field_type(classStruct, fieldName)))
     {
@@ -162,7 +162,7 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: string,
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.float) || (sics.type_field_type(classStruct, fieldName) == GDE.Int)))
     {
     
-    methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL
+    methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT
 
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
@@ -276,7 +276,7 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
                         where sics.type_has_field(classStruct, fieldName)
     {
     
-    methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL
+    methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -413,7 +413,7 @@ Ranged_Array :: struct ($indexType: typeid) {
 * easing: The restrictions which should be applied to the easing.
 */
 Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Easing_Options,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.float)) //No point trying if the field doesn't exist. Typo safety.
     {
@@ -459,7 +459,7 @@ Easing_Options :: enum {
 */
 Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
                         Index: ..Array_Type_Hint_Info,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName)) //No point trying if the field doesn't exist. Typo safety.
     {
@@ -529,7 +529,7 @@ Array_Type_Hint_Info :: struct{
 * Not sure why you'd want this, but it's here. Interop between plugins/libraries I guess?
 */
 Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.Int) || (sics.type_is_pointer(sics.type_field_type(classStruct, fieldName))))) //No point trying if the field doesn't exist. Typo safety.
     {
@@ -587,7 +587,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
 * Prevents the editor from allowing a user to set the Alpha channel.
 */
 Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Color)) //No point trying if the field doesn't exist. Typo safety.
     {
@@ -615,7 +615,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
 
 */
 Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
 {
@@ -711,7 +711,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
 * layer: Specify the type of layer that is being exported to Godot.
 */
 Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Layer_Type,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
 {
@@ -810,7 +810,7 @@ Layer_Type :: enum {
 * type: an enum (PATH_TYPES) representing the types of paths. Specify which kind of path you are exporting.
 */
 Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Path) //No point trying if the field doesn't exist. Typo safety.
     {
@@ -887,7 +887,7 @@ PATH_TYPES :: enum {
 
 
 Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Locale_ID) //No point trying if the field doesn't exist. Typo safety.
     {
@@ -943,6 +943,65 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
 //Editing will show locale dialog for picking language and country.
 Locale_ID :: GDE.gdstring
 
+
+Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Password) //No point trying if the field doesn't exist. Typo safety.
+    {
+    context = godotContext
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PASSWORD, "", className, property_usage)
+    
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+        context = godotContext
+
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+        context = godotContext
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
+    //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    destructProperty(&info)
+}
+
+//Specifies a password
+Password :: GDE.gdstring
+
+
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.
 * classStruct: struct of the custom class.
@@ -955,7 +1014,7 @@ Locale_ID :: GDE.gdstring
 * loc: location this proc was called from.
 */
 bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^GDE.StringName, $fieldName: string,
-    variant_type: GDE.VariantType, $GDType: typeid, methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+    variant_type: GDE.VariantType, $GDType: typeid, methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
     prop_info: ^GDE.PropertyInfo, loc:= #caller_location) {
     
     get,set:= make_getter_and_setter(classStruct, GDType, fieldName)
@@ -1073,7 +1132,7 @@ Make_Property_Full :: proc {
 */
 bindMethod :: #force_inline proc "c" (className: ^GDE.StringName, methodName: string,
                         function: $T,
-                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         argNames: ..string, loc:= #caller_location
                         )
                         where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
@@ -1160,7 +1219,7 @@ bindMethod :: #force_inline proc "c" (className: ^GDE.StringName, methodName: st
 
         call_func = callFunc,
         ptrcall_func = ptrcallFunc,
-        method_flags = u32(methodType),
+        method_flags = (methodType),
     }
 
     

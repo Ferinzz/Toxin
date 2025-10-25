@@ -224,14 +224,6 @@ Array :: distinct struct{
 * Primarily centered around differing versions of int or strings
 */
 
-
-//Specifies a locale.
-//Editing will show locale dialog for picking language and country.
-LOCALE_ID :: distinct gdstring
-
-//Specifies a password
-PASSWORD :: distinct gdstring
-
 //gdstring with a placeholder text specified in the propertyHints
 GDSTRING_WITH_PLACEHOLDER_TEXT :: struct{
   input_string: gdstring,

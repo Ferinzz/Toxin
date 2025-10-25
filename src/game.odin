@@ -25,6 +25,7 @@ game :: struct {
     layers: GDW.layers_2d_render,
     path: GDW.Path,
     locale: GDW.Locale_ID,
+    my_password: GDW.Password,
     
 }
 
@@ -77,8 +78,8 @@ gameInit :: proc "c" ($classStruct: typeid) {
     
     
     //These functions create the callbacks Godot will used to call set and get.
-    GDW.bindMethod(&game_SN, "set_testHints", set, GDE.ClassMethodFlags.NORMAL, "testHints")
-    GDW.bindMethod(&game_SN, "get_testHints", get, GDE.ClassMethodFlags.NORMAL)
+    GDW.bindMethod(&game_SN, "set_testHints", set, GDE.Method_Flags_DEFAULT, "testHints")
+    GDW.bindMethod(&game_SN, "get_testHints", get, GDE.Method_Flags_DEFAULT)
 
     info:= GDW.Make_Property_Full(.INT, "testHints", .RANGE, cstring("0,255"), "game", GDE.PROPERTY_USAGE_DEFAULT)
     info2: GDE.PropertyInfo = GDW.make_property(.INT, "testHints")
@@ -132,7 +133,7 @@ gameExport :: proc "c" (){
 
         call_func = godotVariantCallback,
         ptrcall_func = godotPtrCallback,
-        method_flags = u32(GDE.ClassMethodFlags.NORMAL),
+        method_flags = u32(GDE.Method_Flags_DEFAULT),
     }
 
     returnInfo:= GDW.Make_Property_Full(.INT, "return", .RANGE, string("0, 455"), "game", GDE.PROPERTY_USAGE_DEFAULT)
@@ -163,6 +164,7 @@ gameExport :: proc "c" (){
     GDW.Export_Layers(game, "layers", .LAYERS_2D_RENDER)
     GDW.Export_Path(game, "path", .DIR)
     GDW.Export_Locale(game, "locale")
+    GDW.Export_Password(game, "my_password", {.STORAGE, .EDITOR, .SECRET})
     
 
 }
@@ -196,6 +198,7 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     self.layers = {1,5}
     self.path.ptr = nil
     self.locale.ptr = nil
+    self.my_password.ptr = nil
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
