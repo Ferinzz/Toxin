@@ -1017,7 +1017,7 @@ Password :: GDE.gdstring
 * The placeholder Text will appear in the text field before being updated by the user.
 * classStruct: struct representing the class that has the property being exported
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
-* placeholder_text: gdstring of the text to use as placeholder.
+* placeholder_text: Placeholder_Text(string) of the text to show as a placeholder.
 */
 Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: string,
                         placeholder_text: Placeholder_Text,

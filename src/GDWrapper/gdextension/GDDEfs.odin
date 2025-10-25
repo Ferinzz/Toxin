@@ -224,17 +224,6 @@ Array :: distinct struct{
 * Primarily centered around differing versions of int or strings
 */
 
-//gdstring with a placeholder text specified in the propertyHints
-GDSTRING_WITH_PLACEHOLDER_TEXT :: struct{
-  input_string: gdstring,
-  placeholder: gdstring,
-}
-
-STRINGARRAY_WITH_PLACEHOLDER_TEXT :: struct{
-  input_string: Array,
-  placeholder: gdstring,
-}
-
 //gdstring with multiple lines
 MULTILINE_TEXT :: distinct gdstring
 
