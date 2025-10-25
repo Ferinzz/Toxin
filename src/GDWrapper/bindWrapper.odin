@@ -943,7 +943,13 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
 //Editing will show locale dialog for picking language and country.
 Locale_ID :: GDE.gdstring
 
-
+/*
+* Strings exported as Passwords will hint to the editor that is should mask the actual letters with * symbols.
+* For some reason the editor still shows a tooltip which has all the text of the password.
+* classStruct: struct representing the class that has the property being exported
+* fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
+* property_usage: consider setting this as a secret.
+*/
 Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
