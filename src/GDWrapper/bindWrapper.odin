@@ -886,6 +886,11 @@ PATH_TYPES :: enum {
 }
 
 
+/*
+* When selecting the value in the Editor you will be provided with a UI to select country and language Locale.
+* classStruct: struct representing the class that has the property being exported
+* fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
+*/
 Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
