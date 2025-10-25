@@ -57,12 +57,15 @@ gdAPI : struct  {
 StringConstruct : struct {
     stringNameNewLatin: GDE.InterfaceStringNameNewWithLatin1Chars,
     stringNameNewUTF8andLen: GDE.InterfaceStringNameNewWithUtf8CharsAndLen,
+    stringNameNewString: stringNameNewString,
     stringNewLatinLen: GDE.InterfaceStringNewWithLatin1CharsAndLen,
     stringNewUTF8: GDE.InterfaceStringNewWithUtf8Chars,
     stringNewUTF8_len: GDE.InterfaceStringNewWithUtf8CharsAndLen,
     stringNewLatin: GDE.InterfaceStringNewWithLatin1Chars,
     utf8FromString: GDE.InterfaceStringToUtf8Chars,
 }
+
+stringNameNewString :: #type proc(StringName_r: ^GDE.StringName, name: string)
 
 //Destructors :: struct {
 Destructors: struct {
@@ -107,6 +110,11 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     StringConstruct.stringNameNewLatin = cast(GDE.InterfaceStringNameNewWithLatin1Chars)p_get_proc_address("string_name_new_with_latin1_chars")
     StringConstruct.stringNameNewUTF8andLen = cast(GDE.InterfaceStringNameNewWithUtf8CharsAndLen)p_get_proc_address("string_name_new_with_utf8_chars_and_len")
     StringConstruct.stringNewLatinLen = cast(GDE.InterfaceStringNewWithLatin1CharsAndLen)p_get_proc_address("string_new_with_latin1_chars_and_len")
+
+    StringConstruct.stringNameNewString = proc(StringName_r: ^GDE.StringName, name: string) {
+        StringConstruct.stringNameNewUTF8andLen(StringName_r, raw_data(name[:]), len(name))
+    }
+
     Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
     Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
     

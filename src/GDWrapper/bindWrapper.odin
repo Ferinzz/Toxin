@@ -874,6 +874,64 @@ PATH_TYPES :: enum {
   GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
 }
 
+
+Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Locale_ID) //No point trying if the field doesn't exist. Typo safety.
+    {
+    context = godotContext
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .LOCALE_ID, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+        context = godotContext
+
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+        context = godotContext
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
+    //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    destructProperty(&info)
+}
+
+//Specifies a locale.
+//Editing will show locale dialog for picking language and country.
+Locale_ID :: GDE.gdstring
+
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.
 * classStruct: struct of the custom class.
