@@ -26,8 +26,11 @@ game :: struct {
     path: GDW.Path,
     locale: GDW.Locale_ID,
     my_password: GDW.Password,
+    string_with_default: GDE.gdstring,
     
 }
+
+default_text: GDW.Placeholder_Text = "This is my default text."
 
 controlClass: GDE.ObjectPtr
 
@@ -92,8 +95,6 @@ gameInit :: proc "c" ($classStruct: typeid) {
     
     //fmt.println("register property")
     GDW.gdAPI.classDBRegisterExtensionClassProperty(GDW.Library, &game_SN, &info, &setterName, &getterName)
-
-
     //GDW.Public_Enum(myEnum, game_CString)
     gameExport()
 }
@@ -165,6 +166,7 @@ gameExport :: proc "c" (){
     GDW.Export_Path(game, "path", .DIR)
     GDW.Export_Locale(game, "locale")
     GDW.Export_Password(game, "my_password", {.STORAGE, .EDITOR, .SECRET})
+    GDW.Export_With_Placeholder_Text(game, "string_with_default", default_text)
     
 
 }
@@ -199,6 +201,7 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     self.path.ptr = nil
     self.locale.ptr = nil
     self.my_password.ptr = nil
+    self.string_with_default.ptr = nil
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
