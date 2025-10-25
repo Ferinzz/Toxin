@@ -602,6 +602,10 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     destructProperty(&info)
 }
 
+/*
+* Export a bit_set. Can be backed by an enum or not. If not backed by an enum will label fields as numbers from lower to upper.
+
+*/
 Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
                         methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
                         loc:= #caller_location)
@@ -686,6 +690,107 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: cstring,
     delete(output)
 
 }
+
+/*
+* Export a bitset to be used as a 'layer' mask of various types for Godot's built-in layers.
+* Godot's layers are limited by the engine. The layer names are defined in the Editor's settings.
+* Check below link for their values.
+* https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-property-layer-names-2d-navigation-layer-1
+* See below the procedure for pre-defined bit_sets which match the layer counts specified in above link.
+* classStruct: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+* layer: Specify the type of layer that is being exported to Godot.
+*/
+Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: cstring, layer: Layer_Type,
+                        methodType: GDE.ClassMethodFlags = GDE.ClassMethodFlags.NORMAL,
+                        loc:= #caller_location)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
+{
+    context = godotContext
+    OType : typeid = sics.type_field_type(classStruct, fieldName)
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+    someFlags:typeid= sics.type_field_type(classStruct, fieldName)
+    typeInfo:= type_info_of(someFlags)
+    
+    hint:GDE.PropertyHint
+    switch layer {
+        case .LAYERS_2D_NAVIGATION: hint = .LAYERS_2D_NAVIGATION
+        case .LAYERS_2D_PHYSICS: hint = .LAYERS_2D_PHYSICS
+        case .LAYERS_2D_RENDER: hint = .LAYERS_2D_RENDER
+        case .LAYERS_3D_NAVIGATION: hint =.LAYERS_3D_NAVIGATION
+        case .LAYERS_3D_PHYSICS: hint = .LAYERS_3D_PHYSICS
+        case .LAYERS_3D_RENDER: hint = .LAYERS_3D_RENDER
+        case .LAYERS_AVOIDANCE: hint = .LAYERS_AVOIDANCE
+    }
+
+    prop_info:= Make_Property_Full(.INT, string(fieldName), hint, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+
+    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
+        context = godotContext
+        ////fmt.println(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+        context = godotContext
+
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions create the callbacks Godot will used to call set and get.
+    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
+    Bind_Property_Prop_Info(&className_SN, string(fieldName), .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
+
+    destructProperty(&prop_info)
+}
+
+//bit flag field for layers.
+//The widget in the Inspector dock will use the layer names defined in ProjectSettings.layer_names
+layers_2d_render:: bit_set[1..=20; u32]
+layers_3d_render:: bit_set[1..=20; u32]
+
+layers_2d_physics:: bit_set[1..=32; u32]
+layers_3d_physics:: bit_set[1..=32; u32]
+
+layers_2d_navigation:: bit_set[1..=32; u32]
+layers_3d_navigation:: bit_set[1..=32; u32]
+
+layers_avoidance:: bit_set[1..=32; u32]
+
+Layer_Type :: enum {
+    LAYERS_2D_RENDER,
+    LAYERS_3D_RENDER,
+    LAYERS_2D_PHYSICS,
+    LAYERS_3D_PHYSICS,
+    LAYERS_2D_NAVIGATION,
+    LAYERS_3D_NAVIGATION,
+    LAYERS_AVOIDANCE,
+}
+
 
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.

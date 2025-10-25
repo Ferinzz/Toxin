@@ -219,21 +219,6 @@ Array :: distinct struct{
 * Primarily centered around differing versions of int or strings
 */
 
-//Godot's layers are limited by the engine. Check below link for their values.
-//https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-property-layer-names-2d-navigation-layer-1
-//bit flag field for layers.
-//The widget in the Inspector dock will use the layer names defined in ProjectSettings.layer_names
-layers_2d_render:: bit_set[0..=20; Int]
-layers_3d_render:: bit_set[0..=20; Int]
-
-layers_2d_physics:: bit_set[0..=32; Int]
-layers_3d_physics:: bit_set[0..=32; Int]
-
-layers_2d_navigation:: bit_set[0..=32; Int]
-layers_3d_navigation:: bit_set[0..=32; Int]
-
-layers_avoidance:: bit_set[0..=32; Int]
-
 
 //Specifies a locale.
 //Editing will show locale dialog for picking language and country.

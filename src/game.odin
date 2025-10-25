@@ -21,7 +21,9 @@ game :: struct {
     color_no_alpha: GDE.Color,
     //flags: GDE.PropertyUsageFlagsbits
     //flags: GDE.layers_3d_physics,
-    flags: bit_set[0..=7; u8]
+    flags: bit_set[0..=7; u8],
+    layers: GDW.layers_2d_render,
+    //path: GDW.Path,
     
 }
 
@@ -157,6 +159,8 @@ gameExport :: proc "c" (){
     GDW.Export_Pointer(game, "is_Pointer")
     GDW.Export_Color_No_Alpha(game, "color_no_alpha")
     GDW.Export_Flags(game, "flags")
+    GDW.Export_Layers(game, "layers", .LAYERS_2D_RENDER)
+    //GDW.Export_Path(game, "path", .DIR)
     
 
 }
@@ -187,6 +191,7 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     fmt.println(self.is_Pointer)
     //self.flags = { .EDITOR, .ALWAYS_DUPLICATE }
     self.flags = { 0, 2, 6 }
+    self.layers = {1,5}
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
