@@ -50,7 +50,8 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
     variant_type:=GDE.VariantType(index)
@@ -133,7 +134,8 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
 
@@ -165,7 +167,8 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: string,
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
     output: string
@@ -303,7 +306,8 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
     className := fmt.caprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
     //These functions create the callbacks Godot will used to call set and get.
@@ -422,7 +426,8 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
@@ -469,7 +474,8 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
     hints: [dynamic]string
@@ -536,7 +542,8 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
     info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_IS_POINTER, "", className, GDE.PROPERTY_USAGE_DEFAULT)
@@ -593,7 +600,8 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, GDE.PROPERTY_USAGE_DEFAULT)
@@ -619,7 +627,8 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
     someFlags:typeid= sics.type_field_type(classStruct, fieldName)
@@ -714,7 +723,8 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
     someFlags:typeid= sics.type_field_type(classStruct, fieldName)
@@ -811,7 +821,8 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
     defer delete(className)
 
     className_SN: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
+    StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
     hint: GDE.PropertyHint
