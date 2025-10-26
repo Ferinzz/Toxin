@@ -671,8 +671,6 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     className_SN: GDE.StringName
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
-    
-    typeInfo:= type_info_of(sics.type_field_type(classStruct, fieldName))
 
     //UTF-8 array which will be used as the propertyHint's hint string.
     output:[dynamic]u8
@@ -774,9 +772,6 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     className_SN: GDE.StringName
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
-    
-    someFlags:typeid= sics.type_field_type(classStruct, fieldName)
-    typeInfo:= type_info_of(someFlags)
     
     hint:GDE.PropertyHint
     switch layer {
