@@ -34,6 +34,7 @@ import "core:strconv"
 * fieldName: the name that matches the field in the struct as you've named it.
 */
 Export :: proc "c" ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -62,6 +63,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = make_property(variant_type, fieldName)
+    prop_info:= Make_Property_Full(.variant_type, fieldName, .NONE, "", className, property_usage)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -107,6 +109,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 * fieldName: the name that matches the field in the struct as you've named it.
 */
 Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -150,7 +153,7 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
     defer(Destructors.stringNameDestructor(&className_SN))
 
     //Defines the information about the variable properties in a way Godot's editor understands
-    prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+    prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), className, property_usage)
 
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
@@ -170,6 +173,7 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
 */
 Export_Range :: proc ($classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Num,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -244,7 +248,7 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: string,
     }
     
     //Defines the information about the variable properties in a way Godot's editor understands
-    prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
+    prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, property_usage)
 
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
@@ -431,6 +435,7 @@ Ranged_Array :: struct ($indexType: typeid) {
 * easing: The restrictions which should be applied to the easing.
 */
 Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Easing_Options,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -452,7 +457,7 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
     defer(Destructors.stringNameDestructor(&className_SN))
     
     //Defines the information about the variable properties in a way Godot's editor understands
-    info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, property_usage)
     
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
@@ -482,6 +487,7 @@ Easing_Options :: enum {
 */
 Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
                         Index: ..Array_Type_Hint_Info,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -522,7 +528,7 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
     if ok !=nil { return }
 
     //Defines the information about the variable properties in a way Godot's editor understands
-    info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, fieldName, .ARRAY_TYPE, final_hint_string, className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, fieldName, .ARRAY_TYPE, final_hint_string, className, property_usage)
     
     //Creates all necessary info before Registering the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
@@ -557,6 +563,7 @@ Array_Type_Hint_Info :: struct{
 * Not sure why you'd want this, but it's here. Interop between plugins/libraries I guess?
 */
 Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -578,7 +585,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer(Destructors.stringNameDestructor(&className_SN))
     
     //Defines the information about the variable properties in a way Godot's editor understands
-    info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_IS_POINTER, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_IS_POINTER, "", className, property_usage)
     
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
@@ -621,6 +628,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
 * Prevents the editor from allowing a user to set the Alpha channel.
 */
 Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -641,7 +649,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
-    info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, property_usage)
     
     //Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
@@ -653,6 +661,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
 
 */
 Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -691,7 +700,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
             append(&output, ',')
         }
         //Defines the information about the variable properties in a way Godot's editor understands
-        prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+        prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, property_usage)
     } else {
 
         append(&output, fmt.tprintf("%d", type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).lower))
@@ -702,7 +711,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
             append(&output, fmt.tprintf(",%v", i))
         }
         //Defines the information about the variable properties in a way Godot's editor understands
-        prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
+        prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, property_usage)
     }
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
         context = godotContext
@@ -754,6 +763,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
 * layer: Specify the type of layer that is being exported to Godot.
 */
 Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Layer_Type,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -785,7 +795,7 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     }
 
     //Defines the information about the variable properties in a way Godot's editor understands
-    prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, property_usage)
 
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
         context = godotContext
@@ -857,6 +867,7 @@ Layer_Type :: enum {
 */
 Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
                         filters:string="",
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -887,7 +898,7 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
     }
 
     //Defines the information about the variable properties in a way Godot's editor understands
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, className, property_usage)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -946,6 +957,7 @@ PATH_TYPES :: enum {
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 */
 Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -965,7 +977,7 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer(Destructors.stringNameDestructor(&className_SN))
     
 
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .LOCALE_ID, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .LOCALE_ID, "", className, property_usage)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -1088,6 +1100,7 @@ Password :: GDE.gdstring
 */
 Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: string,
                         placeholder_text: Placeholder_Text,
+                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -1139,7 +1152,7 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
     
     //Defines the information about the variable properties in a way Godot's editor understands
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PLACEHOLDER_TEXT, placeholder_text, className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PLACEHOLDER_TEXT, placeholder_text, className, property_usage)
     
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
@@ -1208,8 +1221,12 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
 }
 
 make_property :: #force_inline proc "c" (type: GDE.VariantType, name: string) -> GDE.PropertyInfo {
-    
     return makePropertyFull_string(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
+}
+
+Make_Property_Full :: proc {
+    makePropertyFull_cstring,
+    makePropertyFull_string,
 }
 
 //TODO : See if I really need to malloc these variables or if that's just something for C to do.
@@ -1260,11 +1277,6 @@ makePropertyFull_string :: #force_inline proc "c" (type: GDE.VariantType, name: 
     }
 
     return info
-}
-
-Make_Property_Full :: proc {
-    makePropertyFull_cstring,
-    makePropertyFull_string,
 }
 
 /*
