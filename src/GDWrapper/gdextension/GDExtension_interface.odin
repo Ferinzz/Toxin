@@ -409,7 +409,7 @@ ClassMethodFlagNames :: enum u32 {
 	VARARG,
 //Flag for a method with a variable number of arguments.
 	STATIC,
-//Flag for a static method.
+//Flag for a static method. https://stackoverflow.com/questions/19078224/what-are-static-methods-how-and-when-are-they-used
 	OBJECT_CORE,
 //Used internally. Allows to not dump core virtual methods (such as Object._notification()) to the JSON API.
 	VIRTUAL_REQUIRED,
