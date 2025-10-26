@@ -260,12 +260,12 @@ Ranged_Num :: struct ($T: typeid) {
 Range_Flags :: bit_set [Range; GDE.Int]
 
 Range :: enum {
-  or_greater,
-  or_less,
-  exp,
-  hide_slider,
-  radians_as_degrees,
-  degrees,
+  or_greater, //Can exceed the max limit
+  or_less, //Can go lower than the min limit
+  exp, //
+  hide_slider, //Slider will not appear in editor
+  radians_as_degrees, //will represent radian values as degrees
+  degrees, //limit the range to degrees (-360 to 360)
 }
 
 //Warning untested, does not properly clear the array before being set by Godot.
@@ -810,6 +810,7 @@ Layer_Type :: enum {
 * type: an enum (PATH_TYPES) representing the types of paths. Specify which kind of path you are exporting.
 */
 Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
+                        filters:string="",
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Path) //No point trying if the field doesn't exist. Typo safety.
@@ -836,13 +837,14 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
         case .SAVE_FILE: hint = .SAVE_FILE
     }
 
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, "", className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, className, GDE.PROPERTY_USAGE_DEFAULT)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = godotContext
 
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -915,6 +917,7 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = godotContext
 
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -957,6 +960,7 @@ Locale_ID :: GDE.gdstring
 */
 Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
+                        placeholder_text: Placeholder_Text= "password",
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location)
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Password) //No point trying if the field doesn't exist. Typo safety.
@@ -973,13 +977,14 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer(Destructors.stringNameDestructor(&className_SN))
     
 
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PASSWORD, "", className, property_usage)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PASSWORD, placeholder_text, className, property_usage)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = godotContext
 
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1037,13 +1042,14 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     defer(Destructors.stringNameDestructor(&className_SN))
     
 
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PASSWORD, placeholder_text, className, GDE.PROPERTY_USAGE_DEFAULT)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PLACEHOLDER_TEXT, placeholder_text, className, GDE.PROPERTY_USAGE_DEFAULT)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = godotContext
 
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
