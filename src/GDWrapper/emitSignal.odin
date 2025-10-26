@@ -5,7 +5,8 @@ import GDE "gdextension"
 import sics "base:intrinsics"
 import "core:fmt"
 
-/*Signal setup is a single step. Register the information with Godot.
+/*
+* Signal setup is a single step -> Register the information with Godot.
 * Godot recommends setting the name in the class struct itself.
 myClassStruct :: struct {
 selfPtr: GDE.ObjectPtr,
@@ -14,7 +15,74 @@ mySignalName: GDE.StringName
 }
 * Once it's registered, if done correctly, you will see the information in the documentation of your class.
 * To send a signal you should then use the EmitSignal function at the appropriate time.
-* Connection to another object's signal requires a pointer to the object, the StringName of the signal and class_name, a CallableCustomInfo2 struct.
+*/
+
+/*
+* Register your GDE class's signal with Godot so that other classes can connect to it.
+* Cannot connect to a signal if it has not already been registered with Godot.
+* className: name of your GDE class the signal belongs to.
+* signalName: name of the signal you want others to connect to.
+* arg_type: The types of the arguments which will be sent to the signal receiver via EmitSignal
+* arg_name: The names of each argument. These will be displayed in documentation section.
+*/
+registerSignal :: proc "c" (className, signalName: cstring, arg_type: []GDE.VariantType, arg_name: []cstring, $count: int, loc := #caller_location) {
+    context = runtime.default_context()
+
+    assert(len(arg_type) == count, "registerSignal: Length of []arg_type list does not match with count provided", loc)
+    assert(len(arg_name) == count, "registerSignal: Length of []arg_name list does not match with count provided", loc)
+    
+    s_className: GDE.StringName
+    s_signalName: GDE.StringName
+    StringConstruct.stringNameNewLatin(&s_className, className, false)
+    StringConstruct.stringNameNewLatin(&s_signalName, signalName, false)
+
+    signalProp:[count]GDE.PropertyInfo
+    for arg, index in arg_type{
+        prop:= make_property(arg, arg_name[index])
+        signalProp[index] = prop
+    }
+
+    gdAPI.classBDRegistClassSignal(Library, &s_className, &s_signalName, raw_data(signalProp[:]), count)
+
+    Destructors.stringNameDestructor(&s_className)
+    Destructors.stringNameDestructor(&s_signalName)
+
+    for &prop in signalProp {
+    destructProperty(&prop)
+    }
+
+}
+
+/*
+* emitSignal* :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P..)
+* p_instance: pointer to the current class Object
+* signaleName: stringName of the signal being emitted. Nodes in the SceneTree will be listening for a signal with this name.
+* p_arg*: The GDE.TypePtr to the variable being passed to those listening.
+*/
+emitSignal :: proc{
+    emitSignal0,
+    emitSignal1,
+    emitSignal2,
+    emitSignal3,
+    emitSignal4,
+    emitSignal5,
+    emitSignal6,
+    emitSignal7,
+    emitSignal8,
+    emitSignal9,
+}
+
+/*
+* Connection to another object's signal
+* callback: A struct containing information about how Godot should handle your particular signal callback.
+* At minimum shoudl include the following.
+** callable_userdata: rawptr to the function which should be used.
+** token: The class library to look through for something. Usually the one registered at the start of your extension)
+** call_func: A general callback function which Godot will call when the signal occurs
+* signal_name: The name of the signal you are listening for.
+* object: The specific Object which is connecting to some other signal.
+* flags: Additional behavioural options for the signal you are connecting.
+a pointer to the object, the StringName of the signal and class_name, a CallableCustomInfo2 struct.
 * Careful when retrieving the object of a refCounted object. It will check the signals for refCount instead of the object itself... ie get_scene_tree
 */
 
@@ -50,50 +118,6 @@ connectToSignal :: proc "c" (callback: ^GDE.CallableCustomInfo2, signal_name: ^G
     return ret_err
 
 }
-
-//will need className, signalName, argcount. hint doesn't seem to do anything in the docs?
-registerSignal :: proc "c" (className, signalName: cstring, arg_type: []GDE.VariantType, arg_name: []cstring, $count: int, loc := #caller_location) {
-    context = runtime.default_context()
-
-    assert(len(arg_type) == count, "registerSignal: Length of []arg_type list does not match with count provided", loc)
-    assert(len(arg_name) == count, "registerSignal: Length of []arg_name list does not match with count provided", loc)
-    
-    s_className: GDE.StringName
-    s_signalName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&s_className, className, false)
-    StringConstruct.stringNameNewLatin(&s_signalName, signalName, false)
-
-    signalProp:[count]GDE.PropertyInfo
-    for arg, index in arg_type{
-        prop:= make_property(arg, arg_name[index])
-        signalProp[index] = prop
-    }
-
-    gdAPI.classBDRegistClassSignal(Library, &s_className, &s_signalName, raw_data(signalProp[:]), count)
-
-    Destructors.stringNameDestructor(&s_className)
-    Destructors.stringNameDestructor(&s_signalName)
-
-    for &prop in signalProp {
-    destructProperty(&prop)
-    }
-
-}
-
-emitSignal :: proc{
-    emitSignal0,
-    emitSignal1,
-    emitSignal2,
-    emitSignal3,
-    emitSignal4,
-    emitSignal5,
-    emitSignal6,
-    emitSignal7,
-    emitSignal8,
-    emitSignal9,
-}
-
-
 
 
 //I'm not sure if the StringName of a signal is used anywhere at all. Maybe when receiving one?
