@@ -14,7 +14,7 @@ selfPtr: GDE.ObjectPtr,
 mySignalName: GDE.StringName
 }
 * Once it's registered, if done correctly, you will see the information in the documentation of your class.
-* To send a signal you should then use the EmitSignal function at the appropriate time.
+* To send a signal you should then use the EmitSignal function at the appropriate time. Often in the Process proc.
 */
 
 /*
@@ -85,7 +85,6 @@ emitSignal :: proc{
 a pointer to the object, the StringName of the signal and class_name, a CallableCustomInfo2 struct.
 * Careful when retrieving the object of a refCounted object. It will check the signals for refCount instead of the object itself... ie get_scene_tree
 */
-
 @require_results
 connectToSignal :: proc "c" (callback: ^GDE.CallableCustomInfo2, signal_name: ^GDE.StringName, object: GDE.ObjectPtr, flags: GDE.ConnectFlags = nil, loc := #caller_location) -> GDE.CallErrorType {
     context = runtime.default_context()

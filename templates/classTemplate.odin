@@ -20,9 +20,9 @@ THIS_CLASS_NAME_CString: cstring = "THIS_CLASS_NAME"
 THIS_CLASS_NAME_GDClass_Index: GDW.ClassName_Index = .Node2D
 THIS_CLASS_NAME_GDClass_StringName: GDE.StringName
 
-//Technically can have a single massive function to init everything, but having one in each is easier?
+//Technically can have a single massive function to init everything, but having one in each provides more control.
 //Make sure to add this to the init of the extension otherwise you won't be able to access this class.
-//p_userdata and initLevel are optional.
+//p_userdata is optional.
 //p_userdata: I'm assuming this is best used to pass the context around. If context is set in the calling class this should be implicitly passed to this one.
 //initLevel: Pass in the current init level from the entry's extentionInit proc.
 //See where registerSprite is called in the loadTextureToSceneTree main.odin
@@ -34,7 +34,7 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
     * If this check fails, then you did not put it in the correct init level in the extensionInit proc.
     * This template example assumes .INITIALIZATION_SCENE is the desired init timing for this class and as a result it is specified here.
     */
-    assert(initLevel == .INITIALIZATION_SCENE, "Class init function called at a different level than was specified.")
+    assert(initLevel == .INITIALIZATION_SCENE, "Class init function called at a different level than was expected.")
 
     stringraw:GDE.gdstring
     GDW.StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
@@ -63,10 +63,10 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
         get_virtual_func = nil,
         get_virtual_call_data_func =  THIS_CLASS_NAMEgetVirtualWithData,
         call_virtual_with_data_func = THIS_CLASS_NAMEcallVirtualFunctionWithData,
-        class_userdata = nil, 
+        class_userdata = p_userdata,
     }
 
-    //Matching the name to the class struct is vital as it will be used in some binding helpers. If the name doesn't match things will break.
+    //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct.stringNameNewLatin(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString, false)
 
     
@@ -85,7 +85,7 @@ THIS_CLASS_NAMEBindMethod :: proc "c" (){
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     GDW.bindMethod(&THIS_CLASS_NAME_SN, "Some_method_name", somePublicFunction, GDE.ClassMethodFlags.NORMAL, "arg1")
     
-    //Same with this. It creates 4 extra functions. Getter, Setter, and variant callback, pointer callback.
+    //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
     GDW.Export(THIS_CLASS_NAME, "someProperty")
@@ -230,6 +230,16 @@ THIS_CLASS_NAME_Input :: proc "c" (self: ^THIS_CLASS_NAME, event: GDE.ObjectPtr)
 
 }
 
+/*
+* Proc called by Godot when a signal this class is connected to emits.
+* Check EmitSignal.odin to understand how to connect to signals.
+* Check the json export or Godot docs for signals available from each class.
+* callable_userdata: Proc specified in CallableCustomInfo2 during connection.
+* p_args: Argument pointers passed in by the class connected to.
+* p_argument_count: Number of arguments sent by the connected class. Use to validate info is in line.
+* r_return: Return value sent to the connected class.
+* r_error: Error to report to the connected class, or .CALL_OK
+*/
 THIS_CLASS_NAME_signalCallback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
     context = runtime.default_context()
 
