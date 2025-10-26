@@ -28,15 +28,17 @@ extensionDeinit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLeve
 extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
 
     context = runtime.default_context()
-    if initLevel != .INITIALIZATION_SCENE{
+    if initLevel == .INITIALIZATION_SCENE{
+        GDW.getInputSingleton()
+        /*
+        Initialize the different classes.
+        classInitProc(classStruct)
+        */
+        gameInit(game)
         return
     }
-
-    /*
-    Initialize the different classes.
-    classInitProc(classStruct)
-    */
-    gameInit(game)
+    if initLevel == .INITIALIZATION_SERVERS {
+    }
     
 }
 

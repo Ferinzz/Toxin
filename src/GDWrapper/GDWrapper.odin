@@ -256,27 +256,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     GDArray.GetIndex = gdAPI.indexGetBind(.ARRAY)
     GDArray.SetIndex = gdAPI.indexSetBind(.ARRAY)
     GDArray.Destroy = variant_get_ptr_destructor(.ARRAY)
-    /*
-
-    StringConstruct.stringNameNewLatin(&arraySize, "Size", false)
-    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "Resize", false)
-    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "Append", false)
-    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "Get", false)
-    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "Set", false)
-    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2162347432)
-    Destructors.stringNameDestructor(&arraySize)*/
+    
 
     StringConstruct.stringNameNewLatin(&arraySize, "size", false)
     GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)

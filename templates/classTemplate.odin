@@ -24,15 +24,22 @@ THIS_CLASS_NAME_GDClass_StringName: GDE.StringName
 //Make sure to add this to the init of the extension otherwise you won't be able to access this class.
 //p_userdata and initLevel are optional.
 //p_userdata: I'm assuming this is best used to pass the context around. If context is set in the calling class this should be implicitly passed to this one.
-//initLevel: should probably be handled by the calling proc, but also safety check is nice.
+//initLevel: Pass in the current init level from the entry's extentionInit proc.
 //See where registerSprite is called in the loadTextureToSceneTree main.odin
-THIS_CLASS_NAMEInit :: proc "c" ($classStruct: typeid) {
+THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.InitializationLevel, p_userdata:rawptr=nil) {
     context = runtime.default_context()
 
+    /*
+    * Specify at what init level this should be loaded at.
+    * If this check fails, then you did not put it in the correct init level in the extensionInit proc.
+    * This template example assumes .INITIALIZATION_SCENE is the desired init timing for this class and as a result it is specified here.
+    */
+    assert(initLevel == .INITIALIZATION_SCENE, "Class init function called at a different level than was specified.")
 
     stringraw:GDE.gdstring
     GDW.StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
 
+    //review definition of GDE.ClassCreationInfo4 for more details on each field.
     class_info: GDE.ClassCreationInfo4 = {
         is_virtual = false,
         is_abstract = false,
@@ -81,17 +88,18 @@ THIS_CLASS_NAMEBindMethod :: proc "c" (){
     //Same with this. It creates 4 extra functions. Getter, Setter, and variant callback, pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
-    GDW.makePublic(THIS_CLASS_NAME, "someProperty")
+    GDW.Export(THIS_CLASS_NAME, "someProperty")
 }
 
-//Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific.
+//Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
 somePublicFunction :: proc "c" (classStruct: ^THIS_CLASS_NAME, arg1: GDE.Int) {
     //do stuff
 }
 
 
-//This runs when the class is created before it gets added to a tree.
-//init your class struct, heap allocated variables, any class children.
+//This runs once when the class is created before it gets added to a tree.
+//construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
+//This is different from Godot's ready, which is called sometime after this.
 THIS_CLASS_NAMECreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
 
     context = runtime.default_context()
@@ -111,6 +119,7 @@ THIS_CLASS_NAMECreate :: proc "c" (p_class_user_data: rawptr, p_notify_postiniti
 
 //Delete all the heap allocated aspects of the class along with the class struct as well as any
 //additional nodes, canvasitems, area2d that you created. Like how bulletshower needs to do cleanup on the textures and phys objects.
+//Removing from scene tree does not necessarily destroy a class.
 THIS_CLASS_NAMEDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){
@@ -120,6 +129,9 @@ THIS_CLASS_NAMEDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.Cl
     GDW.gdAPI.mem_free(cast(^THIS_CLASS_NAME)p_instance)
 }
 
+//Tells Godot what function pointer to use when calling your function.
+//Runs once at class registration.
+//Remove those you are not using.
 //If you ever rename a virtual function (method callback) you will need to update it in three places.
 //Here, THIS_CLASS_NAMEcallVirtualFunctionWithData, the function itself.
 //Look at Godot docs to know what is supported by a certain class. If it inherits from another, it will also inherit its methods.
@@ -140,16 +152,18 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
     if GDW.stringNameCompare(p_name, "_draw"){
         return cast(rawptr)THIS_CLASS_NAME_draw
     }
-    //Only one _input method exists in Godot classes, so this is safe.
+    //Only one _input method exists in Godot classes, so this is safe for now.
     if p_hash == 3754044979 {
         return cast(rawptr)THIS_CLASS_NAME_Input
     }
     return nil
 }
 
-
-//Thinking it's good to keep this in a particular order. The least likely or one-time event should be last.
-//Unfortunately the more methods you registered in THIS_CLASS_NAMEgetVirtualWithData the more times this thing is called.
+//Will be called any time Godot needs to call your version of a virtual function.
+//We had to create special helpers for our functions during the Export(bind) step because Godot only give use an array of arg pointers.
+//As a result we can't call our function directly. (unless you want to deal with some any type conversion yourself).
+//It's good to keep this in a particular order. The least likely or one-time event should be last.
+//The more methods you registered in THIS_CLASS_NAMEgetVirtualWithData the more times this thing is called.
 THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_name: GDE.ConstStringNamePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
     
     if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_physics {
@@ -169,12 +183,25 @@ THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIns
     }
 }
 
+//******************************\\
+//*******VIRTUAL METHODS********\\
+//******************************\\
+
+
+/*
+* The complicated part of virutal methods is dealt with by Toxin.
+* Once registered and configured in the above two procs you don't need any extra steps.
+* Write the functions as normal Odin functions and allow Toxin to handle the rawptr casts.
+* Continue to be mindful of what data is in Godot vs your extension.
+*/
+
 THIS_CLASS_NAME_ready :: proc "c" (self: ^THIS_CLASS_NAME) {
-    context = runtime.default_context()//These are good to set in a singleton at some point.
+    context = runtime.default_context()
+    
+    //These are good to set in a singleton at some point.
     //These are statically stored and thus only need to be called once when the game engine is fully initialize.
-    GDW.getInputSingleton()
-    //GDW.getPhysServer2dObj()
-    //GDW.getRenderServer2dObj()
+    GDW.getPhysServer2dObj()
+    GDW.getRenderServer2dObj()
 
 }
 
