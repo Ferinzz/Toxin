@@ -63,7 +63,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = make_property(variant_type, fieldName)
-    prop_info:= Make_Property_Full(.variant_type, fieldName, .NONE, "", className, property_usage)
+    prop_info:= Make_Property_Full(variant_type, fieldName, .NONE, "", className, property_usage)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
