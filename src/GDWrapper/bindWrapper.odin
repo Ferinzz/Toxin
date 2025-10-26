@@ -469,7 +469,8 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
-                        where (sics.type_has_field(classStruct, fieldName))
+                        //This field should only be of type GDE.Array.
+                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Array))
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
