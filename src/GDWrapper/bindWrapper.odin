@@ -35,8 +35,9 @@ import "core:strconv"
 */
 Export :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where sics.type_has_field(classStruct, fieldName) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        where sics.type_has_field(classStruct, fieldName)
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
@@ -100,7 +101,9 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 */
 Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type enum.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_enum(sics.type_field_type(classStruct, fieldName)))
     {
     
@@ -158,7 +161,9 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
 */
 Export_Range :: proc ($classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Num,
-                        loc:= #caller_location)
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type GDE.float or GDE.Int.
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.float) || (sics.type_field_type(classStruct, fieldName) == GDE.Int)))
     {
     
@@ -414,8 +419,10 @@ Ranged_Array :: struct ($indexType: typeid) {
 */
 Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Easing_Options,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.float)) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type GDE.float.
+                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.float))
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
@@ -460,8 +467,9 @@ Easing_Options :: enum {
 Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
                         Index: ..Array_Type_Hint_Info,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName)) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        where (sics.type_has_field(classStruct, fieldName))
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
@@ -530,8 +538,10 @@ Array_Type_Hint_Info :: struct{
 */
 Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.Int) || (sics.type_is_pointer(sics.type_field_type(classStruct, fieldName))))) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type GDE.float or GDE.Int.
+                        where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.Int) || (sics.type_is_pointer(sics.type_field_type(classStruct, fieldName)))))
     {
     context = godotContext
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
@@ -588,8 +598,10 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
 */
 Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Color)) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type GDE.Color.
+                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Color))
     {
     context = godotContext
     
@@ -616,7 +628,9 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
 */
 Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type bit_set.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
 {
     context = godotContext
@@ -712,7 +726,9 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
 */
 Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Layer_Type,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type bit_set.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
 {
     context = godotContext
@@ -812,8 +828,10 @@ Layer_Type :: enum {
 Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
                         filters:string="",
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Path) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type Path.
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Path)
     {
     context = godotContext
     
@@ -895,8 +913,10 @@ PATH_TYPES :: enum {
 */
 Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Locale_ID) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type Locale_ID.
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Locale_ID)
     {
     context = godotContext
     
@@ -962,8 +982,10 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         placeholder_text: Placeholder_Text= "password",
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Password) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type Password.
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Password)
     {
     context = godotContext
     
@@ -1027,8 +1049,10 @@ Password :: GDE.gdstring
 Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: string,
                         placeholder_text: Placeholder_Text,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        loc:= #caller_location)
-                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == GDE.gdstring) //No point trying if the field doesn't exist. Typo safety.
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type GDE.gdstring.
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == GDE.gdstring)
     {
     context = godotContext
     
