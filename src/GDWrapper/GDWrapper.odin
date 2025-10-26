@@ -49,6 +49,8 @@ gdAPI : struct  {
     //Do not need ot validate the object or string name yourself, Godot does this during the call process.
     callScript: GDE.InterfaceObjectCallScriptMethod,
     ObjectGetInstanceFromId: GDE.InterfaceObjectGetInstanceFromId,
+
+    Register_Int_const: GDE.InterfaceClassdbRegisterExtensionClassIntegerConstant,
 }
 
 
@@ -146,7 +148,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     gdAPI.builtinMethodBindCall = cast(GDE.InterfaceVariantGetPtrBuiltinMethod)p_get_proc_address("variant_get_ptr_builtin_method")
     gdAPI.callScript = cast(GDE.InterfaceObjectCallScriptMethod)p_get_proc_address("object_call_script_method")
     gdAPI.ObjectGetInstanceFromId = cast(GDE.InterfaceObjectGetInstanceFromId)p_get_proc_address("object_get_instance_from_id")
-
+    gdAPI.Register_Int_const = cast(GDE.InterfaceClassdbRegisterExtensionClassIntegerConstant)p_get_proc_address("classdb_register_extension_class_integer_constant")
     
     MethodName: GDE.StringName
     StringConstruct.stringNameNewLatin(&MethodName, "call_deferred", false)

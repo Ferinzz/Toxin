@@ -108,8 +108,8 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
-                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
+Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR, .CLASS_IS_ENUM },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
@@ -160,6 +160,12 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
 
     destructProperty(&prop_info)
     delete(output)
+}
+
+Export_Enum :: proc(classStruct: $class, out_enum: $enumeration) \
+        where(sics.type_is_enum(enumeration) && sics.type_is_struct(class))
+    {
+
 }
 
 /*
@@ -1028,7 +1034,7 @@ Locale_ID :: GDE.gdstring
 * property_usage: consider setting this as a secret.
 */
 Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
-                        property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
+                        $property_usage: GDE.PropertyUsageFlagsbits,
                         placeholder_text: Placeholder_Text= "password",
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \

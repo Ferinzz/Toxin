@@ -152,7 +152,7 @@ gameExport :: proc "c" (){
 
     GDW.Export(game, "my_range_num")
     GDW.Export_Range(game, "exampleInt", GDW.Ranged_Num(GDE.Int){0, 45, 1, {}})
-    GDW.Export_Enum(game, "publicEnum")
+    GDW.Export_Int_As_Enum(game, "publicEnum")
     GDW.Export_Easing(game, "easing_float", .attenuation)
     GDW.Export_Easing(game, "pos_float", .positive_only)
     GDW.Export_Easing(game, "exp_float", .none)
@@ -167,7 +167,6 @@ gameExport :: proc "c" (){
     GDW.Export_Locale(game, "locale")
     GDW.Export_Password(game, "my_password", {.STORAGE, .EDITOR, .SECRET})
     GDW.Export_With_Placeholder_Text(game, "string_with_default", default_text)
-    
 
 }
 
