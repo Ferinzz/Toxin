@@ -168,6 +168,8 @@ gameExport :: proc "c" (){
     GDW.Export_Password(game, "my_password", {.STORAGE, .EDITOR, .SECRET})
     GDW.Export_With_Placeholder_Text(game, "string_with_default", default_text)
 
+    GDW.Export_Enum(game, myEnum)
+
 }
 
 

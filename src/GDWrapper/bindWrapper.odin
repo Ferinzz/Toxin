@@ -120,9 +120,9 @@ Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
     anEnum:typeid= sics.type_field_type(classStruct, fieldName)
     type_info:= type_info_of(anEnum)
 
-    infoNamed := type_info.variant.(runtime.Type_Info_Named)
-    infoBase:= infoNamed.base
-    info:=infoBase.variant.(runtime.Type_Info_Enum)
+    //infoNamed := type_info.variant.(runtime.Type_Info_Named)
+    //infoBase:= infoNamed.base
+    info:=type_info_of(anEnum).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
 
     //random estimate of how long it might need to be. Based off of nothing.
     output: = make_dynamic_array_len_cap([dynamic]u8, 0, len(info.names)*16)
@@ -162,10 +162,40 @@ Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
     delete(output)
 }
 
-Export_Enum :: proc(classStruct: $class, out_enum: $enumeration) \
-        where(sics.type_is_enum(enumeration) && sics.type_is_struct(class))
+//Godot stores enum info in ClassInfo as a HashMap. The fields are stored in struct EnumInfo.
+//https://github.com/godotengine/godot/blob/0fdb93cde6ccb5176f96b0ddbba08d83e6c6aef2/core/object/class_db.h#L131
+/*
+* Register the fields of an enum so that it can be used in GDScript as a list of constants.
+* classStruct: Used to get the name of your class.
+* out_enum: the enum you want to export as constants.
+*/
+Export_Enum :: #force_inline proc($classStruct: typeid, $out_enum: typeid) \
+        where(sics.type_is_enum(out_enum) && sics.type_is_struct(classStruct))
     {
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+    
+    enumName:= fmt.aprint(type_info_of(out_enum))
+    defer delete(enumName)
+    enumName_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&enumName_SN, enumName)
+    defer(Destructors.stringNameDestructor(&enumName_SN))
 
+
+    info:=type_info_of(out_enum).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
+    
+    //Loop through each entry in the enum to add their name and value to the hint string.
+    for field, ind in info.names {
+        field_SN: GDE.StringName
+        StringConstruct.stringNameNewString(&field_SN, field)
+        gdAPI.Register_Int_const(Library, &className_SN, &enumName_SN, &field_SN, GDE.Int(info.values[ind]), false)
+        Destructors.stringNameDestructor(&field_SN)
+    }
 }
 
 /*
