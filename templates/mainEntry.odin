@@ -66,10 +66,10 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
             */
             THIS_CLASS_NAME_Register(THIS_CLASS_NAME, initLevel)
             return
-        //This can only happen if running from the editor.
+        //INITIALIZATION_EDITOR can only happen if running from the editor.
         case .INITIALIZATION_EDITOR:
             /*
-            * Register the different classes which depend on servers classes.
+            * Register the different classes which should be used with the Editor.
             */
             return
         case :
