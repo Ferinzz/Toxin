@@ -696,7 +696,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
 * Export a bit_set. Can be backed by an enum or not. If not backed by an enum will label fields as numbers from lower to upper.
 
 */
-Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_Int_As_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -786,6 +786,58 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     destructProperty(&prop_info)
     delete(output)
 
+}
+
+
+Export_Flags :: proc "c" ($classStruct: typeid, name: string, $outbit_set: typeid,
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type bit_set.
+                        where (sics.type_is_struct(classStruct) && sics.type_is_bit_set(outbit_set))
+{
+    context = godotContext
+    
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+
+    //bsname:= fmt.aprint(typeid_of(outbit_set))
+    //defer delete(bsname)
+    bsname_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&bsname_SN, name)
+    defer(Destructors.stringNameDestructor(&bsname_SN))
+
+    //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
+    when sics.type_is_enum((sics.type_bit_set_elem_type(outbit_set))) {
+        flag_enum:=(type_info_of(sics.type_bit_set_elem_type(outbit_set)).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum))
+
+
+        for field,index in flag_enum.names {
+            
+            field_SN: GDE.StringName
+            StringConstruct.stringNameNewString(&field_SN, field)
+            
+            //The index of an enum represents the index of the bool in a bit_set.
+            //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
+            gdAPI.Register_Int_const(Library, &className_SN, &bsname_SN, &field_SN, GDE.Int(1<<u64(flag_enum.values[index])), true)
+            Destructors.stringNameDestructor(&field_SN)
+        }
+
+    } else {
+        for i:= type_info_of(outbit_set).variant.(runtime.Type_Info_Bit_Set).lower; i< type_info_of(outbit_set).variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
+            field:= fmt.aprintf("%s_%v", name, i)
+            field_SN: GDE.StringName
+            StringConstruct.stringNameNewString(&field_SN, field)
+            gdAPI.Register_Int_const(Library, &className_SN, &bsname_SN, &field_SN, GDE.Int(i), true)
+            delete(field)
+            Destructors.stringNameDestructor(&field_SN)
+        }
+    }
 }
 
 /*

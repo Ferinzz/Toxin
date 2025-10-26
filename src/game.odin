@@ -161,7 +161,7 @@ gameExport :: proc "c" (){
     //GDW.Export(game, "a_real_array")
     GDW.Export_Pointer(game, "is_Pointer")
     GDW.Export_Color_No_Alpha(game, "color_no_alpha")
-    GDW.Export_Flags(game, "flags")
+    GDW.Export_Int_As_Flags(game, "flags")
     GDW.Export_Layers(game, "layers", .LAYERS_2D_RENDER)
     GDW.Export_Path(game, "path", .DIR)
     GDW.Export_Locale(game, "locale")
@@ -169,6 +169,8 @@ gameExport :: proc "c" (){
     GDW.Export_With_Placeholder_Text(game, "string_with_default", default_text)
 
     GDW.Export_Enum(game, myEnum)
+    GDW.Export_Flags(game, "layers_2d_navigation", GDW.layers_2d_navigation)
+    GDW.Export_Flags(game, "PropertyUsageFlagsbits", GDE.PropertyUsageFlagsbits)
 
 }
 
