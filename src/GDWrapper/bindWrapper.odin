@@ -40,21 +40,27 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
                         where sics.type_has_field(classStruct, fieldName)
     {
     context = godotContext
-    //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
+
+    //I don't want you to have to learn the VariantType enum and pass that in. Instead, I will do a lookup based on the type.
+    //If the type shown in Godot does not align with the Odin type, the order of GDE.VariantType enum and GDE.GDTypes need to be validated again.
+    //get the index from the GDTypes array, this is in order of to the VariantType enum placement.
     index, ok := slice.linear_search(GDE.GDTypes[:], sics.type_field_type(classStruct, fieldName))
     if ok == false {
         panic("The type sent to makePublic was not found in GDW.GDTypes. Please check the list of valid Godot types.", loc)
     }
     
+    variant_type:=GDE.VariantType(index)
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
     className_SN: GDE.StringName
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
-    
-    variant_type:=GDE.VariantType(index)
+
+    //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = make_property(variant_type, fieldName)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
@@ -82,10 +88,12 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
+    //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -132,16 +140,19 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
         append(&output, string(final[:]))
         delete(final)
     }
-    
+
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
-
+    //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
 
+    //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
 
     destructProperty(&prop_info)
@@ -159,14 +170,15 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
 */
 Export_Range :: proc ($classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Num,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
                         //This field should only be of type GDE.float or GDE.Int.
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.float) || (sics.type_field_type(classStruct, fieldName) == GDE.Int)))
     {
-    
-    methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT
 
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
@@ -231,9 +243,10 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: string,
         output = strings.concatenate({min,",",max,",",step})
     }
     
-
+    //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
 
+    //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
 
     destructProperty(&prop_info)
@@ -311,7 +324,8 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
@@ -376,12 +390,15 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
+    //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
 
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     if !rodata {
+        //Register the information with Godot in order for the variable to be accessible.
         Bind_Property(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)}
     else {
+        //Register the information with Godot in order for the variable to be accessible.
         Bind_Property(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "")
     }
     destructProperty(&prop_info)
@@ -424,7 +441,9 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -432,8 +451,10 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
+    //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, GDE.PROPERTY_USAGE_DEFAULT)
     
+    //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
@@ -473,7 +494,9 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
     
     if OType != GDE.Array {return}
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -498,8 +521,10 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
     final_hint_string, ok:= strings.concatenate(hints[:])
     if ok !=nil { return }
 
+    //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, fieldName, .ARRAY_TYPE, final_hint_string, className, GDE.PROPERTY_USAGE_DEFAULT)
     
+    //Creates all necessary info before Registering the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
     delete(final_hint_string)
@@ -542,7 +567,9 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -550,6 +577,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
+    //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_IS_POINTER, "", className, GDE.PROPERTY_USAGE_DEFAULT)
     
     
@@ -579,10 +607,12 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
+    //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
     destructProperty(&info)
 }
@@ -601,7 +631,9 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
     
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -611,6 +643,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
     
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, GDE.PROPERTY_USAGE_DEFAULT)
     
+    //Register the information with Godot in order for the variable to be accessible.
     bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
@@ -629,7 +662,9 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     context = godotContext
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -637,8 +672,9 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
-    someFlags:typeid= sics.type_field_type(classStruct, fieldName)
-    typeInfo:= type_info_of(someFlags)
+    typeInfo:= type_info_of(sics.type_field_type(classStruct, fieldName))
+
+    //UTF-8 array which will be used as the propertyHint's hint string.
     output:[dynamic]u8
 
     //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
@@ -656,7 +692,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
             append(&output, string(intermediate[:]))
             append(&output, ',')
         }
-
+        //Defines the information about the variable properties in a way Godot's editor understands
         prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
     } else {
 
@@ -667,6 +703,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
         for i:= type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).lower+1; i< type_info_of(sics.type_field_type(classStruct, fieldName)).variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
             append(&output, fmt.tprintf(",%v", i))
         }
+        //Defines the information about the variable properties in a way Godot's editor understands
         prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, GDE.PROPERTY_USAGE_DEFAULT)
     }
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
@@ -694,10 +731,12 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
+    //Register the information with Godot in order for the variable to be accessible.
     //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
     Bind_Property_Prop_Info(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 
@@ -726,7 +765,9 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     context = godotContext
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -748,6 +789,7 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
         case .LAYERS_AVOIDANCE: hint = .LAYERS_AVOIDANCE
     }
 
+    //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, GDE.PROPERTY_USAGE_DEFAULT)
 
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
@@ -775,10 +817,12 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
+    //Register the information with Godot in order for the variable to be accessible.
     //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
     Bind_Property_Prop_Info(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 
@@ -826,7 +870,9 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
     {
     context = godotContext
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -845,6 +891,7 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
         case .SAVE_FILE: hint = .SAVE_FILE
     }
 
+    //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, className, GDE.PROPERTY_USAGE_DEFAULT)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
@@ -873,10 +920,12 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
+    //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, fieldName, .STRING, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -910,7 +959,9 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
     {
     context = godotContext
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -947,10 +998,12 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
+    //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -978,7 +1031,9 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
     {
     context = godotContext
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -986,7 +1041,7 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
-
+    //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PASSWORD, placeholder_text, className, property_usage)
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
@@ -1015,10 +1070,12 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
+    //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -1044,7 +1101,9 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     {
     context = godotContext
     
+    
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -1053,8 +1112,6 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     defer(Destructors.stringNameDestructor(&className_SN))
     
 
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PLACEHOLDER_TEXT, placeholder_text, className, GDE.PROPERTY_USAGE_DEFAULT)
-    
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
@@ -1081,10 +1138,15 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     }
     */
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
-
+    
+    //Defines the information about the variable properties in a way Godot's editor understands
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PLACEHOLDER_TEXT, placeholder_text, className, GDE.PROPERTY_USAGE_DEFAULT)
+    
+    //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
@@ -1110,7 +1172,8 @@ bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^GDE.Strin
     
     get,set:= make_getter_and_setter(classStruct, GDType, fieldName)
 
-    //These functions create the callbacks Godot will used to call set and get.
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
