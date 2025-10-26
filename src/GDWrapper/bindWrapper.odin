@@ -51,7 +51,6 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -137,7 +136,6 @@ Export_Enum :: proc ($classStruct: typeid, $fieldName: string,
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
@@ -172,7 +170,6 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: string,
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
@@ -311,7 +308,6 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
     className := fmt.caprint(type_info_of(classStruct))
     defer delete(className)
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
@@ -433,7 +429,6 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -483,7 +478,6 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
@@ -553,7 +547,6 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -613,7 +606,6 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -642,7 +634,6 @@ Export_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -740,7 +731,6 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -841,7 +831,6 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -926,7 +915,6 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -995,7 +983,6 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
@@ -1062,7 +1049,6 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     defer delete(className)
 
     className_SN: GDE.StringName
-    //StringConstruct.stringNameNewUTF8andLen(&className_SN, raw_data(className[:]), len(className))
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
     
