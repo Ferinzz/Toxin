@@ -447,7 +447,7 @@ PropertyHint :: enum u32 {
 
 
 PROPERTY_USAGE_DEFAULT : PropertyUsageFlagsbits: {PropertyUsageFlags.STORAGE, PropertyUsageFlags.EDITOR}
-PropertyUsageFlagsbits:: bit_set [PropertyUsageFlags; u32]
+PropertyUsageFlagsbits:: distinct bit_set [PropertyUsageFlags; u32]
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyusageflags
 //PROPERTY_USAGE_DEFAULT = 6,

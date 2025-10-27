@@ -169,8 +169,8 @@ gameExport :: proc "c" (){
     GDW.Export_With_Placeholder_Text(game, "string_with_default", default_text)
 
     GDW.Export_Enum(game, myEnum)
-    GDW.Export_Flags(game, "layers_2d_navigation", GDW.layers_2d_navigation)
-    GDW.Export_Flags(game, "PropertyUsageFlagsbits", GDE.PropertyUsageFlagsbits)
+    GDW.Export_Flags(game, GDW.layers_2d_navigation)
+    GDW.Export_Flags(game, GDE.PropertyUsageFlagsbits)
 
 }
 
@@ -366,6 +366,6 @@ gamesignalCalback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVaria
 
 myEnum :: enum {
     one,
-    two,
     three,
+    two,
 }

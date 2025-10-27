@@ -104,6 +104,8 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 /*
 * To make an enum for Godot you need to create a property hint and make it public.
 * Enums are just a fancy set of strings which are associated with an int value.
+* If the value is read-only this may be safe.
+* WARNING: Godot only saves the value as an int, if you change the source enum Godot will not update the scene file to match.
 * Godot will save the value it chooses as an int in the scene or script file.
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
@@ -789,11 +791,18 @@ Export_Int_As_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
 }
 
 
-Export_Flags :: proc "c" ($classStruct: typeid, name: string, $outbit_set: typeid,
+/*
+* Export a bit_set to Godot for use in GDScript. namespace will be within the class this is defined in.
+* Only accepts bit_sets which are 'distinct' in order for them to be named.
+* classStruct: Struct of a registered class.
+* name: the name of the bit_set that you will use in GDScript
+* outbit_set: bit_set which you are exporting for use in Godot.
+*/
+Export_Flags :: proc "c" ($classStruct: typeid, $outbit_set: typeid,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
                         //This field should only be of type bit_set.
-                        where (sics.type_is_struct(classStruct) && sics.type_is_bit_set(outbit_set))
+                        where (sics.type_is_struct(classStruct) && sics.type_is_bit_set(outbit_set) && sics.type_is_named(outbit_set))
 {
     context = godotContext
     
@@ -806,10 +815,10 @@ Export_Flags :: proc "c" ($classStruct: typeid, name: string, $outbit_set: typei
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
-    //bsname:= fmt.aprint(typeid_of(outbit_set))
-    //defer delete(bsname)
+    bsname:= fmt.aprint(type_info_of(outbit_set).variant.(runtime.Type_Info_Named).name)
+    defer delete(bsname)
     bsname_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&bsname_SN, name)
+    StringConstruct.stringNameNewString(&bsname_SN, bsname)
     defer(Destructors.stringNameDestructor(&bsname_SN))
 
     //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
@@ -829,8 +838,8 @@ Export_Flags :: proc "c" ($classStruct: typeid, name: string, $outbit_set: typei
         }
 
     } else {
-        for i:= type_info_of(outbit_set).variant.(runtime.Type_Info_Bit_Set).lower; i< type_info_of(outbit_set).variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
-            field:= fmt.aprintf("%s_%v", name, i)
+        for i:= type_info_of(outbit_set).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).lower; i< type_info_of(outbit_set).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
+            field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN: GDE.StringName
             StringConstruct.stringNameNewString(&field_SN, field)
             gdAPI.Register_Int_const(Library, &className_SN, &bsname_SN, &field_SN, GDE.Int(i), true)
@@ -930,7 +939,7 @@ layers_3d_render:: bit_set[1..=20; u32]
 layers_2d_physics:: bit_set[1..=32; u32]
 layers_3d_physics:: bit_set[1..=32; u32]
 
-layers_2d_navigation:: bit_set[1..=32; u32]
+layers_2d_navigation:: distinct bit_set[1..=32; u32]
 layers_3d_navigation:: bit_set[1..=32; u32]
 
 layers_avoidance:: bit_set[1..=32; u32]

@@ -71,3 +71,10 @@ If there is no localized version of a file then it will use the default file. Th
 # PseudoLocalization
 https://docs.godotengine.org/en/stable/tutorials/i18n/pseudolocalization.html
 Basically just there to test out who the strings are being rendered. Would be good to make sure that the GDE is working as you want it. It's all project settings though. No need to do anything in the code itself unless you want to set some dev options in the game itself. Can update how strings are rendered dynamically? But needs a call to the TranslationServer.reload_pseudolocalization() so pretty nice.
+
+
+# Enum and bitfield implementation
+https://github.com/godotengine/godot/blob/0fdb93cde6ccb5176f96b0ddbba08d83e6c6aef2/core/object/class_db.h#L131
+When it looks for an enum value it does a lookup based on StingName (checks the rawptr) to get the name of the enum then checks the StringName of the field then looks in another hashmap to get the value associated with that field StringName in their constant_map.
+If you specify an int_as_enum for the editor it will save the value in the scene file.
+During execution it looks like it's taking address pointers directly and assigning them to the values. Seems like there's a preprocessing step which collects all the constants and makes them available for the script execution to easily ref them. If you're creating enums it should be decently fast; as fast as any other const you'd declare.
