@@ -31,8 +31,38 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
 
 }
 
-extensionDeinit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
-    
+
+//This function will be called when the Godot program is closing.
+//It will be called once at each level of the deinit process.
+//deinit is in reverse order with INITIALIZATION_EDITOR first and INITIALIZATION_CORE last.
+extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLevel) {
+    context = GDW.godotContext
+
+    switch deinitLevel{
+        case .INITIALIZATION_CORE:
+            /*
+            * Free the different classes which should be considered Core to the rest of the system.
+            */
+            return
+        case .INITIALIZATION_SERVERS:
+            /*
+            * Free the different classes which depend on core classes.
+            */
+            return    
+        case .INITIALIZATION_SCENE:
+            /*
+            * Free the different classes which depend on servers classes.
+            */
+            return
+        //INITIALIZATION_EDITOR should only happen if running from the editor.
+        case .INITIALIZATION_EDITOR:
+            /*
+            * Free the different classes which should be used with the Editor.
+            */
+            return
+        case :
+            assert(true, "This should be impossible!!")
+    }
 }
 
 /*
@@ -44,7 +74,7 @@ extensionDeinit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLeve
 * initLevel: The current init level that the Godot engine is going through.
 */
 extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
-    context = runtime.default_context()
+    context = GDW.godotContext
 
     //There are multiple steps to the init process which Godot goes through.
     //You may want to register or intitialize certain aspects of your extension at different times.
@@ -66,7 +96,7 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
             */
             THIS_CLASS_NAME_Register(THIS_CLASS_NAME, initLevel)
             return
-        //INITIALIZATION_EDITOR can only happen if running from the editor.
+        //INITIALIZATION_EDITOR should only happen if running from the editor.
         case .INITIALIZATION_EDITOR:
             /*
             * Register the different classes which should be used with the Editor.

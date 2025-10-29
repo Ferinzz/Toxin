@@ -22,6 +22,8 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
 }
 
 extensionDeinit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
+    context = GDW.godotContext
+    fmt.println("extension being deinitialized.")
     
 }
 
