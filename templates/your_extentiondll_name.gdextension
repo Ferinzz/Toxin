@@ -7,3 +7,7 @@ compatibility_minimum = "4.4"
 macos.debug = "res://bin/libgdexample.dylib"
 linux.debug = "res://bin/libgdexample.so"
 windows.debug = "res://bin/libgdexample.dll"
+
+macos.release = "res://bin/libgdexample.dylib"
+linux.release = "res://bin/libgdexample.so"
+windows.release = "res://bin/libgdexample.dll"

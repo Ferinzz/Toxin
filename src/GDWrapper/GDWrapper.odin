@@ -991,7 +991,7 @@ cache_mode :: enum GDE.Int {
 //WARNING DO NOT USE WITH RANDOM PNG ETC.
 //The Resource only works with files that have already been imported into the engine.
 //If you just have a file sitting in the directory and haven't interacted with the editor to import it 
-//use Image->load() instead. Jesus fucking christ.
+//use Image->load() instead. Jesus fucking christ it took a while to find confirmation about this.
 loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectPtr{
     @(static)load: GDE.MethodBindPtr
 

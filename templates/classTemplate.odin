@@ -9,7 +9,7 @@ import "core:fmt"
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
 //Godot will be passing us a pointer to this struct during callbacks.
-//MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
+//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
     selfPtr: GDE.ObjectPtr, //always keep. Self-reference to this object's memory in Godot.
     someProperty: GDE.Int,
@@ -25,7 +25,6 @@ THIS_CLASS_NAME_GDClass_StringName: GDE.StringName
 //p_userdata is optional.
 //p_userdata: I'm assuming this is best used to pass the context around. If context is set in the calling class this should be implicitly passed to this one.
 //initLevel: Pass in the current init level from the entry's extentionInit proc.
-//See where registerSprite is called in the loadTextureToSceneTree main.odin
 THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.InitializationLevel, p_userdata:rawptr=nil) {
     context = runtime.default_context()
 
