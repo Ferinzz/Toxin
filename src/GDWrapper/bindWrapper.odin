@@ -104,8 +104,8 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 /*
 * To make an enum for Godot you need to create a property hint and make it public.
 * Enums are just a fancy set of strings which are associated with an int value.
-* If the value is read-only this may be safe.
 * WARNING: Godot only saves the value as an int, if you change the source enum Godot will not update the scene file to match.
+* If the value is read-only this may be safe.
 * Godot will save the value it chooses as an int in the scene or script file.
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
@@ -162,6 +162,85 @@ Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
 
     destructProperty(&prop_info)
     delete(output)
+}
+
+/*
+* Export a gdstring or StringName variable in a way which Godot will know to offer a selection of strings in the Editor panel.
+* The value will be saved as a string in the scene file (tscn).
+* classStruct: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+* options: a slice containing the strings which will be options in the editor.
+* Godot will save the value selected in the editor to the scene file.
+* If you will not need the strings on Odin's side at runtime, the strings used for this export's init can be deleted.
+*/
+Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
+                        options: []string,
+                        property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR, .CLASS_IS_ENUM },
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type gdstring.
+                        where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.StringName || sics.type_field_type(classStruct, fieldName) == GDE.gdstring))
+{
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+
+    res, err:=strings.join(options[:], ",")
+    defer(delete(res))
+
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+        context = godotContext
+        when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
+            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
+            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+        }
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+        context = godotContext
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    
+    //Defines the information about the variable properties in a way Godot's editor understands
+    when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
+        prop_info:= Make_Property_Full(.STRING, fieldName, .ENUM, res, className, property_usage)
+        //Register the information with Godot in order for the variable to be accessible.
+        Bind_Property(&className_SN, fieldName, .STRING, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    }
+    when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
+        prop_info:= Make_Property_Full(.STRING_NAME, fieldName, .ENUM, res, className, property_usage)
+        //Register the information with Godot in order for the variable to be accessible.
+        Bind_Property(&className_SN, fieldName, .STRING_NAME, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    }
+
+
 }
 
 //Godot stores enum info in ClassInfo as a HashMap. The fields are stored in struct EnumInfo.

@@ -27,6 +27,8 @@ game :: struct {
     locale: GDW.Locale_ID,
     my_password: GDW.Password,
     string_with_default: GDE.gdstring,
+    string_enum: GDE.StringName,
+    string_enum2: GDE.gdstring,
     
 }
 
@@ -171,6 +173,8 @@ gameExport :: proc "c" (){
     GDW.Export_Enum(game, myEnum)
     GDW.Export_Flags(game, GDW.layers_2d_navigation)
     GDW.Export_Flags(game, GDE.PropertyUsageFlagsbits)
+    GDW.Export_String_As_Enum(game, "string_enum", {"one", "two", "fdkasljw"})
+    GDW.Export_String_As_Enum(game, "string_enum2", {"one", "two", "fdkasljw"})
 
 }
 
@@ -205,6 +209,8 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     self.locale.ptr = nil
     self.my_password.ptr = nil
     self.string_with_default.ptr = nil
+    self.string_enum.ptr = nil
+    self.string_enum2.ptr = nil
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
