@@ -102,6 +102,14 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
 }
 
 /*
+* Enums. These will behave in a somewhat strange way if you are used to compiled language.
+* In a pursuit of performance Godot will save the value in its final form after a user sets the value via the Editor.
+* As a result, updating the enum values will not be reflected in the stored data.
+* When doing this with Export_Int_As_Enum it means that you will not know which scene variables need to be updated, as the only value you see is a 1, 3, 5, etc.
+* If there is a chance of enum values changing, prefer using Export_String_As_Enum which will save in its string form. You can then fetch the value from the const by using this gdstring/StringName as a key.
+*/
+
+/*
 * To make an enum for Godot you need to create a property hint and make it public.
 * Enums are just a fancy set of strings which are associated with an int value.
 * WARNING: Godot only saves the value as an int, if you change the source enum Godot will not update the scene file to match.
@@ -172,6 +180,7 @@ Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
 * options: a slice containing the strings which will be options in the editor.
 * Godot will save the value selected in the editor to the scene file.
 * If you will not need the strings on Odin's side at runtime, the strings used for this export's init can be deleted.
+* If you change the spelling of a field, you will still need to update all of the *.tscn files to update to the new value.
 */
 Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
                         options: []string,
