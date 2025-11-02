@@ -29,7 +29,7 @@ game :: struct {
     string_with_default: GDE.gdstring,
     string_enum: GDE.StringName,
     string_enum2: GDE.gdstring,
-    
+    input: GDE.gdstring,
 }
 
 default_text: GDW.Placeholder_Text = "This is my default text."
@@ -175,6 +175,7 @@ gameExport :: proc "c" (){
     GDW.Export_Flags(game, GDE.PropertyUsageFlagsbits)
     GDW.Export_String_As_Enum(game, "string_enum", {"one", "two", "fdkasljw"})
     GDW.Export_String_As_Enum(game, "string_enum2", {"one", "two", "fdkasljw"})
+    GDW.Export_Input_Name(game, "input",{})// {.show_builtin})
 
 }
 
@@ -211,6 +212,7 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     self.string_with_default.ptr = nil
     self.string_enum.ptr = nil
     self.string_enum2.ptr = nil
+    self.input.ptr = nil
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
