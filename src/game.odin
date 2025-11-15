@@ -32,6 +32,7 @@ game :: struct {
     input: GDE.gdstring,
     multiline: GDE.gdstring,
     valid_nodes: GDE.gdstring,
+    valid_objects: GDE.Object,
 }
 
 default_text: GDW.Placeholder_Text = "This is my default text."
@@ -180,6 +181,7 @@ gameExport :: proc "c" (){
     GDW.Export_Input_Name(game, "input", {.show_builtin})
     GDW.Export_Multiline(game, "multiline")
     GDW.Export_Node_Path_Types(game,"valid_nodes", "Sprite2D")
+    GDW.Export_Object_ID(game, "valid_objects", string(GDW.ClassName_Strings[.ButtonGroup]))
 
 }
 
@@ -219,6 +221,7 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     self.input.ptr = nil
     self.multiline.ptr = nil
     self.valid_nodes.ptr = nil
+    self.valid_objects.proxy = nil
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
