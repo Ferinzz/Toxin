@@ -462,6 +462,11 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 
     Destructors.stringNameDestructor(&arrayClass)
 
+    //dictionary_SN: GDE.StringName
+    //StringConstruct.stringNameNewString(&dictionary_SN, "")
+
+    GDDictionary.Destroy = variant_get_ptr_destructor(.DICTIONARY)
+
     //constructor.variantNil = cast(GDE.InterfaceVariantNewNil)gdAPI.p_get_proc_address("variant_new_nil")
     //constructor.variantToVec2Constructor = cast(GDE.TypeFromVariantConstructorFunc)gdAPI.getVariantToTypeConstuctor(.VECTOR2)
 

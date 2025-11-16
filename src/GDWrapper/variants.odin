@@ -275,7 +275,10 @@ variant_to :: proc {
     DictionarytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Dictionary, loc:=#caller_location) {
         @(static) dictionary2v: GDE.VariantFromTypeConstructorFunc
         if dictionary2v == nil do dictionary2v = VariantGetters.getVariantFromTypeConstructor(.DICTIONARY)
-        dictionary2v(p_variant, p_from)
+        //Godot doesn't seem to handle receiving nil very well for this particular type.
+        if p_from.id != nil {
+            dictionary2v(p_variant, p_from)
+        }
     }
 
     ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Array, loc:=#caller_location) {
@@ -651,7 +654,9 @@ GDArray : struct {
     is_read_only: GDE.PtrBuiltInMethod,
 }
 
-
+GDDictionary : struct {
+    Destroy: GDE.PtrDestructor,
+}
 
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.
