@@ -34,7 +34,8 @@ game :: struct {
     valid_nodes: GDE.gdstring,
     valid_objects: GDE.Object,
     dictionary_type: GDE.Dictionary,
-    a_dictionary: GDE.Dictionary
+    a_dictionary: GDE.Dictionary,
+    locale_dictionary: GDE.Dictionary,
 }
 
 default_text: GDW.Placeholder_Text = "This is my default text."
@@ -186,6 +187,7 @@ gameExport :: proc "c" (){
     GDW.Export_Object_ID(game, "valid_objects", "")//, string(GDW.ClassName_Strings[.ButtonGroup]))
     GDW.Export_Dictionary_type(game, "dictionary_type", {.INT, .STRING})
     GDW.Export(game, "a_dictionary")
+    GDW.Export_Dictionary_Localizable_String(game, "locale_dictionary")
 
 }
 
@@ -230,6 +232,7 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     //self.dictionary_type.key_type = .STRING
     //self.dictionary_type.value_type = .INT
     self.a_dictionary.id = nil
+    self.locale_dictionary.id = nil
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)

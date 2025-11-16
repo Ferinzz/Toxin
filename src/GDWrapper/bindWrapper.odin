@@ -1723,6 +1723,71 @@ Dictionary_Types :: distinct struct {
   value_type: GDE.VariantType,
 }
 
+/*
+* Export a dictionary to Godot and specify that its keys will be locales and strings will be translations.
+* Godot says : Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use duplicate().
+* TODO: Could use more testing.
+**
+* classStruct: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+* Dictionary_Type: See below the Export. This is a struct in which you will declare the type of the key and value.
+*/
+Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: string,
+                        property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR, },
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type gdstring.
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == GDE.Dictionary)
+{
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Dictionary) {
+        context = godotContext
+        
+        //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
+        if (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName))).id != nil {    
+            GDDictionary.Destroy(cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+        }
+        (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = GDE.Dictionary(godotValue)
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
+    }
+    */
+    
+    get :: proc "c" (p_classData: ^classStruct) -> GDE.Dictionary {
+        context = godotContext
+        return (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    //Defines the information about the variable properties in a way Godot's editor understands
+    prop_info:= Make_Property_Full(.DICTIONARY, fieldName, .LOCALIZABLE_STRING, "", className, property_usage)
+    
+    //Register the information with Godot in order for the variable to be accessible.
+    Bind_Property(&className_SN, fieldName, .DICTIONARY, &prop_info, "get_"+fieldName, "set_"+fieldName)
+}
 
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.
