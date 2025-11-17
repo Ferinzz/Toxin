@@ -412,6 +412,7 @@ PropertyHint :: enum u32 {
     LOCALIZABLE_STRING = 33,
 
     //Hints that a property is an instance of a Node-derived type, optionally specified via the hint string (e.g. "Node2D"). Editing it will show a dialog for picking a node from the scene.
+    //This is saved as a NodePath in the tscn. Seeing as there's no Node type itself, it seems like this is mainly to allow you to ref the correct thing based on the NodePath.
     NODE_TYPE = 34,
 
     //Hints that a quaternion property should disable the temporary euler editor.

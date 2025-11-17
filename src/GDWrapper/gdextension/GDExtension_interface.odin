@@ -548,7 +548,7 @@ CallableCustomInfo2 :: struct {
 	 * `free_func` is necessary if `callable_userdata` needs to be cleaned up when the callable is freed.
 	 */
 	callable_userdata: rawptr,
-	token: rawptr,
+	token: ClassLibraryPtr,
 
 	object_id: GDObjectInstanceID,
 	call_func: CallableCustomCall,

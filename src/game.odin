@@ -36,6 +36,10 @@ game :: struct {
     dictionary_type: GDE.Dictionary,
     a_dictionary: GDE.Dictionary,
     locale_dictionary: GDE.Dictionary,
+    aome_callable1: GDE.Callable,
+    aome_callable2: GDE.Callable,
+    aome_callable3: GDE.Callable,
+    aome_callable4: GDE.Callable,
 }
 
 default_text: GDW.Placeholder_Text = "This is my default text."
@@ -189,7 +193,26 @@ gameExport :: proc "c" (){
     GDW.Export(game, "a_dictionary")
     GDW.Export_Dictionary_Localizable_String(game, "locale_dictionary")
 
+    //For this example Callables are defined at object creation due to them being stored in the class struct.
+    GDW.Export_Tool_Button(game, "aome_callable1", {"fdasfdsa1", "ColorRect"})
+    GDW.Export_Tool_Button(game, "aome_callable2", {"fdasfdsa2", ""})
+    GDW.Export_Tool_Button(game, "aome_callable3", {icon = "ColorRect"})
+    GDW.Export_Tool_Button(game, "aome_callable4", {})
+
+    
+    //Allocating callables into my class struct.
+    my_Custom_Callable: GDE.CallableCustomInfo2 ={
+        token = GDW.Library,
+        callable_userdata = rawptr(random_Callable),
+        call_func = random_Callable,
+    }
+    GDW.gdCallable = new(GDE.Callable)
+    GDW.Methods.makeCallable(GDW.gdCallable, &my_Custom_Callable)
+
+    GDW.Export_Callable_As_Tool_Button(game, "gdCallable", {"Direct Call",""})
+
 }
+gdCallable: ^GDE.Callable
 
 
 gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
@@ -233,6 +256,18 @@ gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.
     //self.dictionary_type.value_type = .INT
     self.a_dictionary.id = nil
     self.locale_dictionary.id = nil
+    
+    
+    //Allocating callables into my class struct.
+    my_Custom_Callable: GDE.CallableCustomInfo2 ={
+        token = GDW.Library,
+        callable_userdata = rawptr(my_custom_callable_proc),
+        call_func = gamesignalCalback,
+    }
+    GDW.Methods.makeCallable(&self.aome_callable1, &my_Custom_Callable)
+    self.aome_callable2 = self.aome_callable1
+    self.aome_callable3 = self.aome_callable1
+    self.aome_callable4 = self.aome_callable1
 
     GDW.gdAPI.object_set_instance(object, &game_SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
@@ -387,6 +422,11 @@ gamesignalCalback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVaria
         r_error.error=.CALL_OK
         return
     }*/
+    if callable_userdata == cast(rawptr)my_custom_callable_proc {
+        my_custom_callable_proc()
+        r_error.error=.CALL_OK
+        return
+    }
 
     r_error.error = .CALL_ERROR_INSTANCE_IS_NULL
     return
@@ -396,4 +436,24 @@ myEnum :: enum {
     one,
     three,
     two,
+}
+
+my_custom_callable_proc :: proc"c"() {
+    context = runtime.default_context()
+    fmt.println("printing something")
+    GDW.Print.Warning("Printing a thing", "my_custom_callable_proc", "", 428, false)
+}
+
+random_Callable :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
+    context = runtime.default_context()
+
+    /*
+    if callable_userdata == cast(rawptr)mainPhysTick {
+        mainPhysTick()
+        r_error.error=.CALL_OK
+        return
+    }*/
+    fmt.println("why do you need three layers of abstraction?")
+    r_error.error=.CALL_OK
+    return
 }

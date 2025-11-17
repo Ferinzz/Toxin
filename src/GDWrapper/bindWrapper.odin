@@ -1513,6 +1513,7 @@ Export_Multiline :: proc($classStruct: typeid, $fieldName: string,
 
 /*
 * Export a Node Path with the permitted type(s) permitted.
+* somewhat interchangeable with Node Type seeing as it will save the value as a NodePath in the tscn.
 * The value will be saved as a string in the scene file (tscn).
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
@@ -1787,6 +1788,139 @@ Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: s
     
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(&className_SN, fieldName, .DICTIONARY, &prop_info, "get_"+fieldName, "set_"+fieldName)
+}
+
+
+/*
+* Tells Godot to create a button which will call the Callable returned by the getter function.
+* Callable needs to exist at the time the button is pressed.
+* Callable needs to be returned to Godot via a getter. The getter is called at button press.
+* Set the callback of the callable to one which will only need to exist when the editor is running (unless this will be used in scripting or signals as well.)
+**
+* classStruct: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+* button_props: a struct containing the display text and icon to be used with the button. See tool_Button_Info
+*/
+Export_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
+                        button_props: tool_Button_Info = {},
+                        property_usage: GDE.PropertyUsageFlagsbits = { .EDITOR, },
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type gdstring.
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == GDE.Callable)
+{
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+
+    get :: proc "c" (p_classData: ^classStruct) -> GDE.Callable {
+        context = godotContext
+        return (cast(^GDE.Callable)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    //bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    hint_string:string
+    //Godot does not know how to handle a seperator when there's nothing after it.
+    //As a result this must handle all situations seperately.
+    if len(button_props.icon) > 0 {
+        hint_string = fmt.aprint(button_props.text, button_props.icon, sep = ",")
+    } else if len(button_props.text) > 0 {
+        hint_string = fmt.aprint(button_props.text)
+    } else do hint_string = ""
+
+    //Defines the information about the variable properties in a way Godot's editor understands
+    prop_info:= Make_Property_Full(.CALLABLE, fieldName, .TOOL_BUTTON, hint_string, className, property_usage)
+    delete(hint_string)
+
+    //Register the information with Godot in order for the variable to be accessible.
+    Bind_Property(&className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
+}
+
+
+/*
+* WARNING implementation incomplete.
+* Tells Godot to create a button which will call the Callable returned by the getter function.
+* Callable needs to exist at the time the button is pressed.
+* Callable needs to be returned to Godot via a getter. The getter is called at button press.
+* Set the callback of the callable to one which will only need to exist when the editor is running (unless this will be used in scripting or signals as well.)
+**
+* classStruct: the class struct which holds your variable.
+* fieldName: the name that matches the field in the struct as you've named it.
+* button_props: a struct containing the display text and icon to be used with the button. See tool_Button_Info
+*/
+gdCallable: ^GDE.Callable
+Export_Callable_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string, //$callable: $T,
+                        button_props: tool_Button_Info = {},
+                        property_usage: GDE.PropertyUsageFlagsbits = { .EDITOR, },
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
+                        loc:= #caller_location) \
+                        //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
+                        //This field should only be of type gdstring.
+                        //where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == GDE.Callable)
+{
+    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
+    //In this case, this stringName is used to recognize this class in their classDB.
+    className := fmt.aprint(type_info_of(classStruct))
+    defer delete(className)
+    className_SN: GDE.StringName
+    StringConstruct.stringNameNewString(&className_SN, className)
+    defer(Destructors.stringNameDestructor(&className_SN))
+
+    get :: proc "c" (p_classData: ^classStruct) -> GDE.Callable {
+        context = godotContext
+        return gdCallable^
+    }
+    /*
+    The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+        return yourclassstruct.someField^ //someField is of type GDE.Int
+    }
+    */
+
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    hint_string:string
+    //Godot does not know how to handle a seperator when there's nothing after it.
+    //As a result this must handle all situations seperately.
+    if len(button_props.icon) > 0 {
+        hint_string = fmt.aprint(button_props.text, button_props.icon, sep = ",")
+    } else if len(button_props.text) > 0 {
+        hint_string = fmt.aprint(button_props.text)
+    } else do hint_string = ""
+
+    //Defines the information about the variable properties in a way Godot's editor understands
+    prop_info:= Make_Property_Full(.CALLABLE, fieldName, .TOOL_BUTTON, hint_string, className, property_usage)
+    delete(hint_string)
+
+    //Register the information with Godot in order for the variable to be accessible.
+    Bind_Property(&className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
+}
+
+/*
+* used for Export_Tool_Button to specify the details of the button.
+* text: will be displayed in the button itself.
+* icon: the icon type to be displayed alongside the button. ex. ColorRect will show the color selector icon.
+*/
+tool_Button_Info :: struct {
+    text: string,
+    icon: string,
 }
 
 /*
