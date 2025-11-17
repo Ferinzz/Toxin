@@ -6,11 +6,16 @@
 			"request": "launch",
 			"preLaunchTask": "extBuild",
 			"name": "Debug",
+			//The Godot exe to launch. If you have setup a Path to Godot you can use that instead.
 			//"program": "C:\/GodotSrc\/godot\/bin\/godot.windows.editor.dev.x86_64.exe",
 			"program": "C:\\GodotSrc\\godot4_5\\bin\\godot.windows.editor.dev.x86_64.exe",
 			//"program": "C:\\GodotSrc\\godot\\bin\\godot.windows.editor.dev.x86_64.exe",
+			//Tells godot what project file to use.
+			//Generally this .godot file will be in the root of your project's folder.
+			//One set of args launches the editor, the other launches the game exe directly.
 			"args": [ ".\/TopDown/project.godot"], //launch editor
 			//"args": [ "--path ./TopDown --verbose"], //launch game
+			//Tell VSCode where to look for the binary when debugging.
 			"cwd": "${workspaceFolder}/TopDown",
 			
 		}
