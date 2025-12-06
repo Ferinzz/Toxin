@@ -125,8 +125,8 @@ VariantOperator :: enum {
 
 
 VariantPtr 							:: ^Variant
-ConstVariantPtr 					:: ^Variant
-ConstVariantPtrargs 				:: [^]ConstVariantPtr
+ConstVariantPtr 					:: rawptr
+ConstVariantPtrargs 				:: [^]rawptr
 UninitializedVariantPtr 			:: rawptr
 StringNamePtr 						:: rawptr
 ConstStringNamePtr 					:: [^]StringName
@@ -144,7 +144,7 @@ MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64
 
 RefPtr 								:: rawptr
-ConstRefPtr 						:: [^]RefPtr
+ConstRefPtr 						:: rawptr
 ClassLibraryPtr  					:: distinct rawptr
 ConstTypePtrargs					:: [^]rawptr
 
@@ -190,7 +190,7 @@ PtrKeyedSetter 					:: proc "c" (p_base: TypePtr, 	 p_key: ConstTypePtr,  p_valu
 PtrKeyedGetter 					:: proc "c" (p_base: ConstTypePtr, p_key:  ConstTypePtr, r_value: TypePtr);
 PtrKeyedChecker 				:: proc "c" (p_base: ConstVariantPtr, p_key:  ConstVariantPtr) -> u32;
 PtrUtilityFunction 				:: proc "c" (r_return: TypePtr,    p_args: ConstTypePtrargs, p_argument_count: i64);
-ClassConstructor :: proc "c" () -> ObjectPtr;
+
 
 ClassCreationInfo :: struct {
 	is_virtual: Bool,
@@ -317,10 +317,6 @@ ClassCreationInfo4 :: struct {
 	class_userdata: rawptr, // Per-class user data, later accessible in instance bindings. //A pointer to whatever you want to pass to the functions. Godot doesn't interact directly but will add it to a bunch of functions it calls.
 } 
 
-ClassCreationInfo5 :: ClassCreationInfo4
-
-/* Passed a pointer to a PackedStringArray that should be filled with the classes that may be used by the GDExtension. */
-EditorGetClassesUsedCallback :: proc "c" (p_packed_string_array: ^PackedStringArray);
 
 InstanceBindingCallbacks :: struct {
 	create_callback: 	InstanceBindingCreateCallback,
@@ -373,7 +369,7 @@ ClassCallVirtualWithData  	:: proc "c" (p_instance: ClassInstancePtr, p_name: Co
 * "type": int (see Variant.Type)
 * optionally "hint": int (see PropertyHint) and "hint_string": String
 */
-PropertyInfo :: struct {
+PropertyInfo  :: struct {
 	type:       VariantType,
 	name:       StringNamePtr,
 	class_name: StringNamePtr,
@@ -508,7 +504,6 @@ CallableCustomLessThan	:: proc "c" (callable_userdata_a: rawptr, callable_userda
 CallableCustomToString	:: proc "c" (callable_userdata: rawptr, r_is_valid: ^Bool, r_out: StringPtr);
 
 CallableCustomGetArgumentCount :: proc "c" (callable_userdata: rawptr, r_is_valid: ^Bool) -> Int;
-
 
 CallableCustomInfo :: struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
@@ -704,18 +699,7 @@ ScriptInstanceInfo3 :: struct {
 	get_language_func: ScriptInstanceGetLanguage,
 	free_func: ScriptInstanceFree,
 
-}
-
-//*************\\
-//**Threading**\\
-//*************\\
-
-WorkerThreadPoolGroupTask :: proc "c" (unspecified: rawptr, unspecified2: u32);
-GDExtensionWorkerThreadPoolTask :: proc "c" (unspecified: rawptr);
-
-
-InitializeCallback :: proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
-DeinitializeCallback :: proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
+} 
 
 Initialization :: struct {
 	    /* Minimum initialization level required.
@@ -777,46 +761,6 @@ GodotVersion :: struct {
 	string: cstring,
 }
 
-GodotVersion2 :: struct {
-	major: i32,
-	minor: i32,
-	patch: i32,
-	/* Full version encoded as hexadecimal with one byte (2 hex digits) per number (e.g. for "3.1.12" it would be 0x03010C) */
-	hex: i32,
-	/* (e.g. "stable", "beta", "rc1", "rc2") */
-	status: cstring,
-	/* (e.g. "custom_build") */
-	build: cstring,
-	/* Full Git commit hash. */
-	hash: cstring,
-	/* Git commit date UNIX timestamp in seconds, or 0 if unavailable. */
-	timestamp: i64,
-	/* (e.g. "Godot v3.1.4.stable.official.mono") */
-	string: cstring,
-};
-
-//*********************************\\
-//******MAIN LOOP HELPERS!!!!!*****\\
-//*********************************\\
-
-/* Called when starting the main loop. */
-MainLoopStartupCallback :: proc "c" ();
-/* Called when shutting down the main loop. */
-MainLoopShutdownCallback :: proc "c" ();
-/* Called for every frame iteration of the main loop. */
-MainLoopFrameCallback :: proc "c" ();
-
-MainLoopCallbacks :: struct {
-	/* Will be called after Godot is started and is fully initialized. */
-	startup_func: MainLoopStartupCallback,
-	/* Will be called before Godot is shutdown when it is still fully initialized. */
-	shutdown_func: MainLoopShutdownCallback,
-	/* Will be called for each process frame. This will run after all `_process()` methods on Node, and before `ScriptServer::frame()`.
-	 * This is intended to be the equivalent of `ScriptLanguage::frame()` for GDExtension language bindings that don't use the script API.
-	 */
-	frame_func: MainLoopFrameCallback,
-};
-
 /**
  * @name get_godot_version
  * @since 4.1
@@ -826,17 +770,6 @@ MainLoopCallbacks :: struct {
  * @param r_godot_version A pointer to the structure to write the version information into.
  */
 InterfaceGetGodotVersion :: proc "c" (r_godot_version: ^GodotVersion);
-
-/**
- * @name get_godot_version2
- * @since 4.5
- *
- * Gets the Godot version that the GDExtension was loaded into.
- *
- * @param r_godot_version A pointer to the structure to write the version information into.
- */
-InterfaceGetGodotVersion2 :: proc "c" (r_godot_version: ^GodotVersion2);
-
 
 /* INTERFACE: Memory */
 
@@ -874,45 +807,6 @@ InterfaceMemRealloc :: proc "c" (p_ptr: rawptr, p_bytes: int) -> rawptr;
  * @param p_ptr A pointer to the previously allocated memory.
  */
 InterfaceMemFree :: proc "c" (p_ptr: rawptr)
-
-/**
- * @name mem_alloc2
- * @since 4.6
- *
- * Allocates memory.
- *
- * @param p_bytes The amount of memory to allocate in bytes.
- * @param p_pad_align If true, the returned memory will have prepadding of at least 8 bytes.
- *
- * @return A pointer to the allocated memory, or NULL if unsuccessful.
- */
-InterfaceMemAlloc2 :: proc "c" (p_bytes: u64, p_pad_align: Bool) -> rawptr;
-
-/**
- * @name mem_realloc2
- * @since 4.6
- *
- * Reallocates memory.
- *
- * @param p_ptr A pointer to the previously allocated memory.
- * @param p_bytes The number of bytes to resize the memory block to.
- * @param p_pad_align If true, the returned memory will have prepadding of at least 8 bytes.
- *
- * @return A pointer to the allocated memory, or NULL if unsuccessful.
- */
-InterfaceMemRealloc2 :: proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: Bool) -> rawptr;
-
-/**
- * @name mem_free2
- * @since 4.6
- *
- * Frees memory.
- *
- * @param p_ptr A pointer to the previously allocated memory.
- * @param p_pad_align If true, the given memory was allocated with prepadding.
- */
-InterfaceMemFree2 :: proc "c" (p_bytes: u64, p_pad_align: Bool);
-
 
 /* INTERFACE: Godot Core */
 
@@ -2076,33 +1970,6 @@ InterfaceEditorHelpLoadXmlFromUtf8Chars :: proc "c" (p_data: cstring);
 InterfaceEditorHelpLoadXmlFromUtf8CharsAndLen :: proc "c" (p_data: cstring, p_size: Int);
 
 
-/**
- * @name editor_register_get_classes_used_callback
- * @since 4.5
- *
- * Registers a callback that Godot can call to get the list of all classes (from ClassDB) that may be used by the calling GDExtension.
- *
- * This is used by the editor to generate a build profile (in "Tools" > "Engine Compilation Configuration Editor..." > "Detect from project"),
- * in order to recompile Godot with only the classes used.
- * In the provided callback, the GDExtension should provide the list of classes that _may_ be used statically, thus the time of invocation shouldn't matter.
- * If a GDExtension doesn't register a callback, Godot will assume that it could be using any classes.
- *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
- * @param p_callback The callback to retrieve the list of classes used.
- */
-InterfaceEditorRegisterGetClassesUsedCallback :: proc "c" (p_library: ClassLibraryPtr, p_callback: EditorGetClassesUsedCallback);
-
-/**
- * @name register_main_loop_callbacks
- * @since 4.5
- *
- * Registers callbacks to be called at different phases of the main loop.
- *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
- * @param p_callbacks A pointer to the structure that contains the callbacks.
- */
-InterfaceRegisterMainLoopCallbacks :: proc "c" (p_library: ClassLibraryPtr, p_callbacks: ^MainLoopCallbacks);
-
 /* INTERFACE: FileAccess Utilities */
 
 /**
@@ -2858,19 +2725,6 @@ InterfacePlaceHolderScriptInstanceUpdate :: proc "c" (p_placeholder: ScriptInsta
  */
 InterfaceObjectGetScriptInstance :: proc "c" (p_object: ObjectPtr, p_language: ObjectPtr) -> ScriptInstanceDataPtr;
 
-
-/**
- * @name object_set_script_instance
- * @since 4.5
- *
- * Set the script instance data attached to this object.
- *
- * @param p_object A pointer to the Object.
- * @param p_script_instance A pointer to the script instance data to attach to this object.
- */
-InterfaceObjectSetScriptInstance :: proc "c" (p_object: ObjectPtr, p_script_instance: ScriptInstanceDataPtr);
-
-
 /* INTERFACE: Callable */
 
 /**
@@ -3025,7 +2879,6 @@ InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassLibraryPtr,
 /**
  * @name classdb_register_extension_class4
  * @since 4.4
- * @deprecated in Godot 4.5. Use `classdb_register_extension_class5` instead.
  *
  * Registers an extension class in the ClassDB.
  *
@@ -3037,21 +2890,6 @@ InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassLibraryPtr,
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
 InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo4);
-
-/**
- * @name classdb_register_extension_class5
- * @since 4.5
- *
- * Registers an extension class in the ClassDB.
- *
- * Provided struct can be safely freed once the function returns.
- *
- * @param p_library A pointer the library received by the GDExtension's entry point function.
- * @param p_class_name A pointer to a StringName with the class name.
- * @param p_parent_class_name A pointer to a StringName with the parent class name.
- * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
- */
-InterfaceClassdbRegisterExtensionClass5 :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo5);
 
 /**
  * @name classdb_register_extension_class_method

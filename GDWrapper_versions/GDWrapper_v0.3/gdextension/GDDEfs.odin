@@ -44,10 +44,9 @@ VariantData :: union #align(16) {
 */
 
 //optional in Godot. These are mainly to define pointer etc variable lengths in C.
-Int     :: i64
+Int     :: int    
 Bool    :: b8
 float   :: f64
-ObjectInstanceID :: u64
 
 
 //I'm sorry. I made all of these distinct. Godot has so many overlapping types in their Variant system that it makes the conversion procs easier.

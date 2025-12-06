@@ -13,10 +13,6 @@ Library : GDE.ClassLibraryPtr = nil
 //******Utility Functions******\\
 //*****************************\\
 
-gd_Main_Loop: struct {
-  register_main_loop_callbacks: GDE.InterfaceRegisterMainLoopCallbacks,
-}
-
 //You're going to use the p_get_proc_address a lot to get most of the default Godot interface functions.
 gdAPI : struct  {
     p_get_proc_address: GDE.InterfaceGetProcAddress,
@@ -25,9 +21,7 @@ gdAPI : struct  {
     object_set_instance: GDE.InterfaceObjectSetInstance,
     object_set_instance_binding: GDE.InterfaceObjectSetInstanceBinding,
     mem_alloc: GDE.InterfaceMemAlloc,
-    mem_alloc2: GDE.InterfaceMemAlloc2,
     mem_free: GDE.InterfaceMemFree,
-    mem_free2: GDE.InterfaceMemFree2,
 
     //Variant related function pointers.
     classdbRegisterExtensionClassMethod: GDE.InterfaceClassdbRegisterExtensionClassMethod,
@@ -120,7 +114,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     StringConstruct.stringNewLatinLen = cast(GDE.InterfaceStringNewWithLatin1CharsAndLen)p_get_proc_address("string_new_with_latin1_chars_and_len")
 
     StringConstruct.stringNameNewString = proc(StringName_r: ^GDE.StringName, name: string) {
-        StringConstruct.stringNameNewUTF8andLen(StringName_r, raw_data(name[:]), i64(len(name)))
+        StringConstruct.stringNameNewUTF8andLen(StringName_r, raw_data(name[:]), len(name))
     }
 
     Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
@@ -135,8 +129,6 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //Do not get confused with the function that we run on our end that will return whether a StringName is equal. This just runs the compare on Godot Side.
     operator.stringNameEqual = gdAPI.variantGetPtrOperatorEvaluator(.VARIANT_OP_EQUAL, .STRING_NAME, .STRING_NAME)
 
-    gd_Main_Loop.register_main_loop_callbacks = cast(GDE.InterfaceRegisterMainLoopCallbacks)p_get_proc_address("register_main_loop_callbacks")
-
     //API.
     gdAPI.p_get_proc_address = p_get_proc_address
     gdAPI.classDBRegisterExtClass = cast(GDE.InterfaceClassdbRegisterExtensionClass4)p_get_proc_address("classdb_register_extension_class4")
@@ -144,9 +136,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     gdAPI.object_set_instance = cast(GDE.InterfaceObjectSetInstance)p_get_proc_address("object_set_instance")
     gdAPI.object_set_instance_binding = cast(GDE.InterfaceObjectSetInstanceBinding)p_get_proc_address("object_set_instance_binding")
     gdAPI.mem_alloc = cast(GDE.InterfaceMemAlloc)p_get_proc_address("mem_alloc")
-    gdAPI.mem_alloc2 = cast(GDE.InterfaceMemAlloc2)p_get_proc_address("mem_alloc2")
     gdAPI.mem_free = cast(GDE.InterfaceMemFree)p_get_proc_address("mem_free")
-    gdAPI.mem_free2 = cast(GDE.InterfaceMemFree2)p_get_proc_address("mem_free2")
     gdAPI.classdbRegisterExtensionClassMethod = cast(GDE.InterfaceClassdbRegisterExtensionClassMethod)p_get_proc_address("classdb_register_extension_class_method")
     gdAPI.classDBRegisterExtensionClassProperty = cast(GDE.InterfaceClassdbRegisterExtensionClassProperty)p_get_proc_address("classdb_register_extension_class_property")
     //Really nice that you can (hopefully) just cast the pointer to the function's proc type. Signature?
@@ -287,7 +277,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "assign", false)
-    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2307260970)
+    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2162347432)
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "get", false)
@@ -418,7 +408,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4075186556)
     Destructors.stringNameDestructor(&arraySize)
 
-    StringConstruct.stringNameNewLatin(&arraySize, "map", false)
+    StringConstruct.stringNameNewLatin(&arraySize, "gdmap", false)
     GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4075186556)
     Destructors.stringNameDestructor(&arraySize)
 
@@ -526,7 +516,7 @@ classCreate :: proc "c" () {
 * hash : the hash of the method. find it in the json. Careful of buildmode it's under.
 * 
 */
-classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+classDBGetMethodBind :: proc(className, methodName: cstring, hash: int, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
     //context = runtime.default_context()
 
     native_class_name: GDE.StringName;
@@ -546,7 +536,7 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #
 
 
 
-classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, hash: int, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
     //context = runtime.default_context()
     assert(className != nil, "ClassName is nil. Did you accidentally free this early?")
     method_name: GDE.StringName;
@@ -592,7 +582,7 @@ destructProperty :: proc "c" (info: ^GDE.PropertyInfo) {
 * Use to check the type that Godot provides from its side.
 * Returns early with ok or an error.
 */
-variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: GDE.ConstVariantPtrargs, r_error: ^GDE.CallError) {
+variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: [^]rawptr, r_error: ^GDE.CallError) {
     
     for type, index in typeList {
         if type != VariantGetters.variantGetType(argList[index]) {
@@ -727,7 +717,7 @@ callDeferred :: proc "c" (Object: ^GDE.Object, method: ^GDE.StringName, r_Varian
 
     assert(method.ptr != nil)
     method_arg := tovariant(method, GDE.StringName)
-    args:= [?]^GDE.Variant {&method_arg}
+    args:= [1]rawptr {&method_arg}
     r_error: GDE.CallError
     gdAPI.objectMethodBindCall(CallDeferred, Object, raw_data(args[:]), 1, r_Variant, &r_error)
 }

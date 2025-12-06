@@ -2112,13 +2112,13 @@ makePropertyFull_string :: #force_inline proc "c" (type: GDE.VariantType, name: 
     context = runtime.default_context()
 
     prop_name:= new(GDE.StringName)
-    StringConstruct.stringNameNewUTF8andLen(prop_name, raw_data(name), i64(len(name)))
+    StringConstruct.stringNameNewUTF8andLen(prop_name, raw_data(name), len(name))
 
     propHintString:= new(GDE.gdstring)
-    StringConstruct.stringNewUTF8_len(propHintString, raw_data(hintString), i64(len(hintString)))
+    StringConstruct.stringNewUTF8_len(propHintString, raw_data(hintString), len(hintString))
 
     propClassName:= new(GDE.StringName)
-    StringConstruct.stringNameNewUTF8andLen(propClassName, raw_data(className), i64(len(className)))
+    StringConstruct.stringNameNewUTF8andLen(propClassName, raw_data(className), len(className))
     
     info: GDE.PropertyInfo = {
         name = prop_name,
@@ -2154,7 +2154,7 @@ bindMethod :: #force_inline proc "c" (className: ^GDE.StringName, methodName: st
     context = godotContext
 
     methodStringName: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
+    StringConstruct.stringNameNewUTF8andLen(&methodStringName, raw_data(methodName), len(methodName))
 
     argcount:: sics.type_proc_parameter_count(T) - 1
 
@@ -2268,10 +2268,10 @@ Bind_Property :: proc {
 Bind_Property_Prop_Info :: #force_inline proc(className: ^GDE.StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: string, loc:=#caller_location) {
 
     getterName: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&getterName, raw_data(getter[:]), i64(len(getter)))
+    StringConstruct.stringNameNewUTF8andLen(&getterName, raw_data(getter[:]), len(getter))
 
     setterName: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&setterName, raw_data(setter[:]), i64(len(setter)))
+    StringConstruct.stringNameNewUTF8andLen(&setterName, raw_data(setter[:]), len(setter))
     
     //fmt.println("register property")
     gdAPI.classDBRegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
@@ -2384,7 +2384,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
             
             gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1)}
             
-            variantTypeCheck(gdTypeList[:], p_args, r_error)
+            variantTypeCheck(gdTypeList[:], p_args[:], r_error)
 
             func := cast(P)method_userdata
 

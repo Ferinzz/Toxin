@@ -183,7 +183,7 @@ emitSignal0 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName)
     arg1: GDE.Variant
     variant_from(&arg1, signalName)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1}
+    varSet:= [?]rawptr {&arg1}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -204,7 +204,7 @@ emitSignal1 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg2: GDE.Variant
     variant_from(&arg2, p_arg1)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2}
+    varSet:= [?]rawptr {&arg1, &arg2}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -228,7 +228,7 @@ emitSignal2 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg3: GDE.Variant
     variant_from(&arg3, p_arg2)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -254,7 +254,7 @@ emitSignal3 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg4: GDE.Variant
     variant_from(&arg4, p_arg3)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3, &arg4}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -283,7 +283,7 @@ emitSignal4 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg5: GDE.Variant
     variant_from(&arg5, p_arg4)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3, &arg4, &arg5}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -315,7 +315,7 @@ emitSignal5 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg6: GDE.Variant
     variant_from(&arg6, p_arg5)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -351,7 +351,7 @@ emitSignal6 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg7: GDE.Variant
     variant_from(&arg7, p_arg6)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -390,7 +390,7 @@ emitSignal7 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg8: GDE.Variant
     variant_from(&arg8, p_arg7)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -432,7 +432,7 @@ emitSignal8 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg9: GDE.Variant
     variant_from(&arg9, p_arg8)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9}
 
     // Add dummy return value storage.
     ret: GDE.Variant
@@ -477,7 +477,7 @@ emitSignal9 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     arg10: GDE.Variant
     variant_from(&arg10, p_arg9)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
-    varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9, &arg10}
+    varSet:= [?]rawptr {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9, &arg10}
 
     // Add dummy return value storage.
     ret: GDE.Variant
