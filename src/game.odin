@@ -168,7 +168,7 @@ gameExport :: proc "c" (){
     GDW.Export_Easing(game, "easing_float", .attenuation)
     GDW.Export_Easing(game, "pos_float", .positive_only)
     GDW.Export_Easing(game, "exp_float", .none)
-    GDW.Export_Array_Type(game, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
+    //GDW.Export_Array_Type(game, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
     GDW.Export(game, "an_array")
     //GDW.Export(game, "a_real_array")
     GDW.Export_Pointer(game, "is_Pointer")
@@ -206,13 +206,28 @@ gameExport :: proc "c" (){
         callable_userdata = rawptr(random_Callable),
         call_func = random_Callable,
     }
-    GDW.gdCallable = new(GDE.Callable)
-    GDW.Methods.makeCallable(GDW.gdCallable, &my_Custom_Callable)
+    //GDW.gdCallable = new(GDE.Callable)
+    GDW.Methods.makeCallable(&GDW.gdCallable, &my_Custom_Callable)
 
-    GDW.Export_Callable_As_Tool_Button(game, "gdCallable", {"Direct Call",""})
+    GDW.Export_Callable_As_Tool_Button(game, "gdCallable", GDW.gdCallable, {"Export_Callable_As_Tool_Button","ColorRect"})
+    gdCallable: GDE.Callable
+    //Allocating callables into my class struct.
+    my_Custom_Callable = {
+        token = GDW.Library,
+        callable_userdata = rawptr(random_Callable2),
+        call_func = random_Callable2,
+    }
+    //GDW.gdCallable = new(GDE.Callable)
+    GDW.Methods.makeCallable(&gdCallable, &my_Custom_Callable)
+
+    GDW.Export_Callable_As_Tool_Button(game, "gdCallable2", gdCallable, {"Export_Callable_As_Tool_Button123","ColorRect"})
+    
+    //GDW.Export_proc_As_Tool_Button(game, "gdCallable456", my_custom_callable_proc, gamesignalCalback, gdCallable1323, {"Direct Call2asdf456","ColorRect"})
 
 }
-gdCallable: ^GDE.Callable
+
+gdCallable1323: ^GDE.Callable
+
 
 
 gameCreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
@@ -454,6 +469,24 @@ random_Callable :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariant
         return
     }*/
     fmt.println("why do you need three layers of abstraction?")
+    GDW.Print.Warning("why do you need three layers of abstraction", "my_custom_callable_proc", "", 428, false)
+    GDW.Print.Warning(fmt.caprint(p_args[:3]), "fdafafdas", "fdafda", 43, false)
+    r_error.error=.CALL_OK
+    return
+}
+
+random_Callable2 :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
+    context = runtime.default_context()
+
+    /*
+    if callable_userdata == cast(rawptr)mainPhysTick {
+        mainPhysTick()
+        r_error.error=.CALL_OK
+        return
+    }*/
+    fmt.println("you need three layers of abstraction")
+    GDW.Print.Warning("you need three layers of abstraction", "my_custom_callable_proc", "", 428, false)
+    GDW.Print.Warning(fmt.caprint(p_args[:3]), "fdafafdas", "fdafda", 43, false)
     r_error.error=.CALL_OK
     return
 }
