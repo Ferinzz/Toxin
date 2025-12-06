@@ -128,41 +128,60 @@ THIS_CLASS_NAMEDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.Cl
     GDW.gdAPI.mem_free(cast(^THIS_CLASS_NAME)p_instance)
 }
 
-//Tells Godot what function pointer to use when calling your function.
-//Runs once at class registration.
-//Remove those you are not using.
-//If you ever rename a virtual function (method callback) you will need to update it in three places.
-//Here, THIS_CLASS_NAMEcallVirtualFunctionWithData, the function itself.
-//Look at Godot docs to know what is supported by a certain class. If it inherits from another, it will also inherit its methods.
-//ie something that inherits canvas item will have draw.
-//Can replace the StringName compare (which is slower) with a compare to the p_hash. This would require checking the extension_api.json for the correct hash.
+/*
+* Godot will call this proc at init time in order to know what procs to use for the virtual functions of your class.
+* p_class_userdata: userdata which you had sent to Godot previously.
+* p_name: StringName of the virtual method which Godot want to know the proc pointer for.
+p_hash: a hash based on the virtual method which Godot want to know the proc pointer for. WARNING these are not at all unique...
+* returns a proc pointer to Godot based on the match check you setup
+* Godot will send the function pointer when calling your virtual method callback.
+*
+* Remove the virtuals you are not using.
+* If you ever rename a virtual function (method callback) you will need to update this file in three places.
+* Here, THIS_CLASS_NAMEcallVirtualFunctionWithData, the proc itself.
+*
+* Look at Godot docs or extension_api.json to know what is supported by a certain class. If it inherits from another, it will also inherit its virtual methods.
+* ie something that inherits canvas item will have draw.
+* All virtual methods in Godot are prepended with a _
+*
+* Must use both StringName and p_hash to validate a function because neither of these are unique..
+* Check virtual_method_SN.odin, there may be a struct and init function that you use to populate these stringNameCompare.
+* Current example shows the use of a struct from virtual_method_SN.odin using exposes the values for easy use.
+*/
 THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
 
+    using GDW.Node_Virtuals_Info
     //This is safe because there's only one _ready method in all of the classes.
-    if p_hash == 3218959716 {
-        return cast(rawptr)THIS_CLASS_NAME_ready
+    if (GDW.stringNameCompare(p_name, &_ready)) {
+        return cast(rawptr)signalis_ready
     }
-    if GDW.stringNameCompare(p_name, "_process"){
-        return cast(rawptr)THIS_CLASS_NAME_process
+    if GDW.stringNameCompare(p_name, &_process){
+        return cast(rawptr)signalis_process
     }
-    if GDW.stringNameCompare(p_name, "_physics_process"){
-        return cast(rawptr)THIS_CLASS_NAME_physics
+    if GDW.stringNameCompare(p_name, &_physics_process){
+        return cast(rawptr)signalis_physics
     }
     if GDW.stringNameCompare(p_name, "_draw"){
-        return cast(rawptr)THIS_CLASS_NAME_draw
+        return cast(rawptr)signalis_draw
     }
-    //Only one _input method exists in Godot classes, so this is safe for now.
-    if p_hash == 3754044979 {
-        return cast(rawptr)THIS_CLASS_NAME_Input
+    if GDW.stringNameCompare(p_name, &_input) && p_hash == 3754044979 {
+        return cast(rawptr)signalis_Input
     }
     return nil
 }
 
-//Will be called any time Godot needs to call your version of a virtual function.
-//We had to create special helpers for our functions during the Export(bind) step because Godot only give use an array of arg pointers.
-//As a result we can't call our function directly. (unless you want to deal with some any type conversion yourself).
-//It's good to keep this in a particular order. The least likely or one-time event should be last.
-//The more methods you registered in THIS_CLASS_NAMEgetVirtualWithData the more times this thing is called.
+/*
+* Will be called any time Godot needs to call your version of a virtual function.
+* Special helpers for Odin procs are created during the Export(bind) step because Godot only gives us a [^]rawptr.
+* As a result we can't call our function directly. (unless you want to deal with some any type conversion yourself).
+* It's good to keep this in a particular order. The least likely or one-time event should be last.
+* The more methods you registered in THIS_CLASS_NAMEgetVirtualWithData the more times this thing is called.
+* p_instance: Pointer to the memory of the class struct allocated during Creation.
+* p_name: StringName of the virtual proc
+* virtualProcPtr: pointer of the Proc which was sent to Godot during THIS_CLASS_NAMEgetVirtualWithData
+* p_args: [^]rawptr to the arguments Godot is passing during the call.
+* r_ret: rawptr that'll hold the pointer of the return value.
+*/
 THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_name: GDE.ConstStringNamePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
     
     if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_physics {
@@ -197,10 +216,6 @@ THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIns
 THIS_CLASS_NAME_ready :: proc "c" (self: ^THIS_CLASS_NAME) {
     context = runtime.default_context()
     
-    //These are good to set in a singleton at some point.
-    //These are statically stored and thus only need to be called once when the game engine is fully initialize.
-    GDW.getPhysServer2dObj()
-    GDW.getRenderServer2dObj()
 
 }
 

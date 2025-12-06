@@ -66,6 +66,12 @@ MainLoopFrameCallback :: proc "c" () {
         }
         callOnce = true
 
+        
+        //These are good to set in a singleton at some point.
+        //These are statically stored and thus only need to be called once when the game engine is fully initialize.
+        GDW.getPhysServer2dObj()
+        GDW.getRenderServer2dObj()
+
         //Since I don't want to deal with a branch continuously I'm changing the MainLoopFrameCallback proc by registering a new GDE.MainLoopCallbacks struct.
         GDW.gd_Main_Loop.register_main_loop_callbacks(GDW.Library, &myMainLoopCallbacks2)
     }
