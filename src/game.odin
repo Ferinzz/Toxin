@@ -115,8 +115,6 @@ testHints:i8=0
 
 set :: proc "c" (yourclassstruct: ^game, valuePassedInByGodot: GDE.Int) {
     context = runtime.default_context()
-    //fmt.println(i8(valuePassedInByGodot))
-    //fmt.println(u8(valuePassedInByGodot))
     testHints = i8(valuePassedInByGodot) //someField is of type GDE.Int
 }
 
@@ -128,39 +126,6 @@ get :: proc "c" (yourclassstruct: ^game) -> GDE.Int {
 
 gameExport :: proc "c" (){
     context = runtime.default_context()
-
-    /*
-    argsInfo: [1]GDE.PropertyInfo
-    argsInfo[0] = GDW.Make_Property_Full(.INT, "testvalue", .RANGE, string("0, 455"), "game", GDE.PROPERTY_USAGE_DEFAULT)
-    
-    args_metadata: [1]GDE.ClassMethodArgumentMetadata
-    args_metadata[0]= GDE.ClassMethodArgumentMetadata.INT_IS_UINT8
-    
-    
-    methodStringName: GDE.StringName
-    GDW.StringConstruct.stringNameNewLatin(&methodStringName, "testProc", false)
-    
-    methodInfo : GDE.ClassMethodInfo = {
-        name = &methodStringName,
-        method_userdata = cast(rawptr)testProc,
-
-        call_func = godotVariantCallback,
-        ptrcall_func = godotPtrCallback,
-        method_flags = u32(GDE.Method_Flags_DEFAULT),
-    }
-
-    returnInfo:= GDW.Make_Property_Full(.INT, "return", .RANGE, string("0, 455"), "game", GDE.PROPERTY_USAGE_DEFAULT)
-    
-    methodInfo.has_return_value = true
-    methodInfo.return_value_info = &returnInfo
-    methodInfo.return_value_metadata = GDE.ClassMethodArgumentMetadata.INT_IS_UINT8
-    
-    methodInfo.argument_count = u32(1)
-    methodInfo.arguments_info = &argsInfo[0]
-    methodInfo.arguments_metadata = &args_metadata[0]
-    
-    GDW.gdAPI.classdbRegisterExtensionClassMethod(GDW.Library, &game_SN, &methodInfo)
-    */
 
     GDW.Export(game, "my_range_num")
     GDW.Export_Range(game, "exampleInt", GDW.Ranged_Num(GDE.Int){0, 45, 1, {}})
