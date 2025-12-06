@@ -66,6 +66,7 @@ StringConstruct : struct {
     stringNameNewLatin: GDE.InterfaceStringNameNewWithLatin1Chars,
     stringNameNewUTF8andLen: GDE.InterfaceStringNameNewWithUtf8CharsAndLen,
     stringNameNewString: stringNameNewString,
+    stringNameNewString_r: stringNameNewString_r,
     stringNewLatinLen: GDE.InterfaceStringNewWithLatin1CharsAndLen,
     stringNewUTF8: GDE.InterfaceStringNewWithUtf8Chars,
     stringNewUTF8_len: GDE.InterfaceStringNewWithUtf8CharsAndLen,
@@ -74,6 +75,7 @@ StringConstruct : struct {
 }
 
 stringNameNewString :: #type proc(StringName_r: ^GDE.StringName, name: string)
+stringNameNewString_r :: #type proc(name: string) -> (r_ret: GDE.StringName) 
 
 //Destructors :: struct {
 Destructors: struct {
@@ -111,6 +113,7 @@ operator: struct {
     stringNameEqual: GDE.PtrOperatorEvaluator,
 }
 
+
 loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //These are required for setup. Adding these at the very beginning to ensure they are available for the rest of the init.
     //Gets a pointer to the function that will return the pointer to the function that destroys the specific variable type.
@@ -122,6 +125,15 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     StringConstruct.stringNameNewString = proc(StringName_r: ^GDE.StringName, name: string) {
         StringConstruct.stringNameNewUTF8andLen(StringName_r, raw_data(name[:]), i64(len(name)))
     }
+    
+    StringConstruct.stringNameNewString_r = proc(name: string) -> (r_ret: GDE.StringName) {
+        
+        StringConstruct.stringNameNewUTF8andLen(&r_ret, raw_data(name[:]), i64(len(name)))
+        return
+    }
+
+    init_Node_Virtuals_Info()
+    init_Control_Virtual_Info()
 
     Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
     Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
@@ -287,6 +299,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "assign", false)
+    //Parameters are incorrect.
     GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2307260970)
     Destructors.stringNameDestructor(&arraySize)
 
@@ -419,6 +432,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Destructors.stringNameDestructor(&arraySize)
 
     StringConstruct.stringNameNewLatin(&arraySize, "map", false)
+    //parameters are incorrect
     GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4075186556)
     Destructors.stringNameDestructor(&arraySize)
 
@@ -605,15 +619,40 @@ variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: GDE.ConstVariantP
     
 }
 
+stringNameCompare :: proc {
+    stringNameCompare_string,
+    stringNameCompare_StringName,
+}
+
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring) -> (ret: bool) {
+stringNameCompare_cstring :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring) -> (ret: bool) {
     r_name: GDE.StringName
     StringConstruct.stringNameNewLatin(&r_name, r_value, false)
     defer(Destructors.stringNameDestructor(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
     operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    return ret
+}
+//TODO: make a proc group for stringName compare
+//stringName::stringName; stringName::cstring; cstring::cstring
+stringNameCompare_string :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: string) -> (ret: bool) {
+    context = runtime.default_context()
+    r_name: GDE.StringName
+    StringConstruct.stringNameNewString(&r_name, r_value)
+    defer(Destructors.stringNameDestructor(&r_name))
+
+    //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
+    operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    return ret
+}
+//TODO: make a proc group for stringName compare
+//stringName::stringName; stringName::cstring; cstring::cstring
+stringNameCompare_StringName :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: GDE.StringNamePtr) -> (ret: bool) {
+
+    //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
+    operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)r_value, &ret)
     return ret
 }
 
@@ -710,6 +749,23 @@ getRoot :: proc "c" () -> GDE.ObjectPtr {
     return r_ret
 }
 
+get_current_scene :: proc "c" () -> GDE.ObjectPtr {
+    @(static)getCurrentScene: GDE.MethodBindPtr
+    if getCurrentScene == nil {
+        ClassNamegr:GDE.StringName
+        StringConstruct.stringNameNewLatin(&ClassNamegr, "SceneTree", false)
+        defer(Destructors.stringNameDestructor(&ClassNamegr))
+        
+        methodNamegr: GDE.StringName
+        StringConstruct.stringNameNewLatin(&methodNamegr, "get_current_scene", false)
+        defer(Destructors.stringNameDestructor(&methodNamegr))
+        getCurrentScene = gdAPI.classDBGetMethodBind(&ClassNamegr, &methodNamegr, 3160264692)
+    }
+    mySceneTree:= getMainLoop()
+    r_ret:GDE.ObjectPtr
+    gdAPI.objectMethodBindPtrCall(getCurrentScene, mySceneTree, nil, &r_ret)
+    return r_ret
+}
 
 //********************\\
 //*******Object*******\\
@@ -1201,7 +1257,7 @@ addChild :: proc "c" (parent: GDE.ObjectPtr, child: ^GDE.ObjectPtr, force_readab
     }
     
 
-    internal: GDE.Int = 0
+    internal: InternalMode = internalMode
     args:= [?]rawptr {child, &force_readable_name, &internalMode}
     
     dummyReturn:rawptr

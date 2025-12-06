@@ -128,7 +128,7 @@ VariantPtr 							:: ^Variant
 ConstVariantPtr 					:: ^Variant
 ConstVariantPtrargs 				:: [^]ConstVariantPtr
 UninitializedVariantPtr 			:: rawptr
-StringNamePtr 						:: rawptr
+StringNamePtr 						:: ^StringName
 ConstStringNamePtr 					:: [^]StringName
 UninitializedStringNamePtr          :: ^StringName
 StringPtr 							:: ^gdstring
