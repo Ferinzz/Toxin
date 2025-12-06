@@ -724,14 +724,14 @@ InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunct
  *
  *   Bool my_extension_init(InterfaceGetProcAddress p_get_proc_address, ClassLibraryPtr p_library, Initialization *r_initialization);
  *
- * This function's name must be specified as the 'entry_symbol' in the .gdextension file.
+ * This function's name must be specified as the 'entry_symbol' in the GDExtension.gdextension file.
  *
  * This makes it the entry point of the GDExtension and will be called on initialization.
  *
  * The GDExtension can then modify the r_initialization structure, setting the minimum initialization level,
  * and providing pointers to functions that will be called at various stages of initialization/shutdown.
  *
- * The rest of the 's interface to Godot consists of function pointers that can be loaded
+ * The rest of the GDExtension's interface to Godot consists of function pointers that can be loaded
  * by calling p_get_proc_address("...") with the name of the function.
  *
  * For example:
@@ -1944,6 +1944,32 @@ InterfaceStringNameNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStri
  */
 InterfaceXmlParserOpenBuffer :: proc "c" (p_instance: ObjectPtr, p_buffer: [^]u8, p_size: Int) -> Int;
 
+/**
+ * @name editor_help_load_xml_from_utf8_chars
+ * @since 4.3
+ *
+ * Loads new XML-formatted documentation data in the editor.
+ *
+ * The provided pointer can be immediately freed once the function returns.
+ *
+ * @param p_data A pointer to a UTF-8 encoded C string (null terminated).
+ */
+InterfaceEditorHelpLoadXmlFromUtf8Chars :: proc "c" (p_data: cstring);
+
+/**
+ * @name editor_help_load_xml_from_utf8_chars_and_len
+ * @since 4.3
+ *
+ * Loads new XML-formatted documentation data in the editor.
+ *
+ * The provided pointer can be immediately freed once the function returns.
+ *
+ * @param p_data A pointer to a UTF-8 encoded C string.
+ * @param p_size The number of bytes (not code units).
+ */
+InterfaceEditorHelpLoadXmlFromUtf8CharsAndLen :: proc "c" (p_data: cstring, p_size: Int);
+
+
 /* INTERFACE: FileAccess Utilities */
 
 /**
@@ -2476,7 +2502,7 @@ InterfaceObjectGetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, 
  * Sets an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the 's entry point function.
+ * @param p_library A token the library received by the GDExtension's entry point function.
  * @param p_binding A pointer to the instance binding.
  * @param p_callbacks A pointer to a InstanceBindingCallbacks struct.
  */
@@ -2489,7 +2515,7 @@ InterfaceObjectSetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, 
  * Free an Object's instance binding.
  *
  * @param p_o A pointer to the Object.
- * @param p_library A token the library received by the 's entry point function.
+ * @param p_library A token the library received by the GDExtension's entry point function.
  */
 InterfaceObjectFreeInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr);
 
@@ -2515,7 +2541,7 @@ InterfaceObjectSetInstance :: proc "c" (p_o: ObjectPtr, p_classname: ConstString
  * function that should be used to determine which wrapper to use.
  *
  * @param p_object A pointer to the Object.
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param r_class_name A pointer to a String to receive the class name.
  *
  * @return true if successful in getting the class name; otherwise false.
@@ -2622,7 +2648,7 @@ InterfaceRefSetObject :: proc "c" (p_ref: RefPtr, p_object: ObjectPtr);
  * Creates a script instance that contains the given info and instance data.
  *
  * @param p_info A pointer to a ScriptInstanceInfo struct.
- * @param p_instance_data A pointer to a data representing the script instance in the . This will be passed to all the function pointers on p_info.
+ * @param p_instance_data A pointer to a data representing the script instance in the GDExtension. This will be passed to all the function pointers on p_info.
  *
  * @return A pointer to a ScriptInstanceExtension object.
  */
@@ -2636,7 +2662,7 @@ InterfaceScriptInstanceCreate :: proc "c" (p_info: ^ScriptInstanceInfo, p_instan
  * Creates a script instance that contains the given info and instance data.
  *
  * @param p_info A pointer to a ScriptInstanceInfo2 struct.
- * @param p_instance_data A pointer to a data representing the script instance in the . This will be passed to all the function pointers on p_info.
+ * @param p_instance_data A pointer to a data representing the script instance in the GDExtension. This will be passed to all the function pointers on p_info.
  *
  * @return A pointer to a ScriptInstanceExtension object.
  */
@@ -2649,7 +2675,7 @@ InterfaceScriptInstanceCreate2 :: proc "c" (p_info: ^ScriptInstanceInfo2, p_inst
  * Creates a script instance that contains the given info and instance data.
  *
  * @param p_info A pointer to a ScriptInstanceInfo3 struct.
- * @param p_instance_data A pointer to a data representing the script instance in the . This will be passed to all the function pointers on p_info.
+ * @param p_instance_data A pointer to a data representing the script instance in the GDExtension. This will be passed to all the function pointers on p_info.
  *
  * @return A pointer to a ScriptInstanceExtension object.
  */
@@ -2737,7 +2763,7 @@ InterfaceCallableCustomCreate2 :: proc "c" (r_callable: UninitializedTypePtr, p_
  * If the Callable is not a custom Callable or the token does not match the one provided to callable_custom_create() via CallableCustomInfo then NULL will be returned.
  *
  * @param p_callable A pointer to a Callable.
- * @param p_token A pointer to an address that uniquely identifies the .
+ * @param p_token A pointer to an address that uniquely identifies the GDExtension.
  */
 InterfaceCallableCustomGetUserData :: proc "c" (p_callable: ConstTypePtr, p_token: rawptr) -> rawptr;
 
@@ -2811,7 +2837,7 @@ InterfaceClassdbGetClassTag :: proc "c" (p_classname: ConstStringNamePtr) -> raw
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo struct.
@@ -2827,7 +2853,7 @@ InterfaceClassdbRegisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr, 
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
@@ -2843,7 +2869,7 @@ InterfaceClassdbRegisterExtensionClass2 :: proc "c" (p_library: ClassLibraryPtr,
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
@@ -2858,7 +2884,7 @@ InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassLibraryPtr,
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
@@ -2873,7 +2899,7 @@ InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassLibraryPtr,
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
@@ -2887,7 +2913,7 @@ InterfaceClassdbRegisterExtensionClassMethod :: proc "c" (p_library: ClassLibrar
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
@@ -2903,7 +2929,7 @@ InterfaceClassdbRegisterExtensionClassVirtualMethod :: proc "c" (p_library: Clas
  * advised to treat bitfields as uint64_t, since this is generally clearer and can prevent mistakes like using -1 for setting all bits.
  * Language APIs should thus provide an abstraction that registers bitfields (uint64_t) separately from regular constants (int64_t).
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_enum_name A pointer to a StringName with the enum name.
  * @param p_constant_name A pointer to a StringName with the constant name.
@@ -2920,7 +2946,7 @@ InterfaceClassdbRegisterExtensionClassIntegerConstant :: proc "c" (p_library: Cl
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_info A pointer to a PropertyInfo struct.
  * @param p_setter A pointer to a StringName with the name of the setter method.
@@ -2936,7 +2962,7 @@ InterfaceClassdbRegisterExtensionClassProperty :: proc "c" (p_library: ClassLibr
  *
  * Provided struct can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_info A pointer to a PropertyInfo struct.
  * @param p_setter A pointer to a StringName with the name of the setter method.
@@ -2951,7 +2977,7 @@ InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: Cl
  *
  * Registers a property group on an extension class in the ClassDB.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_group_name A pointer to a String with the group name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this group.
@@ -2964,7 +2990,7 @@ InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: Clas
  *
  * Registers a property subgroup on an extension class in the ClassDB.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_subgroup_name A pointer to a String with the subgroup name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this subgroup.
@@ -2979,7 +3005,7 @@ InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: C
  *
  * Provided structs can be safely freed once the function returns.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_signal_name A pointer to a StringName with the signal name.
  * @param p_argument_info A pointer to a PropertyInfo struct.
@@ -2993,7 +3019,7 @@ InterfaceClassdbRegisterExtensionClassSignal :: proc "c" (p_library: ClassLibrar
  *
  * Unregisters an extension class in the ClassDB.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  */
 InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
@@ -3004,7 +3030,7 @@ InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr
  *
  * Gets the path to the current GDExtension library.
  *
- * @param p_library A pointer the library received by the 's entry point function.
+ * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param r_path A pointer to a String which will receive the path.
  */
 InterfaceGetLibraryPath :: proc "c" (p_library: ClassLibraryPtr, r_path: UninitializedStringPtr);
@@ -3030,28 +3056,3 @@ InterfaceEditorAddPlugin :: proc "c" (p_class_name: ConstStringNamePtr);
  * @param p_class_name A pointer to a StringName with the name of a class that was previously added as an editor plugin.
  */
 InterfaceEditorRemovePlugin :: proc "c" (p_class_name: ConstStringNamePtr);
-
-/**
- * @name editor_help_load_xml_from_utf8_chars
- * @since 4.3
- *
- * Loads new XML-formatted documentation data in the editor.
- *
- * The provided pointer can be immediately freed once the function returns.
- *
- * @param p_data A pointer to a UTF-8 encoded C string (null terminated).
- */
-sInterfaceEditorHelpLoadXmlFromUtf8Chars :: proc "c" (p_data: cstring);
-
-/**
- * @name editor_help_load_xml_from_utf8_chars_and_len
- * @since 4.3
- *
- * Loads new XML-formatted documentation data in the editor.
- *
- * The provided pointer can be immediately freed once the function returns.
- *
- * @param p_data A pointer to a UTF-8 encoded C string.
- * @param p_size The number of bytes (not code units).
- */
-sInterfaceEditorHelpLoadXmlFromUtf8CharsAndLen :: proc "c" (p_data: cstring, p_size: Int);
