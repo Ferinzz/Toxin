@@ -254,32 +254,11 @@ THIS_CLASS_NAME_ready :: proc "c" (self: ^THIS_CLASS_NAME) {
 */
 
 
-THIS_CLASS_NAME_physics :: proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
-    context = runtime.default_context()
-    
-    THIS_CLASS_NAME: GDE.MouseButton = .MOUSE_BUTTON_LEFT
-    isPressed: GDE.Bool
-    GDW.isMouseButtonPressed(&THIS_CLASS_NAME, &isPressed)
-    if isPressed {
-        fmt.println(isPressed)
-    }
-}
-
-THIS_CLASS_NAME_process :: proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
-    context = runtime.default_context()
-
-}
-
 THIS_CLASS_NAME_draw :: proc "c" (self: ^THIS_CLASS_NAME) {
 
 }
 
 
-THIS_CLASS_NAME_Input :: proc "c" (self: ^THIS_CLASS_NAME, event: GDE.ObjectPtr) {
-    context = runtime.default_context()
-
-
-}
 
 /*
 * Proc called by Godot when a signal this class is connected to emits.

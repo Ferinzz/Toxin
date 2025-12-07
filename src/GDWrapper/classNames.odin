@@ -2,6 +2,7 @@ package GDWrapper
 
 import GDE "gdextension"
 import "base:runtime"
+import "core:reflect"
 
 //Just the whole list of all the class names that appear in the api json.
 //No idea, I just copy/pasted.
@@ -22,7 +23,7 @@ SN_Error :: enum {
 GDClass_StringName_get :: proc(classname_index: ClassName_Index) -> ^GDE.StringName {
     //ClassName_StringNames[classname_index]
     if ClassName_StringNames[classname_index].ptr == nil {
-        StringConstruct.stringNameNewLatin(&ClassName_StringNames[classname_index], ClassName_Strings[classname_index], false)
+        StringConstruct.stringNameNewString(&ClassName_StringNames[classname_index], reflect.enum_field_names(ClassName_Index)[classname_index])
     }
     return &ClassName_StringNames[classname_index]
 }

@@ -128,18 +128,18 @@ Method_Callback_Compare_Info :: struct {
 
 init_Node_Virtuals_Info :: proc () {
     using Node_Virtuals_Info
-    _physics_process.p_hash = 3218959716
-    _process.p_hash = 3218959716
-    _input.p_hash = 3218959716
+    _physics_process.p_hash = 373806689
+    _process.p_hash = 373806689
+    _input.p_hash = 3754044979
     _ready.p_hash = 3218959716
     _enter_tree.p_hash = 3218959716
     _exit_tree.p_hash = 3218959716
     _get_accessibility_configuration_warnings.p_hash = 3218959716
-    _get_configuration_warnings.p_hash = 3218959716
+    _get_configuration_warnings.p_hash = 1139954409
     _get_focused_accessibility_element.p_hash = 3218959716
-    _shortcut_input.p_hash = 3218959716
-    _unhandled_input.p_hash = 3218959716
-    _unhandled_key_input.p_hash = 3218959716
+    _shortcut_input.p_hash = 3754044979
+    _unhandled_input.p_hash = 3754044979
+    _unhandled_key_input.p_hash = 3754044979
 
     _physics_process.name = StringConstruct.stringNameNewString_r("_physics_process")
     _process.name = StringConstruct.stringNameNewString_r("_process")
