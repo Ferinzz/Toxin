@@ -54,6 +54,7 @@ MainLoopFrameCallback :: proc "c" () {
         //These are statically stored and thus only need to be called once when the game engine is fully initialize.
         GDW.getPhysServer2dObj()
         GDW.getRenderServer2dObj()
+        callOnce = true
     }
 }
 
