@@ -19,7 +19,7 @@ SN_Error :: enum {
     BAD_INDEX,
 }
 
-ClassName_StringName_get :: proc(classname_index: ClassName_Index) -> ^GDE.StringName {
+GDClass_StringName_get :: proc(classname_index: ClassName_Index) -> ^GDE.StringName {
     //ClassName_StringNames[classname_index]
     if ClassName_StringNames[classname_index].ptr == nil {
         StringConstruct.stringNameNewLatin(&ClassName_StringNames[classname_index], ClassName_Strings[classname_index], false)

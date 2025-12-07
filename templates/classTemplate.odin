@@ -69,7 +69,7 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
     GDW.StringConstruct.stringNameNewString(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString)
 
     
-    THIS_CLASS_NAME_GDClass_StringName = GDW.ClassName_StringName_get(THIS_CLASS_NAME_GDClass_Index)
+    THIS_CLASS_NAME_GDClass_StringName = GDW.GDClass_StringName_get(THIS_CLASS_NAME_GDClass_Index)
 
 
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_SN, THIS_CLASS_NAME_GDClass_StringName, &class_info)
