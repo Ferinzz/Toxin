@@ -1465,115 +1465,124 @@ bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Varian
 virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
                             where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 11){
     context = runtime.default_context()
-    argT0::sics.type_proc_parameter_type(T, 0)
+    classStructPtr::sics.type_proc_parameter_type(T, 0)
 
     argcount :: sics.type_proc_parameter_count(T)
 
     when argcount == 1 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance)
         } else {
-        procPointer(cast(argT0)p_instance)}
+        procPointer(cast(classStructPtr)p_instance)}
     }
-    else do when argcount > 1 do  argT1::sics.type_proc_parameter_type(T, 1)
+    else do when argcount > 1 do argT0::sics.type_proc_parameter_type(T, 1)
+
+    else do when argcount > 2 do argT1 :: sics.type_proc_parameter_type(T, 2)
+    
+    else do when argcount > 3 do argT2 :: sics.type_proc_parameter_type(T, 3)
+    
+    else do when argcount > 4 do argT3 :: sics.type_proc_parameter_type(T, 4)
+    
+    else do when argcount > 5 do argT4 :: sics.type_proc_parameter_type(T, 5)
+    
+    else do when argcount > 6 do argT5 :: sics.type_proc_parameter_type(T, 6)
+    
+    else do when argcount > 7 do argT6 :: sics.type_proc_parameter_type(T, 7)
+    
+    else do when argcount > 8 do argT7 :: sics.type_proc_parameter_type(T, 8)
+    
+    else do when argcount > 9 do argT8 :: sics.type_proc_parameter_type(T, 9)
+    
+    else do when argcount > 10 do argT9 :: sics.type_proc_parameter_type(T, 10)
+    
     when argcount == 2 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^)
         }
     }
-    else do when argcount > 2 do argT2 :: sics.type_proc_parameter_type(T, 2)
     when argcount == 3 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^)
         }
     }
-    else do when argcount > 3 do argT3 :: sics.type_proc_parameter_type(T, 3)
     when argcount == 4 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^)
         }
     }
-    else do when argcount > 4 do argT4 :: sics.type_proc_parameter_type(T, 4)
     when argcount == 5 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance, cast(argT4)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^,
-                        (cast(^argT4)p_args[3])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^)
         }
     }
-    else do when argcount > 5 do argT5 :: sics.type_proc_parameter_type(T, 5)
     when argcount == 6 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, ))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance, cast(argT4)p_instance, cast(argT5)p_instance)
+            (cast(sics.type_proc_return_type(T, ))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^,
-                        (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^)
         }
     }
-    else do when argcount > 6 do argT6 :: sics.type_proc_parameter_type(T, 6)
     when argcount == 7 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance, cast(argT4)p_instance, cast(argT5)p_instance, cast(argT6)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT3)p_args[2])^,
-                        (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^, (cast(^argT6)p_args[5])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^)
         }
     }
-    else do when argcount > 7 do argT7 :: sics.type_proc_parameter_type(T, 7)
     when argcount == 8 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance, cast(argT4)p_instance, cast(argT5)p_instance, cast(argT6)p_instance,
-                    cast(argT7)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT3)p_args[2])^,
-                        (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^, (cast(^argT6)p_args[5])^, (cast(^argT7)p_args[6])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^)
         }
     }
-    else do when argcount > 8 do argT8 :: sics.type_proc_parameter_type(T, 8)
     when argcount == 9 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance, cast(argT4)p_instance, cast(argT5)p_instance, cast(argT6)p_instance,
-                    cast(argT7)p_instance, cast(argT8)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
+                        (cast(^argT7)p_args[7])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT3)p_args[2])^,
-                        (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^, (cast(^argT6)p_args[5])^, (cast(^argT7)p_args[6])^,
-                        (cast(^argT8)p_args[7])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
+                        (cast(^argT7)p_args[7])^)
         }
     }
-    else do when argcount > 9 do argT9 :: sics.type_proc_parameter_type(T, 9)
     when argcount == 10 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance, cast(argT4)p_instance, cast(argT5)p_instance, cast(argT6)p_instance,
-                    cast(argT7)p_instance, cast(argT8)p_instance, cast(argT9)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
+                        (cast(^argT7)p_args[7])^, (cast(^argT8)p_args[8])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT3)p_args[2])^,
-                        (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^, (cast(^argT6)p_args[5])^, (cast(^argT7)p_args[6])^,
-                        (cast(^argT8)p_args[7])^, (cast(^argT9)p_args[8])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
+                        (cast(^argT7)p_args[7])^, (cast(^argT8)p_args[8])^)
         }
     }
-    else do when argcount > 10 do argT10 :: sics.type_proc_parameter_type(T, 10)
     when argcount == 11 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(argT0)p_instance, cast(argT1)p_instance,
-                    cast(argT2)p_instance, cast(argT3)p_instance, cast(argT4)p_instance, cast(argT5)p_instance, cast(argT6)p_instance,
-                    cast(argT7)p_instance, cast(argT8)p_instance, cast(argT9)p_instance, cast(argT10)p_instance)
+            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
+                        (cast(^argT7)p_args[7])^, (cast(^argT8)p_args[8])^, (cast(^argT9)p_args[9])^)
         } else {
-            procPointer(cast(argT0)p_instance, (cast(^argT1)p_args[0])^)
+            procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+                        (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
+                        (cast(^argT7)p_args[7])^, (cast(^argT8)p_args[8])^, (cast(^argT9)p_args[9])^)
         }
     }
 }
