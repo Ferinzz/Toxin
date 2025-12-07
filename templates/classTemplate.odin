@@ -16,9 +16,9 @@ THIS_CLASS_NAME :: struct {
 }
 
 THIS_CLASS_NAME_SN : GDE.StringName
-THIS_CLASS_NAME_CString: cstring = "THIS_CLASS_NAME"
+THIS_CLASS_NAME_CString: string = "THIS_CLASS_NAME"
 THIS_CLASS_NAME_GDClass_Index: GDW.ClassName_Index = .Node2D
-THIS_CLASS_NAME_GDClass_StringName: GDE.StringName
+THIS_CLASS_NAME_GDClass_StringName: ^GDE.StringName
 
 //Technically can have a single massive function to init everything, but having one in each provides more control.
 //Make sure to add this to the init of the extension otherwise you won't be able to access this class.
@@ -66,7 +66,7 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
     }
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct.stringNameNewLatin(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString, false)
+    GDW.StringConstruct.stringNameNewString(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString)
 
     
     THIS_CLASS_NAME_GDClass_StringName = GDW.ClassName_StringName_get(THIS_CLASS_NAME_GDClass_Index)
@@ -82,7 +82,7 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
 THIS_CLASS_NAMEBindMethod :: proc "c" (){
 
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    GDW.bindMethod(&THIS_CLASS_NAME_SN, "Some_method_name", somePublicFunction, GDE.ClassMethodFlags.NORMAL, "arg1")
+    GDW.bindMethod(&THIS_CLASS_NAME_SN, "Some_method_name", somePublicFunction, {GDE.ClassMethodFlags.NORMAL}, "arg1")
     
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
@@ -152,20 +152,20 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
 
     using GDW.Node_Virtuals_Info
     //This is safe because there's only one _ready method in all of the classes.
-    if (GDW.stringNameCompare(p_name, &_ready)) {
-        return cast(rawptr)signalis_ready
+    if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
+        return cast(rawptr)THIS_CLASS_NAME_ready
     }
-    if GDW.stringNameCompare(p_name, &_process){
-        return cast(rawptr)signalis_process
+    if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
+        return cast(rawptr)THIS_CLASS_NAME_process
     }
-    if GDW.stringNameCompare(p_name, &_physics_process){
-        return cast(rawptr)signalis_physics
+    if (GDW.stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
+        return cast(rawptr)THIS_CLASS_NAME_physics
     }
     if GDW.stringNameCompare(p_name, "_draw"){
-        return cast(rawptr)signalis_draw
+        return cast(rawptr)THIS_CLASS_NAME_draw
     }
-    if GDW.stringNameCompare(p_name, &_input) && p_hash == 3754044979 {
-        return cast(rawptr)signalis_Input
+    if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
+        return cast(rawptr)THIS_CLASS_NAME_Input
     }
     return nil
 }
@@ -225,7 +225,9 @@ THIS_CLASS_NAME_physics :: proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
     THIS_CLASS_NAME: GDE.MouseButton = .MOUSE_BUTTON_LEFT
     isPressed: GDE.Bool
     GDW.isMouseButtonPressed(&THIS_CLASS_NAME, &isPressed)
-    fmt.println(isPressed)
+    if isPressed {
+        fmt.println(isPressed)
+    }
 }
 
 THIS_CLASS_NAME_process :: proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
