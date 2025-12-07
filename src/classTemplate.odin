@@ -9,7 +9,7 @@ import "core:fmt"
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
 //Godot will be passing us a pointer to this struct during callbacks.
-//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
+//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_deets.SN
 THIS_CLASS_NAME :: struct {
     selfPtr: GDE.ObjectPtr, //always keep. Self-reference to this object's memory in Godot.
     someProperty: GDE.Int,
@@ -17,15 +17,15 @@ THIS_CLASS_NAME :: struct {
 
 GDE_class_deets :: struct {
     SN : GDE.StringName,
-    CString: string,
     GDClass_Index: GDW.ClassName_Index,
+    Name: string,
     GDClass_StringName: ^GDE.StringName,
 }
 
-THIS_CLASS_NAME_SN : GDE.StringName
-THIS_CLASS_NAME_CString: string = "THIS_CLASS_NAME"
-THIS_CLASS_NAME_GDClass_Index: GDW.ClassName_Index = .Node2D
-THIS_CLASS_NAME_GDClass_StringName: ^GDE.StringName
+THIS_CLASS_NAME_deets : GDE_class_deets = {
+    GDClass_Index = .Node2D,
+    Name= "THIS_CLASS_NAME",
+}
 
 //Technically can have a single massive function to init everything, but having one in each provides more control.
 //Make sure to add this to the init of the extension otherwise you won't be able to access this class.
@@ -73,15 +73,16 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
     }
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct.stringNameNewString(&THIS_CLASS_NAME_SN, THIS_CLASS_NAME_CString)
+    GDW.StringConstruct.stringNameNewString(&THIS_CLASS_NAME_deets.SN, THIS_CLASS_NAME_deets.Name)
 
     
-    THIS_CLASS_NAME_GDClass_StringName = GDW.GDClass_StringName_get(THIS_CLASS_NAME_GDClass_Index)
+    THIS_CLASS_NAME_deets.GDClass_StringName = GDW.GDClass_StringName_get(THIS_CLASS_NAME_deets.GDClass_Index)
 
 
-    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_SN, THIS_CLASS_NAME_GDClass_StringName, &class_info)
+    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_deets.SN, THIS_CLASS_NAME_deets.GDClass_StringName, &class_info)
     
     THIS_CLASS_NAMEBindMethod()
+
 }
 
 //make some function public to Godot's scripts.
@@ -89,7 +90,7 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
 THIS_CLASS_NAMEBindMethod :: proc "c" (){
 
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    GDW.bindMethod(&THIS_CLASS_NAME_SN, "Some_method_name", somePublicFunction, {GDE.ClassMethodFlags.NORMAL}, "arg1")
+    GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {GDE.ClassMethodFlags.NORMAL}, "arg1")
     
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
@@ -110,14 +111,14 @@ THIS_CLASS_NAMECreate :: proc "c" (p_class_user_data: rawptr, p_notify_postiniti
 
     context = runtime.default_context()
 
-    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(THIS_CLASS_NAME_GDClass_StringName)
+    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(THIS_CLASS_NAME_deets.GDClass_StringName)
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
     self: ^THIS_CLASS_NAME = cast(^THIS_CLASS_NAME)GDW.gdAPI.mem_alloc(size_of(THIS_CLASS_NAME))
     self.selfPtr = object
     
-    GDW.gdAPI.object_set_instance(object, &THIS_CLASS_NAME_SN, cast(^GDE.Object)self)
+    GDW.gdAPI.object_set_instance(object, &THIS_CLASS_NAME_deets.SN, cast(^GDE.Object)self)
     GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
 
     return object
@@ -161,7 +162,8 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
     using GDW.Node_Virtuals_Info
     //This is safe because there's only one _ready method in all of the classes.
     if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_ready
+        //return cast(rawptr)THIS_CLASS_NAME_readyTHIS_CLASS_NAME_ready
+        return cast(rawptr)THIS_CLASS_NAME_v_table._ready
     }
     if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
         return cast(rawptr)THIS_CLASS_NAME_process
@@ -172,8 +174,8 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
     if GDW.stringNameCompare(p_name, "_draw"){
         return cast(rawptr)THIS_CLASS_NAME_draw
     }
-    if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_Input
+    if (GDW.stringNameCompare(p_name, &_input.name)){// && p_hash == _input.p_hash) {
+        return cast(rawptr)THIS_CLASS_NAME_v_table._input
     }
     return nil
 }
@@ -186,13 +188,14 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
 * As a result we can't call our function directly. (unless you want to deal with some any type conversion yourself).
 * It's good to keep this in a particular order. The least likely or one-time event should be last.
 * The more methods you registered in THIS_CLASS_NAMEgetVirtualWithData the more times this thing is called.
-* p_instance: Pointer to the memory of the class struct allocated during Creation.
+* p_instance: Pointer to the memory of the classStruct allocated during Creation.
 * p_name: StringName of the virtual proc
 * virtualProcPtr: pointer of the Proc which was sent to Godot during THIS_CLASS_NAMEgetVirtualWithData
 * p_args: [^]rawptr to the arguments Godot is passing during the call.
 * r_ret: rawptr that'll hold the pointer of the return value.
 */
 THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_name: GDE.ConstStringNamePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
+    context = runtime.default_context()
     
     if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_physics {
         GDW.virtualProcCall(THIS_CLASS_NAME_physics, p_instance, p_args, r_ret)
@@ -203,18 +206,14 @@ THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIns
     if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_draw {
         GDW.virtualProcCall(THIS_CLASS_NAME_draw, p_instance, p_args, r_ret)
     }
-    if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_Input {
-        GDW.virtualProcCall(THIS_CLASS_NAME_Input, p_instance, p_args, r_ret)
-    }
-    if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_ready {
-        GDW.virtualProcCall(THIS_CLASS_NAME_ready, p_instance, p_args, r_ret)
-    }
+
+    GDW.table_lookup(THIS_CLASS_NAME_v_table, p_instance, virtualProcPtr, p_args, r_ret)
+
 }
 
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
-
 
 /*
 * The complicated part of virutal methods is dealt with by Toxin.
@@ -223,10 +222,31 @@ THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIns
 * Continue to be mindful of what data is in Godot vs your extension.
 */
 
+THIS_CLASS_NAME_v_table: GDW.Node_v_table(THIS_CLASS_NAME) = {
+    _ready = proc "c" (self: ^THIS_CLASS_NAME) {
+        context = runtime.default_context()
+        fmt.println("vtable setup!")
+    },
+    _input = proc "c" (self: ^THIS_CLASS_NAME, input: ^GDW.InputEvent) {
+        context = runtime.default_context()
+        event: GDW.InputEvent_Options
+        
+        if input.proxy != nil {
+            event = GDW.InputEvent_get_ClassTag(input)
+        }
+        if event != nil {
+            fmt.println(event)
+        }
+    }
+}
+
+/*
 THIS_CLASS_NAME_ready :: proc "c" (self: ^THIS_CLASS_NAME) {
     context = runtime.default_context()
-
+    fmt.println("vtable setup!")
 }
+*/
+
 
 THIS_CLASS_NAME_physics :: proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
     context = runtime.default_context()
