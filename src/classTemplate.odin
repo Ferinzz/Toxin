@@ -83,6 +83,37 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
     
     THIS_CLASS_NAMEBindMethod()
 
+
+THIS_CLASS_NAME_v_table3: THIS_CLASS_NAME_v_table = {
+    _ready = proc "c" (self: ^THIS_CLASS_NAME) {
+        context = runtime.default_context()
+        fmt.println("vtable setup!")
+    },
+    _input = proc "c" (self: ^THIS_CLASS_NAME, input: ^GDW.InputEvent) {
+        context = runtime.default_context()
+        event: GDW.InputEvent_Options
+        
+        if input.proxy != nil {
+            event = GDW.InputEvent_get_ClassTag(input)
+        }
+        if event != nil {
+            fmt.println(event)
+        }
+    },
+    _process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
+        context = runtime.default_context()
+    },
+    _physics_process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
+        context = runtime.default_context()
+    
+        THIS_CLASS_NAME: GDE.MouseButton = .MOUSE_BUTTON_LEFT
+        isPressed: GDE.Bool
+        GDW.isMouseButtonPressed(&THIS_CLASS_NAME, &isPressed)
+        if isPressed {
+            fmt.println(isPressed)
+        }
+    }
+}
 }
 
 //make some function public to Godot's scripts.
@@ -162,19 +193,19 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
     using GDW.Node_Virtuals_Info
     //This is safe because there's only one _ready method in all of the classes.
     if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table._ready
+        return cast(rawptr)THIS_CLASS_NAME_v_table3._ready
     }
     if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table._process
+        return cast(rawptr)THIS_CLASS_NAME_v_table3._process
     }
     if (GDW.stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table._physics_process
+        return cast(rawptr)THIS_CLASS_NAME_v_table3._physics_process
     }
     if GDW.stringNameCompare(p_name, "_draw"){
         return cast(rawptr)THIS_CLASS_NAME_draw
     }
     if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table._input
+        return cast(rawptr)THIS_CLASS_NAME_v_table3._input
     }
     return nil
 }
@@ -200,7 +231,7 @@ THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIns
         GDW.virtualProcCall(THIS_CLASS_NAME_draw, p_instance, p_args, r_ret)
     }
 
-    GDW.table_lookup(THIS_CLASS_NAME_v_table, p_instance, virtualProcPtr, p_args, r_ret)
+    GDW.table_lookup(THIS_CLASS_NAME_v_table3.vNode, p_instance, virtualProcPtr, p_args, r_ret)
 
 }
 
@@ -214,8 +245,14 @@ THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIns
 * Write the functions as normal Odin functions and allow Toxin to handle the rawptr casts.
 * Continue to be mindful of what data is in Godot vs your extension.
 */
+THIS_CLASS_NAME_v_table:: struct {
+    using vNode: GDW.Node_v_table(THIS_CLASS_NAME),
+}
+THIS_CLASS_NAME_v_table3: struct {
+    using vNode: GDW.Node_v_table(THIS_CLASS_NAME),
+}
 
-THIS_CLASS_NAME_v_table: GDW.Node_v_table(THIS_CLASS_NAME) = {
+THIS_CLASS_NAME_v_table2: THIS_CLASS_NAME_v_table = {
     _ready = proc "c" (self: ^THIS_CLASS_NAME) {
         context = runtime.default_context()
         fmt.println("vtable setup!")
