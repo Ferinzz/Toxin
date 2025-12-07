@@ -162,19 +162,18 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
     using GDW.Node_Virtuals_Info
     //This is safe because there's only one _ready method in all of the classes.
     if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
-        //return cast(rawptr)THIS_CLASS_NAME_readyTHIS_CLASS_NAME_ready
         return cast(rawptr)THIS_CLASS_NAME_v_table._ready
     }
     if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_process
+        return cast(rawptr)THIS_CLASS_NAME_v_table._process
     }
     if (GDW.stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_physics
+        return cast(rawptr)THIS_CLASS_NAME_v_table._physics_process
     }
     if GDW.stringNameCompare(p_name, "_draw"){
         return cast(rawptr)THIS_CLASS_NAME_draw
     }
-    if (GDW.stringNameCompare(p_name, &_input.name)){// && p_hash == _input.p_hash) {
+    if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
         return cast(rawptr)THIS_CLASS_NAME_v_table._input
     }
     return nil
@@ -197,12 +196,6 @@ THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name:
 THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_name: GDE.ConstStringNamePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
     context = runtime.default_context()
     
-    if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_physics {
-        GDW.virtualProcCall(THIS_CLASS_NAME_physics, p_instance, p_args, r_ret)
-    }
-    if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_process {
-        GDW.virtualProcCall(THIS_CLASS_NAME_process, p_instance, p_args, r_ret)
-    }
     if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_draw {
         GDW.virtualProcCall(THIS_CLASS_NAME_draw, p_instance, p_args, r_ret)
     }
@@ -236,6 +229,19 @@ THIS_CLASS_NAME_v_table: GDW.Node_v_table(THIS_CLASS_NAME) = {
         }
         if event != nil {
             fmt.println(event)
+        }
+    },
+    _process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
+        context = runtime.default_context()
+    },
+    _physics_process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
+        context = runtime.default_context()
+    
+        THIS_CLASS_NAME: GDE.MouseButton = .MOUSE_BUTTON_LEFT
+        isPressed: GDE.Bool
+        GDW.isMouseButtonPressed(&THIS_CLASS_NAME, &isPressed)
+        if isPressed {
+            fmt.println(isPressed)
         }
     }
 }

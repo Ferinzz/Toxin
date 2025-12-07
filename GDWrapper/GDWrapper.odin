@@ -1462,7 +1462,7 @@ bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Varian
 * p_args : An array of args sent by Godot in callVirtualFunctionWithData
 * r_ret : A pointer to hold the return value of your function
 */
-virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
+virtualProcCall :: #force_inline proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
                             where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 11){
     context = runtime.default_context()
     classStructPtr::sics.type_proc_parameter_type(T, 0)
@@ -1471,7 +1471,7 @@ virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.Co
 
     when argcount == 1 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance)
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance)
         } else {
         procPointer(cast(classStructPtr)p_instance)}
     }
@@ -1497,28 +1497,28 @@ virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.Co
     
     when argcount == 2 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^)
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^)
         } else {
             procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^)
         }
     }
     when argcount == 3 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^)
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^)
         } else {
             procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^)
         }
     }
     when argcount == 4 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^)
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^)
         } else {
             procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^)
         }
     }
     when argcount == 5 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
                         (cast(^argT3)p_args[3])^)
         } else {
             procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
@@ -1536,7 +1536,7 @@ virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.Co
     }
     when argcount == 7 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
                         (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^)
         } else {
             procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
@@ -1545,7 +1545,7 @@ virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.Co
     }
     when argcount == 8 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
                         (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^)
         } else {
             procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
@@ -1554,7 +1554,7 @@ virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.Co
     }
     when argcount == 9 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
                         (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
                         (cast(^argT7)p_args[7])^)
         } else {
@@ -1565,7 +1565,7 @@ virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.Co
     }
     when argcount == 10 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
                         (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
                         (cast(^argT7)p_args[7])^, (cast(^argT8)p_args[8])^)
         } else {
@@ -1576,7 +1576,7 @@ virtualProcCall :: proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.Co
     }
     when argcount == 11 {
         when sics.type_proc_return_count(T) > 0 {
-            (cast(sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
+            (cast(^sics.type_proc_return_type(T, 0))r_ret)^ = procPointer(cast(classStructPtr)p_instance, (cast(^argT0)p_args[0])^, (cast(^argT1)p_args[1])^, (cast(^argT2)p_args[2])^,
                         (cast(^argT3)p_args[3])^, (cast(^argT4)p_args[4])^, (cast(^argT5)p_args[5])^ (cast(^argT6)p_args[6])^,
                         (cast(^argT7)p_args[7])^, (cast(^argT8)p_args[8])^, (cast(^argT9)p_args[9])^)
         } else {
