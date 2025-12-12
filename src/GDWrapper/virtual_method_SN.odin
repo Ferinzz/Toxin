@@ -3,6 +3,20 @@ package GDWrapper
 import GDE "gdextension"
 
 
+Node_v_table:: struct (T: typeid) {
+    _physics_process: proc "c" (self: ^T, delta: GDE.float),
+    _process: proc "c" (self: ^T, delta: GDE.float),
+    _input: proc "c" (self: ^T, input: ^InputEvent),
+    _ready: proc "c" (self: ^T),
+    _enter_tree: proc "c" (self: ^T),
+    _exit_tree: proc "c" (self: ^T),
+    _get_accessibility_configuration_warnings: proc "c" (self: ^T) -> GDE.PackedStringArray,
+    _get_configuration_warnings: proc "c" (self: ^T),
+    _get_focused_accessibility_element: proc "c" (self: ^T),
+    _shortcut_input: proc "c" (self: ^T, input: InputEvent),
+    _unhandled_input: proc "c" (self: ^T, input: InputEvent),
+    _unhandled_key_input: proc "c" (self: ^T, input: InputEvent),
+}
 
 //"inherits": "Object",
 Node_Virtuals_Info: struct {
@@ -20,10 +34,29 @@ Node_Virtuals_Info: struct {
     _unhandled_key_input: Method_Callback_Compare_Info,
 }
 
+CanvasItem_v_table:: struct(T: typeid){
+    _draw: proc "c" (self: ^T),
+}
+
 //"inherits": "Node",
 CanvasItem_Virtuals_Info: struct {
     _draw: Method_Callback_Compare_Info,
 }
+
+//"inherits": "CanvasItem",
+Control_v_table:: struct(T: typeid) {
+    _has_point: proc "c" (self: ^T, point: GDE.Vector2),
+    _structured_text_parser: proc "c" (self: ^T, args: GDE.Array, text: GDE.gdstring),
+    _get_minimum_size: proc "c" (self: ^T),
+    _get_tooltip: proc "c" (self: ^T, at_position: GDE.Vector2),
+    _get_drag_data: proc "c" (self: ^T, at_position: GDE.Vector2),
+    _can_drop_data: proc "c" (self: ^T, at_position: GDE.Vector2, data: GDE.Variant),
+    _drop_data: proc "c" (self: ^T, at_position: GDE.Vector2, data: GDE.Variant),
+    _make_custom_tooltip: proc "c" (self: ^T, for_text: GDE.gdstring),
+    _accessibility_get_contextual_info: proc "c" (self: ^T),
+    _get_accessibility_container_name: proc "c" (self: ^T,  node: GDE.Node),
+    _gui_input: proc "c" (self: ^T, event: ^InputEvent),
+};
 
 //"inherits": "CanvasItem",
 Control_Virtual_Info: struct {
@@ -38,13 +71,13 @@ Control_Virtual_Info: struct {
     _accessibility_get_contextual_info: Method_Callback_Compare_Info,
     _get_accessibility_container_name: Method_Callback_Compare_Info,
     _gui_input: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "RefCounted",
 Logger_Virtual: struct {
     _log_error: Method_Callback_Compare_Info,
     _log_message: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "Object",
 MainLoop_Virtual: struct {
@@ -52,7 +85,7 @@ MainLoop_Virtual: struct {
     _physics_process: Method_Callback_Compare_Info,
     _process: Method_Callback_Compare_Info,
     _finalize: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "RefCounted",
 Resource_Virtual: struct {
@@ -60,7 +93,7 @@ Resource_Virtual: struct {
     _get_rid: Method_Callback_Compare_Info,
     _reset_state: Method_Callback_Compare_Info,
     _set_path_cache: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "RenderData",
 RenderDataExtension_Virtual_Info: struct {
@@ -68,14 +101,14 @@ RenderDataExtension_Virtual_Info: struct {
     _get_render_scene_data: Method_Callback_Compare_Info,
     _get_environment: Method_Callback_Compare_Info,
     _get_camera_attributes: Method_Callback_Compare_Info,
-}
+};
 
 //This resource defines a custom rendering effect that can be applied to Viewports through the viewports' Environment. 
 //This particular method receives the RenderData from the RenderServer.
 //"inherits": "Resource",
 CompositorEffect_Virtual_Info: struct {
     _render_callback: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "Resource"
 AudioStreamPlayback_Virtual_Info: struct {
@@ -89,7 +122,7 @@ AudioStreamPlayback_Virtual_Info: struct {
     _tag_used_streams: Method_Callback_Compare_Info,
     _set_parameter: Method_Callback_Compare_Info,
     _get_parameter: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "Resource",
 AudioStream_Virtual_Info: struct {
@@ -103,7 +136,7 @@ AudioStream_Virtual_Info: struct {
     _get_parameter_list: Method_Callback_Compare_Info,
     _has_loop: Method_Callback_Compare_Info,
     _get_bar_beats: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "Node2D",
 CollisionObject2D_Virtual_Info: struct {
@@ -112,19 +145,19 @@ CollisionObject2D_Virtual_Info: struct {
     _mouse_exit: Method_Callback_Compare_Info,
     _mouse_shape_enter: Method_Callback_Compare_Info,
     _mouse_shape_exit: Method_Callback_Compare_Info,
-}
+};
 
 //"inherits": "Node3D",
 CollisionObject3D_Virtual_Info: struct {
     _input_event: Method_Callback_Compare_Info,
     _mouse_enter: Method_Callback_Compare_Info,
     _mouse_exit: Method_Callback_Compare_Info,
-}
+};
 
 Method_Callback_Compare_Info :: struct {
     name: GDE.StringName,
     p_hash: u32,
-}
+};
 
 init_Node_Virtuals_Info :: proc () {
     using Node_Virtuals_Info
@@ -329,3 +362,33 @@ init_CollisionObject3D_Virtual_Info :: proc () {
 //AudioEffectInstance to implement your own custom AudioEffects for use on the Audio bus.
 //VisualShaderNodeCustom If you want to have your own custom Node in the VisualShader tool.
 //GLTFDocumentExtension The code that converts to/from a Godot scene can be intercepted at arbitrary points by GLTFDocumentExtension classes. This allows for custom data to be stored in the glTF file or for custom data to be converted to/from Godot nodes.
+
+
+table_lookup :: proc(v_table: $T/Node_v_table, p_instance: GDE.ClassInstancePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
+    switch virtualProcPtr {
+        case rawptr(v_table._physics_process):
+            virtualProcCall(v_table._physics_process, p_instance, p_args, r_ret)
+        case rawptr(v_table._process):
+            virtualProcCall(v_table._process, p_instance, p_args, r_ret)
+        case rawptr(v_table._input):
+            virtualProcCall(v_table._input, p_instance, p_args, r_ret)
+        case rawptr(v_table._ready):
+            virtualProcCall(v_table._ready, p_instance, p_args, r_ret)
+        case rawptr(v_table._enter_tree):
+            virtualProcCall(v_table._enter_tree, p_instance, p_args, r_ret)
+        case rawptr(v_table._exit_tree):
+            virtualProcCall(v_table._exit_tree, p_instance, p_args, r_ret)
+        case rawptr(v_table._get_accessibility_configuration_warnings):
+            virtualProcCall(v_table._get_accessibility_configuration_warnings, p_instance, p_args, r_ret)
+        case rawptr(v_table._get_configuration_warnings):
+            virtualProcCall(v_table._get_configuration_warnings, p_instance, p_args, r_ret)
+        case rawptr(v_table._get_focused_accessibility_element):
+            virtualProcCall(v_table._get_focused_accessibility_element, p_instance, p_args, r_ret)
+        case rawptr(v_table._shortcut_input):
+            virtualProcCall(v_table._shortcut_input, p_instance, p_args, r_ret)
+        case rawptr(v_table._unhandled_input):
+            virtualProcCall(v_table._unhandled_input, p_instance, p_args, r_ret)
+        case rawptr(v_table._unhandled_key_input):
+            virtualProcCall(v_table._unhandled_key_input, p_instance, p_args, r_ret)
+    }
+}

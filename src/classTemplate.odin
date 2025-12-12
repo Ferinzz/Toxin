@@ -2,6 +2,7 @@ package main
 
 import GDW "GDWrapper"
 import GDE "GDWrapper/gdextension"
+import sics "base:intrinsics"
 import "base:runtime"
 import "core:fmt"
 
@@ -82,38 +83,6 @@ THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.Initia
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_deets.SN, THIS_CLASS_NAME_deets.GDClass_StringName, &class_info)
     
     THIS_CLASS_NAMEBindMethod()
-
-
-THIS_CLASS_NAME_v_table3: THIS_CLASS_NAME_v_table = {
-    _ready = proc "c" (self: ^THIS_CLASS_NAME) {
-        context = runtime.default_context()
-        fmt.println("vtable setup!")
-    },
-    _input = proc "c" (self: ^THIS_CLASS_NAME, input: ^GDW.InputEvent) {
-        context = runtime.default_context()
-        event: GDW.InputEvent_Options
-        
-        if input.proxy != nil {
-            event = GDW.InputEvent_get_ClassTag(input)
-        }
-        if event != nil {
-            fmt.println(event)
-        }
-    },
-    _process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
-        context = runtime.default_context()
-    },
-    _physics_process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
-        context = runtime.default_context()
-    
-        THIS_CLASS_NAME: GDE.MouseButton = .MOUSE_BUTTON_LEFT
-        isPressed: GDE.Bool
-        GDW.isMouseButtonPressed(&THIS_CLASS_NAME, &isPressed)
-        if isPressed {
-            fmt.println(isPressed)
-        }
-    }
-}
 }
 
 //make some function public to Godot's scripts.
@@ -189,28 +158,63 @@ p_hash: a hash based on the virtual method which Godot want to know the proc poi
 */
 THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
 
-
     using GDW.Node_Virtuals_Info
-    //This is safe because there's only one _ready method in all of the classes.
-    if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table3._ready
-    }
-    if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table3._process
-    }
-    if (GDW.stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table3._physics_process
-    }
-    if GDW.stringNameCompare(p_name, "_draw"){
-        return cast(rawptr)THIS_CLASS_NAME_draw
-    }
-    if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
-        return cast(rawptr)THIS_CLASS_NAME_v_table3._input
-    }
-    return nil
+    return Match_Virtuals(THIS_CLASS_NAME_v_table2, p_class_userdata, p_name, p_hash)
 }
 
+Match_Virtuals :: proc "c" (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
+    context = runtime.default_context()
 
+    when sics.type_has_shared_fields(T, GDW.Node_v_table) {
+        fmt.println("sick2")
+        using GDW.Node_Virtuals_Info
+        
+        if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
+            return cast(rawptr)class_v_table._ready
+        }
+        if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
+            return cast(rawptr)class_v_table._process
+        }
+        if (GDW.stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
+            return cast(rawptr)class_v_table._physics_process
+        }
+        if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
+            return cast(rawptr)class_v_table._input
+        }
+        if (GDW.stringNameCompare(p_name, &_enter_tree.name) && p_hash == _enter_tree.p_hash) {
+            return cast(rawptr)class_v_table._enter_tree
+        }
+        if (GDW.stringNameCompare(p_name, &_exit_tree.name) && p_hash == _exit_tree.p_hash) {
+            return cast(rawptr)class_v_table._exit_tree
+        }
+        if (GDW.stringNameCompare(p_name, &_get_accessibility_configuration_warnings.name) && p_hash == _get_accessibility_configuration_warnings.p_hash) {
+            return cast(rawptr)class_v_table._get_accessibility_configuration_warnings
+        }
+        if (GDW.stringNameCompare(p_name, &_get_configuration_warnings.name) && p_hash == _get_configuration_warnings.p_hash) {
+            return cast(rawptr)class_v_table._get_configuration_warnings
+        }
+        if (GDW.stringNameCompare(p_name, &_get_focused_accessibility_element.name) && p_hash == _get_focused_accessibility_element.p_hash) {
+            return cast(rawptr)class_v_table._get_focused_accessibility_element
+        }
+        if (GDW.stringNameCompare(p_name, &_shortcut_input.name) && p_hash == _shortcut_input.p_hash) {
+            return cast(rawptr)class_v_table._shortcut_input
+        }
+        if (GDW.stringNameCompare(p_name, &_unhandled_input.name) && p_hash == _unhandled_input.p_hash) {
+            return cast(rawptr)class_v_table._unhandled_input
+        }
+        if (GDW.stringNameCompare(p_name, &_unhandled_key_input.name) && p_hash == _unhandled_key_input.p_hash) {
+            return cast(rawptr)class_v_table._unhandled_key_input
+        }
+    }
+
+    when sics.type_has_shared_fields(T, GDW.CanvasItem_Virtuals_Info) {
+        if (GDW.stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
+            return cast(rawptr)class_v_table._draw
+        }
+    }
+
+    return nil
+}
 
 /*
 * Will be called any time Godot needs to call your version of a virtual function.
@@ -231,7 +235,7 @@ THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassIns
         GDW.virtualProcCall(THIS_CLASS_NAME_draw, p_instance, p_args, r_ret)
     }
 
-    GDW.table_lookup(THIS_CLASS_NAME_v_table3.vNode, p_instance, virtualProcPtr, p_args, r_ret)
+    GDW.table_lookup(THIS_CLASS_NAME_v_table2.vNode, p_instance, virtualProcPtr, p_args, r_ret)
 
 }
 
@@ -252,11 +256,15 @@ THIS_CLASS_NAME_v_table3: struct {
     using vNode: GDW.Node_v_table(THIS_CLASS_NAME),
 }
 
+
+//Struct to contain the procedures we'll be 
 THIS_CLASS_NAME_v_table2: THIS_CLASS_NAME_v_table = {
+    vNode = {
     _ready = proc "c" (self: ^THIS_CLASS_NAME) {
         context = runtime.default_context()
         fmt.println("vtable setup!")
     },
+
     _input = proc "c" (self: ^THIS_CLASS_NAME, input: ^GDW.InputEvent) {
         context = runtime.default_context()
         event: GDW.InputEvent_Options
@@ -268,9 +276,11 @@ THIS_CLASS_NAME_v_table2: THIS_CLASS_NAME_v_table = {
             fmt.println(event)
         }
     },
+
     _process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
         context = runtime.default_context()
     },
+
     _physics_process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
         context = runtime.default_context()
     
@@ -281,7 +291,8 @@ THIS_CLASS_NAME_v_table2: THIS_CLASS_NAME_v_table = {
             fmt.println(isPressed)
         }
     }
-}
+},
+};
 
 /*
 THIS_CLASS_NAME_ready :: proc "c" (self: ^THIS_CLASS_NAME) {

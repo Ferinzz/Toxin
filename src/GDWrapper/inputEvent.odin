@@ -19,61 +19,6 @@ init_InputEvent :: proc() {
     get_All_ClassTag_array(&InputEvent_Tags)
 };
 
-Node_v_table:: struct (T: typeid) {
-    _physics_process: proc "c" (self: ^T, delta: GDE.float),
-    _process: proc "c" (self: ^T, delta: GDE.float),
-    _input: proc "c" (self: ^T, input: ^InputEvent),
-    _ready: proc "c" (self: ^T),
-    _enter_tree: proc "c" (self: ^T),
-    _exit_tree: proc "c" (self: ^T),
-    _get_accessibility_configuration_warnings: proc "c" (self: ^T) -> GDE.PackedStringArray,
-    _get_configuration_warnings: proc "c" (self: ^T),
-    _get_focused_accessibility_element: proc "c" (self: ^T),
-    _shortcut_input: proc "c" (self: ^T, input: InputEvent),
-    _unhandled_input: proc "c" (self: ^T, input: InputEvent),
-    _unhandled_key_input: proc "c" (self: ^T, input: InputEvent),
-}
-
-table_lookup :: proc(v_table: $T/Node_v_table, p_instance: GDE.ClassInstancePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
-    switch virtualProcPtr {
-        case rawptr(v_table._physics_process):
-            virtualProcCall(v_table._physics_process, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._process):
-            virtualProcCall(v_table._process, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._input):
-            virtualProcCall(v_table._input, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._ready):
-            virtualProcCall(v_table._ready, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._enter_tree):
-            virtualProcCall(v_table._enter_tree, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._exit_tree):
-            virtualProcCall(v_table._exit_tree, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._get_accessibility_configuration_warnings):
-            virtualProcCall(v_table._get_accessibility_configuration_warnings, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._get_configuration_warnings):
-            virtualProcCall(v_table._get_configuration_warnings, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._get_focused_accessibility_element):
-            virtualProcCall(v_table._get_focused_accessibility_element, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._shortcut_input):
-            virtualProcCall(v_table._shortcut_input, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._unhandled_input):
-            virtualProcCall(v_table._unhandled_input, p_instance, p_args, r_ret)
-
-        case rawptr(v_table._unhandled_key_input):
-            virtualProcCall(v_table._unhandled_key_input, p_instance, p_args, r_ret)
-
-    }
-}
 
 InputEvent_Types: struct {
     InputEvent: ClassTag,
@@ -94,6 +39,7 @@ InputEvent_Types: struct {
     InputEventShortcut: ClassTag,
     InputEventWithModifiers: ClassTag,
 };
+
 InputEvent_Tags: [InputEvent_Options]ClassTag
 
 InputEvent_Set: bit_set[InputEvent_Options];
