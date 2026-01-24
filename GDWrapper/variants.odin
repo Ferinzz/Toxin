@@ -641,7 +641,7 @@ GDArray : struct {
     filter: GDE.PtrBuiltInMethod,
     gdmap: GDE.PtrBuiltInMethod,
     reduce: GDE.PtrBuiltInMethod,
-    any: GDE.PtrBuiltInMethod,
+    gdany: GDE.PtrBuiltInMethod,
     all: GDE.PtrBuiltInMethod,
     max: GDE.PtrBuiltInMethod,
     min: GDE.PtrBuiltInMethod,
