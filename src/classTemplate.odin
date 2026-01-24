@@ -2,7 +2,6 @@ package main
 
 import GDW "GDWrapper"
 import GDE "GDWrapper/gdextension"
-import sics "base:intrinsics"
 import "base:runtime"
 import "core:fmt"
 
@@ -10,84 +9,49 @@ import "core:fmt"
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
 //Godot will be passing us a pointer to this struct during callbacks.
-//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_deets.SN
+//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
-    selfPtr: GDE.ObjectPtr, //always keep. Self-reference to this object's memory in Godot.
     someProperty: GDE.Int,
 }
 
-GDE_class_deets :: struct {
-    SN : GDE.StringName,
-    GDClass_Index: GDW.ClassName_Index,
-    Name: string,
-    GDClass_StringName: ^GDE.StringName,
+self_reggy:: proc(self: ^GDW.Registerer, init_level: GDE.InitializationLevel) {
+    me:=(^GDW.GDW_class_deets)(self)
+    GDW.Register(me, init_level, GDW.make_get_virtual_func(THIS_CLASS_NAME_VTable))
 }
 
-THIS_CLASS_NAME_deets : GDE_class_deets = {
+THIS_CLASS_NAME_deets: GDW.GDW_class_deets = {
+    self_register =self_reggy,
+    init_level= .INITIALIZATION_SCENE,
     GDClass_Index = .Node2D,
-    Name= "THIS_CLASS_NAME",
+    class_struct = THIS_CLASS_NAME,
+    binder= THIS_CLASS_NAME_Export,
+    vtable = &THIS_CLASS_NAME_VTable,
 }
 
-//Technically can have a single massive function to init everything, but having one in each provides more control.
-//Make sure to add this to the init of the extension otherwise you won't be able to access this class.
-//p_userdata is optional.
-//p_userdata: I'm assuming this is best used to pass the context around. If context is set in the calling class this should be implicitly passed to this one.
-//initLevel: Pass in the current init level from the entry's extentionInit proc.
-THIS_CLASS_NAME_Register :: proc "c" ($classStruct: typeid, initLevel:GDE.InitializationLevel, p_userdata:rawptr=nil) {
-    context = runtime.default_context()
 
-    /*
-    * Specify at what init level this should be loaded at.
-    * If this check fails, then you did not put it in the correct init level in the extensionInit proc.
-    * This template example assumes .INITIALIZATION_SCENE is the desired init timing for this class and as a result it is specified here.
-    */
-    assert(initLevel == .INITIALIZATION_SCENE, "Class init function called at a different level than was expected.")
-
-    stringraw:GDE.gdstring
-    GDW.StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
-
-    //review definition of GDE.ClassCreationInfo4 for more details on each field.
-    class_info: GDE.ClassCreationInfo4 = {
-        is_virtual = false,
-        is_abstract = false,
-        is_exposed = true,
-        is_runtime = false,
-        icon_path = &stringraw, //For some reason does not work with UTF8 strings??
-        set_func = nil,
-        get_func = nil,
-        get_property_list_func = nil,
-        free_property_list_func = nil,
-        property_can_revert_func = nil,
-        property_get_revert_func = nil,
-        validate_property_func = nil,
-        notification_func = nil,
-        to_string_func = nil,
-        reference_func = nil,
-        unreference_func = nil,
-        create_instance_func = THIS_CLASS_NAMECreate,
-        free_instance_func = THIS_CLASS_NAMEDestroy,
-        recreate_instance_func = nil,
-        get_virtual_func = nil,
-        get_virtual_call_data_func =  THIS_CLASS_NAMEgetVirtualWithData,
-        call_virtual_with_data_func = THIS_CLASS_NAMEcallVirtualFunctionWithData,
-        class_userdata = p_userdata,
-    }
-
-    //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct.stringNameNewString(&THIS_CLASS_NAME_deets.SN, THIS_CLASS_NAME_deets.Name)
-
-    
-    THIS_CLASS_NAME_deets.GDClass_StringName = GDW.GDClass_StringName_get(THIS_CLASS_NAME_deets.GDClass_Index)
-
-
-    GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &THIS_CLASS_NAME_deets.SN, THIS_CLASS_NAME_deets.GDClass_StringName, &class_info)
-    
-    THIS_CLASS_NAMEBindMethod()
+//******************************\\
+//*******VIRTUAL METHODS********\\
+//******************************\\
+/*
+* virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
+* If you want your class to tick on its own you gotta use them.
+*/
+THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
+    _ready= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME)) {
+        context = runtime.default_context();
+        fmt.println("Hello mom!")
+        fmt.println(self^)
+    },
+    _enter_tree= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME)) {},
+    _process= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^GDE.float}){},
 }
 
+//******************************\\
+//***********Exports************\\
+//******************************\\
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
-THIS_CLASS_NAMEBindMethod :: proc "c" (){
+THIS_CLASS_NAME_Export :: proc(){
 
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {GDE.ClassMethodFlags.NORMAL}, "arg1")
@@ -99,213 +63,9 @@ THIS_CLASS_NAMEBindMethod :: proc "c" (){
 }
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
-somePublicFunction :: proc "c" (classStruct: ^THIS_CLASS_NAME, arg1: GDE.Int) {
+somePublicFunction :: proc "c" (classStruct: ^GDW.Class_Container(THIS_CLASS_NAME), arg1: GDE.Int) {
     //do stuff
 }
-
-
-//This runs once when the class is created before it gets added to a tree.
-//construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
-//This is different from Godot's ready, which is called sometime after this.
-THIS_CLASS_NAMECreate :: proc "c" (p_class_user_data: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr {
-
-    context = runtime.default_context()
-
-    object: GDE.ObjectPtr = GDW.gdAPI.classDBConstructObj(THIS_CLASS_NAME_deets.GDClass_StringName)
-
-    //Create our containing struct.
-    //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: ^THIS_CLASS_NAME = cast(^THIS_CLASS_NAME)GDW.gdAPI.mem_alloc(size_of(THIS_CLASS_NAME))
-    self.selfPtr = object
-    
-    GDW.gdAPI.object_set_instance(object, &THIS_CLASS_NAME_deets.SN, cast(^GDE.Object)self)
-    GDW.gdAPI.object_set_instance_binding(object, GDW.Library, self, &classBindingCallbacks)
-
-    return object
-}
-
-//Delete all the heap allocated aspects of the class along with the class struct as well as any
-//additional nodes, canvasitems, area2d that you created. Like how bulletshower needs to do cleanup on the textures and phys objects.
-//Removing from scene tree does not necessarily destroy a class.
-THIS_CLASS_NAMEDestroy :: proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr) {
-    context = runtime.default_context()
-    if (p_instance == nil){
-        return
-    }
-    
-    GDW.gdAPI.mem_free(cast(^THIS_CLASS_NAME)p_instance)
-}
-
-/*
-* Godot will call this proc at init time in order to know what procs to use for the virtual functions of your class.
-* p_class_userdata: userdata which you had sent to Godot previously.
-* p_name: StringName of the virtual method which Godot want to know the proc pointer for.
-p_hash: a hash based on the virtual method which Godot want to know the proc pointer for. WARNING these are not at all unique...
-* returns a proc pointer to Godot based on the match check you setup
-* Godot will send the function pointer when calling your virtual method callback.
-*
-* Remove the virtuals you are not using.
-* If you ever rename a virtual function (method callback) you will need to update this file in three places.
-* Here, THIS_CLASS_NAMEcallVirtualFunctionWithData, the proc itself.
-*
-* Look at Godot docs or extension_api.json to know what is supported by a certain class. If it inherits from another, it will also inherit its virtual methods.
-* ie something that inherits canvas item will have draw.
-* All virtual methods in Godot are prepended with a _
-*
-* Must use both StringName and p_hash to validate a function because neither of these are unique..
-* Check virtual_method_SN.odin, there may be a struct and init function that you use to populate these stringNameCompare.
-* Current example shows the use of a struct from virtual_method_SN.odin using exposes the values for easy use.
-*/
-THIS_CLASS_NAMEgetVirtualWithData :: proc "c" (p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-
-    using GDW.Node_Virtuals_Info
-    return Match_Virtuals(THIS_CLASS_NAME_v_table2, p_class_userdata, p_name, p_hash)
-}
-
-Match_Virtuals :: proc "c" (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
-
-    when sics.type_has_shared_fields(T, GDW.Node_v_table) {
-        fmt.println("sick2")
-        using GDW.Node_Virtuals_Info
-        
-        if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
-            return cast(rawptr)class_v_table._ready
-        }
-        if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
-            return cast(rawptr)class_v_table._process
-        }
-        if (GDW.stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
-            return cast(rawptr)class_v_table._physics_process
-        }
-        if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
-            return cast(rawptr)class_v_table._input
-        }
-        if (GDW.stringNameCompare(p_name, &_enter_tree.name) && p_hash == _enter_tree.p_hash) {
-            return cast(rawptr)class_v_table._enter_tree
-        }
-        if (GDW.stringNameCompare(p_name, &_exit_tree.name) && p_hash == _exit_tree.p_hash) {
-            return cast(rawptr)class_v_table._exit_tree
-        }
-        if (GDW.stringNameCompare(p_name, &_get_accessibility_configuration_warnings.name) && p_hash == _get_accessibility_configuration_warnings.p_hash) {
-            return cast(rawptr)class_v_table._get_accessibility_configuration_warnings
-        }
-        if (GDW.stringNameCompare(p_name, &_get_configuration_warnings.name) && p_hash == _get_configuration_warnings.p_hash) {
-            return cast(rawptr)class_v_table._get_configuration_warnings
-        }
-        if (GDW.stringNameCompare(p_name, &_get_focused_accessibility_element.name) && p_hash == _get_focused_accessibility_element.p_hash) {
-            return cast(rawptr)class_v_table._get_focused_accessibility_element
-        }
-        if (GDW.stringNameCompare(p_name, &_shortcut_input.name) && p_hash == _shortcut_input.p_hash) {
-            return cast(rawptr)class_v_table._shortcut_input
-        }
-        if (GDW.stringNameCompare(p_name, &_unhandled_input.name) && p_hash == _unhandled_input.p_hash) {
-            return cast(rawptr)class_v_table._unhandled_input
-        }
-        if (GDW.stringNameCompare(p_name, &_unhandled_key_input.name) && p_hash == _unhandled_key_input.p_hash) {
-            return cast(rawptr)class_v_table._unhandled_key_input
-        }
-    }
-
-    when sics.type_has_shared_fields(T, GDW.CanvasItem_Virtuals_Info) {
-        if (GDW.stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
-            return cast(rawptr)class_v_table._draw
-        }
-    }
-
-    return nil
-}
-
-/*
-* Will be called any time Godot needs to call your version of a virtual function.
-* Special helpers for Odin procs are created during the Export(bind) step because Godot only gives us a [^]rawptr.
-* As a result we can't call our function directly. (unless you want to deal with some any type conversion yourself).
-* It's good to keep this in a particular order. The least likely or one-time event should be last.
-* The more methods you registered in THIS_CLASS_NAMEgetVirtualWithData the more times this thing is called.
-* p_instance: Pointer to the memory of the classStruct allocated during Creation.
-* p_name: StringName of the virtual proc
-* virtualProcPtr: pointer of the Proc which was sent to Godot during THIS_CLASS_NAMEgetVirtualWithData
-* p_args: [^]rawptr to the arguments Godot is passing during the call.
-* r_ret: rawptr that'll hold the pointer of the return value.
-*/
-THIS_CLASS_NAMEcallVirtualFunctionWithData :: proc "c" (p_instance: GDE.ClassInstancePtr, p_name: GDE.ConstStringNamePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
-    context = runtime.default_context()
-    
-    if virtualProcPtr == cast(rawptr)THIS_CLASS_NAME_draw {
-        GDW.virtualProcCall(THIS_CLASS_NAME_draw, p_instance, p_args, r_ret)
-    }
-
-    GDW.table_lookup(THIS_CLASS_NAME_v_table2.vNode, p_instance, virtualProcPtr, p_args, r_ret)
-
-}
-
-//******************************\\
-//*******VIRTUAL METHODS********\\
-//******************************\\
-
-/*
-* The complicated part of virutal methods is dealt with by Toxin.
-* Once registered and configured in the above two procs you don't need any extra steps.
-* Write the functions as normal Odin functions and allow Toxin to handle the rawptr casts.
-* Continue to be mindful of what data is in Godot vs your extension.
-*/
-THIS_CLASS_NAME_v_table:: struct {
-    using vNode: GDW.Node_v_table(THIS_CLASS_NAME),
-}
-THIS_CLASS_NAME_v_table3: struct {
-    using vNode: GDW.Node_v_table(THIS_CLASS_NAME),
-}
-
-
-//Struct to contain the procedures we'll be 
-THIS_CLASS_NAME_v_table2: THIS_CLASS_NAME_v_table = {
-    vNode = {
-    _ready = proc "c" (self: ^THIS_CLASS_NAME) {
-        context = runtime.default_context()
-        fmt.println("vtable setup!")
-    },
-
-    _input = proc "c" (self: ^THIS_CLASS_NAME, input: ^GDW.InputEvent) {
-        context = runtime.default_context()
-        event: GDW.InputEvent_Options
-        
-        if input.proxy != nil {
-            event = GDW.InputEvent_get_ClassTag(input)
-        }
-        if event != nil {
-            fmt.println(event)
-        }
-    },
-
-    _process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
-        context = runtime.default_context()
-    },
-
-    _physics_process = proc "c" (self: ^THIS_CLASS_NAME, delta: f64) {
-        context = runtime.default_context()
-    
-        THIS_CLASS_NAME: GDE.MouseButton = .MOUSE_BUTTON_LEFT
-        isPressed: GDE.Bool
-        GDW.isMouseButtonPressed(&THIS_CLASS_NAME, &isPressed)
-        if isPressed {
-            fmt.println(isPressed)
-        }
-    }
-},
-};
-
-/*
-THIS_CLASS_NAME_ready :: proc "c" (self: ^THIS_CLASS_NAME) {
-    context = runtime.default_context()
-    fmt.println("vtable setup!")
-}
-*/
-
-
-THIS_CLASS_NAME_draw :: proc "c" (self: ^THIS_CLASS_NAME) {
-
-}
-
 
 
 /*

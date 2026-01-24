@@ -997,6 +997,7 @@ ClassName_Index :: enum {
     XRVRS,
     ZIPPacker,
     ZIPReader,
+    Master,
 }
 
 @(private)
@@ -1954,4 +1955,5 @@ ClassName_StringNames : [ClassName_Index]GDE.StringName = {
     .XRVRS = GDE.StringName({nil}),
     .ZIPPacker = GDE.StringName({nil}),
     .ZIPReader = GDE.StringName({nil}),
+    .Master = GDE.StringName({nil}),
 }

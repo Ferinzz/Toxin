@@ -294,7 +294,6 @@ draw :: proc "c" (self: ^mySprite) {
 
     context = runtime.default_context()
     
-
     color: GDE.Color = {1,1,1,1}
     args: [3]rawptr
     //Acutal code starts here.
@@ -304,8 +303,6 @@ draw :: proc "c" (self: ^mySprite) {
         
         GDW.drawTexture2D(self.selfPtr, &self.bullet_image, &(GDE.Vector2{abullet.position[2,0] - offset.x/2, abullet.position[2,1] - offset.y/2}), &color)
     }
-
-
 }
 
 exit_tree :: proc "c" (self: ^mySprite) {

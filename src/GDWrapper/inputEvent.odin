@@ -44,26 +44,31 @@ InputEvent_Tags: [InputEvent_Options]ClassTag
 
 InputEvent_Set: bit_set[InputEvent_Options];
 InputEvent_Options :: enum {
-    nil,
     InputEventMouseButton,
     InputEventMouseMotion,
-    InputEventJoypadButton,
-    InputEventJoypadMotion,
-    InputEventGesture,
-    InputEventKey,
-    InputEventMIDI,
-    InputEventMagnifyGesture,
-    InputEventMouse,
-    InputEventPanGesture,
-    InputEventScreenDrag,
-    InputEventScreenTouch,
-    InputEventShortcut,
-    InputEventAction,
-    InputEventWithModifiers,
-    InputEventFromWindow,
+    //InputEventJoypadButton,
+    //InputEventJoypadMotion,
+    //InputEventGesture,
+    //InputEventKey,
+    //InputEventMIDI,
+    //InputEventMagnifyGesture,
+    //InputEventMouse,
+    //InputEventPanGesture,
+    //InputEventScreenDrag,
+    //InputEventScreenTouch,
+    //InputEventShortcut,
+    //InputEventAction,
+    //InputEventWithModifiers,
+    //InputEventFromWindow,
     InputEvent,
 };
 
+/*
+* Goes through the list of ClassTags to determine what Input_Event was used.
+* Does not check inheritance. A InputEventMouseButton is also a InputEventMouse.
+* event: Pointer to an InputEvent, usually received from an _input virtual method.
+* return: The enum value which the InputEvent corresponds with.
+*/
 InputEvent_get_ClassTag :: proc(event: ^InputEvent) -> InputEvent_Options {
     for &eventClassTag, index in InputEvent_Tags {
         if Methods.checkCast(event, eventClassTag) != nil {
@@ -71,28 +76,6 @@ InputEvent_get_ClassTag :: proc(event: ^InputEvent) -> InputEvent_Options {
         }
     }
     return nil
-}
-
-
-//Meta of device : int32
-InputEvent_set_device :: proc "c" (input_event: ^InputEvent, device: ^GDE.Int) {
-    context = runtime.default_context()
-    @(static)setDevice: GDE.MethodBindPtr
-    if setDevice == nil do setDevice = classDBGetMethodBind2(&InputEvent_SN, "set_device", 1286410249)
-    
-    assert(input_event != nil)
-    args:= [?]rawptr { device }
-    gdAPI.objectMethodBindPtrCall(setDevice, input_event, raw_data(args[:]), nil)
-}
-
-//Meta of device : int32
-InputEvent_get_device :: proc "c" (input_event: ^InputEvent, r_device: ^GDE.Int) {
-    context = runtime.default_context()
-    @(static)getDevice: GDE.MethodBindPtr
-    if getDevice == nil do getDevice = classDBGetMethodBind2(&InputEvent_SN, "get_device", 3905245786)
-    
-    assert(input_event != nil)
-    gdAPI.objectMethodBindPtrCall(getDevice, input_event, nil, r_device)
 }
 
 InputEvent_is_action :: proc "c" (input_event: ^InputEvent, action: GDE.StringNamePtr, exact_match: ^GDE.Bool, r_bool: ^GDE.Int) {
@@ -144,8 +127,8 @@ InputEvent_is_canceled :: proc "c" (input_event: ^InputEvent, r_bool: ^GDE.Bool)
     gdAPI.objectMethodBindPtrCall(isCanceled, input_event, nil, r_bool)
 }
 
-InputEvent_is_pressed :: proc "c" (input_event: ^InputEvent, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+InputEvent_is_pressed :: proc(input_event: ^InputEvent, r_bool: ^GDE.Bool) {
+    //context = runtime.default_context()
     @(static)isPressed: GDE.MethodBindPtr
     if isPressed == nil do isPressed = classDBGetMethodBind2(&InputEvent_SN, "is_pressed", 36873697)
     
@@ -218,3 +201,178 @@ InputEvent_xformed_by :: proc "c" (input_event: ^InputEvent, xform: ^GDE.Transfo
     args:= [?]rawptr { xformedBy, local_ofs }
     gdAPI.objectMethodBindPtrCall(xformedBy, input_event, raw_data(args[:]), r_InputEvent)
 }
+
+//Meta of device : int32
+InputEvent_set_device :: proc "c" (input_event: ^InputEvent, device: ^GDE.Int) {
+    context = runtime.default_context()
+    @(static)setDevice: GDE.MethodBindPtr
+    if setDevice == nil do setDevice = classDBGetMethodBind2(&InputEvent_SN, "set_device", 1286410249)
+    
+    assert(input_event != nil)
+    args:= [?]rawptr { device }
+    gdAPI.objectMethodBindPtrCall(setDevice, input_event, raw_data(args[:]), nil)
+}
+
+//Meta of device : int32
+InputEvent_get_device :: proc "c" (input_event: ^InputEvent, r_device: ^GDE.Int) {
+    context = runtime.default_context()
+    @(static)getDevice: GDE.MethodBindPtr
+    if getDevice == nil do getDevice = classDBGetMethodBind2(&InputEvent_SN, "get_device", 3905245786)
+    
+    assert(input_event != nil)
+    gdAPI.objectMethodBindPtrCall(getDevice, input_event, nil, r_device)
+}
+
+InputEventMouseButton:: GDE.Object
+InputEventMouseButton_SN: GDE.StringName
+
+InputEventMouseMotion_SN: GDE.StringName
+InputEventMouse_SN: GDE.StringName
+
+init_InputEventMouse :: proc() {
+    if InputEventMouseButton_SN.ptr == nil {
+        InputEventMouseButton_SN = StringConstruct.stringNameNewString_r("InputEventMouseButton")
+    }
+    if InputEventMouseMotion_SN.ptr == nil {
+        InputEventMouseMotion_SN = StringConstruct.stringNameNewString_r("InputEventMouseMotion")
+    }
+    if InputEventMouse_SN.ptr == nil {
+        InputEventMouse_SN = StringConstruct.stringNameNewString_r("InputEventMouse")
+    }
+};
+
+
+InputEventMouseButton_get_button_index :: proc(input_event: ^InputEvent, r_MouseButton: ^GDE.MouseButton) {
+    //context = runtime.default_context()
+    @(static)getbuttonindex: GDE.MethodBindPtr
+    if getbuttonindex == nil do getbuttonindex = classDBGetMethodBind2(GDClass_StringName_get(.InputEventMouseButton), "get_button_index", 1132662608)
+    
+    assert(input_event != nil)
+    gdAPI.objectMethodBindPtrCall(getbuttonindex, input_event, nil, r_MouseButton)
+}
+
+InputEventMouseMotion_get_screen_relative :: proc "c" (input_event: ^InputEvent, r_Pos: ^GDE.Vector2) {
+    context = runtime.default_context()
+    @(static)getscreenrelative: GDE.MethodBindPtr
+    if getscreenrelative == nil do getscreenrelative = classDBGetMethodBind2(GDClass_StringName_get(.InputEventMouseMotion), "get_screen_relative", 3341600327)
+    
+    assert(input_event != nil)
+    gdAPI.objectMethodBindPtrCall(getscreenrelative, input_event, nil, r_Pos)
+}
+
+InputEventMouse_get_global_position :: proc "c" (input_event: ^InputEvent, r_Pos: ^GDE.Vector2) {
+    context = runtime.default_context()
+    @(static)getglobalposition: GDE.MethodBindPtr
+    if getglobalposition == nil do getglobalposition = classDBGetMethodBind2(GDClass_StringName_get(.InputEventMouse), "get_global_position", 3341600327)
+    
+    assert(input_event != nil)
+    gdAPI.objectMethodBindPtrCall(getglobalposition, input_event, nil, r_Pos)
+}
+
+/*
+				{
+					"name": "set_factor",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 373806689,
+					"arguments": [
+						{
+							"name": "factor",
+							"type": "float",
+							"meta": "float"
+						}
+					]
+				},
+				{
+					"name": "get_factor",
+					"is_const": true,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 1740695150,
+					"return_value": {
+						"type": "float",
+						"meta": "float"
+					}
+				},
+				{
+					"name": "set_button_index",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 3624991109,
+					"arguments": [
+						{
+							"name": "button_index",
+							"type": "enum::MouseButton"
+						}
+					]
+				},
+				{
+					"name": "get_button_index",
+					"is_const": true,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 1132662608,
+					"return_value": {
+						"type": "enum::MouseButton"
+					}
+				},
+				{
+					"name": "set_pressed",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 2586408642,
+					"arguments": [
+						{
+							"name": "pressed",
+							"type": "bool"
+						}
+					]
+				},
+				{
+					"name": "set_canceled",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 2586408642,
+					"arguments": [
+						{
+							"name": "canceled",
+							"type": "bool"
+						}
+					]
+				},
+				{
+					"name": "set_double_click",
+					"is_const": false,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 2586408642,
+					"arguments": [
+						{
+							"name": "double_click",
+							"type": "bool"
+						}
+					]
+				},
+				{
+					"name": "is_double_click",
+					"is_const": true,
+					"is_vararg": false,
+					"is_static": false,
+					"is_virtual": false,
+					"hash": 36873697,
+					"return_value": {
+						"type": "bool"
+					}
+				}
+*/

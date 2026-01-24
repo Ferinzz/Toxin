@@ -4,6 +4,7 @@ import GDW "GDWrapper"
 import GDE "GDWrapper/gdextension"
 import "base:runtime"
 import "core:fmt"
+import "core:slice"
 
 /*
 * As of 4.5 there is a binding which allows you to register MainLoop callbacks
@@ -25,22 +26,38 @@ import "core:fmt"
 
 
 
+scene_tree_obj: GDE.ObjectPtr
+root_node_instance: GDE.ObjectPtr
+
 /* Called when starting the main loop. */
 MainLoopStartupCallback :: proc "c" () {
     context = runtime.default_context()
     fmt.println("THERE'S A LOOP CALBACK")
-
+    GDW.getPhysServer2dObj()
+    GDW.getRenderServer2dObj()
+    
     //Setup an object to hold the MainLoop object.
-    scene_tree_obj: GDE.ObjectPtr
     scene_tree_obj = GDW.getMainLoop()
     GDW.init_InputEvent()
     fmt.println(scene_tree_obj)
-}
+    //Fetch the root of the current sceneTree
+    root:= GDW.getRoot()
+    scene:= GDW.get_current_scene()
+    //Create a class. Your extension registerations should all be done and all classes available at this point.
+    
+    
+    //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
+    if scene != nil {
+        //You can add a node directly to the root.
+        //Add the class to the root of the sceneTree
+    };
+};;
 /* Called when shutting down the main loop. */
 MainLoopShutdownCallback :: proc "c" () {
     context = runtime.default_context()
     fmt.println("Welp, Bye.")
-}
+    //GDW.Destructors.ObjectDestroy(root_node_instance)
+};;
 
 callOnce:bool=false
 /* Called for every frame iteration of the main loop.
@@ -51,29 +68,14 @@ MainLoopFrameCallback :: proc "c" () {
     //fmt.println("WTAF MAINLOOP TICKS?!")
     
     if !callOnce {
-        //Fetch the root of the current sceneTree
-        root:= GDW.getRoot()
-        scene:= GDW.get_current_scene()
-
-        //Create a class. Your extension registerations should all be done and all classes available at this point.
-        //signalis_SN:GDE.StringName
-        //GDW.StringConstruct.stringNameNewString(&signalis_SN, string(signalis_CString))
-
-        //object:= GDW.gdAPI.classDBConstructObj(&THIS_CLASS_NAME_deets.SN)
-        
-        //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
-        //Alternatively you can add a node directly to the root.
-        if scene != nil {
-        //Add the class to the root of the sceneTree
-            //GDW.addChild(scene, &object)
-        }
         //These are good to set in a singleton at some point.
         //These are statically stored and thus only need to be called once when the game engine is fully initialize.
-        GDW.getPhysServer2dObj()
-        GDW.getRenderServer2dObj()
+        
         callOnce = true
+        myMainLoopCallbacks.frame_func = nil
     }
-}
+    
+};;
 
 //create a GDE.MainLoopCallbacks struct which will hold the pointers to the callbacks
 myMainLoopCallbacks: GDE.MainLoopCallbacks = {
@@ -85,7 +87,7 @@ myMainLoopCallbacks: GDE.MainLoopCallbacks = {
 	 * This is intended to be the equivalent of `ScriptLanguage::frame()` for GDExtension language bindings that don't use the script API.
 	 */
 	frame_func = MainLoopFrameCallback,
-};
+};;
 
 
 //I register the GDE.MainLoopCallbacks struct in the init of the Extension.
@@ -102,8 +104,8 @@ myMainLoopCallbacks: GDE.MainLoopCallbacks = {
 */
 @export
 godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassLibraryPtr, initialization: ^GDE.Initialization) {
-    GDW.initGodotContext()
-    context = GDW.godotContext
+    //GDW.initGodotContext()
+    context = runtime.default_context()
 
     GDW.Library = p_library
     GDW.loadAPI(p_get_proc_address)
@@ -113,7 +115,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
     initialization.userdata     = nil
     initialization.minimum_initialization_level = .INITIALIZATION_SCENE
 
-}
+};
 
 /*
 * This function will be called at each step of Godot's initialization process.
@@ -123,12 +125,12 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
 * userdata: Pointer specified in the initialize struct.
 * initLevel: The current init level that the Godot engine is going through.
 */
-extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel) {
-    context = GDW.godotContext
-
+extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel) {
+    context = runtime.default_context()
+    fmt.println(GDW.reg_list)
     //There are multiple steps to the init process which Godot goes through.
     //You may want to register or intitialize certain aspects of your extension at different times.
-    switch initLevel{
+    switch init_Level{
         case .INITIALIZATION_CORE:
             /*
             * Register the different classes which should be considered Core to the rest of the system.
@@ -144,7 +146,7 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
             /*
             * Register the different classes which depend on servers classes.
             */
-            THIS_CLASS_NAME_Register(THIS_CLASS_NAME, initLevel)
+            THIS_CLASS_NAME_deets->self_register(init_Level)
 
             //Need to register our MainLoop callbacks at some point.
             GDW.gd_Main_Loop.register_main_loop_callbacks(GDW.Library, &myMainLoopCallbacks)
@@ -164,10 +166,10 @@ extensionInit :: proc "c" (userdata: rawptr, initLevel: GDE.InitializationLevel)
             assert(true, "This should be impossible!!")
         case :
             assert(true, "This should be impossible!!")
-    }
+    };
 
     return
-}
+};;
 
 
 //I still don't know what these are for :/
@@ -175,14 +177,14 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     create_callback    = nil,
     free_callback      = nil,
     reference_callback = nil,
-}
+};;
 
 
 //This function will be called when the Godot program is closing.
 //It will be called once at each level of the deinit process.
 //deinit is in reverse order with INITIALIZATION_EDITOR first and INITIALIZATION_CORE last.
 extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLevel) {
-    context = GDW.godotContext
+    context = runtime.default_context()
 
     switch deinitLevel{
         case .INITIALIZATION_CORE:
@@ -215,5 +217,5 @@ extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLe
             return
         case :
             assert(true, "This should not be impossible!!")
-    }
-}
+    };
+};;
