@@ -223,19 +223,19 @@ Export_String_As_Enum :: proc(className_SN: ^GDE.StringName, $classStruct: typei
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
     
     //Defines the information about the variable properties in a way Godot's editor understands
     when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
         prop_info:= Make_Property_Full(.STRING, fieldName, .ENUM, res, className, property_usage)
         //Register the information with Godot in order for the variable to be accessible.
-        Bind_Property(&className_SN, fieldName, .STRING, &prop_info, "get_"+fieldName, "set_"+fieldName)
+        Bind_Property(className_SN, fieldName, .STRING, &prop_info, "get_"+fieldName, "set_"+fieldName)
     }
     when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
         prop_info:= Make_Property_Full(.STRING_NAME, fieldName, .ENUM, res, className, property_usage)
         //Register the information with Godot in order for the variable to be accessible.
-        Bind_Property(&className_SN, fieldName, .STRING_NAME, &prop_info, "get_"+fieldName, "set_"+fieldName)
+        Bind_Property(className_SN, fieldName, .STRING_NAME, &prop_info, "get_"+fieldName, "set_"+fieldName)
     }
 
 
@@ -255,7 +255,7 @@ Export_Enum :: #force_inline proc(className_SN: ^GDE.StringName, $classStruct: t
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
     
-    enumName:= fmt.aprint(type_info_of(out_enum))
+    enumName:= type_info_of(out_enum).variant.(runtime.Type_Info_Named).name
     defer delete(enumName)
     enumName_SN: GDE.StringName
     StringConstruct.stringNameNewString(&enumName_SN, enumName)
@@ -268,7 +268,7 @@ Export_Enum :: #force_inline proc(className_SN: ^GDE.StringName, $classStruct: t
     for field, ind in info.names {
         field_SN: GDE.StringName
         StringConstruct.stringNameNewString(&field_SN, field)
-        gdAPI.Register_Int_const(Library, &className_SN, &enumName_SN, &field_SN, GDE.Int(info.values[ind]), false)
+        gdAPI.Register_Int_const(Library, className_SN, &enumName_SN, &field_SN, GDE.Int(info.values[ind]), false)
         Destructors.stringNameDestructor(&field_SN)
     }
 }
@@ -358,7 +358,7 @@ Export_Range :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $field
     prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, property_usage)
 
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, &className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
+    bind_export(classStruct, className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
 
     destructProperty(&prop_info)
     delete(min)
@@ -432,8 +432,8 @@ Export_Ranged_Array :: proc(className_SN: ^GDE.StringName, $classStruct: typeid,
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     output: string
 
@@ -501,10 +501,10 @@ Export_Ranged_Array :: proc(className_SN: ^GDE.StringName, $classStruct: typeid,
     //This registers the get and set functions to the field so that Godot knows what to call when changing the value is editor.
     if !rodata {
         //Register the information with Godot in order for the variable to be accessible.
-        Bind_Property(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)}
+        Bind_Property(className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)}
     else {
         //Register the information with Godot in order for the variable to be accessible.
-        Bind_Property(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "")
+        Bind_Property(className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "")
     }
     destructProperty(&prop_info)
 }
@@ -535,7 +535,7 @@ Ranged_Array :: struct ($indexType: typeid) {
 * fieldName: the name that matches the field in the struct as you've named it.
 * easing: The restrictions which should be applied to the easing.
 */
-Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Easing_Options,
+Export_Easing :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string, easing: Easing_Options,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -543,7 +543,6 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
                         //This field should only be of type GDE.float.
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.float))
     {
-    context = runtime.default_context()
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
@@ -557,7 +556,7 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, property_usage)
     
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    bind_export(classStruct, className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
 
@@ -582,7 +581,7 @@ Easing_Options :: enum {
 * Index is vararg in order to support multi-dimensional Arrays.
 * Final string will be "%d/%d:%s" type/hint:hint_string. See Array_Type_Hint_Info for more examples.
 */
-Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_Array_Type :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         Index: ..Array_Type_Hint_Info,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -591,7 +590,6 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type GDE.Array.
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Array))
     {
-    context = runtime.default_context()
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
@@ -624,7 +622,7 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
     info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, fieldName, .ARRAY_TYPE, final_hint_string, className, property_usage)
     
     //Creates all necessary info before Registering the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, &className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    bind_export(classStruct, className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
     delete(final_hint_string)
 }
@@ -655,7 +653,7 @@ Array_Type_Hint_Info :: struct{
 * Export a GDE.Int and tell Godot that it's a pointer.. I guess.
 * Not sure why you'd want this, but it's here. Interop between plugins/libraries I guess?
 */
-Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_Pointer :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -663,7 +661,6 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type GDE.float or GDE.Int.
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.Int) || (sics.type_is_pointer(sics.type_field_type(classStruct, fieldName)))))
     {
-    context = runtime.default_context()
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
@@ -705,11 +702,11 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
     destructProperty(&info)
 }
 
@@ -736,7 +733,7 @@ Export_Color_No_Alpha :: proc(className_SN: ^GDE.StringName, $classStruct: typei
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, property_usage)
     
     //Register the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, &className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    bind_export(classStruct, className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
 
@@ -819,12 +816,12 @@ Export_Int_As_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid,
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
-    Bind_Property_Prop_Info(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
+    //bind_export(classStruct, className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
+    Bind_Property_Prop_Info(className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 
     destructProperty(&prop_info)
     delete(output)
@@ -869,7 +866,7 @@ Export_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $outbi
             
             //The index of an enum represents the index of the bool in a bit_set.
             //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
-            gdAPI.Register_Int_const(Library, &className_SN, &bsname_SN, &field_SN, GDE.Int(1<<u64(flag_enum.values[index])), true)
+            gdAPI.Register_Int_const(Library, className_SN, &bsname_SN, &field_SN, GDE.Int(1<<u64(flag_enum.values[index])), true)
             Destructors.stringNameDestructor(&field_SN)
         }
 
@@ -878,7 +875,7 @@ Export_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $outbi
             field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN: GDE.StringName
             StringConstruct.stringNameNewString(&field_SN, field)
-            gdAPI.Register_Int_const(Library, &className_SN, &bsname_SN, &field_SN, GDE.Int(i), true)
+            gdAPI.Register_Int_const(Library, className_SN, &bsname_SN, &field_SN, GDE.Int(i), true)
             delete(field)
             Destructors.stringNameDestructor(&field_SN)
         }
@@ -952,12 +949,12 @@ Export_Layers :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fiel
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    //bind_export(classStruct, &className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
-    Bind_Property_Prop_Info(&className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
+    //bind_export(classStruct, className_SN, fieldName, .INT, GDE.Int, methodType, &prop_info, loc)
+    Bind_Property_Prop_Info(className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 
     destructProperty(&prop_info)
 }
@@ -1051,12 +1048,12 @@ Export_Path :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldN
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .STRING, &info, "get_"+fieldName, "set_"+fieldName)
-    //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    Bind_Property(className_SN, fieldName, .STRING, &info, "get_"+fieldName, "set_"+fieldName)
+    //bind_export(classStruct, className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
 
@@ -1125,12 +1122,12 @@ Export_Locale :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fiel
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
-    //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    Bind_Property(className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
+    //bind_export(classStruct, className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
 
@@ -1192,12 +1189,12 @@ Export_Password :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fi
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
-    //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    Bind_Property(className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
+    //bind_export(classStruct, className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
 
@@ -1256,15 +1253,15 @@ Export_With_Placeholder_Text :: proc(className_SN: ^GDE.StringName, $classStruct
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
     
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PLACEHOLDER_TEXT, placeholder_text, className, property_usage)
     
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
-    //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    Bind_Property(className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
+    //bind_export(classStruct, className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
 
@@ -1338,19 +1335,19 @@ Export_Input_Name :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
         prop_info:= Make_Property_Full(.STRING, fieldName, GDE.PropertyHint(43), string(res[:]), className, property_usage)
         //Register the information with Godot in order for the variable to be accessible.
-        Bind_Property(&className_SN, fieldName, .STRING, &prop_info, "get_"+fieldName, "set_"+fieldName)
+        Bind_Property(className_SN, fieldName, .STRING, &prop_info, "get_"+fieldName, "set_"+fieldName)
     }
     when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
         prop_info:= Make_Property_Full(.STRING_NAME, fieldName, GDE.PropertyHint(43), string(res[:]), className, property_usage)
         //Register the information with Godot in order for the variable to be accessible.
-        Bind_Property(&className_SN, fieldName, .STRING_NAME, &prop_info, "get_"+fieldName, "set_"+fieldName)
+        Bind_Property(className_SN, fieldName, .STRING_NAME, &prop_info, "get_"+fieldName, "set_"+fieldName)
     }
 
 }
@@ -1416,13 +1413,13 @@ Export_Multiline :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $f
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.STRING, fieldName, .MULTILINE_TEXT, "", className, property_usage)
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .STRING, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .STRING, &prop_info, "get_"+fieldName, "set_"+fieldName)
 }
 
 
@@ -1476,13 +1473,13 @@ Export_Node_Path_Types :: proc(className_SN: ^GDE.StringName, $classStruct: type
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.NODE_PATH, fieldName, .NODE_PATH_VALID_TYPES, Node_Type, className, property_usage)
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .NODE_PATH, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .NODE_PATH, &prop_info, "get_"+fieldName, "set_"+fieldName)
 }
 
 /*
@@ -1544,13 +1541,13 @@ Export_Object_ID :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $f
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.OBJECT, fieldName, .OBJECT_ID, Object_Type, className, property_usage)
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .OBJECT, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .OBJECT, &prop_info, "get_"+fieldName, "set_"+fieldName)
 }
 
 /*
@@ -1607,8 +1604,8 @@ Export_Dictionary_type :: proc(className_SN: ^GDE.StringName, $classStruct: type
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     //Hint string should be formatted as "int;String"
     hint_string: string = fmt.aprint(GDE.GDTypes_strings[Dictionary_Type.key_type], GDE.GDTypes_strings[Dictionary_Type.value_type], sep=";")
@@ -1617,7 +1614,7 @@ Export_Dictionary_type :: proc(className_SN: ^GDE.StringName, $classStruct: type
     prop_info:= Make_Property_Full(.DICTIONARY, fieldName, .DICTIONARY_TYPE, hint_string, className, property_usage)
     delete(hint_string)
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .DICTIONARY, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .DICTIONARY, &prop_info, "get_"+fieldName, "set_"+fieldName)
 }
 
 //used in the GDTypes_strings array in order to get the stringified value of the type.
@@ -1679,14 +1676,14 @@ Export_Dictionary_Localizable_String :: proc(className_SN: ^GDE.StringName, $cla
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.DICTIONARY, fieldName, .LOCALIZABLE_STRING, "", className, property_usage)
     
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .DICTIONARY, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .DICTIONARY, &prop_info, "get_"+fieldName, "set_"+fieldName)
 }
 
 
@@ -1726,8 +1723,8 @@ Export_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, 
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    //bindMethod(&className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
 
     hint_string:string
     //Godot does not know how to handle a seperator when there's nothing after it.
@@ -1743,7 +1740,7 @@ Export_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, 
     delete(hint_string)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
+    Bind_Property(className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
 }
 
 
@@ -1784,7 +1781,6 @@ Export_Callable_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStru
         context = runtime.default_context()
         return value
     }
-    //get(callable)
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
     get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
@@ -1794,7 +1790,7 @@ Export_Callable_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStru
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     hint_string:string
     //Godot does not know how to handle a seperator when there's nothing after it.
@@ -1810,7 +1806,7 @@ Export_Callable_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStru
     delete(hint_string)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
+    Bind_Property(className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
 }
 
 /*
@@ -1871,7 +1867,7 @@ Export_proc_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: 
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     hint_string:string
     //Godot does not know how to handle a seperator when there's nothing after it.
@@ -1887,7 +1883,7 @@ Export_proc_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: 
     delete(hint_string)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
+    Bind_Property(className_SN, fieldName, .CALLABLE, &prop_info, "get_"+fieldName, "")
     return gdCallable
 }
 
