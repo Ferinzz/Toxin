@@ -45,7 +45,7 @@ GDW_class_deets :: struct {
     vtable: rawptr,
     GDClass_StringName: ^GDE.StringName,
     SN : GDE.StringName,
-    binder: proc "c"(),
+    binder: proc(),
 }
 
 /*
