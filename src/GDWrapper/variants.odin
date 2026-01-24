@@ -654,7 +654,57 @@ GDArray : struct {
     is_read_only: GDE.PtrBuiltInMethod,
 }
 
-GDDictionary : struct {
+GDDictionary_Methods : struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+NodePath_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+Callable_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+    is_custom: GDE.PtrBuiltInMethod,
+    get_object: GDE.PtrBuiltInMethod,
+}
+
+Signal_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedByteArray_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedInt32Array_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedInt64Array_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedFloat32Array_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedFloat64Array_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedVector2Array_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedVector3Array_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedVector4Array_Methods: struct {
+    Destroy: GDE.PtrDestructor,
+}
+
+PackedColorArray_Methods: struct {
     Destroy: GDE.PtrDestructor,
 }
 

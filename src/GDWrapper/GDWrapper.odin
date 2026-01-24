@@ -111,11 +111,6 @@ Print: struct {
     WarningWithMessage: GDE.InterfacePrintWarningWithMessage,
 }
 
-Callable: struct {
-    is_custom: GDE.PtrBuiltInMethod,
-    get_object: GDE.PtrBuiltInMethod,
-}
-
 operator: struct {
     stringNameEqual: GDE.PtrOperatorEvaluator,
 }
@@ -202,11 +197,11 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 
 
     StringConstruct.stringNameNewLatin(&MethodName, "is_custom", false)
-    Callable.is_custom = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 3918633141)
+    Callable_Methods.is_custom = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 3918633141)
     Destructors.stringNameDestructor(&MethodName)
     
     StringConstruct.stringNameNewLatin(&MethodName, "get_object", false)
-    Callable.get_object = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 4008621732)
+    Callable_Methods.get_object = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 4008621732)
     Destructors.stringNameDestructor(&MethodName)
     
 
@@ -510,8 +505,20 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //dictionary_SN: GDE.StringName
     //StringConstruct.stringNameNewString(&dictionary_SN, "")
 
-    GDDictionary.Destroy = variant_get_ptr_destructor(.DICTIONARY)
-
+    GDDictionary_Methods.Destroy = variant_get_ptr_destructor(.DICTIONARY)
+    NodePath_Methods.Destroy = variant_get_ptr_destructor(.NODE_PATH)
+    Callable_Methods.Destroy = variant_get_ptr_destructor(.CALLABLE)
+    Signal_Methods.Destroy = variant_get_ptr_destructor(.SIGNAL)
+    PackedByteArray_Methods.Destroy = variant_get_ptr_destructor(.PACKED_BYTE_ARRAY)
+    PackedInt32Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_INT32_ARRAY)
+    PackedInt64Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_INT64_ARRAY)
+    PackedFloat32Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_FLOAT32_ARRAY)
+    PackedFloat64Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_FLOAT64_ARRAY)
+    PackedVector2Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_VECTOR2_ARRAY)
+    PackedVector3Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_VECTOR3_ARRAY)
+    PackedVector4Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_VECTOR4_ARRAY)
+    PackedColorArray_Methods.Destroy = variant_get_ptr_destructor(.PACKED_COLOR_ARRAY)
+    
     //constructor.variantNil = cast(GDE.InterfaceVariantNewNil)gdAPI.p_get_proc_address("variant_new_nil")
     //constructor.variantToVec2Constructor = cast(GDE.TypeFromVariantConstructorFunc)gdAPI.getVariantToTypeConstuctor(.VECTOR2)
 

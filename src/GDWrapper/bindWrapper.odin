@@ -67,6 +67,57 @@ Export :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: 
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
+        when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
+            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
+            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Array {
+            GDArray.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedStringArray {
+            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Dictionary {
+            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.NodePath {
+            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Callable {
+            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Signal {
+            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedByteArray {
+            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedInt32Array {
+            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedInt64Array {
+            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedFloat32Array {
+            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedFloat64Array {
+            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedVector2Array {
+            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedVector3Array {
+            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedVector4Array {
+            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedColorArray {
+            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -394,8 +445,7 @@ Range :: enum {
   degrees, //limit the range to degrees (-360 to 360)
 }
 
-//Warning untested, does not properly clear the array before being set by Godot.
-//Memory leaky!!
+//Warning untested!!
 Export_Ranged_Array :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Array,
                         loc:= #caller_location)
@@ -408,7 +458,58 @@ Export_Ranged_Array :: proc(className_SN: ^GDE.StringName, $classStruct: typeid,
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
-
+        
+        when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
+            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
+            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Array {
+            GDArray.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedStringArray {
+            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Dictionary {
+            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.NodePath {
+            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Callable {
+            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.Signal {
+            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedByteArray {
+            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedInt32Array {
+            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedInt64Array {
+            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedFloat32Array {
+            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedFloat64Array {
+            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedVector2Array {
+            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedVector3Array {
+            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedVector4Array {
+            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == GDE.PackedColorArray {
+            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        }
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -791,7 +892,7 @@ Export_Int_As_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid,
     }
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: GDE.Int) {
         context = runtime.default_context()
-        ////fmt.println(godotValue)
+        
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
     }
     /*
