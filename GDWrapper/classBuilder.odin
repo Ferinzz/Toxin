@@ -16,7 +16,7 @@ import "core:bytes"
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
 Class_Container :: struct ($Class_Structure: typeid) {
-    self: GDE.ObjectPtr, //Keep as first so it can be trivially cast.
+    self: GDE.Object, //Keep as first so it can be trivially cast.
     using class: Class_Structure,
 }
 
@@ -45,7 +45,7 @@ GDW_class_deets :: struct {
     vtable: rawptr,
     GDClass_StringName: ^GDE.StringName,
     SN : GDE.StringName,
-    binder: proc(),
+    binder: proc "c"(),
 }
 
 /*
@@ -183,13 +183,13 @@ Register :: proc(self: ^GDW_class_deets, init_level: GDE.InitializationLevel, ge
     StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
 
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
-    class_info: GDE.ClassCreationInfo4 = {
-        icon_path = &stringraw,
-        create_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr)create,
-        free_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr))destroy,
-        class_userdata = self,
-        get_virtual_func = get_v_table,
-    }
+    
+    class_info: GDE.ClassCreationInfo4 = class_info
+        class_info.icon_path = &stringraw
+        class_info.create_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDE.Bool) -> GDE.ObjectPtr)create
+        class_info.free_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr))destroy
+        class_info.class_userdata = self
+        class_info.get_virtual_func = get_v_table
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     StringConstruct.stringNameNewString(&self.SN, type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name)

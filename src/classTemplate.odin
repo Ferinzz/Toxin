@@ -8,8 +8,7 @@ import "core:fmt"
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
-//Godot will be passing us a pointer to this struct during callbacks.
-//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
+//During callbacks Godot will be passing us a pointer to a Class_Container struct using this struct.
 THIS_CLASS_NAME :: struct {
     someProperty: GDE.Int,
 }
