@@ -138,30 +138,30 @@ Destroy :: proc "c" (p_class_userdata: ^GDW_class_deets, p_instance: GDE.ClassIn
 */
 make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type_is_pointer(T) != true {
 
-      intermediate:=  proc "c" (p_class_userdata: ^GDW_class_deets, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (virtual: GDE.ClassCallVirtual) {
-          context = runtime.default_context()
-          arg:= cast(^T)p_class_userdata.vtable
-
-          when sics.type_is_subtype_of(sics.type_elem_type(T), Node_v_table){
-              virtual = cast(GDE.ClassCallVirtual)Return_Node_Virtuals(arg^, nil, p_name, p_hash)
-              if virtual != nil do return virtual
-          }
-          when sics.type_is_subtype_of(sics.type_elem_type(T), CanvasItem_v_table){
-              virtual = cast(GDE.ClassCallVirtual)Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
-              if virtual != nil do return virtual
-          }
-          when sics.type_is_subtype_of(sics.type_elem_type(T), CollisionObject2D_v_table){
-              virtual = cast(GDE.ClassCallVirtual)Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
-              if virtual != nil do return virtual
-          }
-          when sics.type_is_subtype_of(sics.type_elem_type(T), Texture2D_v_table){
-              virtual = cast(GDE.ClassCallVirtual)Return_texture_Virtuals(arg^, nil, p_name, p_hash)
-              if virtual != nil do return virtual
-          }
-  
-  
-          return virtual
-      }
+    intermediate:=  proc "c" (p_class_userdata: ^GDW_class_deets, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (GDE.ClassCallVirtual) {
+        context = runtime.default_context()
+        arg:= cast(^T)p_class_userdata.vtable
+        //Will exit early if there is a match on the value.
+        ok:bool=false
+        virtual:rawptr=nil
+        when sics.type_is_subtype_of(sics.type_elem_type(T), Node_v_table){
+            virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        }
+        when sics.type_is_subtype_of(sics.type_elem_type(T), CanvasItem_v_table){
+            virtual, ok = Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        }
+        when sics.type_is_subtype_of(sics.type_elem_type(T), CollisionObject2D_v_table){
+            virtual, ok = Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        }
+        when sics.type_is_subtype_of(sics.type_elem_type(T), Texture2D_v_table){
+            virtual, ok = Return_texture_Virtuals(arg^, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        }
+        return cast(GDE.ClassCallVirtual)virtual
+    }
     return cast(GDE.ClassGetVirtual2)intermediate
 }
 

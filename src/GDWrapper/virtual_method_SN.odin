@@ -19,7 +19,7 @@ Method_Callback_Compare_Info :: struct {
     p_hash: u32,
 };
 
-//If you're just doing a node, use this as the type for VTable directly.
+//Use this if you're just doing a Node, as it's the type for VTable directly.
 //This is the base of everything else, don't need to pass it through its own special vtable group.
 Node_v_table:: struct (T: typeid) {
     _physics_process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^GDE.float}),
@@ -36,15 +36,30 @@ Node_v_table:: struct (T: typeid) {
     _unhandled_key_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
 }
 
-Texture2D_Virtuals_Info: struct {
-    _is_pixel_opaque: Method_Callback_Compare_Info,
-    _get_height: Method_Callback_Compare_Info,
-    _get_width: Method_Callback_Compare_Info,
-    _draw_txt2D: Method_Callback_Compare_Info,
+vCanvasItem:: struct(T: typeid){
+    using vNode: Node_v_table(T),
+    using vCanvasItem: CanvasItem_v_table(T),
+}
+
+vNode2D:: struct(T: typeid) {
+    using vNode: Node_v_table(T),
+    using vCanvasItem: CanvasItem_v_table(T),
+}
+
+vCollisionObject2D:: struct ($T: typeid) {
+    using vNode: Node_v_table(T),
+    using vCanvasItem: CanvasItem_v_table(T),
+    using vCollisionObject2D: CollisionObject2D_v_table(T),
 }
 
 vTexture2D:: struct ($T: typeid) {
-    using vNode: Texture2D_v_table(T),
+    using vTexture: Texture2D_v_table(T),
+    using vNode: Node_v_table(T),
+    using vCanvasItem: CanvasItem_v_table(T),
+}
+
+vControl:: struct($T: typeid) {
+    using vControl: Control_v_table(T),
     using vNode: Node_v_table(T),
     using vCanvasItem: CanvasItem_v_table(T),
 }
@@ -55,6 +70,37 @@ Texture2D_v_table:: struct (T: typeid){
     _get_height: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
     _get_width: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
     _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^GDE.RID, rect: ^GDE.Rec2, src_rect: ^GDE.Rec2, modulate: ^GDE.Color, transpose: ^GDE.Bool, clip_uv: ^GDE.Bool }),
+}
+
+CanvasItem_v_table:: struct(T: typeid){
+    _draw: proc "c" (self: ^T),
+}
+
+//"inherits": "CanvasItem",
+Control_v_table:: struct(T: typeid) {
+    _has_point: proc "c" (self: ^Class_Container(T), using p_args: ^struct{point: ^GDE.Vector2}),
+    _structured_text_parser: proc "c" (self: ^Class_Container(T), using p_args: ^struct{args: ^GDE.Array, text: ^GDE.gdstring}),
+    _get_minimum_size: proc "c" (self: ^Class_Container(T)),
+    _get_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
+    _get_drag_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
+    _can_drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
+    _drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
+    _make_custom_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{for_text: ^GDE.gdstring}),
+    _accessibility_get_contextual_info: proc "c" (self: ^Class_Container(T)),
+    _get_accessibility_container_name: proc "c" (self: ^Class_Container(T),  using p_args: ^struct{node: ^GDE.Node}),
+    _gui_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{event: ^^InputEvent}),
+};
+
+//"inherits": "Node",
+CanvasItem_Virtuals_Info: struct {
+    _draw: Method_Callback_Compare_Info,
+}
+
+Texture2D_Virtuals_Info: struct {
+    _is_pixel_opaque: Method_Callback_Compare_Info,
+    _get_height: Method_Callback_Compare_Info,
+    _get_width: Method_Callback_Compare_Info,
+    _draw_txt2D: Method_Callback_Compare_Info,
 }
 
 //"inherits": "Object",
@@ -72,46 +118,6 @@ Node_Virtuals_Info: struct {
     _unhandled_input: Method_Callback_Compare_Info,
     _unhandled_key_input: Method_Callback_Compare_Info,
 }
-
-vCanvasItem:: struct(T: typeid){
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-}
-
-vNode2D:: struct(T: typeid) {
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-}
-
-CanvasItem_v_table:: struct(T: typeid){
-    _draw: proc "c" (self: ^T),
-}
-
-//"inherits": "Node",
-CanvasItem_Virtuals_Info: struct {
-    _draw: Method_Callback_Compare_Info,
-}
-
-vControl:: struct($T: typeid) {
-    using vControl: Control_v_table(T),
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-}
-
-//"inherits": "CanvasItem",
-Control_v_table:: struct(T: typeid) {
-    _has_point: proc "c" (self: ^Class_Container(T), using p_args: ^struct{point: ^GDE.Vector2}),
-    _structured_text_parser: proc "c" (self: ^Class_Container(T), using p_args: ^struct{args: ^GDE.Array, text: ^GDE.gdstring}),
-    _get_minimum_size: proc "c" (self: ^Class_Container(T)),
-    _get_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
-    _get_drag_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
-    _can_drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
-    _drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
-    _make_custom_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{for_text: ^GDE.gdstring}),
-    _accessibility_get_contextual_info: proc "c" (self: ^Class_Container(T)),
-    _get_accessibility_container_name: proc "c" (self: ^Class_Container(T),  using p_args: ^struct{node: ^GDE.Node}),
-    _gui_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{event: ^^InputEvent}),
-};
 
 //"inherits": "CanvasItem",
 Control_Virtual_Info: struct {
@@ -202,12 +208,6 @@ CollisionObject2D_Virtual_Info: struct {
     _mouse_shape_exit: Method_Callback_Compare_Info,
 };
 
-vCollisionObject2D:: struct ($T: typeid) {
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-    using vCollisionObject2D: CollisionObject2D_v_table(T),
-}
-
 //"inherits": "Node2D",
 CollisionObject2D_v_table:: struct (T: typeid){
     _input_event: proc "c" (self: ^Class_Container(T), using args: ^struct {viewport: ^GDE.ObjectPtr, event: ^^InputEvent, shape_idx: ^GDE.Int}),
@@ -221,99 +221,99 @@ CollisionObject3D_Virtual_Info: struct {
 };
 
 
-Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
+Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
 
         using Node_Virtuals_Info
         
         if (stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
-            return cast(rawptr)class_v_table._ready
+            return cast(rawptr)class_v_table._ready, true
         }
         if (stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
-            return cast(rawptr)class_v_table._process
+            return cast(rawptr)class_v_table._process, true
         }
         if (stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
-            return cast(rawptr)class_v_table._physics_process
+            return cast(rawptr)class_v_table._physics_process, true
         }
         if (stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
-            return cast(rawptr)class_v_table._input
+            return cast(rawptr)class_v_table._input, true
         }
         if (stringNameCompare(p_name, &_enter_tree.name) && p_hash == _enter_tree.p_hash) {
-            return cast(rawptr)class_v_table._enter_tree
+            return cast(rawptr)class_v_table._enter_tree, true
         }
         if (stringNameCompare(p_name, &_exit_tree.name) && p_hash == _exit_tree.p_hash) {
-            return cast(rawptr)class_v_table._exit_tree
+            return cast(rawptr)class_v_table._exit_tree, true
         }
         if (stringNameCompare(p_name, &_get_accessibility_configuration_warnings.name) && p_hash == _get_accessibility_configuration_warnings.p_hash) {
-            return cast(rawptr)class_v_table._get_accessibility_configuration_warnings
+            return cast(rawptr)class_v_table._get_accessibility_configuration_warnings, true
         }
         if (stringNameCompare(p_name, &_get_configuration_warnings.name) && p_hash == _get_configuration_warnings.p_hash) {
-            return cast(rawptr)class_v_table._get_configuration_warnings
+            return cast(rawptr)class_v_table._get_configuration_warnings, true
         }
         if (stringNameCompare(p_name, &_get_focused_accessibility_element.name) && p_hash == _get_focused_accessibility_element.p_hash) {
-            return cast(rawptr)class_v_table._get_focused_accessibility_element
+            return cast(rawptr)class_v_table._get_focused_accessibility_element, true
         }
         if (stringNameCompare(p_name, &_shortcut_input.name) && p_hash == _shortcut_input.p_hash) {
-            return cast(rawptr)class_v_table._shortcut_input
+            return cast(rawptr)class_v_table._shortcut_input, true
         }
         if (stringNameCompare(p_name, &_unhandled_input.name) && p_hash == _unhandled_input.p_hash) {
-            return cast(rawptr)class_v_table._unhandled_input
+            return cast(rawptr)class_v_table._unhandled_input, true
         }
         if (stringNameCompare(p_name, &_unhandled_key_input.name) && p_hash == _unhandled_key_input.p_hash) {
-            return cast(rawptr)class_v_table._unhandled_key_input
+            return cast(rawptr)class_v_table._unhandled_key_input, true
         }
 
-    return nil
+    return nil, false
 }
 
-Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
+Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
         if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
-            return cast(rawptr)class_v_table._draw
+            return cast(rawptr)class_v_table._draw, true
         }
-    return nil
+    return nil, false
 }
 
 
-Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
+Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
         if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
-            return cast(rawptr)class_v_table._draw
+            return cast(rawptr)class_v_table._draw, true
         }
-    return nil
+    return nil, false
 }
 
-Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
+Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
         using CollisionObject2D_Virtual_Info
         if (stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
             if class_v_table._input_event == nil do return nil
-            return cast(rawptr)class_v_table._input_event
+            return cast(rawptr)class_v_table._input_event, true
         }
-    return nil
+    return nil, false
 }
 
-Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
+Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
         using Texture2D_Virtuals_Info
         if (stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
             if class_v_table._is_pixel_opaque == nil do return nil
-            return cast(rawptr)class_v_table._is_pixel_opaque
+            return cast(rawptr)class_v_table._is_pixel_opaque, true
         }
         if (stringNameCompare(p_name, &_get_height.name) && p_hash == _get_height.p_hash) {
             if class_v_table._get_height == nil do return nil
-            return cast(rawptr)class_v_table._get_height
+            return cast(rawptr)class_v_table._get_height, true
         }
         if (stringNameCompare(p_name, &_get_width.name) && p_hash == _get_width.p_hash) {
             if class_v_table._get_width == nil do return nil
-            return cast(rawptr)class_v_table._get_width
+            return cast(rawptr)class_v_table._get_width, true
         }
         if (stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
             if class_v_table._draw_txt2D == nil do return nil
-            return cast(rawptr)class_v_table._draw_txt2D
+            return cast(rawptr)class_v_table._draw_txt2D, true
         }
         if (stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
             if class_v_table._draw_txt2D == nil do return nil
-            return cast(rawptr)class_v_table._draw_txt2D
+            return cast(rawptr)class_v_table._draw_txt2D, true
         }
-    return nil
+    return nil, false
 }
 
 init_Node_Virtuals_Info :: proc () {
@@ -534,55 +534,3 @@ init_CollisionObject3D_Virtual_Info :: proc () {
 //AudioEffectInstance to implement your own custom AudioEffects for use on the Audio bus.
 //VisualShaderNodeCustom If you want to have your own custom Node in the VisualShader tool.
 //GLTFDocumentExtension The code that converts to/from a Godot scene can be intercepted at arbitrary points by GLTFDocumentExtension classes. This allows for custom data to be stored in the glTF file or for custom data to be converted to/from Godot nodes.
-
-
-table_lookup :: proc(v_table: $T/Node_v_table, p_instance: GDE.ClassInstancePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) -> bool {
-    switch virtualProcPtr {
-        case rawptr(v_table._physics_process):
-            virtualProcCall(v_table._physics_process, p_instance, p_args, r_ret)
-            return true
-        case rawptr(v_table._process):
-            virtualProcCall(v_table._process, p_instance, p_args, r_ret)
-            return true
-        case rawptr(v_table._input):
-            virtualProcCall(v_table._input, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._ready):
-            virtualProcCall(v_table._ready, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._enter_tree):
-            virtualProcCall(v_table._enter_tree, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._exit_tree):
-            virtualProcCall(v_table._exit_tree, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._get_accessibility_configuration_warnings):
-            virtualProcCall(v_table._get_accessibility_configuration_warnings, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._get_configuration_warnings):
-            virtualProcCall(v_table._get_configuration_warnings, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._get_focused_accessibility_element):
-            virtualProcCall(v_table._get_focused_accessibility_element, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._shortcut_input):
-            virtualProcCall(v_table._shortcut_input, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._unhandled_input):
-            virtualProcCall(v_table._unhandled_input, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._unhandled_key_input):
-            virtualProcCall(v_table._unhandled_key_input, p_instance, p_args, r_ret)
-            //return true
-    }
-    return false
-}
-
-
-
-draw_table_lookup :: proc(v_table: $T/CanvasItem_v_table, p_instance: GDE.ClassInstancePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
-    switch virtualProcPtr {
-        case rawptr(v_table._draw):
-            virtualProcCall(v_table._draw, p_instance, p_args, r_ret)
-    }
-}
