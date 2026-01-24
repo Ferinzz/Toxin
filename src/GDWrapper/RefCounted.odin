@@ -19,24 +19,21 @@ import "base:runtime"
     //*****Methods*****\\
     //*****************\\
     
-init_ref :: proc "c" (RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Bool){
-    context = runtime.default_context()
+init_ref :: proc(RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Bool){
     @(static)INIT_REF: GDE.MethodBindPtr
     if INIT_REF == nil do INIT_REF = classDBGetMethodBind("RefCounted", "init_ref", 2240911060)
     assert(RefCounted != nil)
     gdAPI.objectMethodBindPtrCall(INIT_REF, RefCounted, nil, r_ret)
 }
 
-reference :: proc "c" (RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Bool){
-    context = runtime.default_context()
+reference :: proc(RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Bool){
     @(static)REFERENCE: GDE.MethodBindPtr
     if REFERENCE == nil do REFERENCE = classDBGetMethodBind("RefCounted", "reference", 2240911060)
     assert(RefCounted != nil)
     gdAPI.objectMethodBindPtrCall(REFERENCE, RefCounted, nil, r_ret)
 }
 
-unreference :: proc "c" (RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Bool){
-    context = runtime.default_context()
+unreference :: proc(RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Bool){
     @(static)UNREFERENCE: GDE.MethodBindPtr
     if UNREFERENCE == nil do UNREFERENCE = classDBGetMethodBind("RefCounted", "unreference", 2240911060)
     assert(RefCounted != nil)
@@ -44,8 +41,7 @@ unreference :: proc "c" (RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Bool){
 }
 
 //r_ret max_size is i32.
-get_reference_count :: proc "c" (RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Int){
-    context = runtime.default_context()
+get_reference_count :: proc(RefCounted: GDE.ObjectPtr, r_ret: ^GDE.Int){
     @(static)GET_REF_COUNT: GDE.MethodBindPtr
     if GET_REF_COUNT == nil do GET_REF_COUNT = classDBGetMethodBind("RefCounted", "get_reference_count", 3905245786)
     assert(RefCounted != nil)

@@ -31,8 +31,7 @@ EmitError :: enum {
 * arg_name: The names of each argument. These will be displayed in documentation section.
 */
 @(deprecated="Use register_Signal instead")
-registerSignal :: proc "c" (className, signalName: cstring, arg_type: []GDE.VariantType, arg_name: []cstring, $count: int, loc := #caller_location) {
-    context = runtime.default_context()
+registerSignal :: proc(className, signalName: cstring, arg_type: []GDE.VariantType, arg_name: []cstring, $count: int, loc := #caller_location) {
 
     assert(len(arg_type) == count, "registerSignal: Length of []arg_type list does not match with count provided", loc)
     assert(len(arg_name) == count, "registerSignal: Length of []arg_name list does not match with count provided", loc)
@@ -69,10 +68,9 @@ registerSignal :: proc "c" (className, signalName: cstring, arg_type: []GDE.Vari
 * Error: The error if there is any.
 */
 @(require_results)
-register_Signal :: #force_inline proc "c" (className: string, $arg_type: typeid, loc := #caller_location) -> ( signalName_SN: GDE.StringName, Error: EmitError)
+register_Signal :: #force_inline proc(className: string, $arg_type: typeid, loc := #caller_location) -> ( signalName_SN: GDE.StringName, Error: EmitError)
     where (sics.type_is_struct(arg_type) && sics.type_is_named(arg_type))
     {
-    context = runtime.default_context()
     
     className_SN: GDE.StringName
     //signalName_SN: GDE.StringName
@@ -140,8 +138,7 @@ a pointer to the object, the StringName of the signal and class_name, a Callable
 * Careful when retrieving the object of a refCounted object. It will check the signals for refCount instead of the object itself... ie get_scene_tree
 */
 @require_results
-connectToSignal :: proc "c" (callback: ^GDE.CallableCustomInfo2, signal_name: ^GDE.StringName, object: GDE.ObjectPtr, flags: GDE.ConnectFlags = nil, loc := #caller_location) -> GDE.CallErrorType {
-    context = runtime.default_context()
+connectToSignal :: proc(callback: ^GDE.CallableCustomInfo2, signal_name: ^GDE.StringName, object: GDE.ObjectPtr, flags: GDE.ConnectFlags = nil, loc := #caller_location) -> GDE.CallErrorType {
 
     //Keep a static pointer to the connect_to method. If not already assigned, fetch it.
     @(static) connect_to: GDE.MethodBindPtr
@@ -156,7 +153,6 @@ connectToSignal :: proc "c" (callback: ^GDE.CallableCustomInfo2, signal_name: ^G
         Destructors.stringNameDestructor(&sn_SceneTree)
         Destructors.stringNameDestructor(&Connect)
     }
-
     
     myCallable:GDE.Callable
     Methods.makeCallable(&myCallable, callback)

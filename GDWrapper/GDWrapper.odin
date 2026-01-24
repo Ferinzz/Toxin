@@ -562,7 +562,6 @@ classCreate :: proc "c" () {
 * 
 */
 classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
-    //context = runtime.default_context()
 
     native_class_name: GDE.StringName;
     method_name: GDE.StringName;
@@ -582,7 +581,6 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #
 
 
 classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
-    //context = runtime.default_context()
     assert(className != nil, "ClassName is nil. Did you accidentally free this early?")
     method_name: GDE.StringName;
     
@@ -599,8 +597,7 @@ classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, h
 
 
 
-destructProperty :: proc "c" (info: ^GDE.PropertyInfo) {
-    context = runtime.default_context()
+destructProperty :: proc(info: ^GDE.PropertyInfo) {
     
     if info.name != nil{
         Destructors.stringNameDestructor(info.name)
@@ -658,8 +655,7 @@ stringNameCompare_cstring :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value:
 }
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare_string :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: string) -> (ret: bool) {
-    context = runtime.default_context()
+stringNameCompare_string :: proc(l_value: GDE.ConstStringNamePtr, r_value: string) -> (ret: bool) {
     r_name: GDE.StringName
     StringConstruct.stringNameNewString(&r_name, r_value)
     defer(Destructors.stringNameDestructor(&r_name))
@@ -670,15 +666,14 @@ stringNameCompare_string :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: 
 }
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare_StringName :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: GDE.StringNamePtr) -> (ret: bool) {
+stringNameCompare_StringName :: proc(l_value: GDE.ConstStringNamePtr, r_value: GDE.StringNamePtr) -> (ret: bool) {
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
     operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)r_value, &ret)
     return ret
 }
 
-StringNameGetBasename :: proc "c" (StringName: ^GDE.StringName, r_String: ^GDE.gdstring) {
-    context = runtime.default_context()
+StringNameGetBasename :: proc(StringName: ^GDE.StringName, r_String: ^GDE.gdstring) {
     @(static)stringNameGetBasename: GDE.PtrBuiltInMethod
     if stringNameGetBasename == nil {
         ClassDB:GDE.StringName
@@ -687,11 +682,10 @@ StringNameGetBasename :: proc "c" (StringName: ^GDE.StringName, r_String: ^GDE.g
         stringNameGetBasename = gdAPI.builtinMethodBindCall(.STRING_NAME, &ClassDB, 3942272618)
     }
     stringNameGetBasename(StringName, nil, r_String, 0)
-    
+
 }
 
-GDStringJoin :: proc "c" (packedString: ^GDE.PackedStringArray, r_String: ^GDE.gdstring) {
-    context = runtime.default_context()
+GDStringJoin :: proc(packedString: ^GDE.PackedStringArray, r_String: ^GDE.gdstring) {
     @(static)gdStringJoin: GDE.PtrBuiltInMethod
     if gdStringJoin == nil {
         ClassDB:GDE.StringName
@@ -828,8 +822,7 @@ get_current_scene :: proc "c" () -> GDE.ObjectPtr {
 //*******Object*******\\
 //********************\\
 
-callDeferred :: proc "c" (Object: ^GDE.Object, method: ^GDE.StringName, r_Variant: ^GDE.Variant) {
-    context = runtime.default_context()
+callDeferred :: proc(Object: ^GDE.Object, method: ^GDE.StringName, r_Variant: ^GDE.Variant) {
     @(static)CallDeferred: GDE.MethodBindPtr
     if CallDeferred == nil {
         ClassDB:GDE.StringName
@@ -846,8 +839,7 @@ callDeferred :: proc "c" (Object: ^GDE.Object, method: ^GDE.StringName, r_Varian
 }
 
 
-ObjectToString :: proc "c" (Object: ^GDE.Object, r_String: ^GDE.gdstring) {
-    context = runtime.default_context()
+ObjectToString :: proc(Object: ^GDE.Object, r_String: ^GDE.gdstring) {
     @(static)objectToString: GDE.MethodBindPtr
     if objectToString == nil {
         ClassDB:GDE.StringName
@@ -875,16 +867,14 @@ getInputSingleton :: proc "c" () {
 
 }
 
-isAnythingPressed :: proc "c" (r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isAnythingPressed :: proc(r_bool: ^GDE.Bool) {
     @(static)IsAnythingPressed: GDE.MethodBindPtr
     if IsAnythingPressed == nil do IsAnythingPressed = classDBGetMethodBind2(&Input_SN, "is_anything_pressed", 36873697)
 
     assert(InputSingleton != nil)
     gdAPI.objectMethodBindPtrCall(IsAnythingPressed, InputSingleton, nil, r_bool)
 }
-isKeyPressed :: proc "c" (keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     @(static)IsKeyPressed: GDE.MethodBindPtr
     if IsKeyPressed == nil do IsKeyPressed = classDBGetMethodBind2(&Input_SN, "is_anything_pressed", 36873697)
 
@@ -892,8 +882,7 @@ isKeyPressed :: proc "c" (keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     args:= [1]rawptr { keycode }
     gdAPI.objectMethodBindPtrCall(IsKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
-isPhysicalKeyPressed :: proc "c" (keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isPhysicalKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     @(static)IsPhysicalKeyPressed: GDE.MethodBindPtr
     if IsPhysicalKeyPressed == nil do IsPhysicalKeyPressed = classDBGetMethodBind2(&Input_SN, "is_physical_key_pressed", 1938909964)
 
@@ -901,8 +890,7 @@ isPhysicalKeyPressed :: proc "c" (keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     args:= [1]rawptr { keycode }
     gdAPI.objectMethodBindPtrCall(IsPhysicalKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
-isLabelKeyPressed :: proc "c" (keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isLabelKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     @(static)IsLabelKeyPressed: GDE.MethodBindPtr
     if IsLabelKeyPressed == nil do IsLabelKeyPressed = classDBGetMethodBind2(&Input_SN, "is_key_label_pressed", 1938909964)
 
@@ -910,8 +898,7 @@ isLabelKeyPressed :: proc "c" (keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     args:= [1]rawptr { keycode }
     gdAPI.objectMethodBindPtrCall(IsLabelKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
-isMouseButtonPressed :: proc "c" (button: ^GDE.MouseButton, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isMouseButtonPressed :: proc(button: ^GDE.MouseButton, r_bool: ^GDE.Bool) {
     @(static)IsMouseButtonPressed: GDE.MethodBindPtr
     if IsMouseButtonPressed == nil do IsMouseButtonPressed = classDBGetMethodBind2(&Input_SN, "is_mouse_button_pressed", 1821097125)
 
@@ -919,32 +906,28 @@ isMouseButtonPressed :: proc "c" (button: ^GDE.MouseButton, r_bool: ^GDE.Bool) {
     args:= [1]rawptr {button}
     gdAPI.objectMethodBindPtrCall(IsMouseButtonPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
-getLastMouseVelocity :: proc "c" (r_v2Pos: ^GDE.Vector2) {
-    context = runtime.default_context()
+getLastMouseVelocity :: proc(r_v2Pos: ^GDE.Vector2) {
     @(static)GetLastMouseVelocity: GDE.MethodBindPtr
     if GetLastMouseVelocity == nil do GetLastMouseVelocity = classDBGetMethodBind2(&Input_SN, "get_last_mouse_velocity", 1497962370)
 
     assert(InputSingleton != nil)
     gdAPI.objectMethodBindPtrCall(GetLastMouseVelocity, InputSingleton, nil, r_v2Pos)
 }
-getLastMouseScreenVelocity :: proc "c" (r_v2Pos: ^GDE.Vector2) {
-    context = runtime.default_context()
+getLastMouseScreenVelocity :: proc(r_v2Pos: ^GDE.Vector2) {
     @(static)GetLastMouseScreenVelocity: GDE.MethodBindPtr
     if GetLastMouseScreenVelocity == nil do GetLastMouseScreenVelocity = classDBGetMethodBind2(&Input_SN, "get_last_mouse_screen_velocity", 1497962370)
 
     assert(InputSingleton != nil)
     gdAPI.objectMethodBindPtrCall(GetLastMouseScreenVelocity, InputSingleton, nil, r_v2Pos)
 }
-getMouseButtonMask :: proc "c" (r_mouseMask: ^GDE.MouseButtonMask) {
-    context = runtime.default_context()
+getMouseButtonMask :: proc(r_mouseMask: ^GDE.MouseButtonMask) {
     @(static)GetLastMouseScreenVelocity: GDE.MethodBindPtr
     if GetLastMouseScreenVelocity == nil do GetLastMouseScreenVelocity = classDBGetMethodBind2(&Input_SN, "get_mouse_button_mask", 2512161324)
 
     assert(InputSingleton != nil)
     gdAPI.objectMethodBindPtrCall(GetLastMouseScreenVelocity, InputSingleton, nil, r_mouseMask)
 }
-setMouseMode :: proc "c" (mouseMode: ^GDE.MouseMode) {
-    context = runtime.default_context()
+setMouseMode :: proc(mouseMode: ^GDE.MouseMode) {
     @(static)SetMouseMode: GDE.MethodBindPtr
     if SetMouseMode == nil do SetMouseMode = classDBGetMethodBind2(&Input_SN, "set_mouse_mode", 2228490894)
 
@@ -952,8 +935,7 @@ setMouseMode :: proc "c" (mouseMode: ^GDE.MouseMode) {
     args:= [1]rawptr {mouseMode}
     gdAPI.objectMethodBindPtrCall(SetMouseMode, InputSingleton, raw_data(args[:]), nil)
 }
-getMouseMode :: proc "c" (r_mouseMode: ^GDE.MouseMode) {
-    context = runtime.default_context()
+getMouseMode :: proc(r_mouseMode: ^GDE.MouseMode) {
     @(static)GetMouseMode: GDE.MethodBindPtr
     if GetMouseMode == nil do GetMouseMode = classDBGetMethodBind2(&Input_SN, "get_mouse_mode", 965286182)
 
@@ -961,8 +943,7 @@ getMouseMode :: proc "c" (r_mouseMode: ^GDE.MouseMode) {
     gdAPI.objectMethodBindPtrCall(GetMouseMode, InputSingleton, nil, r_mouseMode)
 }
 //Default of exact_match should be false
-isActionPressed :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isActionPressed :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
     @(static)IsActionPressed: GDE.MethodBindPtr
     if IsActionPressed == nil do IsActionPressed = classDBGetMethodBind2(&Input_SN, "is_action_pressed", 1558498928)
 
@@ -970,8 +951,7 @@ isActionPressed :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool, r_
     args:= [2]rawptr {action, exact_match}
     gdAPI.objectMethodBindPtrCall(IsActionPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
-isActionJustPressed :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isActionJustPressed :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
     @(static)IsActionJustPressed: GDE.MethodBindPtr
     if IsActionJustPressed == nil do IsActionJustPressed = classDBGetMethodBind2(&Input_SN, "is_action_just_pressed", 1558498928)
 
@@ -979,8 +959,7 @@ isActionJustPressed :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool
     args:= [2]rawptr {action, exact_match}
     gdAPI.objectMethodBindPtrCall(IsActionJustPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
-isActionJustReleased :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
-    context = runtime.default_context()
+isActionJustReleased :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
     @(static)IsActionJustReleased: GDE.MethodBindPtr
     if IsActionJustReleased == nil do IsActionJustReleased = classDBGetMethodBind2(&Input_SN, "is_action_just_released", 1558498928)
 
@@ -988,8 +967,7 @@ isActionJustReleased :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Boo
     args:= [2]rawptr {action, exact_match}
     gdAPI.objectMethodBindPtrCall(IsActionJustReleased, InputSingleton, raw_data(args[:]), r_bool)
 }
-getActionStrength :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.float) {
-    context = runtime.default_context()
+getActionStrength :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.float) {
     @(static)GetActionStrength: GDE.MethodBindPtr
     if GetActionStrength == nil do GetActionStrength = classDBGetMethodBind2(&Input_SN, "get_action_strength", 801543509)
 
@@ -997,8 +975,7 @@ getActionStrength :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool, 
     args:= [2]rawptr {action, exact_match}
     gdAPI.objectMethodBindPtrCall(GetActionStrength, InputSingleton, raw_data(args[:]), r_bool)
 }
-getActionRawStrength :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.float) {
-    context = runtime.default_context()
+getActionRawStrength :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.float) {
     @(static)GetActionRawStrength: GDE.MethodBindPtr
     if GetActionRawStrength == nil do GetActionRawStrength = classDBGetMethodBind2(&Input_SN, "get_action_raw_strength", 801543509)
 
@@ -1007,8 +984,7 @@ getActionRawStrength :: proc "c" (action: ^GDE.StringName, exact_match: ^GDE.Boo
     gdAPI.objectMethodBindPtrCall(GetActionRawStrength, InputSingleton, raw_data(args[:]), r_bool)
 }
 //Strength default 1
-actionPress :: proc "c" (action: ^GDE.StringName, strength: ^GDE.float) {
-    context = runtime.default_context()
+actionPress :: proc(action: ^GDE.StringName, strength: ^GDE.float) {
     @(static)ActionPress: GDE.MethodBindPtr
     if ActionPress == nil do ActionPress = classDBGetMethodBind2(&Input_SN, "action_press", 743155724)
 
@@ -1016,8 +992,7 @@ actionPress :: proc "c" (action: ^GDE.StringName, strength: ^GDE.float) {
     args:= [2]rawptr {action, strength}
     gdAPI.objectMethodBindPtrCall(ActionPress, InputSingleton, raw_data(args[:]), nil)
 }
-actionRelease :: proc "c" (action: ^GDE.StringName) {
-    context = runtime.default_context()
+actionRelease :: proc(action: ^GDE.StringName) {
     @(static)ActionRelease: GDE.MethodBindPtr
     if ActionRelease == nil do ActionRelease = classDBGetMethodBind2(&Input_SN, "action_release", 3304788590)
 
@@ -1025,8 +1000,7 @@ actionRelease :: proc "c" (action: ^GDE.StringName) {
     args:= [1]rawptr {action}
     gdAPI.objectMethodBindPtrCall(ActionRelease, InputSingleton, raw_data(args[:]), nil)
 }
-warpMouse :: proc "c" (position: ^GDE.Vector2) {
-    context = runtime.default_context()
+warpMouse :: proc(position: ^GDE.Vector2) {
     @(static)WarpMouse: GDE.MethodBindPtr
     if WarpMouse == nil do WarpMouse = classDBGetMethodBind2(&Input_SN, "warp_mouse", 743155724)
 
@@ -1034,8 +1008,7 @@ warpMouse :: proc "c" (position: ^GDE.Vector2) {
     args:= [1]rawptr {position}
     gdAPI.objectMethodBindPtrCall(WarpMouse, InputSingleton, raw_data(args[:]), nil)
 }
-setDefaultCursorShape :: proc "c" (cursorShape: ^GDE.CursorShape) {
-    context = runtime.default_context()
+setDefaultCursorShape :: proc(cursorShape: ^GDE.CursorShape) {
     @(static)SetDefaultCursorShape: GDE.MethodBindPtr
     if SetDefaultCursorShape == nil do SetDefaultCursorShape = classDBGetMethodBind2(&Input_SN, "set_default_cursor_shape", 2124816902)
 
@@ -1043,8 +1016,7 @@ setDefaultCursorShape :: proc "c" (cursorShape: ^GDE.CursorShape) {
     args:= [1]rawptr {cursorShape}
     gdAPI.objectMethodBindPtrCall(SetDefaultCursorShape, InputSingleton, raw_data(args[:]), nil)
 }
-getCurrentCursorShape :: proc "c" (r_cursorShape: ^GDE.CursorShape) {
-    context = runtime.default_context()
+getCurrentCursorShape :: proc(r_cursorShape: ^GDE.CursorShape) {
     @(static)GetCurrentCursorShape: GDE.MethodBindPtr
     if GetCurrentCursorShape == nil do GetCurrentCursorShape = classDBGetMethodBind2(&Input_SN, "get_current_cursor_shape", 3455658929)
 
@@ -1055,8 +1027,7 @@ getCurrentCursorShape :: proc "c" (r_cursorShape: ^GDE.CursorShape) {
 
 //image should be a resource object
 //hotspot default is {0, 0}
-setCustomMouseCursor :: proc "c" (image: ^GDE.ObjectPtr, shape: ^GDE.CursorShape, hotspot: ^GDE.Vector2) {
-    context = runtime.default_context()
+setCustomMouseCursor :: proc(image: ^GDE.ObjectPtr, shape: ^GDE.CursorShape, hotspot: ^GDE.Vector2) {
     @(static)SetCustomMouseCursor: GDE.MethodBindPtr
     if SetCustomMouseCursor == nil do SetCustomMouseCursor = classDBGetMethodBind2(&Input_SN, "set_custom_mouse_cursor", 703945977)
 
@@ -1066,8 +1037,7 @@ setCustomMouseCursor :: proc "c" (image: ^GDE.ObjectPtr, shape: ^GDE.CursorShape
 }
 
 //TODO: figure out what this does. The name isn't very clear considering there's no return value.
-parseInputEvent :: proc "c" (event: ^GDE.ObjectPtr) {
-    context = runtime.default_context()
+parseInputEvent :: proc(event: ^GDE.ObjectPtr) {
     @(static)ParseInputEvent: GDE.MethodBindPtr
     if ParseInputEvent == nil do ParseInputEvent = classDBGetMethodBind2(&Input_SN, "parse_input_event", 3754044979)
 
@@ -1075,8 +1045,7 @@ parseInputEvent :: proc "c" (event: ^GDE.ObjectPtr) {
     args:= [1]rawptr {event}
     gdAPI.objectMethodBindPtrCall(ParseInputEvent, InputSingleton, raw_data(args[:]), nil)
 }
-setUseAccumulatedInput :: proc "c" (enable: ^GDE.Bool) {
-    context = runtime.default_context()
+setUseAccumulatedInput :: proc(enable: ^GDE.Bool) {
     @(static)SetUseAccumulatedInput: GDE.MethodBindPtr
     if SetUseAccumulatedInput == nil do SetUseAccumulatedInput = classDBGetMethodBind2(&Input_SN, "set_use_accumulated_input", 2586408642)
 
@@ -1084,16 +1053,14 @@ setUseAccumulatedInput :: proc "c" (enable: ^GDE.Bool) {
     args:= [1]rawptr {enable}
     gdAPI.objectMethodBindPtrCall(SetUseAccumulatedInput, InputSingleton, raw_data(args[:]), nil)
 }
-isUsingAccumulatedInput :: proc "c" (r_enable: ^GDE.Bool) {
-    context = runtime.default_context()
+isUsingAccumulatedInput :: proc(r_enable: ^GDE.Bool) {
     @(static)IsUsingAccumulatedInput: GDE.MethodBindPtr
     if IsUsingAccumulatedInput == nil do IsUsingAccumulatedInput = classDBGetMethodBind2(&Input_SN, "is_using_accumulated_input", 2240911060)
 
     assert(InputSingleton != nil)
     gdAPI.objectMethodBindPtrCall(IsUsingAccumulatedInput, InputSingleton, nil, r_enable)
 }
-FlushBufferedEvents :: proc "c" () {
-    context = runtime.default_context()
+FlushBufferedEvents :: proc() {
     @(static)FlushBufferedEvents: GDE.MethodBindPtr
     if FlushBufferedEvents == nil do FlushBufferedEvents = classDBGetMethodBind2(&Input_SN, "flush_buffered_events", 3218959716)
 
@@ -1120,7 +1087,7 @@ cache_mode :: enum GDE.Int {
 //The Resource only works with files that have already been imported into the engine.
 //If you just have a file sitting in the directory and haven't interacted with the editor to import it 
 //use Image->load() instead. Jesus fucking christ it took a while to find confirmation about this.
-loadResource :: proc "c" (path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectPtr{
+loadResource :: proc(path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectPtr{
     @(static)load: GDE.MethodBindPtr
 
     if load == nil {
@@ -1295,8 +1262,7 @@ getViewport :: proc(object: GDE.ObjectPtr, r_viewport: ^GDE.ObjectPtr) {
 * Force_readable_name default should be false if you care about performance. True if you really want a name to be visible to the user.
 * Use internalMode to hide children from the user. But make sure to set include_internal to true when calling get_children.
 */
-addChild :: proc "c" (parent: GDE.ObjectPtr, child: ^GDE.ObjectPtr, force_readable_name: GDE.Bool = false, internalMode: InternalMode = .INTERNAL_MODE_DISABLED) {
-    context = runtime.default_context()
+addChild :: proc(parent: GDE.ObjectPtr, child: ^GDE.ObjectPtr, force_readable_name: GDE.Bool = false, internalMode: InternalMode = .INTERNAL_MODE_DISABLED) {
 
     force_readable_name:= force_readable_name
     internalMode:= internalMode
@@ -1356,8 +1322,7 @@ freeRenderRID :: proc(resourceId: ^GDE.RID, renderServer: GDE.ObjectPtr = Render
 
 
 //Virtual. Can use as a class callback function if you want to extend the class.
-getAlloweredSizeFlagsHorizontal :: proc "c" (container: GDE.ObjectPtr, r_sizeFlags: ^GDE.PackedInt32Array) {
-    context = runtime.default_context()
+getAlloweredSizeFlagsHorizontal :: proc(container: GDE.ObjectPtr, r_sizeFlags: ^GDE.PackedInt32Array) {
     @(static)GetAlloweredSizeFlagsHorizontal: GDE.MethodBindPtr
     if GetAlloweredSizeFlagsHorizontal ==nil do GetAlloweredSizeFlagsHorizontal = classDBGetMethodBind("Container", "_get_allowed_size_flags_horizontal", 1930428628)
     
@@ -1366,7 +1331,6 @@ getAlloweredSizeFlagsHorizontal :: proc "c" (container: GDE.ObjectPtr, r_sizeFla
 }
 
 getAlloweredSizeFlagsVertical :: proc(container: GDE.ObjectPtr, r_sizeFlags: ^GDE.PackedInt32Array) {
-    context = runtime.default_context()
     @(static)GetAlloweredSizeFlagsVertical: GDE.MethodBindPtr
     if GetAlloweredSizeFlagsVertical ==nil do GetAlloweredSizeFlagsVertical = classDBGetMethodBind("Container", "_get_allowed_size_flags_vertical", 1930428628)
     
@@ -1374,7 +1338,6 @@ getAlloweredSizeFlagsVertical :: proc(container: GDE.ObjectPtr, r_sizeFlags: ^GD
     gdAPI.objectMethodBindPtrCall(GetAlloweredSizeFlagsVertical, container, nil, r_sizeFlags)
 }
 queueSort :: proc(container: GDE.ObjectPtr) {
-    context = runtime.default_context()
     @(static)QueueSort: GDE.MethodBindPtr
     if QueueSort ==nil do QueueSort = classDBGetMethodBind("Container", "queue_sort", 3218959716)
     
@@ -1383,7 +1346,6 @@ queueSort :: proc(container: GDE.ObjectPtr) {
     gdAPI.objectMethodBindPtrCall(QueueSort, container, nil, nil)
 }
 fitChildInRect :: proc(container: GDE.ObjectPtr, child: ^GDE.ObjectPtr, rect: ^GDE.Rec2) {
-    context = runtime.default_context()
     @(static)FitChildInRect: GDE.MethodBindPtr
     if FitChildInRect ==nil do FitChildInRect = classDBGetMethodBind("Container", "fit_child_in_rect", 1993438598)
     
@@ -1521,8 +1483,9 @@ bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Varian
 */
 virtualProcCall :: #force_inline proc (procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
                             where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 11){
-    
+
     classStructPtr::sics.type_proc_parameter_type(T, 0)
+    
     argcount :: sics.type_proc_parameter_count(T)
 
     when argcount == 1 {

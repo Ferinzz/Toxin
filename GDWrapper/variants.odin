@@ -661,7 +661,6 @@ GDDictionary : struct {
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.
 fromvariant :: proc(variant: GDE.VariantPtr, $T: typeid) -> T {
-    //context = runtime.default_context()
     ret: T
 
     when T == bool || T == GDE.Bool{
@@ -857,7 +856,6 @@ fromvariant :: proc(variant: GDE.VariantPtr, $T: typeid) -> T {
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.
 tovariant :: proc(variant: rawptr, $T: typeid) -> GDE.Variant {
-    context = runtime.default_context()
     ret: GDE.Variant
 
     when T == bool || T == GDE.Bool {

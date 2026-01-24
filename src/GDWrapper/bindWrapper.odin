@@ -35,14 +35,13 @@ import "core:strconv"
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-Export :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export :: proc($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
                         where sics.type_has_field(classStruct, fieldName)
     {
-    context = godotContext
 
     //I don't want you to have to learn the VariantType enum and pass that in. Instead, I will do a lookup based on the type.
     //If the type shown in Godot does not align with the Odin type, the order of GDE.VariantType enum and GDE.GDTypes need to be validated again.
@@ -56,6 +55,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
+    
     className := fmt.aprint(type_info_of(classStruct))
     defer delete(className)
 
@@ -70,7 +70,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
 
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -82,7 +82,7 @@ Export :: proc "c" ($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -207,7 +207,7 @@ Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
             Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         }
@@ -224,7 +224,7 @@ Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -428,7 +428,7 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
 
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -440,7 +440,7 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -570,7 +570,7 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
                         //This field should only be of type GDE.float.
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.float))
     {
-    context = godotContext
+    context = runtime.default_context()
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
@@ -622,7 +622,7 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type GDE.Array.
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Array))
     {
-    context = godotContext
+    context = runtime.default_context()
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
@@ -698,7 +698,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type GDE.float or GDE.Int.
                         where (sics.type_has_field(classStruct, fieldName) && ((sics.type_field_type(classStruct, fieldName) == GDE.Int) || (sics.type_is_pointer(sics.type_field_type(classStruct, fieldName)))))
     {
-    context = godotContext
+    context = runtime.default_context()
     //get the index from the GDTypes array, this is equivalent to the VariantType enum placement.
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
@@ -720,7 +720,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     //This makes a really long line, but that's how generics go.
     //Since I can't cast from int to a pointer I swapped to doing a transmute instead.
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
-        context = godotContext
+        context = runtime.default_context()
 
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(godotValue)
     }
@@ -732,7 +732,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -755,7 +755,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
 /*
 * Prevents the editor from allowing a user to set the Alpha channel.
 */
-Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_Color_No_Alpha :: proc($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -763,7 +763,6 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type GDE.Color.
                         where (sics.type_has_field(classStruct, fieldName) && (sics.type_field_type(classStruct, fieldName) == GDE.Color))
     {
-    context = godotContext
     
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
@@ -788,7 +787,7 @@ Export_Color_No_Alpha :: proc "c" ($classStruct: typeid, $fieldName: string,
 * Export a bit_set. Can be backed by an enum or not. If not backed by an enum will label fields as numbers from lower to upper.
 
 */
-Export_Int_As_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_Int_As_Flags :: proc($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -796,7 +795,6 @@ Export_Int_As_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type bit_set.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
 {
-    context = godotContext
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
     
@@ -842,7 +840,7 @@ Export_Int_As_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
         prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, property_usage)
     }
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
-        context = godotContext
+        context = runtime.default_context()
         ////fmt.println(godotValue)
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
     }
@@ -854,7 +852,7 @@ Export_Int_As_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
-        context = godotContext
+        context = runtime.default_context()
 
         //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
         return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
@@ -888,13 +886,12 @@ Export_Int_As_Flags :: proc "c" ($classStruct: typeid, $fieldName: string,
 * name: the name of the bit_set that you will use in GDScript
 * outbit_set: bit_set which you are exporting for use in Godot.
 */
-Export_Flags :: proc "c" ($classStruct: typeid, $outbit_set: typeid,
+Export_Flags :: proc($classStruct: typeid, $outbit_set: typeid,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
                         //This field should only be of type bit_set.
                         where (sics.type_is_struct(classStruct) && sics.type_is_bit_set(outbit_set) && sics.type_is_named(outbit_set))
 {
-    context = godotContext
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
@@ -949,7 +946,7 @@ Export_Flags :: proc "c" ($classStruct: typeid, $outbit_set: typeid,
 * fieldName: the name that matches the field in the struct as you've named it.
 * layer: Specify the type of layer that is being exported to Godot.
 */
-Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Layer_Type,
+Export_Layers :: proc($classStruct: typeid, $fieldName: string, layer: Layer_Type,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -957,7 +954,6 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
                         //This field should only be of type bit_set.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_is_bit_set(sics.type_field_type(classStruct, fieldName)))
 {
-    context = godotContext
     OType : typeid = sics.type_field_type(classStruct, fieldName)
     
     
@@ -985,7 +981,7 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, property_usage)
 
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
-        context = godotContext
+        context = runtime.default_context()
         ////fmt.println(godotValue)
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
     }
@@ -997,7 +993,7 @@ Export_Layers :: proc "c" ($classStruct: typeid, $fieldName: string, layer: Laye
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
-        context = godotContext
+        context = runtime.default_context()
 
         //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
         return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
@@ -1052,7 +1048,7 @@ Layer_Type :: enum {
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 * type: an enum (PATH_TYPES) representing the types of paths. Specify which kind of path you are exporting.
 */
-Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
+Export_Path :: proc($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
                         filters:string="",
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1061,7 +1057,6 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
                         //This field should only be of type Path.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Path)
     {
-    context = godotContext
     
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
@@ -1090,7 +1085,7 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
 
         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
@@ -1103,7 +1098,7 @@ Export_Path :: proc "c" ($classStruct: typeid, $fieldName: string, type: PATH_TY
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1143,7 +1138,7 @@ PATH_TYPES :: enum {
 * classStruct: struct representing the class that has the property being exported
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 */
-Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_Locale :: proc($classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -1151,7 +1146,6 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type Locale_ID.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Locale_ID)
     {
-    context = godotContext
     
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
@@ -1169,7 +1163,7 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
 
         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
@@ -1182,7 +1176,7 @@ Export_Locale :: proc "c" ($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1214,7 +1208,7 @@ Locale_ID :: GDE.gdstring
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 * property_usage: consider setting this as a secret.
 */
-Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_Password :: proc($classStruct: typeid, $fieldName: string,
                         $property_usage: GDE.PropertyUsageFlagsbits,
                         placeholder_text: Placeholder_Text= "password",
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1223,7 +1217,6 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
                         //This field should only be of type Password.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Password)
     {
-    context = godotContext
     
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
@@ -1241,7 +1234,7 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
 
         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
@@ -1254,7 +1247,7 @@ Export_Password :: proc "c" ($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1285,7 +1278,7 @@ Password :: GDE.gdstring
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 * placeholder_text: Placeholder_Text(string) of the text to show as a placeholder.
 */
-Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: string,
+Export_With_Placeholder_Text :: proc($classStruct: typeid, $fieldName: string,
                         placeholder_text: Placeholder_Text,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1294,7 +1287,6 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
                         //This field should only be of type GDE.gdstring.
                         where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == GDE.gdstring)
     {
-    context = godotContext
     
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
@@ -1310,7 +1302,7 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
 
         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
@@ -1323,7 +1315,7 @@ Export_With_Placeholder_Text :: proc "c" ($classStruct: typeid, $fieldName: stri
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1392,7 +1384,7 @@ Export_Input_Name :: proc($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
             Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         }
@@ -1409,7 +1401,7 @@ Export_Input_Name :: proc($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1478,7 +1470,7 @@ Export_Multiline :: proc($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
         
          Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
@@ -1491,7 +1483,7 @@ Export_Multiline :: proc($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1542,7 +1534,7 @@ Export_Node_Path_Types :: proc($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
         
         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
@@ -1555,7 +1547,7 @@ Export_Node_Path_Types :: proc($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1612,7 +1604,7 @@ Export_Object_ID :: proc($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = godotContext
+        context = runtime.default_context()
         
         if (cast(^GDE.Object)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName))).proxy != nil {
             //Destructors.ObjectDestroy(cast(^GDE.Object)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
@@ -1627,7 +1619,7 @@ Export_Object_ID :: proc($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1678,7 +1670,7 @@ Export_Dictionary_type :: proc($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Dictionary) {
-        context = godotContext
+        context = runtime.default_context()
         
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
         if (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName))).id != nil {    
@@ -1694,7 +1686,7 @@ Export_Dictionary_type :: proc($classStruct: typeid, $fieldName: string,
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> GDE.Dictionary {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1754,7 +1746,7 @@ Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: s
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Dictionary) {
-        context = godotContext
+        context = runtime.default_context()
         
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
         if (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName))).id != nil {    
@@ -1770,7 +1762,7 @@ Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: s
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> GDE.Dictionary {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1821,7 +1813,7 @@ Export_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
     defer(Destructors.stringNameDestructor(&className_SN))
 
     get :: proc "c" (p_classData: ^classStruct) -> GDE.Callable {
-        context = godotContext
+        context = runtime.default_context()
         return (cast(^GDE.Callable)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1892,7 +1884,7 @@ Export_Callable_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
     }
 
     get :: proc "c" (p_classData: ^classStruct) -> GDE.Callable {
-        context = godotContext
+        context = runtime.default_context()
         return value
     }
     //get(callable)
@@ -2047,7 +2039,7 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^classStruct, godotValue: field_Type) {
-        context = godotContext
+        context = runtime.default_context()
         ////fmt.println(godotValue)
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -2059,7 +2051,7 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
     */
     
     get :: proc "c" (p_classData: ^classStruct) -> field_Type {
-        context = godotContext
+        context = runtime.default_context()
 
         //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
         return (cast(^field_Type)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
@@ -2073,7 +2065,7 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
     return get, set
 }
 
-make_property :: #force_inline proc "c" (type: GDE.VariantType, name: string) -> GDE.PropertyInfo {
+make_property :: #force_inline proc(type: GDE.VariantType, name: string) -> GDE.PropertyInfo {
     return makePropertyFull_string(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
 }
 
@@ -2084,8 +2076,8 @@ Make_Property_Full :: proc {
 
 //TODO : See if I really need to malloc these variables or if that's just something for C to do.
 //Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
-makePropertyFull_cstring :: #force_inline proc "c" (type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-    context = runtime.default_context()
+makePropertyFull_cstring :: #force_inline proc(type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+    
 
     prop_name:= new(GDE.StringName)
     StringConstruct.stringNameNewLatin(prop_name, name, false)
@@ -2108,8 +2100,8 @@ makePropertyFull_cstring :: #force_inline proc "c" (type: GDE.VariantType, name:
     return info
 }
 
-makePropertyFull_string :: #force_inline proc "c" (type: GDE.VariantType, name: string, hint: GDE.PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-    context = runtime.default_context()
+makePropertyFull_string :: #force_inline proc(type: GDE.VariantType, name: string, hint: GDE.PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+    
 
     prop_name:= new(GDE.StringName)
     StringConstruct.stringNameNewUTF8andLen(prop_name, raw_data(name), i64(len(name)))
@@ -2144,14 +2136,13 @@ makePropertyFull_string :: #force_inline proc "c" (type: GDE.VariantType, name: 
 * argNames: Names of the arguments; shown in the Editor
 * This creates 2 functions.
 */
-bindMethod :: #force_inline proc "c" (className: ^GDE.StringName, methodName: string,
+bindMethod :: #force_inline proc(className: ^GDE.StringName, methodName: string,
                         function: $T,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         argNames: ..string, loc:= #caller_location
                         )
                         where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
     {
-    context = godotContext
 
     methodStringName: GDE.StringName
     StringConstruct.stringNameNewUTF8andLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
@@ -2284,8 +2275,7 @@ Bind_Property_Prop_Info :: #force_inline proc(className: ^GDE.StringName, name: 
 * Provide their names as cstrings. Check the makePublic function for a general workflow.
 * Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
 */
-bindProperty :: #force_inline proc "c" (className: ^GDE.StringName, name: string, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
-    //context = godotContext
+bindProperty :: #force_inline proc(className: ^GDE.StringName, name: string, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
     
     info: GDE.PropertyInfo = make_property(type, name)
 
@@ -2307,15 +2297,14 @@ bindProperty :: #force_inline proc "c" (className: ^GDE.StringName, name: string
 
 //This is messy. I dunno if this is better or worse than having 7 individual functions... Lots of casting. Eh.
 //This is also using some really old functions for the variant conversion since they provide a return instead of needing an empty pointer.
-bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) -> (GDE.ClassMethodPtrCall, GDE.ClassMethodCall) {
-    context = godotContext
+bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE.ClassMethodPtrCall, GDE.ClassMethodCall) {
     argcount:: sics.type_proc_parameter_count(P)
     argT0 :: sics.type_proc_parameter_type(P, 0)
     
 
     when argcount == 1 {
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2327,7 +2316,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -2356,7 +2345,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         when argcount == 2 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2368,7 +2357,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -2403,7 +2392,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         when argcount == 3 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2415,7 +2404,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -2449,7 +2438,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         when argcount == 4 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2462,7 +2451,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -2496,7 +2485,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         when argcount == 5 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2509,7 +2498,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -2545,7 +2534,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         when argcount == 6 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2559,7 +2548,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
                 
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -2595,7 +2584,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         when argcount == 7 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2609,7 +2598,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
@@ -2647,7 +2636,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         when argcount == 8 {
         
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = godotContext
+            context = runtime.default_context()
 
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
@@ -2661,7 +2650,7 @@ bindNoReturn2 :: #force_inline proc "c" (function: $P, loc:=#caller_location) ->
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
-            context = godotContext
+            context = runtime.default_context()
             if p_argument_count < argcount-1 {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
                 r_error.expected = argcount
