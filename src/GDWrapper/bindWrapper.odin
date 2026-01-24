@@ -55,9 +55,10 @@ Export :: proc($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
+    //type_info_of(classStruct).variant.(runtime.Type_Info_Struct).name
     
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
+    //defer delete(className)
 
     className_SN: GDE.StringName
     StringConstruct.stringNameNewString(&className_SN, className)
@@ -69,25 +70,25 @@ Export :: proc($classStruct: typeid, $fieldName: string,
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -206,30 +207,30 @@ Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
-            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
-            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -427,25 +428,25 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -719,25 +720,25 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     //Since I can't cast from int to a pointer I swapped to doing a transmute instead.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: GDE.Int) {
         context = runtime.default_context()
 
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Int {
         context = runtime.default_context()
-        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^GDE.Int)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -839,27 +840,27 @@ Export_Int_As_Flags :: proc($classStruct: typeid, $fieldName: string,
         //Defines the information about the variable properties in a way Godot's editor understands
         prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, property_usage)
     }
-    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: GDE.Int) {
         context = runtime.default_context()
         ////fmt.println(godotValue)
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Int {
         context = runtime.default_context()
 
-        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^GDE.Int)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -980,27 +981,27 @@ Export_Layers :: proc($classStruct: typeid, $fieldName: string, layer: Layer_Typ
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, property_usage)
 
-    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Int) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: GDE.Int) {
         context = runtime.default_context()
         ////fmt.println(godotValue)
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Int {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Int {
         context = runtime.default_context()
 
-        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^GDE.Int)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^GDE.Int)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1084,26 +1085,26 @@ Export_Path :: proc($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1162,26 +1163,26 @@ Export_Locale :: proc($classStruct: typeid, $fieldName: string,
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1233,26 +1234,26 @@ Export_Password :: proc($classStruct: typeid, $fieldName: string,
     
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1301,26 +1302,26 @@ Export_With_Placeholder_Text :: proc($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1383,30 +1384,30 @@ Export_Input_Name :: proc($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
-            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
-            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1469,26 +1470,26 @@ Export_Multiline :: proc($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1533,26 +1534,26 @@ Export_Node_Path_Types :: proc($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1603,28 +1604,28 @@ Export_Object_ID :: proc($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: sics.type_field_type(classStruct, fieldName)) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-        if (cast(^GDE.Object)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName))).proxy != nil {
-            //Destructors.ObjectDestroy(cast(^GDE.Object)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+        if (cast(^GDE.Object)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName))).proxy != nil {
+            //Destructors.ObjectDestroy(cast(^GDE.Object)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> sics.type_field_type(classStruct, fieldName) {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1669,29 +1670,29 @@ Export_Dictionary_type :: proc($classStruct: typeid, $fieldName: string,
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Dictionary) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: GDE.Dictionary) {
         context = runtime.default_context()
         
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
-        if (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName))).id != nil {    
-            GDDictionary.Destroy(cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+        if (cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName))).id != nil {    
+            GDDictionary.Destroy(cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = GDE.Dictionary(godotValue)
+        (cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = GDE.Dictionary(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Dictionary {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Dictionary {
         context = runtime.default_context()
-        return (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1745,29 +1746,29 @@ Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: s
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: GDE.Dictionary) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: GDE.Dictionary) {
         context = runtime.default_context()
         
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
-        if (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName))).id != nil {    
-            GDDictionary.Destroy(cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))
+        if (cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName))).id != nil {    
+            GDDictionary.Destroy(cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = GDE.Dictionary(godotValue)
+        (cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = GDE.Dictionary(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Dictionary {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Dictionary {
         context = runtime.default_context()
-        return (cast(^GDE.Dictionary)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^GDE.Dictionary)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1812,13 +1813,13 @@ Export_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
     StringConstruct.stringNameNewString(&className_SN, className)
     defer(Destructors.stringNameDestructor(&className_SN))
 
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Callable {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Callable {
         context = runtime.default_context()
-        return (cast(^GDE.Callable)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^GDE.Callable)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1883,14 +1884,14 @@ Export_Callable_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
         assert(false, "This happens when this Export is called with the same const values multiple times.")
     }
 
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Callable {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Callable {
         context = runtime.default_context()
         return value
     }
     //get(callable)
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -1963,7 +1964,7 @@ Export_proc_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string, $ca
         assert(false, "This happens when this Export is called with the same struct and name multiple times.")
     }
 
-    get :: proc "c" (p_classData: ^classStruct) -> GDE.Callable {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Callable {
         context = runtime.default_context()
         //callable()
         return value
@@ -1971,7 +1972,7 @@ Export_proc_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string, $ca
     //get(callable)
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
@@ -2035,30 +2036,30 @@ bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^GDE.Strin
     Bind_Property_Prop_Info(className_SN, fieldName, variant_type, prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 }
 
-make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: typeid, $fieldName: string) -> (getter: proc "c" (p_classData: ^classStruct) -> field_Type, setter: proc "c" (p_classData: ^classStruct, godotValue: field_Type)) {
+make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: typeid, $fieldName: string) -> (getter: proc "c" (p_classData: ^Class_Container(classStruct)) -> field_Type, setter: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: field_Type)) {
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^classStruct, godotValue: field_Type) {
+    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: field_Type) {
         context = runtime.default_context()
         ////fmt.println(godotValue)
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^classStruct, valuePassedInByGodot: GDE.Int) {
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: GDE.Int) {
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type GDE.Int
     }
     */
     
-    get :: proc "c" (p_classData: ^classStruct) -> field_Type {
+    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> field_Type {
         context = runtime.default_context()
 
-        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^field_Type)(cast(uintptr)p_classData+offset_of_by_string(classStruct, fieldName)))^
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^field_Type)(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace GDE.Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^classStruct) -> GDE.Int {
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> GDE.Int {
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
