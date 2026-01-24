@@ -222,7 +222,6 @@ CollisionObject3D_Virtual_Info: struct {
 
 
 Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    //context = runtime.default_context()
 
         using Node_Virtuals_Info
         
@@ -267,7 +266,6 @@ Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
 }
 
 Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
         using CanvasItem_Virtuals_Info
         if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw
@@ -277,7 +275,6 @@ Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name
 
 
 Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
         using CanvasItem_Virtuals_Info
         if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw
@@ -286,7 +283,6 @@ Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
 }
 
 Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
         using CollisionObject2D_Virtual_Info
         if (stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
             if class_v_table._input_event == nil do return nil
@@ -296,7 +292,6 @@ Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr
 }
 
 Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
         using Texture2D_Virtuals_Info
         if (stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
             if class_v_table._is_pixel_opaque == nil do return nil
