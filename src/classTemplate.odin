@@ -50,7 +50,7 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
 //******************************\\
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
-THIS_CLASS_NAME_Export :: proc(){
+THIS_CLASS_NAME_Export :: proc(className: ^GDE.StringName){
 
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {GDE.ClassMethodFlags.NORMAL}, "arg1")
@@ -58,7 +58,7 @@ THIS_CLASS_NAME_Export :: proc(){
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
-    GDW.Export(THIS_CLASS_NAME, "someProperty")
+    GDW.Export(className, THIS_CLASS_NAME, "someProperty")
 }
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).

@@ -45,7 +45,7 @@ GDW_class_deets :: struct {
     vtable: rawptr,
     GDClass_StringName: ^GDE.StringName,
     SN : GDE.StringName,
-    binder: proc "c"(),
+    binder: proc(className: ^GDE.StringName),
 }
 
 /*
@@ -199,7 +199,7 @@ Register :: proc(self: ^GDW_class_deets, init_level: GDE.InitializationLevel, ge
     gdAPI.classDBRegisterExtClass(Library, &self.SN, self.GDClass_StringName, &class_info)
     
     if self.binder != nil {
-        self.binder()
+        self.binder(&self.SN)
     }
 }
 

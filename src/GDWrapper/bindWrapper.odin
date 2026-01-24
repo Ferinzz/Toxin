@@ -35,7 +35,7 @@ import "core:strconv"
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-Export :: proc($classStruct: typeid, $fieldName: string,
+Export :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -55,14 +55,8 @@ Export :: proc($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    //type_info_of(classStruct).variant.(runtime.Type_Info_Struct).name
-    
-    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
-    //defer delete(className)
-
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    //type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
+    className:= type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = make_property(variant_type, fieldName)
@@ -95,11 +89,11 @@ Export :: proc($classStruct: typeid, $fieldName: string,
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(&className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(&className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(&className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
     destructProperty(&info)
 }
@@ -121,7 +115,7 @@ Export :: proc($classStruct: typeid, $fieldName: string,
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
-Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
+Export_Int_As_Enum :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR, .CLASS_IS_ENUM },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -159,11 +153,7 @@ Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
 
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), className, property_usage)
@@ -185,7 +175,7 @@ Export_Int_As_Enum :: proc ($classStruct: typeid, $fieldName: string,
 * If you will not need the strings on Odin's side at runtime, the strings used for this export's init can be deleted.
 * If you change the spelling of a field, you will still need to update all of the *.tscn files to update to the new value.
 */
-Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
+Export_String_As_Enum :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         options: []string,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR, .CLASS_IS_ENUM },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -196,11 +186,7 @@ Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     res, err:=strings.join(options[:], ",")
     defer(delete(res))
@@ -262,16 +248,12 @@ Export_String_As_Enum :: proc($classStruct: typeid, $fieldName: string,
 * classStruct: Used to get the name of your class.
 * out_enum: the enum you want to export as constants.
 */
-Export_Enum :: #force_inline proc($classStruct: typeid, $out_enum: typeid) \
+Export_Enum :: #force_inline proc(className_SN: ^GDE.StringName, $classStruct: typeid, $out_enum: typeid) \
         where(sics.type_is_enum(out_enum) && sics.type_is_struct(classStruct))
     {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
     
     enumName:= fmt.aprint(type_info_of(out_enum))
     defer delete(enumName)
@@ -300,7 +282,7 @@ Export_Enum :: #force_inline proc($classStruct: typeid, $out_enum: typeid) \
 * SPECIAL WARNING the export functions themselves do not validate the ranges set.
 * If this will be used by a function in GDScript you will need to add validation for the ranges, as GDScript does not respect this.
 */
-Export_Range :: proc ($classStruct: typeid, $fieldName: string,
+Export_Range :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Num,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -312,11 +294,7 @@ Export_Range :: proc ($classStruct: typeid, $fieldName: string,
 
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     output: string
 
@@ -418,7 +396,7 @@ Range :: enum {
 
 //Warning untested, does not properly clear the array before being set by Godot.
 //Memory leaky!!
-Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
+Export_Ranged_Array :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Array,
                         loc:= #caller_location)
                         where sics.type_has_field(classStruct, fieldName)
@@ -450,12 +428,7 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
         return yourclassstruct.someField^ //someField is of type GDE.Int
     }
     */
-    
-    className := fmt.caprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
@@ -520,8 +493,7 @@ Export_Ranged_Array :: proc ($classStruct: typeid, $fieldName: string,
         output = strings.concatenate({min,",",max,",",step})
     }
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, GDE.PROPERTY_USAGE_DEFAULT)
@@ -578,12 +550,8 @@ Export_Easing :: proc "c" ($classStruct: typeid, $fieldName: string, easing: Eas
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, property_usage)
@@ -632,12 +600,8 @@ Export_Array_Type :: proc "c" ($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
 
     hints: [dynamic]string
 
@@ -706,12 +670,8 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_IS_POINTER, "", className, property_usage)
@@ -756,7 +716,7 @@ Export_Pointer :: proc "c" ($classStruct: typeid, $fieldName: string,
 /*
 * Prevents the editor from allowing a user to set the Alpha channel.
 */
-Export_Color_No_Alpha :: proc($classStruct: typeid, $fieldName: string,
+Export_Color_No_Alpha :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -770,12 +730,8 @@ Export_Color_No_Alpha :: proc($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, property_usage)
     
@@ -788,7 +744,7 @@ Export_Color_No_Alpha :: proc($classStruct: typeid, $fieldName: string,
 * Export a bit_set. Can be backed by an enum or not. If not backed by an enum will label fields as numbers from lower to upper.
 
 */
-Export_Int_As_Flags :: proc($classStruct: typeid, $fieldName: string,
+Export_Int_As_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -801,12 +757,8 @@ Export_Int_As_Flags :: proc($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
 
     //UTF-8 array which will be used as the propertyHint's hint string.
     output:[dynamic]u8
@@ -887,7 +839,7 @@ Export_Int_As_Flags :: proc($classStruct: typeid, $fieldName: string,
 * name: the name of the bit_set that you will use in GDScript
 * outbit_set: bit_set which you are exporting for use in Godot.
 */
-Export_Flags :: proc($classStruct: typeid, $outbit_set: typeid,
+Export_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $outbit_set: typeid,
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
                         //This field should only be of type bit_set.
@@ -896,12 +848,8 @@ Export_Flags :: proc($classStruct: typeid, $outbit_set: typeid,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
 
     bsname:= fmt.aprint(type_info_of(outbit_set).variant.(runtime.Type_Info_Named).name)
     defer delete(bsname)
@@ -947,7 +895,7 @@ Export_Flags :: proc($classStruct: typeid, $outbit_set: typeid,
 * fieldName: the name that matches the field in the struct as you've named it.
 * layer: Specify the type of layer that is being exported to Godot.
 */
-Export_Layers :: proc($classStruct: typeid, $fieldName: string, layer: Layer_Type,
+Export_Layers :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string, layer: Layer_Type,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -960,12 +908,8 @@ Export_Layers :: proc($classStruct: typeid, $fieldName: string, layer: Layer_Typ
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
     hint:GDE.PropertyHint
     switch layer {
@@ -1049,7 +993,7 @@ Layer_Type :: enum {
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 * type: an enum (PATH_TYPES) representing the types of paths. Specify which kind of path you are exporting.
 */
-Export_Path :: proc($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
+Export_Path :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string, type: PATH_TYPES,
                         filters:string="",
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1062,12 +1006,8 @@ Export_Path :: proc($classStruct: typeid, $fieldName: string, type: PATH_TYPES,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
     hint: GDE.PropertyHint
     switch  type {
@@ -1139,7 +1079,7 @@ PATH_TYPES :: enum {
 * classStruct: struct representing the class that has the property being exported
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 */
-Export_Locale :: proc($classStruct: typeid, $fieldName: string,
+Export_Locale :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -1151,12 +1091,8 @@ Export_Locale :: proc($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
 
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .LOCALE_ID, "", className, property_usage)
@@ -1209,7 +1145,7 @@ Locale_ID :: GDE.gdstring
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 * property_usage: consider setting this as a secret.
 */
-Export_Password :: proc($classStruct: typeid, $fieldName: string,
+Export_Password :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         $property_usage: GDE.PropertyUsageFlagsbits,
                         placeholder_text: Placeholder_Text= "password",
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1222,12 +1158,8 @@ Export_Password :: proc($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PASSWORD, placeholder_text, className, property_usage)
@@ -1279,7 +1211,7 @@ Password :: GDE.gdstring
 * fieldName: string of the name of the field which is being exported. Should be of type GDE.gdstring.
 * placeholder_text: Placeholder_Text(string) of the text to show as a placeholder.
 */
-Export_With_Placeholder_Text :: proc($classStruct: typeid, $fieldName: string,
+Export_With_Placeholder_Text :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         placeholder_text: Placeholder_Text,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1292,12 +1224,8 @@ Export_With_Placeholder_Text :: proc($classStruct: typeid, $fieldName: string,
     
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
     
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
@@ -1353,7 +1281,7 @@ Placeholder_Text:: string
 * options: show_builtin or loose_mode
 * 
 */
-Export_Input_Name :: proc($classStruct: typeid, $fieldName: string,
+Export_Input_Name :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         options: Input_Options,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1364,11 +1292,7 @@ Export_Input_Name :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     res: [dynamic]u8
     defer(delete(res))
@@ -1452,7 +1376,7 @@ Doesn't work...
 * options: show_builtin or loose_mode
 * 
 */
-Export_Multiline :: proc($classStruct: typeid, $fieldName: string,
+Export_Multiline :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -1462,11 +1386,7 @@ Export_Multiline :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -1515,7 +1435,7 @@ Export_Multiline :: proc($classStruct: typeid, $fieldName: string,
 * Node_Type: specifies the type of node which the editor should be allowed to assign
 * 
 */
-Export_Node_Path_Types :: proc($classStruct: typeid, $fieldName: string,
+Export_Node_Path_Types :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         Node_Type: string,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1526,11 +1446,7 @@ Export_Node_Path_Types :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -1585,7 +1501,7 @@ Export_Node_Path_Types :: proc($classStruct: typeid, $fieldName: string,
 * object's ID can be retrieved via get_instance_id method
 * https://docs.godotengine.org/en/stable/classes/class_object.html#class-object-method-get-instance-id
 */
-Export_Object_ID :: proc($classStruct: typeid, $fieldName: string,
+Export_Object_ID :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         Object_Type: string,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1596,11 +1512,7 @@ Export_Object_ID :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -1651,7 +1563,7 @@ Export_Object_ID :: proc($classStruct: typeid, $fieldName: string,
 * fieldName: the name that matches the field in the struct as you've named it.
 * Dictionary_Type: See below the Export. This is a struct in which you will declare the type of the key and value.
 */
-Export_Dictionary_type :: proc($classStruct: typeid, $fieldName: string,
+Export_Dictionary_type :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         Dictionary_Type: Dictionary_Types,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR, },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1662,11 +1574,7 @@ Export_Dictionary_type :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -1728,7 +1636,7 @@ Dictionary_Types :: distinct struct {
 * fieldName: the name that matches the field in the struct as you've named it.
 * Dictionary_Type: See below the Export. This is a struct in which you will declare the type of the key and value.
 */
-Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: string,
+Export_Dictionary_Localizable_String :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = { .STORAGE, .EDITOR, },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
                         loc:= #caller_location) \
@@ -1738,11 +1646,7 @@ Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: s
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
@@ -1796,7 +1700,7 @@ Export_Dictionary_Localizable_String :: proc($classStruct: typeid, $fieldName: s
 * fieldName: the name that matches the field in the struct as you've named it.
 * button_props: a struct containing the display text and icon to be used with the button. See tool_Button_Info
 */
-Export_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
+Export_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string,
                         button_props: tool_Button_Info = {},
                         property_usage: GDE.PropertyUsageFlagsbits = { .EDITOR, },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1807,11 +1711,7 @@ Export_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> GDE.Callable {
         context = runtime.default_context()
@@ -1859,7 +1759,7 @@ Export_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
 * button_props: a struct containing the display text and icon to be used with the button. See tool_Button_Info
 */
 gdCallable: GDE.Callable
-Export_Callable_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string, callable: GDE.Callable,
+Export_Callable_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string, callable: GDE.Callable,
                         button_props: tool_Button_Info = {},
                         property_usage: GDE.PropertyUsageFlagsbits = { .EDITOR, },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1870,11 +1770,7 @@ Export_Callable_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
     
 
     @(static) value: GDE.Callable
@@ -1928,7 +1824,7 @@ Export_Callable_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string,
 * fieldName: a unique name. If there is name collision Godot will replace the previous version with the newest version.
 * button_props: a struct containing the display text and icon to be used with the button. See tool_Button_Info
 */
-Export_proc_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string, $callable: $P,
+Export_proc_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: string, $callable: $P,
                         callback: $PP, container: ^GDE.Callable, button_props: tool_Button_Info = {},
                         property_usage: GDE.PropertyUsageFlagsbits = { .EDITOR, },
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -1939,11 +1835,7 @@ Export_proc_As_Tool_Button :: proc($classStruct: typeid, $fieldName: string, $ca
 {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := fmt.aprint(type_info_of(classStruct))
-    defer delete(className)
-    className_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&className_SN, className)
-    defer(Destructors.stringNameDestructor(&className_SN))
+    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
     
 
     //Allocating callables into my class struct.
