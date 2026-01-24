@@ -463,7 +463,7 @@ PropertyUsageFlagsbits:: distinct bit_set [PropertyUsageFlags; u32]
 //PROPERTY_USAGE_DEFAULT = 6,
 //An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 
-PropertyUsageFlags:: enum u32 {
+PropertyUsageFlags:: enum u32 {    
 //The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 //Odin calls this nil
 //PROPERTY_USAGE_NONE = 0,
@@ -678,7 +678,7 @@ GDTypes_strings := [VariantType]string {
 
 
 
-MouseButtonMask :: enum i64 {
+MouseButtonMask :: enum i32 {
     MOUSE_BUTTON_MASK_LEFT = 1,
     MOUSE_BUTTON_MASK_RIGHT = 2,
     MOUSE_BUTTON_MASK_MIDDLE = 4,
@@ -686,7 +686,7 @@ MouseButtonMask :: enum i64 {
     MOUSE_BUTTON_MASK_MB_XBUTTON2 = 256,
 }
 
-MouseButton :: enum i64 {
+MouseButton :: enum i32 {
     MOUSE_BUTTON_NONE,
     MOUSE_BUTTON_LEFT,
     MOUSE_BUTTON_RIGHT,
@@ -699,7 +699,7 @@ MouseButton :: enum i64 {
     MOUSE_BUTTON_XBUTTON2,
 }
     
-Key :: enum i64 {
+Key :: enum i32 {
     KEY_NONE= 0,
     KEY_SPECIAL= 4194304,
     KEY_ESCAPE= 4194305,
@@ -900,7 +900,7 @@ Key :: enum i64 {
 //*****************************\\
 //These are the enums specific to the Input Singleton itself, not necessarily used for the methods.
 
-MouseMode :: enum i64 {
+MouseMode :: enum i32 {
     MOUSE_MODE_VISIBLE = 0,
     MOUSE_MODE_HIDDEN = 1,
     MOUSE_MODE_CAPTURED = 2,
@@ -909,7 +909,7 @@ MouseMode :: enum i64 {
     MOUSE_MODE_MAX = 5
 }
     
-CursorShape :: enum i64 {
+CursorShape :: enum i32 {
     CURSOR_ARROW = 0,
     CURSOR_IBEAM = 1,
     CURSOR_POINTING_HAND = 2,
@@ -927,19 +927,4 @@ CursorShape :: enum i64 {
     CURSOR_VSPLIT = 14,
     CURSOR_HSPLIT = 15,
     CURSOR_HELP = 16
-}
-
-PlaybackType :: enum i64 {
-  //The playback will be considered of the type declared at ProjectSettings.audio/general/default_playback_type.
-  PLAYBACK_TYPE_DEFAULT,
-  //Force the playback to be considered as a stream.
-	PLAYBACK_TYPE_STREAM,
-  /*
-  * Force the playback to be considered as a sample. This can provide lower latency and more stable playback (with less risk of audio crackling), at the cost of having less flexibility.
-  * Note: Only currently supported on the web platform.
-  * Note: AudioEffects are not supported when playback is considered as a sample.
-  */
-  PLAYBACK_TYPE_SAMPLE,
-  //IGNORE Represents the size of the PlaybackType enum.
-  PLAYBACK_TYPE_MAX,
 }

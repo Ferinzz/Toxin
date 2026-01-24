@@ -4,13 +4,8 @@ import "base:runtime"
 import GDE "gdextension"
 import sics "base:intrinsics"
 import "core:slice"
-import "core:reflect"
-import "core:fmt"
 
 Library : GDE.ClassLibraryPtr = nil
-
-//a pointer uniquely identifying the given built-in class in the ClassDB.
-ClassTag:: rawptr
 
 
 //*****************************\\
@@ -62,8 +57,6 @@ gdAPI : struct  {
     ObjectGetInstanceFromId: GDE.InterfaceObjectGetInstanceFromId,
 
     Register_Int_const: GDE.InterfaceClassdbRegisterExtensionClassIntegerConstant,
-
-    getClassTag: GDE.InterfaceClassdbGetClassTag,
 }
 
 
@@ -120,11 +113,6 @@ operator: struct {
     stringNameEqual: GDE.PtrOperatorEvaluator,
 }
 
-GDNode_Path: struct {
-    constructors: struct {
-        from_string: GDE.PtrConstructor
-    }
-}
 
 loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     //These are required for setup. Adding these at the very beginning to ensure they are available for the rest of the init.
@@ -146,10 +134,6 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 
     init_Node_Virtuals_Info()
     init_Control_Virtual_Info()
-    init_CanvasItem_Virtuals_Info()
-    init_InputEventMouse()
-    init_CollisionObject2D_Virtual_Info()
-    init_Texture2D_Virtuals_Info()
 
     Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
     Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
@@ -172,9 +156,9 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     gdAPI.object_set_instance = cast(GDE.InterfaceObjectSetInstance)p_get_proc_address("object_set_instance")
     gdAPI.object_set_instance_binding = cast(GDE.InterfaceObjectSetInstanceBinding)p_get_proc_address("object_set_instance_binding")
     gdAPI.mem_alloc = cast(GDE.InterfaceMemAlloc)p_get_proc_address("mem_alloc")
-    //gdAPI.mem_alloc2 = cast(GDE.InterfaceMemAlloc2)p_get_proc_address("mem_alloc2")
+    gdAPI.mem_alloc2 = cast(GDE.InterfaceMemAlloc2)p_get_proc_address("mem_alloc2")
     gdAPI.mem_free = cast(GDE.InterfaceMemFree)p_get_proc_address("mem_free")
-    //gdAPI.mem_free2 = cast(GDE.InterfaceMemFree2)p_get_proc_address("mem_free2")
+    gdAPI.mem_free2 = cast(GDE.InterfaceMemFree2)p_get_proc_address("mem_free2")
     gdAPI.classdbRegisterExtensionClassMethod = cast(GDE.InterfaceClassdbRegisterExtensionClassMethod)p_get_proc_address("classdb_register_extension_class_method")
     gdAPI.classDBRegisterExtensionClassProperty = cast(GDE.InterfaceClassdbRegisterExtensionClassProperty)p_get_proc_address("classdb_register_extension_class_property")
     //Really nice that you can (hopefully) just cast the pointer to the function's proc type. Signature?
@@ -187,7 +171,6 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     gdAPI.callScript = cast(GDE.InterfaceObjectCallScriptMethod)p_get_proc_address("object_call_script_method")
     gdAPI.ObjectGetInstanceFromId = cast(GDE.InterfaceObjectGetInstanceFromId)p_get_proc_address("object_get_instance_from_id")
     gdAPI.Register_Int_const = cast(GDE.InterfaceClassdbRegisterExtensionClassIntegerConstant)p_get_proc_address("classdb_register_extension_class_integer_constant")
-    gdAPI.getClassTag = cast(GDE.InterfaceClassdbGetClassTag)p_get_proc_address("classdb_get_class_tag")
     
     MethodName: GDE.StringName
     StringConstruct.stringNameNewLatin(&MethodName, "call_deferred", false)
@@ -213,11 +196,6 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     VariantGetters.getVariantFromTypeConstructor = cast(GDE.InterfaceGetVariantFromTypeConstructor)p_get_proc_address("get_variant_from_type_constructor")
     VariantGetters.getVariantToTypeConstuctor = cast(GDE.InterfaceGetVariantToTypeConstructor)p_get_proc_address("get_variant_to_type_constructor")
     VariantGetters.variantGetType = cast(GDE.InterfaceVariantGetType)p_get_proc_address("variant_get_type")
-
-
-
-    
-    GDNode_Path.constructors.from_string = variantGetPtrConstructor(.NODE_PATH, 2)
 
     gdAPI.indexGetBind = cast(GDE.InterfaceVariantGetPtrIndexedGetter)p_get_proc_address("variant_get_ptr_indexed_getter")
     gdAPI.indexSetBind = cast(GDE.InterfaceVariantGetPtrIndexedSetter)p_get_proc_address("variant_get_ptr_indexed_setter")
@@ -251,6 +229,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Destructors.stringNameDestructor(&arraySize)
     
     Destructors.stringNameDestructor(&arrayClass)
+    
     
 
     StringConstruct.stringNameNewLatin(&arrayClass, "PackedStringArray", false)
@@ -703,42 +682,6 @@ GDStringJoin :: proc "c" (packedString: ^GDE.PackedStringArray, r_String: ^GDE.g
     args:= [1]rawptr {packedString}
     gdStringJoin(packedString, raw_data(args[:]), r_String, 1)
 }
-
-/*Returns the unique tag of the Class.
-* Use with checkCast in order to verify if a GDObject received can be cast to the specific class.
-* classTagName: string representing the name of the class. ie InputEvent
-*/
-get_ClassTagName :: proc(classTagName: string) -> ClassTag {
-    
-    classTagName_SN: GDE.StringName
-    StringConstruct.stringNameNewString(&classTagName_SN, classTagName)
-    defer(Destructors.stringNameDestructor(&classTagName_SN))
-    return gdAPI.getClassTag(&classTagName_SN)
-}
-
-get_All_ClassTag :: proc {
-    get_All_ClassTag_struct,
-    get_All_ClassTag_array,
-}
-
-get_All_ClassTag_struct :: proc(classtypes: ^$T) where sics.type_is_struct(T){
-    pos:^T = classtypes
-    for field, i in reflect.struct_fields_zipped(T) {
-        field_pos:^ClassTag=cast(^ClassTag)(uintptr(pos) + field.offset)
-        field_pos^ = get_ClassTagName(field.name)
-    }
-};
-
-/*
-* Populate an array with the ClassTag(s).
-* See Input.odin for an example InputEvent_get_ClassTag of its usage.
-* classtypes: a pointer to an enumerated array of ClassTags.
-*/
-get_All_ClassTag_array :: proc(classtypes: ^$T/[$E]ClassTag) where sics.type_is_enum(E){
-    for name, i in reflect.enum_field_names(E) {
-        classtypes[E(i)] = get_ClassTagName(name)
-    }
-};
 
 //**********************\\
 //********globals*******\\
@@ -1282,7 +1225,7 @@ Side :: enum i64 {
 }
 
 
-getViewport :: proc(object: GDE.ObjectPtr, r_viewport: ^GDE.ObjectPtr) {
+getViewport :: proc(object: GDE.ObjectPtr, r_viewport: ^GDE.TypePtr) {
     @(static)GetViewport: GDE.MethodBindPtr
     if GetViewport == nil do GetViewport = classDBGetMethodBind("Node", "get_viewport", 3596683776)
     
@@ -1519,10 +1462,11 @@ bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Varian
 * p_args : An array of args sent by Godot in callVirtualFunctionWithData
 * r_ret : A pointer to hold the return value of your function
 */
-virtualProcCall :: #force_inline proc (procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
+virtualProcCall :: #force_inline proc "c" (procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
                             where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 11){
-    
+    context = runtime.default_context()
     classStructPtr::sics.type_proc_parameter_type(T, 0)
+
     argcount :: sics.type_proc_parameter_count(T)
 
     when argcount == 1 {

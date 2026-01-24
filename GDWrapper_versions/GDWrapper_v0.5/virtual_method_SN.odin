@@ -1,61 +1,8 @@
 package GDWrapper
 
 import GDE "gdextension"
-import "base:runtime"
-import sics "base:intrinsics"
 
 
-/*
-* A bit of a hack, but since the data passed in from Godot is known based on the method being called
-* and the fact that the data is passed in as a [^]rawptr means that a virutal method can access
-* data via ^struct{arg1: ^type, arg2: ^type ...}
-* returns are returned via a ^type which is known based on the virtual being called.
-* Can leave it to the user to handle the pointers appropriately.
-* Calling with using allows for the proc to access the arguments more easily, reducing the need for p_args.arg0 ...
-*/
-
-Method_Callback_Compare_Info :: struct {
-    name: GDE.StringName,
-    p_hash: u32,
-};
-
-//If you're just doing a node, use this as the type for VTable directly.
-//This is the base of everything else, don't need to pass it through its own special vtable group.
-Node_v_table:: struct (T: typeid) {
-    _physics_process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^GDE.float}),
-    _process: proc "c" (self: ^Class_Container(T), using p_args: ^struct{delta: ^GDE.float}),
-    _input: proc "c" (self: ^Class_Container(T), input: ^struct{inp: ^^InputEvent}),
-    _ready: proc "c" (self: ^Class_Container(T)),
-    _enter_tree: proc "c" (self: ^Class_Container(T)),
-    _exit_tree: proc "c" (self: ^Class_Container(T)),
-    _get_accessibility_configuration_warnings: proc "c" (self: ^Class_Container(T)) -> GDE.PackedStringArray,
-    _get_configuration_warnings: proc "c" (self: ^Class_Container(T)),
-    _get_focused_accessibility_element: proc "c" (self: ^Class_Container(T)),
-    _shortcut_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
-    _unhandled_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
-    _unhandled_key_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
-}
-
-Texture2D_Virtuals_Info: struct {
-    _is_pixel_opaque: Method_Callback_Compare_Info,
-    _get_height: Method_Callback_Compare_Info,
-    _get_width: Method_Callback_Compare_Info,
-    _draw_txt2D: Method_Callback_Compare_Info,
-}
-
-vTexture2D:: struct ($T: typeid) {
-    using vNode: Texture2D_v_table(T),
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-}
-
-//"inherits": "Node2D",
-Texture2D_v_table:: struct (T: typeid){
-    _is_pixel_opaque: proc "c" (self: ^Class_Container(T), using args: ^struct {x: ^GDE.Int, y: ^GDE.Int}),
-    _get_height: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
-    _get_width: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
-    _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^GDE.RID, rect: ^GDE.Rec2, src_rect: ^GDE.Rec2, modulate: ^GDE.Color, transpose: ^GDE.Bool, clip_uv: ^GDE.Bool }),
-}
 
 //"inherits": "Object",
 Node_Virtuals_Info: struct {
@@ -73,45 +20,10 @@ Node_Virtuals_Info: struct {
     _unhandled_key_input: Method_Callback_Compare_Info,
 }
 
-vCanvasItem:: struct(T: typeid){
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-}
-
-vNode2D:: struct(T: typeid) {
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-}
-
-CanvasItem_v_table:: struct(T: typeid){
-    _draw: proc "c" (self: ^T),
-}
-
 //"inherits": "Node",
 CanvasItem_Virtuals_Info: struct {
     _draw: Method_Callback_Compare_Info,
 }
-
-vControl:: struct($T: typeid) {
-    using vControl: Control_v_table(T),
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-}
-
-//"inherits": "CanvasItem",
-Control_v_table:: struct(T: typeid) {
-    _has_point: proc "c" (self: ^Class_Container(T), using p_args: ^struct{point: ^GDE.Vector2}),
-    _structured_text_parser: proc "c" (self: ^Class_Container(T), using p_args: ^struct{args: ^GDE.Array, text: ^GDE.gdstring}),
-    _get_minimum_size: proc "c" (self: ^Class_Container(T)),
-    _get_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
-    _get_drag_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
-    _can_drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
-    _drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
-    _make_custom_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{for_text: ^GDE.gdstring}),
-    _accessibility_get_contextual_info: proc "c" (self: ^Class_Container(T)),
-    _get_accessibility_container_name: proc "c" (self: ^Class_Container(T),  using p_args: ^struct{node: ^GDE.Node}),
-    _gui_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{event: ^^InputEvent}),
-};
 
 //"inherits": "CanvasItem",
 Control_Virtual_Info: struct {
@@ -126,13 +38,13 @@ Control_Virtual_Info: struct {
     _accessibility_get_contextual_info: Method_Callback_Compare_Info,
     _get_accessibility_container_name: Method_Callback_Compare_Info,
     _gui_input: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "RefCounted",
 Logger_Virtual: struct {
     _log_error: Method_Callback_Compare_Info,
     _log_message: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Object",
 MainLoop_Virtual: struct {
@@ -140,7 +52,7 @@ MainLoop_Virtual: struct {
     _physics_process: Method_Callback_Compare_Info,
     _process: Method_Callback_Compare_Info,
     _finalize: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "RefCounted",
 Resource_Virtual: struct {
@@ -148,7 +60,7 @@ Resource_Virtual: struct {
     _get_rid: Method_Callback_Compare_Info,
     _reset_state: Method_Callback_Compare_Info,
     _set_path_cache: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "RenderData",
 RenderDataExtension_Virtual_Info: struct {
@@ -156,14 +68,14 @@ RenderDataExtension_Virtual_Info: struct {
     _get_render_scene_data: Method_Callback_Compare_Info,
     _get_environment: Method_Callback_Compare_Info,
     _get_camera_attributes: Method_Callback_Compare_Info,
-};
+}
 
 //This resource defines a custom rendering effect that can be applied to Viewports through the viewports' Environment. 
 //This particular method receives the RenderData from the RenderServer.
 //"inherits": "Resource",
 CompositorEffect_Virtual_Info: struct {
     _render_callback: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Resource"
 AudioStreamPlayback_Virtual_Info: struct {
@@ -177,7 +89,7 @@ AudioStreamPlayback_Virtual_Info: struct {
     _tag_used_streams: Method_Callback_Compare_Info,
     _set_parameter: Method_Callback_Compare_Info,
     _get_parameter: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Resource",
 AudioStream_Virtual_Info: struct {
@@ -191,7 +103,7 @@ AudioStream_Virtual_Info: struct {
     _get_parameter_list: Method_Callback_Compare_Info,
     _has_loop: Method_Callback_Compare_Info,
     _get_bar_beats: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Node2D",
 CollisionObject2D_Virtual_Info: struct {
@@ -200,17 +112,6 @@ CollisionObject2D_Virtual_Info: struct {
     _mouse_exit: Method_Callback_Compare_Info,
     _mouse_shape_enter: Method_Callback_Compare_Info,
     _mouse_shape_exit: Method_Callback_Compare_Info,
-};
-
-vCollisionObject2D:: struct ($T: typeid) {
-    using vNode: Node_v_table(T),
-    using vCanvasItem: CanvasItem_v_table(T),
-    using vCollisionObject2D: CollisionObject2D_v_table(T),
-}
-
-//"inherits": "Node2D",
-CollisionObject2D_v_table:: struct (T: typeid){
-    _input_event: proc "c" (self: ^Class_Container(T), using args: ^struct {viewport: ^GDE.ObjectPtr, event: ^^InputEvent, shape_idx: ^GDE.Int}),
 }
 
 //"inherits": "Node3D",
@@ -218,123 +119,27 @@ CollisionObject3D_Virtual_Info: struct {
     _input_event: Method_Callback_Compare_Info,
     _mouse_enter: Method_Callback_Compare_Info,
     _mouse_exit: Method_Callback_Compare_Info,
-};
-
-
-Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    //context = runtime.default_context()
-
-        using Node_Virtuals_Info
-        
-        if (stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
-            return cast(rawptr)class_v_table._ready
-        }
-        if (stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
-            return cast(rawptr)class_v_table._process
-        }
-        if (stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
-            return cast(rawptr)class_v_table._physics_process
-        }
-        if (stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
-            return cast(rawptr)class_v_table._input
-        }
-        if (stringNameCompare(p_name, &_enter_tree.name) && p_hash == _enter_tree.p_hash) {
-            return cast(rawptr)class_v_table._enter_tree
-        }
-        if (stringNameCompare(p_name, &_exit_tree.name) && p_hash == _exit_tree.p_hash) {
-            return cast(rawptr)class_v_table._exit_tree
-        }
-        if (stringNameCompare(p_name, &_get_accessibility_configuration_warnings.name) && p_hash == _get_accessibility_configuration_warnings.p_hash) {
-            return cast(rawptr)class_v_table._get_accessibility_configuration_warnings
-        }
-        if (stringNameCompare(p_name, &_get_configuration_warnings.name) && p_hash == _get_configuration_warnings.p_hash) {
-            return cast(rawptr)class_v_table._get_configuration_warnings
-        }
-        if (stringNameCompare(p_name, &_get_focused_accessibility_element.name) && p_hash == _get_focused_accessibility_element.p_hash) {
-            return cast(rawptr)class_v_table._get_focused_accessibility_element
-        }
-        if (stringNameCompare(p_name, &_shortcut_input.name) && p_hash == _shortcut_input.p_hash) {
-            return cast(rawptr)class_v_table._shortcut_input
-        }
-        if (stringNameCompare(p_name, &_unhandled_input.name) && p_hash == _unhandled_input.p_hash) {
-            return cast(rawptr)class_v_table._unhandled_input
-        }
-        if (stringNameCompare(p_name, &_unhandled_key_input.name) && p_hash == _unhandled_key_input.p_hash) {
-            return cast(rawptr)class_v_table._unhandled_key_input
-        }
-
-    return nil
 }
 
-Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
-        using CanvasItem_Virtuals_Info
-        if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
-            return cast(rawptr)class_v_table._draw
-        }
-    return nil
-}
-
-
-Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
-        using CanvasItem_Virtuals_Info
-        if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
-            return cast(rawptr)class_v_table._draw
-        }
-    return nil
-}
-
-Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
-        using CollisionObject2D_Virtual_Info
-        if (stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
-            if class_v_table._input_event == nil do return nil
-            return cast(rawptr)class_v_table._input_event
-        }
-    return nil
-}
-
-Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> rawptr {
-    context = runtime.default_context()
-        using Texture2D_Virtuals_Info
-        if (stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
-            if class_v_table._is_pixel_opaque == nil do return nil
-            return cast(rawptr)class_v_table._is_pixel_opaque
-        }
-        if (stringNameCompare(p_name, &_get_height.name) && p_hash == _get_height.p_hash) {
-            if class_v_table._get_height == nil do return nil
-            return cast(rawptr)class_v_table._get_height
-        }
-        if (stringNameCompare(p_name, &_get_width.name) && p_hash == _get_width.p_hash) {
-            if class_v_table._get_width == nil do return nil
-            return cast(rawptr)class_v_table._get_width
-        }
-        if (stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
-            if class_v_table._draw_txt2D == nil do return nil
-            return cast(rawptr)class_v_table._draw_txt2D
-        }
-        if (stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
-            if class_v_table._draw_txt2D == nil do return nil
-            return cast(rawptr)class_v_table._draw_txt2D
-        }
-    return nil
+Method_Callback_Compare_Info :: struct {
+    name: GDE.StringName,
+    p_hash: u32,
 }
 
 init_Node_Virtuals_Info :: proc () {
     using Node_Virtuals_Info
-    _physics_process.p_hash = 373806689
-    _process.p_hash = 373806689
-    _input.p_hash = 3754044979
+    _physics_process.p_hash = 3218959716
+    _process.p_hash = 3218959716
+    _input.p_hash = 3218959716
     _ready.p_hash = 3218959716
     _enter_tree.p_hash = 3218959716
     _exit_tree.p_hash = 3218959716
     _get_accessibility_configuration_warnings.p_hash = 3218959716
-    _get_configuration_warnings.p_hash = 1139954409
+    _get_configuration_warnings.p_hash = 3218959716
     _get_focused_accessibility_element.p_hash = 3218959716
-    _shortcut_input.p_hash = 3754044979
-    _unhandled_input.p_hash = 3754044979
-    _unhandled_key_input.p_hash = 3754044979
+    _shortcut_input.p_hash = 3218959716
+    _unhandled_input.p_hash = 3218959716
+    _unhandled_key_input.p_hash = 3218959716
 
     _physics_process.name = StringConstruct.stringNameNewString_r("_physics_process")
     _process.name = StringConstruct.stringNameNewString_r("_process")
@@ -354,21 +159,6 @@ init_CanvasItem_Virtuals_Info :: proc () {
     using CanvasItem_Virtuals_Info
     _draw.p_hash = 3218959716
     _draw.name = StringConstruct.stringNameNewString_r("_draw")
-}
-
-init_Texture2D_Virtuals_Info :: proc () {
-    using Texture2D_Virtuals_Info
-    _is_pixel_opaque.p_hash = 2522259332
-    _is_pixel_opaque.name = StringConstruct.stringNameNewString_r("_is_pixel_opaque")
-    
-    _get_height.p_hash = 3905245786
-    _get_height.name = StringConstruct.stringNameNewString_r("_get_height")
-    
-    _get_width.p_hash = 3905245786
-    _draw_txt2D.p_hash = 4094143664
-
-    _get_width.name = StringConstruct.stringNameNewString_r("_get_width")
-    _draw_txt2D.name = StringConstruct.stringNameNewString_r("_draw_rect_region")
 }
 
 init_Control_Virtual_Info :: proc () {
@@ -539,55 +329,3 @@ init_CollisionObject3D_Virtual_Info :: proc () {
 //AudioEffectInstance to implement your own custom AudioEffects for use on the Audio bus.
 //VisualShaderNodeCustom If you want to have your own custom Node in the VisualShader tool.
 //GLTFDocumentExtension The code that converts to/from a Godot scene can be intercepted at arbitrary points by GLTFDocumentExtension classes. This allows for custom data to be stored in the glTF file or for custom data to be converted to/from Godot nodes.
-
-
-table_lookup :: proc(v_table: $T/Node_v_table, p_instance: GDE.ClassInstancePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) -> bool {
-    switch virtualProcPtr {
-        case rawptr(v_table._physics_process):
-            virtualProcCall(v_table._physics_process, p_instance, p_args, r_ret)
-            return true
-        case rawptr(v_table._process):
-            virtualProcCall(v_table._process, p_instance, p_args, r_ret)
-            return true
-        case rawptr(v_table._input):
-            virtualProcCall(v_table._input, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._ready):
-            virtualProcCall(v_table._ready, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._enter_tree):
-            virtualProcCall(v_table._enter_tree, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._exit_tree):
-            virtualProcCall(v_table._exit_tree, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._get_accessibility_configuration_warnings):
-            virtualProcCall(v_table._get_accessibility_configuration_warnings, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._get_configuration_warnings):
-            virtualProcCall(v_table._get_configuration_warnings, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._get_focused_accessibility_element):
-            virtualProcCall(v_table._get_focused_accessibility_element, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._shortcut_input):
-            virtualProcCall(v_table._shortcut_input, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._unhandled_input):
-            virtualProcCall(v_table._unhandled_input, p_instance, p_args, r_ret)
-            //return true
-        case rawptr(v_table._unhandled_key_input):
-            virtualProcCall(v_table._unhandled_key_input, p_instance, p_args, r_ret)
-            //return true
-    }
-    return false
-}
-
-
-
-draw_table_lookup :: proc(v_table: $T/CanvasItem_v_table, p_instance: GDE.ClassInstancePtr, virtualProcPtr: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
-    switch virtualProcPtr {
-        case rawptr(v_table._draw):
-            virtualProcCall(v_table._draw, p_instance, p_args, r_ret)
-    }
-}
