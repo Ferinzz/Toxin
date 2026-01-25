@@ -1,7 +1,8 @@
 package main
 
 import GDW "GDWrapper"
-import GDE "GDWrapper/gdextension"
+import GDE "GDWrapper/gdAPI/gdextension"
+import "GDWrapper/gdAPI"
 import "base:runtime"
 import "core:fmt"
 import "core:slice"
@@ -22,7 +23,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
     context = runtime.default_context()
 
     GDW.Library = p_library
-    GDW.loadAPI(p_get_proc_address)
+    GDW.Init_Wrapper(p_get_proc_address)
 
     initialization.initialize = extensionInit
     initialization.deinitialize = extensionDeinit
@@ -63,7 +64,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             THIS_CLASS_NAME_deets->self_register(init_Level)
 
             //Need to register our MainLoop callbacks at some point.
-            GDW.gd_Main_Loop.register_main_loop_callbacks(GDW.Library, &myMainLoopCallbacks)
+            gdAPI.RegisterMainLoopCallbacks(GDW.Library, &myMainLoopCallbacks)
             return
         //INITIALIZATION_EDITOR should only happen if running from the editor.
         case .INITIALIZATION_EDITOR:
@@ -76,7 +77,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * This should be impossible unless they add a new level of initialization at some point.
             */
-            GDW.Print.WarningWithMessage("I am MAX level.", "Maximum leve", "", "", 123, true)
+            gdAPI.Logging.PrintWarningWithMessage("I am MAX level.", "Maximum leve", "", "", 123, true)
             assert(true, "This should be impossible!!")
         case :
             assert(true, "This should be impossible!!")
@@ -118,7 +119,7 @@ extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLe
             /*
             * This should be impossible unless they add a new level of initialization at some point.
             */
-            GDW.Print.WarningWithMessage("I am MAX level.", "Maximum leve", "", "", 123, true)
+            gdAPI.Logging.PrintWarningWithMessage("I am MAX level.", "Maximum leve", "", "", 123, true)
             assert(true, "This should be impossible!!")
             return
         case :

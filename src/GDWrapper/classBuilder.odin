@@ -1,7 +1,8 @@
 package GDWrapper
 
 import "base:runtime"
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 import sics "base:intrinsics"
 import "core:slice"
 import "core:reflect"
@@ -91,16 +92,16 @@ Create :: proc "c" (p_class_user_data: ^GDW_class_deets, p_notify_postinitialize
 
     context = runtime.default_context()
 
-    object: GDE.ObjectPtr = gdAPI.classDBConstructObj(p_class_user_data.GDClass_StringName)
+    object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast(GDE.ObjectPtr)gdAPI.mem_alloc(size_of(p_class_user_data.class_struct) + size_of(GDE.ObjectPtr))
+    self: = cast(GDE.ObjectPtr)gdAPI.Memory_Uils.MemAlloc(size_of(p_class_user_data.class_struct) + size_of(GDE.ObjectPtr))
     mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(GDE.ObjectPtr))
     self.proxy= object
 
-    gdAPI.object_set_instance(object, &p_class_user_data.SN, cast(^GDE.Object)self)
-    gdAPI.object_set_instance_binding(object, Library, self, &classBindingCallbacks)
+    gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^GDE.Object)self)
+    gdAPI.Object_Utils.SetInstanceBinding(object, Library, self, &classBindingCallbacks)
     
 
     return object
@@ -116,7 +117,7 @@ Destroy :: proc "c" (p_class_userdata: ^GDW_class_deets, p_instance: GDE.ClassIn
     if (p_instance == nil){
         return
     }
-    gdAPI.mem_free(p_instance)
+    gdAPI.Memory_Uils.MemFree(p_instance)
 }
 
 /*
@@ -180,7 +181,7 @@ Register :: proc(self: ^GDW_class_deets, init_level: GDE.InitializationLevel, ge
     //string to a svg which will be used as an icon for your Nodes.
     //Must be NewLatin. UTF8 does not work :/
     stringraw:GDE.gdstring
-    StringConstruct.stringNewLatin(&stringraw, "res://icon.svg")
+    gdAPI.Strings_Utils.NewWithLatin1Chars(&stringraw, "res://icon.svg")
 
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
     
@@ -196,7 +197,7 @@ Register :: proc(self: ^GDW_class_deets, init_level: GDE.InitializationLevel, ge
 
     self.GDClass_StringName = GDClass_StringName_get(self.GDClass_Index)
 
-    gdAPI.classDBRegisterExtClass(Library, &self.SN, self.GDClass_StringName, &class_info)
+    gdAPI.ClassDB.RegisterExtensionClass5(Library, &self.SN, self.GDClass_StringName, &class_info)
     
     if self.binder != nil {
         self.binder(&self.SN)

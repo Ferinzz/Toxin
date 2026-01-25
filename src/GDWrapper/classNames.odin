@@ -1,6 +1,7 @@
 package GDWrapper
 
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 import "base:runtime"
 import "core:reflect"
 
@@ -38,7 +39,7 @@ ClassName_StringName_Del :: proc(classname_index: ClassName_Index) -> SN_Error {
         }
     }
 
-    Destructors.stringNameDestructor(&ClassName_StringNames[classname_index])
+    StringName_Methods.Destroy(&ClassName_StringNames[classname_index])
 
     return nil
 }

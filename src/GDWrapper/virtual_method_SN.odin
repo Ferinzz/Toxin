@@ -1,6 +1,7 @@
 package GDWrapper
 
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 import "base:runtime"
 import sics "base:intrinsics"
 

@@ -711,7 +711,7 @@ ScriptInstanceInfo3 :: struct {
 //*************\\
 
 WorkerThreadPoolGroupTask :: proc "c" (unspecified: rawptr, unspecified2: u32);
-GDExtensionWorkerThreadPoolTask :: proc "c" (unspecified: rawptr);
+WorkerThreadPoolTask :: proc "c" (unspecified: rawptr);
 
 
 InitializeCallback :: proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
@@ -914,7 +914,7 @@ InterfaceMemRealloc2 :: proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: Bool
 InterfaceMemFree2 :: proc "c" (p_bytes: u64, p_pad_align: Bool);
 
 
-/* INTERFACE: Godot Core */
+/* INTERFACE: Godot Logging */
 
 /**
  * @name print_error
@@ -2239,7 +2239,7 @@ InterfacePackedByteArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index
  *
  * @return A pointer to the requested 32-bit float.
  */
-InterfacePackedFloat32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> f32;
+InterfacePackedFloat32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^f32;
 
 /**
  * @name packed_float32_array_operator_index_const
@@ -2265,7 +2265,7 @@ InterfacePackedFloat32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_in
  *
  * @return A pointer to the requested 64-bit float.
  */
-InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> f64;
+InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^float;
 
 /**
  * @name packed_float64_array_operator_index_const
@@ -2278,7 +2278,7 @@ InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  *
  * @return A const pointer to the requested 64-bit float.
  */
-InterfacePackedFloat64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> f64;
+InterfacePackedFloat64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^float;
 
 /**
  * @name packed_int32_array_operator_index
@@ -2291,7 +2291,7 @@ InterfacePackedFloat64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_in
  *
  * @return A pointer to the requested 32-bit integer.
  */
-InterfacePackedInt32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> i32;
+InterfacePackedInt32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^i32;
 
 /**
  * @name packed_int32_array_operator_index_const
@@ -2304,7 +2304,7 @@ InterfacePackedInt32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: In
  *
  * @return A const pointer to the requested 32-bit integer.
  */
-InterfacePackedInt32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> i32;
+InterfacePackedInt32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^i32;
 
 /**
  * @name packed_int64_array_operator_index
@@ -2317,7 +2317,7 @@ InterfacePackedInt32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_inde
  *
  * @return A pointer to the requested 64-bit integer.
  */
-InterfacePackedInt64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> i64;
+InterfacePackedInt64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Int;
 
 /**
  * @name packed_int64_array_operator_index_const
@@ -2330,7 +2330,7 @@ InterfacePackedInt64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: In
  *
  * @return A const pointer to the requested 64-bit integer.
  */
-InterfacePackedInt64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> i64;
+InterfacePackedInt64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Int;
 
 /**
  * @name packed_string_array_operator_index

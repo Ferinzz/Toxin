@@ -1,7 +1,8 @@
 package GDWrapper
 
 import "base:runtime"
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 import sics "base:intrinsics"
 import "core:slice"
 import "core:reflect"
@@ -54,7 +55,7 @@ AudioStreamPlaybackPolyphonic_play_stream :: proc(player: GDE.ObjectPtr, stream:
         bus,
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlayerPlyphonicplaystream, player, raw_data(args[:]), r_ret)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlayerPlyphonicplaystream, player, raw_data(args[:]), r_ret)
 }
 
 
@@ -68,7 +69,7 @@ AudioStreamPlaybackPolyphonic_set_stream_volume :: proc(player: GDE.ObjectPtr, s
         volume_db,
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlaybackPolyphonicsetstreamvolume, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlaybackPolyphonicsetstreamvolume, player, raw_data(args[:]), nil)
 }
 
 
@@ -82,7 +83,7 @@ AudioStreamPlaybackPolyphonic_set_stream_pitch_scale :: proc(player: GDE.ObjectP
         pitch_scale,
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlaybackPolyphonicsetstreampitchscale, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlaybackPolyphonicsetstreampitchscale, player, raw_data(args[:]), nil)
 }
 
 
@@ -95,7 +96,7 @@ AudioStreamPlaybackPolyphonic_is_stream_playing :: proc(player: GDE.ObjectPtr, s
     args:=[?]rawptr{stream,
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlaybackPolyphonicisstreamplaying, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlaybackPolyphonicisstreamplaying, player, raw_data(args[:]), nil)
 }
 
 
@@ -108,7 +109,7 @@ AudioStreamPlaybackPolyphonic_stop_stream :: proc(player: GDE.ObjectPtr, stream:
     args:=[?]rawptr{stream,
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlaybackPolyphonicstopstream, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlaybackPolyphonicstopstream, player, raw_data(args[:]), nil)
 }           
 
 /**************************************/
@@ -127,7 +128,7 @@ AudioStreamPolyphonic_set_polyphony :: proc(player: GDE.ObjectPtr, voices: ^GDE.
     args:=[?]rawptr{voices,
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPolyphonicsetpolyphony, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPolyphonicsetpolyphony, player, raw_data(args[:]), nil)
 }
 
 
@@ -137,7 +138,7 @@ AudioStreamPolyphonic_get_polyphony :: proc(player: GDE.ObjectPtr, r_voices: ^GD
         AudioStreamPolyphonicgetpolyphony = classDBGetMethodBind2(GDClass_StringName_get(.AudioStreamPolyphonic), "get_polyphony", 3905245786)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPolyphonicgetpolyphony, player, nil, r_voices)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPolyphonicgetpolyphony, player, nil, r_voices)
 }
 
 /***************************/
@@ -153,7 +154,7 @@ AudioStreamPlayer_set_stream :: proc(player: GDE.ObjectPtr, stream: ^GDE.ObjectP
 
     args:= [?]rawptr {stream}
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlayersetstream, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlayersetstream, player, raw_data(args[:]), nil)
 }
 
 
@@ -170,7 +171,7 @@ AudioStreamPlayer_play :: proc(player: GDE.ObjectPtr, from_position: ^GDE.float 
     }
     args:= [1]rawptr{from_position}
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlayerplay, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlayerplay, player, raw_data(args[:]), nil)
 }
 
 AudioStreamPlayer_get_stream :: proc(player: GDE.ObjectPtr, r_stream: ^GDE.ObjectPtr) {
@@ -179,7 +180,7 @@ AudioStreamPlayer_get_stream :: proc(player: GDE.ObjectPtr, r_stream: ^GDE.Objec
         AudioStreamPlayergetstream = classDBGetMethodBind2(GDClass_StringName_get(.AudioStreamPlayer), "get_stream", 160907539)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlayergetstream, player, nil, r_stream)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlayergetstream, player, nil, r_stream)
 }
 
 AudioStreamPlayer_is_playing :: proc(player: GDE.ObjectPtr, r_bool: ^GDE.Bool) {
@@ -188,7 +189,7 @@ AudioStreamPlayer_is_playing :: proc(player: GDE.ObjectPtr, r_bool: ^GDE.Bool) {
         AudioStreamisplaying = classDBGetMethodBind2(GDClass_StringName_get(.AudioStreamPlayer), "is_playing", 36873697)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamisplaying, player, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamisplaying, player, nil, r_bool)
 }
 
 AudioStreamPlayer_is_playing_r :: proc(player: GDE.ObjectPtr) -> (r_bool: GDE.Bool) {
@@ -202,7 +203,7 @@ AudioStreamPlayer_stop :: proc(player: GDE.ObjectPtr) {
         AudioStreamstop = classDBGetMethodBind2(GDClass_StringName_get(.AudioStreamPlayer), "stop", 3218959716)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamstop, player, nil, nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamstop, player, nil, nil)
 }
 
 /*****************************/
@@ -249,7 +250,7 @@ AudioStreamPlayback__start :: proc(player: GDE.ObjectPtr, from_pos: ^GDE.float) 
 
     args:= [?]rawptr {from_pos}
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlaybackstart, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlaybackstart, player, raw_data(args[:]), nil)
 }
 
 AudioStreamPlayback__stop :: proc(player: GDE.ObjectPtr) {
@@ -258,7 +259,7 @@ AudioStreamPlayback__stop :: proc(player: GDE.ObjectPtr) {
         AudioStreamPlaybackstop = classDBGetMethodBind2(GDClass_StringName_get(.AudioStreamPlayback), "stop", 3218959716)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlaybackstop, player, nil, nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlaybackstop, player, nil, nil)
 }
 
 AudioStreamPlayback_is_playing :: proc(player: GDE.ObjectPtr, r_bool: ^GDE.Bool) {
@@ -267,7 +268,7 @@ AudioStreamPlayback_is_playing :: proc(player: GDE.ObjectPtr, r_bool: ^GDE.Bool)
         AudioStreamPlaybackisplaying = classDBGetMethodBind2(GDClass_StringName_get(.AudioStreamPlayback), "is_playing", 36873697)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamPlaybackisplaying, player, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamPlaybackisplaying, player, nil, r_bool)
 }
 
 
@@ -282,7 +283,7 @@ AudioStream_get_length :: proc(player: GDE.ObjectPtr, r_length: ^GDE.float) {
         AudioStreamgetlength = classDBGetMethodBind2(GDClass_StringName_get(.AudioStream), "get_length", 1740695150)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamgetlength, player, nil, r_length)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamgetlength, player, nil, r_length)
 }
 //Player uses the same reference to a AudioStream as what is loaded.
 //setting AudioStream before or after updating the source AudioStream's settings makes no difference.
@@ -303,7 +304,7 @@ AudioStreamWAV_set_loop_mode :: proc(player: GDE.ObjectPtr, loop_mode: ^WAV_Loop
     }
     args:= [1]rawptr {loop_mode}
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamWAVsetloopmode, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamWAVsetloopmode, player, raw_data(args[:]), nil)
 }
 
 //set_loop_end is the position in the media based on the sample rate.
@@ -315,7 +316,7 @@ AudioStreamWAV_set_loop_end :: proc(player: GDE.ObjectPtr, loop_end: ^GDE.Int) {
     }
     args:= [1]rawptr {loop_end}
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamWAVsetloopend, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamWAVsetloopend, player, raw_data(args[:]), nil)
 }
 
 AudioStreamWAV_set_loop_begin :: proc(player: GDE.ObjectPtr, loop_begin: ^GDE.Int) {
@@ -325,7 +326,7 @@ AudioStreamWAV_set_loop_begin :: proc(player: GDE.ObjectPtr, loop_begin: ^GDE.In
     }
     args:= [1]rawptr {loop_begin}
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamWAVsetloopbegin, player, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamWAVsetloopbegin, player, raw_data(args[:]), nil)
 }
 
 AudioStreamWAV_get_mix_rate :: proc(player: GDE.ObjectPtr, r_mix_rate: ^GDE.Int) {
@@ -335,7 +336,7 @@ AudioStreamWAV_get_mix_rate :: proc(player: GDE.ObjectPtr, r_mix_rate: ^GDE.Int)
     }
     args:= [1]rawptr {r_mix_rate}
 
-    gdAPI.objectMethodBindPtrCall(AudioStreamWAVgetmixrate, player, nil, r_mix_rate)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamWAVgetmixrate, player, nil, r_mix_rate)
 }
 
 //precision is to the second instead of exact duration.
@@ -356,7 +357,7 @@ AudioStream__instantiate_playback :: proc(player: GDE.ObjectPtr, AudioStreamPlay
         AudioStreaminstantiateplayback = classDBGetMethodBind2(GDClass_StringName_get(.AudioStream), "instantiate_playback", 210135309)
     }
 
-    gdAPI.objectMethodBindPtrCall(AudioStreaminstantiateplayback, player, nil, AudioStreamPlayback)
+    gdAPI.Object_Utils.MethodBindPtrcall(AudioStreaminstantiateplayback, player, nil, AudioStreamPlayback)
 }
 
 

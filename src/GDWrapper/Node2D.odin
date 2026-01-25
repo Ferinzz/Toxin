@@ -1,13 +1,14 @@
 package GDWrapper
 
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 
 Node2D_Get_Global_Position :: proc (self: GDE.ObjectPtr, r_Vector: ^GDE.Vector2) {
     @(static)GetGlobalPosition: GDE.MethodBindPtr
     if GetGlobalPosition == nil {
         GetGlobalPosition = classDBGetMethodBind2(GDClass_StringName_get(.Node2D), "get_global_position", 3341600327)
     }
-    gdAPI.objectMethodBindPtrCall(GetGlobalPosition, self, nil, r_Vector)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetGlobalPosition, self, nil, r_Vector)
 }
 
 
@@ -22,7 +23,7 @@ CanvasItem_draw_texture_rect :: proc(canvas_parent: GDE.ObjectPtr, texture: ^GDE
 
     args:= [?]rawptr {texture, rect, tile, modulate, transpose}
 
-    gdAPI.objectMethodBindPtrCall(drawtexturerect, canvas_parent, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(drawtexturerect, canvas_parent, raw_data(args[:]), nil)
 }
 
 //Node methods
@@ -34,7 +35,7 @@ Node_get_node :: proc(node: GDE.ObjectPtr, path: ^GDE.NodePath, r_node: ^GDE.Obj
 
     args:= [?]rawptr {path}
 
-    gdAPI.objectMethodBindPtrCall(getnode, node, raw_data(args[:]), r_node)
+    gdAPI.Object_Utils.MethodBindPtrcall(getnode, node, raw_data(args[:]), r_node)
 }
 
 Node_set_name :: proc(node: GDE.ObjectPtr, name: ^GDE.StringName) {
@@ -45,5 +46,5 @@ Node_set_name :: proc(node: GDE.ObjectPtr, name: ^GDE.StringName) {
 
     args:= [?]rawptr {name}
 
-    gdAPI.objectMethodBindPtrCall(Nodesetname, node, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(Nodesetname, node, raw_data(args[:]), nil)
 }

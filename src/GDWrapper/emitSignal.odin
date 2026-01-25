@@ -1,7 +1,8 @@
 package GDWrapper
 
 import "base:runtime"
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:slice"
@@ -22,6 +23,8 @@ EmitError :: enum {
     WRONG_TYPE,
 }
 
+objectEmitSignal: GDE.MethodBindPtr
+
 /*
 * Register your GDE class's signal with Godot so that other classes can connect to it.
 * Cannot connect to a signal if it has not already been registered with Godot.
@@ -38,8 +41,8 @@ registerSignal :: proc(className, signalName: cstring, arg_type: []GDE.VariantTy
     
     s_className: GDE.StringName
     s_signalName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&s_className, className, false)
-    StringConstruct.stringNameNewLatin(&s_signalName, signalName, false)
+    gdAPI.StringName_Utils.Latin1Chars(&s_className, className, false)
+    gdAPI.StringName_Utils.Latin1Chars(&s_signalName, signalName, false)
 
     signalProp:[count]GDE.PropertyInfo
     for arg, index in arg_type{
@@ -49,8 +52,8 @@ registerSignal :: proc(className, signalName: cstring, arg_type: []GDE.VariantTy
 
     gdAPI.classBDRegistClassSignal(Library, &s_className, &s_signalName, raw_data(signalProp[:]), count)
 
-    Destructors.stringNameDestructor(&s_className)
-    Destructors.stringNameDestructor(&s_signalName)
+    StringName_Methods.Destroy(&s_className)
+    StringName_Methods.Destroy(&s_signalName)
 
     for &prop in signalProp {
         destructProperty(&prop)
@@ -96,8 +99,8 @@ register_Signal :: #force_inline proc(className: string, $arg_type: typeid, loc 
 
     gdAPI.classBDRegistClassSignal(Library, &className_SN, &signalName_SN, raw_data(signalProp[:]), sics.type_struct_field_count(arg_type))
 
-    Destructors.stringNameDestructor(&className_SN)
-    //Destructors.stringNameDestructor(&signalName_SN)
+    StringName_Methods.Destroy(&className_SN)
+    //StringName_Methods.Destroy(&signalName_SN)
 
     for &prop in signalProp {
         destructProperty(&prop)
@@ -144,23 +147,23 @@ connectToSignal :: proc(callback: ^GDE.CallableCustomInfo2, signal_name: ^GDE.St
     @(static) connect_to: GDE.MethodBindPtr
     if connect_to == nil{
         sn_SceneTree:GDE.StringName
-        StringConstruct.stringNameNewLatin(&sn_SceneTree, "Object", false)
+        gdAPI.StringName_Utils.Latin1Chars(&sn_SceneTree, "Object", false)
         Connect: GDE.StringName
-        StringConstruct.stringNameNewLatin(&Connect, "connect", false)
+        gdAPI.StringName_Utils.Latin1Chars(&Connect, "connect", false)
         
-        connect_to = gdAPI.classDBGetMethodBind(&sn_SceneTree, &Connect, 1518946055)
+        connect_to = gdAPI.ClassDB.GetMethodBind(&sn_SceneTree, &Connect, 1518946055)
 
-        Destructors.stringNameDestructor(&sn_SceneTree)
-        Destructors.stringNameDestructor(&Connect)
+        StringName_Methods.Destroy(&sn_SceneTree)
+        StringName_Methods.Destroy(&Connect)
     }
     
     myCallable:GDE.Callable
-    Methods.makeCallable(&myCallable, callback)
+    gdAPI.Callable_Utils.CustomCreate2(&myCallable, callback)
 
     flags:=flags
     args:= [?]rawptr {signal_name, &myCallable, &flags}
     ret_err:GDE.CallErrorType
-    gdAPI.objectMethodBindPtrCall(connect_to, object, raw_data(args[:]), &ret_err)
+    gdAPI.Object_Utils.MethodBindPtrcall(connect_to, object, raw_data(args[:]), &ret_err)
 
     //assert(ret_err == .CALL_OK, loc = loc)
 
@@ -185,11 +188,11 @@ emitSignal0 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName)
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 1, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 1, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 
 emitSignal1 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P) {
@@ -206,12 +209,12 @@ emitSignal1 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 2, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 2, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 
 emitSignal2 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A) {
@@ -230,13 +233,13 @@ emitSignal2 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 3, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 3, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 emitSignal3 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B) {
     context = runtime.default_context()
@@ -256,14 +259,14 @@ emitSignal3 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 4, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 4, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&arg4)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&arg4)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 emitSignal4 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C) {
     context = runtime.default_context()
@@ -285,15 +288,15 @@ emitSignal4 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 5, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 5, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&arg4)
-    Destructors.variantDestroy(&arg5)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&arg4)
+    gdAPI.Variant_Utils.Destroy(&arg5)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 emitSignal5 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D) {
     context = runtime.default_context()
@@ -317,16 +320,16 @@ emitSignal5 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 6, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 6, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&arg4)
-    Destructors.variantDestroy(&arg5)
-    Destructors.variantDestroy(&arg6)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&arg4)
+    gdAPI.Variant_Utils.Destroy(&arg5)
+    gdAPI.Variant_Utils.Destroy(&arg6)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 emitSignal6 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E) {
@@ -353,17 +356,17 @@ emitSignal6 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 7, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 7, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&arg4)
-    Destructors.variantDestroy(&arg5)
-    Destructors.variantDestroy(&arg6)
-    Destructors.variantDestroy(&arg7)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&arg4)
+    gdAPI.Variant_Utils.Destroy(&arg5)
+    gdAPI.Variant_Utils.Destroy(&arg6)
+    gdAPI.Variant_Utils.Destroy(&arg7)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 emitSignal7 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E, p_arg7: $F) {
@@ -392,18 +395,18 @@ emitSignal7 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 8, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 8, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&arg4)
-    Destructors.variantDestroy(&arg5)
-    Destructors.variantDestroy(&arg6)
-    Destructors.variantDestroy(&arg7)
-    Destructors.variantDestroy(&arg8)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&arg4)
+    gdAPI.Variant_Utils.Destroy(&arg5)
+    gdAPI.Variant_Utils.Destroy(&arg6)
+    gdAPI.Variant_Utils.Destroy(&arg7)
+    gdAPI.Variant_Utils.Destroy(&arg8)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 emitSignal8 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E, p_arg7: $F, p_arg8: $G) {
@@ -434,19 +437,19 @@ emitSignal8 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 9, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 9, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&arg4)
-    Destructors.variantDestroy(&arg5)
-    Destructors.variantDestroy(&arg6)
-    Destructors.variantDestroy(&arg7)
-    Destructors.variantDestroy(&arg8)
-    Destructors.variantDestroy(&arg9)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&arg4)
+    gdAPI.Variant_Utils.Destroy(&arg5)
+    gdAPI.Variant_Utils.Destroy(&arg6)
+    gdAPI.Variant_Utils.Destroy(&arg7)
+    gdAPI.Variant_Utils.Destroy(&arg8)
+    gdAPI.Variant_Utils.Destroy(&arg9)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }
 emitSignal9 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E, p_arg7: $F, p_arg8: $G, p_arg9: $H) {
@@ -479,18 +482,18 @@ emitSignal9 :: proc "c" (p_instance: GDE.ObjectPtr, signalName: ^GDE.StringName,
     ret: GDE.Variant
 
     // Call the function.
-    gdAPI.objectMethodBindCall(Methods.objectEmitSignal, p_instance, raw_data(varSet[:]), 10, &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 10, &ret, nil)
 
     // Destroy the arguments that need it.
-    Destructors.variantDestroy(&arg1)
-    Destructors.variantDestroy(&arg2)
-    Destructors.variantDestroy(&arg3)
-    Destructors.variantDestroy(&arg4)
-    Destructors.variantDestroy(&arg5)
-    Destructors.variantDestroy(&arg6)
-    Destructors.variantDestroy(&arg7)
-    Destructors.variantDestroy(&arg8)
-    Destructors.variantDestroy(&arg9)
-    Destructors.variantDestroy(&arg10)
-    Destructors.variantDestroy(&ret)
+    gdAPI.Variant_Utils.Destroy(&arg1)
+    gdAPI.Variant_Utils.Destroy(&arg2)
+    gdAPI.Variant_Utils.Destroy(&arg3)
+    gdAPI.Variant_Utils.Destroy(&arg4)
+    gdAPI.Variant_Utils.Destroy(&arg5)
+    gdAPI.Variant_Utils.Destroy(&arg6)
+    gdAPI.Variant_Utils.Destroy(&arg7)
+    gdAPI.Variant_Utils.Destroy(&arg8)
+    gdAPI.Variant_Utils.Destroy(&arg9)
+    gdAPI.Variant_Utils.Destroy(&arg10)
+    gdAPI.Variant_Utils.Destroy(&ret)
 }

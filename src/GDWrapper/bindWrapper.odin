@@ -1,7 +1,8 @@
 package GDWrapper
 
 import "base:runtime"
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:slice"
@@ -68,10 +69,10 @@ Export :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldName: 
         context = runtime.default_context()
 
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
-            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
-            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.Array {
             GDArray.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
@@ -247,10 +248,10 @@ Export_String_As_Enum :: proc(className_SN: ^GDE.StringName, $classStruct: typei
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
-            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
-            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -310,7 +311,7 @@ Export_Enum :: #force_inline proc(className_SN: ^GDE.StringName, $classStruct: t
     defer delete(enumName)
     enumName_SN: GDE.StringName
     StringConstruct.stringNameNewString(&enumName_SN, enumName)
-    defer(Destructors.stringNameDestructor(&enumName_SN))
+    defer(StringName_Methods.Destroy(&enumName_SN))
 
 
     info:=type_info_of(out_enum).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
@@ -319,8 +320,8 @@ Export_Enum :: #force_inline proc(className_SN: ^GDE.StringName, $classStruct: t
     for field, ind in info.names {
         field_SN: GDE.StringName
         StringConstruct.stringNameNewString(&field_SN, field)
-        gdAPI.Register_Int_const(Library, className_SN, &enumName_SN, &field_SN, GDE.Int(info.values[ind]), false)
-        Destructors.stringNameDestructor(&field_SN)
+        gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &enumName_SN, &field_SN, GDE.Int(info.values[ind]), false)
+        StringName_Methods.Destroy(&field_SN)
     }
 }
 
@@ -458,12 +459,12 @@ Export_Ranged_Array :: proc(className_SN: ^GDE.StringName, $classStruct: typeid,
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
-        
+
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
-            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
-            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.Array {
             GDArray.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
@@ -953,7 +954,7 @@ Export_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $outbi
     defer delete(bsname)
     bsname_SN: GDE.StringName
     StringConstruct.stringNameNewString(&bsname_SN, bsname)
-    defer(Destructors.stringNameDestructor(&bsname_SN))
+    defer(StringName_Methods.Destroy(&bsname_SN))
 
     //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
     when sics.type_is_enum((sics.type_bit_set_elem_type(outbit_set))) {
@@ -967,8 +968,8 @@ Export_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $outbi
             
             //The index of an enum represents the index of the bool in a bit_set.
             //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
-            gdAPI.Register_Int_const(Library, className_SN, &bsname_SN, &field_SN, GDE.Int(1<<u64(flag_enum.values[index])), true)
-            Destructors.stringNameDestructor(&field_SN)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, GDE.Int(1<<u64(flag_enum.values[index])), true)
+            StringName_Methods.Destroy(&field_SN)
         }
 
     } else {
@@ -976,9 +977,9 @@ Export_Flags :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $outbi
             field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN: GDE.StringName
             StringConstruct.stringNameNewString(&field_SN, field)
-            gdAPI.Register_Int_const(Library, className_SN, &bsname_SN, &field_SN, GDE.Int(i), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, GDE.Int(i), true)
             delete(field)
-            Destructors.stringNameDestructor(&field_SN)
+            StringName_Methods.Destroy(&field_SN)
         }
     }
 }
@@ -1126,7 +1127,7 @@ Export_Path :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fieldN
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1200,7 +1201,7 @@ Export_Locale :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fiel
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1267,7 +1268,7 @@ Export_Password :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $fi
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1331,7 +1332,7 @@ Export_With_Placeholder_Text :: proc(className_SN: ^GDE.StringName, $classStruct
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1409,10 +1410,10 @@ Export_Input_Name :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == GDE.StringName {
-            Destructors.stringNameDestructor(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == GDE.gdstring {
-            Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         }
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -1491,7 +1492,7 @@ Export_Multiline :: proc(className_SN: ^GDE.StringName, $classStruct: typeid, $f
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-         Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+         String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1551,7 +1552,7 @@ Export_Node_Path_Types :: proc(className_SN: ^GDE.StringName, $classStruct: type
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-        Destructors.stringDestruction(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(GDE.Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1944,7 +1945,7 @@ Export_proc_As_Tool_Button :: proc(className_SN: ^GDE.StringName, $classStruct: 
 
     gdCallable23: GDE.Callable
     
-    Methods.makeCallable(container, &my_Custom_Callable)
+    gdAPI.Callable_Utils.CustomCreate2(container, &my_Custom_Callable)
 
     @(static) value: GDE.Callable
     if value.objectId == 0 {
@@ -2070,13 +2071,13 @@ makePropertyFull_cstring :: #force_inline proc(type: GDE.VariantType, name: cstr
     
 
     prop_name:= new(GDE.StringName)
-    StringConstruct.stringNameNewLatin(prop_name, name, false)
+    gdAPI.StringName_Utils.Latin1Chars(prop_name, name, false)
 
     propHintString:= new(GDE.gdstring)
-    StringConstruct.stringNewUTF8(propHintString, hintString)
+    gdAPI.Strings_Utils.NewWithUtf8Chars(propHintString, hintString)
 
     propClassName:= new(GDE.StringName)
-    StringConstruct.stringNameNewLatin(propClassName, className, false)
+    gdAPI.StringName_Utils.Latin1Chars(propClassName, className, false)
     
     info: GDE.PropertyInfo = {
         name = prop_name,
@@ -2094,13 +2095,13 @@ makePropertyFull_string :: #force_inline proc(type: GDE.VariantType, name: strin
     
 
     prop_name:= new(GDE.StringName)
-    StringConstruct.stringNameNewUTF8andLen(prop_name, raw_data(name), i64(len(name)))
+    gdAPI.StringName_Utils.Utf8CharsAndLen(prop_name, raw_data(name), i64(len(name)))
 
     propHintString:= new(GDE.gdstring)
-    StringConstruct.stringNewUTF8_len(propHintString, raw_data(hintString), i64(len(hintString)))
+    gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(propHintString, raw_data(hintString), i64(len(hintString)))
 
     propClassName:= new(GDE.StringName)
-    StringConstruct.stringNameNewUTF8andLen(propClassName, raw_data(className), i64(len(className)))
+    gdAPI.StringName_Utils.Utf8CharsAndLen(propClassName, raw_data(className), i64(len(className)))
     
     info: GDE.PropertyInfo = {
         name = prop_name,
@@ -2135,7 +2136,7 @@ bindMethod :: #force_inline proc(className: ^GDE.StringName, methodName: string,
     {
 
     methodStringName: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
 
     argcount:: sics.type_proc_parameter_count(T) - 1
 
@@ -2232,11 +2233,11 @@ bindMethod :: #force_inline proc(className: ^GDE.StringName, methodName: string,
         methodInfo.arguments_metadata = &args_metadata[0]
     }
 
-    gdAPI.classdbRegisterExtensionClassMethod(Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
-    Destructors.stringNameDestructor(&methodStringName)
-    //Destructors.stringNameDestructor(&classNameString)
+    StringName_Methods.Destroy(&methodStringName)
+    //StringName_Methods.Destroy(&classNameString)
     destructProperty(&returnInfo)
 
 }
@@ -2249,13 +2250,13 @@ Bind_Property :: proc {
 Bind_Property_Prop_Info :: #force_inline proc(className: ^GDE.StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: string, loc:=#caller_location) {
 
     getterName: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&getterName, raw_data(getter[:]), i64(len(getter)))
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&getterName, raw_data(getter[:]), i64(len(getter)))
 
     setterName: GDE.StringName
-    StringConstruct.stringNameNewUTF8andLen(&setterName, raw_data(setter[:]), i64(len(setter)))
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&setterName, raw_data(setter[:]), i64(len(setter)))
     
     //fmt.println("register property")
-    gdAPI.classDBRegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
+    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
     
 }
 
@@ -2270,20 +2271,39 @@ bindProperty :: #force_inline proc(className: ^GDE.StringName, name: string, typ
     info: GDE.PropertyInfo = make_property(type, name)
 
     getterName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&getterName, getter, false)
+    gdAPI.StringName_Utils.Latin1Chars(&getterName, getter, false)
 
     setterName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&setterName, setter, false)
+    gdAPI.StringName_Utils.Latin1Chars(&setterName, setter, false)
     
     //fmt.println("register property")
-    gdAPI.classDBRegisterExtensionClassProperty(Library, className, &info, &setterName, &getterName)
+    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, &info, &setterName, &getterName)
     //fmt.println("register property complete")
 
     //Destructor stuff
     destructProperty(&info)
 }
 
-
+destructProperty :: proc(info: ^GDE.PropertyInfo) {
+    
+    if info.name != nil{
+        StringName_Methods.Destroy(info.name)
+    }
+    if info.class_name != nil {
+        StringName_Methods.Destroy(info.class_name)
+    }
+    if info.hint_string != nil {
+        String_Methods.Destroy(info.hint_string)
+    }
+    
+    //See above TODO. If malloc is not needed, wouldn't need to free.
+    if info.name != nil{
+    free(info.name)}
+    if info.hint_string != nil {
+    free(info.class_name)}
+    if info.class_name != nil {
+    free(info.hint_string)}
+}
 
 //This is messy. I dunno if this is better or worse than having 7 individual functions... Lots of casting. Eh.
 //This is also using some really old functions for the variant conversion since they provide a return instead of needing an empty pointer.

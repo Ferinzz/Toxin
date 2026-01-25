@@ -1,16 +1,22 @@
 package main
 
 import GDW "GDWrapper"
-import GDE "GDWrapper/gdextension"
+import GDE "GDWrapper/gdAPI/gdextension"
 import "base:runtime"
 import "core:fmt"
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
-//During callbacks Godot will be passing us a pointer to a Class_Container struct using this struct.
+//Godot will be passing us a pointer to this struct during callbacks.
+//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
     someProperty: GDE.Int,
+}
+
+munum::enum{
+    a1,a2,a3,
+    a7=7
 }
 
 self_reggy:: proc(self: ^GDW.Registerer, init_level: GDE.InitializationLevel) {
@@ -51,7 +57,7 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
 THIS_CLASS_NAME_Export :: proc(className: ^GDE.StringName){
-
+    context = runtime.default_context()
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {GDE.ClassMethodFlags.NORMAL}, "arg1")
     
@@ -59,6 +65,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^GDE.StringName){
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
     GDW.Export(className, THIS_CLASS_NAME, "someProperty")
+    GDW.Export_Enum(className, THIS_CLASS_NAME, munum)
 }
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).

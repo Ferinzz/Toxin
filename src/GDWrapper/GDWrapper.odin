@@ -1,7 +1,8 @@
 package GDWrapper
 
 import "base:runtime"
-import GDE "gdextension"
+import GDE "gdAPI/gdextension"
+import "gdAPI"
 import sics "base:intrinsics"
 import "core:slice"
 import "core:reflect"
@@ -12,554 +13,36 @@ Library : GDE.ClassLibraryPtr = nil
 //a pointer uniquely identifying the given built-in class in the ClassDB.
 ClassTag:: rawptr
 
+Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
 
-//*****************************\\
-//******Pointers to Godot******\\
-//******Utility Functions******\\
-//*****************************\\
+    gdAPI.loadAPI(p_get_proc_address)
+    init_StringName_Methods()
+    init_String_Methods()
+    init_array_types()
 
-gd_Main_Loop: struct {
-  register_main_loop_callbacks: GDE.InterfaceRegisterMainLoopCallbacks,
+    StringConstruct.stringNameNewString = proc(StringName_r: ^GDE.StringName, name: string) {
+        gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
+    }
+    
+    StringConstruct.stringNameNewString_r = proc(name: string) -> (r_ret: GDE.StringName) {
+        gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
+        return
+    }
+
+    StringConstruct.stringNameNewString(&PhysicsServer2D_SN, "PhysicsServer2D")
+    StringConstruct.stringNameNewString(&RenderServer_SN, "RenderingServer")
+
+    objectEmitSignal = classDBGetMethodBind("Object", "emit_signal", 4047867050)
 }
-
-//You're going to use the p_get_proc_address a lot to get most of the default Godot interface functions.
-gdAPI : struct  {
-    p_get_proc_address: GDE.InterfaceGetProcAddress,
-    classDBRegisterExtClass: GDE.InterfaceClassdbRegisterExtensionClass4,
-    classDBConstructObj: GDE.InterfaceClassdbConstructObject,
-    object_set_instance: GDE.InterfaceObjectSetInstance,
-    object_set_instance_binding: GDE.InterfaceObjectSetInstanceBinding,
-    mem_alloc: GDE.InterfaceMemAlloc,
-    mem_alloc2: GDE.InterfaceMemAlloc2,
-    mem_free: GDE.InterfaceMemFree,
-    mem_free2: GDE.InterfaceMemFree2,
-
-    //Variant related function pointers.
-    classdbRegisterExtensionClassMethod: GDE.InterfaceClassdbRegisterExtensionClassMethod,
-
-    //Custom properties.
-    classDBRegisterExtensionClassProperty: GDE.InterfaceClassdbRegisterExtensionClassProperty,
-    classBDRegistClassSignal: GDE.InterfaceClassdbRegisterExtensionClassSignal,
-
-
-    //Use to get the method pointers for Godot's objects. ie : get the set_position function from Node2D
-    classDBGetMethodBind: GDE.InterfaceClassdbGetMethodBind,
-
-    //Functions related to method bindings on Godot side.
-    objectMethodBindCall: GDE.InterfaceObjectMethodBindCall,
-    objectMethodBindPtrCall: GDE.InterfaceObjectMethodBindPtrcall,
-    builtinMethodBindCall: GDE.InterfaceVariantGetPtrBuiltinMethod,
-    indexGetBind: GDE.InterfaceVariantGetPtrIndexedGetter,
-    indexSetBind: GDE.InterfaceVariantGetPtrIndexedSetter,
-    variantGetPtrOperatorEvaluator: GDE.InterfaceVariantGetPtrOperatorEvaluator,
-
-    //PtrBuiltInMethod :: proc "c" (p_base: TypePtr, p_args: ConstTypePtrargs, r_return:  TypePtr, p_argument_count: i64);
-    call_deferred_callable: GDE.PtrBuiltInMethod,
-
-    regGetObj: GDE.InterfaceRefGetObject,
-    //Do not need ot validate the object or string name yourself, Godot does this during the call process.
-    callScript: GDE.InterfaceObjectCallScriptMethod,
-    ObjectGetInstanceFromId: GDE.InterfaceObjectGetInstanceFromId,
-
-    Register_Int_const: GDE.InterfaceClassdbRegisterExtensionClassIntegerConstant,
-
-    getClassTag: GDE.InterfaceClassdbGetClassTag,
-}
-
-
 
 //Use these to build a C++ String or StringName that Godot can use.
 StringConstruct : struct {
-    stringNameNewLatin: GDE.InterfaceStringNameNewWithLatin1Chars,
-    stringNameNewUTF8andLen: GDE.InterfaceStringNameNewWithUtf8CharsAndLen,
     stringNameNewString: stringNameNewString,
     stringNameNewString_r: stringNameNewString_r,
-    stringNewLatinLen: GDE.InterfaceStringNewWithLatin1CharsAndLen,
-    stringNewUTF8: GDE.InterfaceStringNewWithUtf8Chars,
-    stringNewUTF8_len: GDE.InterfaceStringNewWithUtf8CharsAndLen,
-    stringNewLatin: GDE.InterfaceStringNewWithLatin1Chars,
-    utf8FromString: GDE.InterfaceStringToUtf8Chars,
 }
 
 stringNameNewString :: #type proc(StringName_r: ^GDE.StringName, name: string)
 stringNameNewString_r :: #type proc(name: string) -> (r_ret: GDE.StringName) 
-
-//Destructors :: struct {
-Destructors: struct {
-    stringNameDestructor: GDE.PtrDestructor,
-    stringDestruction: GDE.PtrDestructor,
-    variantDestroy: GDE.InterfaceVariantDestroy,
-    ObjectDestroy: GDE.InterfaceObjectDestroy,
-} 
-
-
-Methods: struct {
-    node2dSetPosition: GDE.MethodBindPtr,
-    node2dGetPos: GDE.MethodBindPtr,
-    objectEmitSignal: GDE.MethodBindPtr,
-    getMainLoop: GDE.MethodBindPtr,
-    getSingleton: GDE.InterfaceGlobalGetSingleton,
-    makeCallable: GDE.InterfaceCallableCustomCreate2,
-    ObjGetClassName: GDE.InterfaceObjectGetClassName,
-    checkCast: GDE.InterfaceObjectCastTo,
-}
-
-Print: struct {
-    Error: GDE.InterfacePrintError,
-    ErrorWithMessage: GDE.InterfacePrintErrorWithMessage,
-    Warning: GDE.InterfacePrintWarning,
-    WarningWithMessage: GDE.InterfacePrintWarningWithMessage,
-}
-
-operator: struct {
-    stringNameEqual: GDE.PtrOperatorEvaluator,
-}
-
-GDNode_Path: struct {
-    constructors: struct {
-        from_string: GDE.PtrConstructor
-    }
-}
-
-loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
-    //These are required for setup. Adding these at the very beginning to ensure they are available for the rest of the init.
-    //Gets a pointer to the function that will return the pointer to the function that destroys the specific variable type.
-    variant_get_ptr_destructor: GDE.InterfaceVariantGetPtrDestructor  = cast(GDE.InterfaceVariantGetPtrDestructor)p_get_proc_address("variant_get_ptr_destructor")
-    StringConstruct.stringNameNewLatin = cast(GDE.InterfaceStringNameNewWithLatin1Chars)p_get_proc_address("string_name_new_with_latin1_chars")
-    StringConstruct.stringNameNewUTF8andLen = cast(GDE.InterfaceStringNameNewWithUtf8CharsAndLen)p_get_proc_address("string_name_new_with_utf8_chars_and_len")
-    StringConstruct.stringNewLatinLen = cast(GDE.InterfaceStringNewWithLatin1CharsAndLen)p_get_proc_address("string_new_with_latin1_chars_and_len")
-
-    StringConstruct.stringNameNewString = proc(StringName_r: ^GDE.StringName, name: string) {
-        StringConstruct.stringNameNewUTF8andLen(StringName_r, raw_data(name[:]), i64(len(name)))
-    }
-    
-    StringConstruct.stringNameNewString_r = proc(name: string) -> (r_ret: GDE.StringName) {
-        
-        StringConstruct.stringNameNewUTF8andLen(&r_ret, raw_data(name[:]), i64(len(name)))
-        return
-    }
-
-    init_Node_Virtuals_Info()
-    init_Control_Virtual_Info()
-    init_CanvasItem_Virtuals_Info()
-    init_InputEventMouse()
-    init_CollisionObject2D_Virtual_Info()
-    init_Texture2D_Virtuals_Info()
-
-    Destructors.stringNameDestructor = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING_NAME)
-    Destructors.stringDestruction = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.STRING)
-    
-    // Get helper functions first.
-    //Gets a pointer to the function that will return the pointer to the function that will evaluate the variable types under the specified condition.
-    gdAPI.variantGetPtrOperatorEvaluator = cast(GDE.InterfaceVariantGetPtrOperatorEvaluator)p_get_proc_address("variant_get_ptr_operator_evaluator")
-    variantGetPtrConstructor: GDE.InterfaceVariantGetPtrConstructor = cast(GDE.InterfaceVariantGetPtrConstructor)p_get_proc_address("variant_get_ptr_constructor")
-
-    //Operators
-    //Do not get confused with the function that we run on our end that will return whether a StringName is equal. This just runs the compare on Godot Side.
-    operator.stringNameEqual = gdAPI.variantGetPtrOperatorEvaluator(.VARIANT_OP_EQUAL, .STRING_NAME, .STRING_NAME)
-
-    gd_Main_Loop.register_main_loop_callbacks = cast(GDE.InterfaceRegisterMainLoopCallbacks)p_get_proc_address("register_main_loop_callbacks")
-
-    //API.
-    gdAPI.p_get_proc_address = p_get_proc_address
-    gdAPI.classDBRegisterExtClass = cast(GDE.InterfaceClassdbRegisterExtensionClass4)p_get_proc_address("classdb_register_extension_class4")
-    gdAPI.classDBConstructObj = cast(GDE.InterfaceClassdbConstructObject)p_get_proc_address("classdb_construct_object")
-    gdAPI.object_set_instance = cast(GDE.InterfaceObjectSetInstance)p_get_proc_address("object_set_instance")
-    gdAPI.object_set_instance_binding = cast(GDE.InterfaceObjectSetInstanceBinding)p_get_proc_address("object_set_instance_binding")
-    gdAPI.mem_alloc = cast(GDE.InterfaceMemAlloc)p_get_proc_address("mem_alloc")
-    //gdAPI.mem_alloc2 = cast(GDE.InterfaceMemAlloc2)p_get_proc_address("mem_alloc2")
-    gdAPI.mem_free = cast(GDE.InterfaceMemFree)p_get_proc_address("mem_free")
-    //gdAPI.mem_free2 = cast(GDE.InterfaceMemFree2)p_get_proc_address("mem_free2")
-    gdAPI.classdbRegisterExtensionClassMethod = cast(GDE.InterfaceClassdbRegisterExtensionClassMethod)p_get_proc_address("classdb_register_extension_class_method")
-    gdAPI.classDBRegisterExtensionClassProperty = cast(GDE.InterfaceClassdbRegisterExtensionClassProperty)p_get_proc_address("classdb_register_extension_class_property")
-    //Really nice that you can (hopefully) just cast the pointer to the function's proc type. Signature?
-    gdAPI.classDBGetMethodBind = cast(GDE.InterfaceClassdbGetMethodBind)p_get_proc_address("classdb_get_method_bind")
-    //gdAPI.objectMethodBindPtrCall = cast(proc(p_method_bind: GDE.MethodBindPtr, p_instance: GDE.ObjectPtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr))p_get_proc_address("object_method_bind_ptrcall")
-    gdAPI.objectMethodBindPtrCall = cast(GDE.InterfaceObjectMethodBindPtrcall)p_get_proc_address("object_method_bind_ptrcall")
-    gdAPI.classBDRegistClassSignal = cast(GDE.InterfaceClassdbRegisterExtensionClassSignal)p_get_proc_address("classdb_register_extension_class_signal")
-    gdAPI.objectMethodBindCall = cast(GDE.InterfaceObjectMethodBindCall)p_get_proc_address("object_method_bind_call")
-    gdAPI.builtinMethodBindCall = cast(GDE.InterfaceVariantGetPtrBuiltinMethod)p_get_proc_address("variant_get_ptr_builtin_method")
-    gdAPI.callScript = cast(GDE.InterfaceObjectCallScriptMethod)p_get_proc_address("object_call_script_method")
-    gdAPI.ObjectGetInstanceFromId = cast(GDE.InterfaceObjectGetInstanceFromId)p_get_proc_address("object_get_instance_from_id")
-    gdAPI.Register_Int_const = cast(GDE.InterfaceClassdbRegisterExtensionClassIntegerConstant)p_get_proc_address("classdb_register_extension_class_integer_constant")
-    gdAPI.getClassTag = cast(GDE.InterfaceClassdbGetClassTag)p_get_proc_address("classdb_get_class_tag")
-    
-    MethodName: GDE.StringName
-    StringConstruct.stringNameNewLatin(&MethodName, "call_deferred", false)
-    gdAPI.call_deferred_callable = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 3286317445)
-    Destructors.stringNameDestructor(&MethodName)
-
-    //constructors.
-    StringConstruct.stringNewUTF8 = cast(GDE.InterfaceStringNewWithUtf8Chars)gdAPI.p_get_proc_address("string_new_with_utf8_chars")
-    StringConstruct.stringNewUTF8_len = cast(GDE.InterfaceStringNewWithUtf8CharsAndLen)gdAPI.p_get_proc_address("string_new_with_utf8_chars_and_len")
-    StringConstruct.stringNewLatin = cast(GDE.InterfaceStringNewWithLatin1Chars)gdAPI.p_get_proc_address("string_new_with_latin1_chars")
-    StringConstruct.utf8FromString = cast(GDE.InterfaceStringToUtf8Chars)gdAPI.p_get_proc_address("string_to_utf8_chars")
-
-
-    StringConstruct.stringNameNewLatin(&MethodName, "is_custom", false)
-    Callable_Methods.is_custom = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 3918633141)
-    Destructors.stringNameDestructor(&MethodName)
-    
-    StringConstruct.stringNameNewLatin(&MethodName, "get_object", false)
-    Callable_Methods.get_object = gdAPI.builtinMethodBindCall(.CALLABLE, &MethodName, 4008621732)
-    Destructors.stringNameDestructor(&MethodName)
-    
-
-    VariantGetters.getVariantFromTypeConstructor = cast(GDE.InterfaceGetVariantFromTypeConstructor)p_get_proc_address("get_variant_from_type_constructor")
-    VariantGetters.getVariantToTypeConstuctor = cast(GDE.InterfaceGetVariantToTypeConstructor)p_get_proc_address("get_variant_to_type_constructor")
-    VariantGetters.variantGetType = cast(GDE.InterfaceVariantGetType)p_get_proc_address("variant_get_type")
-
-
-
-    
-    GDNode_Path.constructors.from_string = variantGetPtrConstructor(.NODE_PATH, 2)
-
-    gdAPI.indexGetBind = cast(GDE.InterfaceVariantGetPtrIndexedGetter)p_get_proc_address("variant_get_ptr_indexed_getter")
-    gdAPI.indexSetBind = cast(GDE.InterfaceVariantGetPtrIndexedSetter)p_get_proc_address("variant_get_ptr_indexed_setter")
-    
-    ArrayHelp.packedi32GetIndex = gdAPI.indexGetBind(.PACKED_INT32_ARRAY)
-    ArrayHelp.packedi32SetIndex = gdAPI.indexSetBind(.PACKED_INT32_ARRAY)
-    ArrayHelp.packedi32create0 = variantGetPtrConstructor(.PACKED_INT32_ARRAY, 0)
-    ArrayHelp.packedi32create1 = variantGetPtrConstructor(.PACKED_INT32_ARRAY, 1)
-    
-    arrayClass: GDE.StringName
-    StringConstruct.stringNameNewLatin(&arrayClass, "PackedInt64Array", false)
-    arraySize: GDE.StringName
-    StringConstruct.stringNameNewLatin(&arraySize, "size", false)
-    ArrayHelp.packedi32size = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 3173160232)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "resize", false)
-    ArrayHelp.packedi32REsize = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 848867239)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "append", false)
-    ArrayHelp.packedi32Append = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 694024632)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "get", false)
-    ArrayHelp.packedi32Get = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 4103005248)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "set", false)
-    ArrayHelp.packedi32Set = gdAPI.builtinMethodBindCall(.PACKED_INT32_ARRAY, &arraySize, 3638975848)
-    Destructors.stringNameDestructor(&arraySize)
-    
-    Destructors.stringNameDestructor(&arrayClass)
-    
-
-    StringConstruct.stringNameNewLatin(&arrayClass, "PackedStringArray", false)
-    
-    PackedStringArray.GetIndex = gdAPI.indexGetBind(.PACKED_STRING_ARRAY)
-    PackedStringArray.SetIndex = gdAPI.indexSetBind(.PACKED_STRING_ARRAY)
-    PackedStringArray.Destroy = variant_get_ptr_destructor(.PACKED_STRING_ARRAY)
-    StringConstruct.stringNameNewLatin(&arraySize, "size", false)
-    PackedStringArray.Size = gdAPI.builtinMethodBindCall(.PACKED_STRING_ARRAY, &arraySize, 3173160232)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "resize", false)
-    PackedStringArray.Resize = gdAPI.builtinMethodBindCall(.PACKED_STRING_ARRAY, &arraySize, 848867239)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "append", false)
-    PackedStringArray.Append = gdAPI.builtinMethodBindCall(.PACKED_STRING_ARRAY, &arraySize, 816187996)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "get", false)
-    PackedStringArray.Get = gdAPI.builtinMethodBindCall(.PACKED_STRING_ARRAY, &arraySize, 2162347432)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "set", false)
-    PackedStringArray.Set = gdAPI.builtinMethodBindCall(.PACKED_STRING_ARRAY, &arraySize, 725585539)
-    Destructors.stringNameDestructor(&arraySize)
-
-    Destructors.stringNameDestructor(&arrayClass)
-
-    //Fetch Godot's methods for Array class.
-    StringConstruct.stringNameNewLatin(&arrayClass, "Array", false)
-
-    
-    GDArray.create0 = variantGetPtrConstructor(.ARRAY, 0)
-    GDArray.create1 = variantGetPtrConstructor(.ARRAY, 1)
-    GDArray.create2 = variantGetPtrConstructor(.ARRAY, 2)
-    GDArray.create3 = variantGetPtrConstructor(.ARRAY, 3)
-    GDArray.create4 = variantGetPtrConstructor(.ARRAY, 4)
-    GDArray.create5 = variantGetPtrConstructor(.ARRAY, 5)
-    GDArray.create6 = variantGetPtrConstructor(.ARRAY, 6)
-    GDArray.create7 = variantGetPtrConstructor(.ARRAY, 7)
-    GDArray.create8 = variantGetPtrConstructor(.ARRAY, 8)
-    GDArray.create9 = variantGetPtrConstructor(.ARRAY, 9)
-    GDArray.create10 = variantGetPtrConstructor(.ARRAY, 10)
-    GDArray.create11 = variantGetPtrConstructor(.ARRAY, 11)
-    GDArray.create11 = variantGetPtrConstructor(.ARRAY, 12)
-    
-    GDArray.GetIndex = gdAPI.indexGetBind(.ARRAY)
-    GDArray.SetIndex = gdAPI.indexSetBind(.ARRAY)
-    GDArray.Destroy = variant_get_ptr_destructor(.ARRAY)
-    
-
-    StringConstruct.stringNameNewLatin(&arraySize, "size", false)
-    GDArray.Size = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "is_empty", false)
-    GDArray.is_empty = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "clear", false)
-    GDArray.clear = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "hash", false)
-    GDArray.hash = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "assign", false)
-    //Parameters are incorrect.
-    GDArray.assign = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2307260970)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "get", false)
-    GDArray.Get = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 708700221)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "set", false)
-    GDArray.set = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3798478031)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "push_back", false)
-    GDArray.push_back = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "push_front", false)
-    GDArray.push_front = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "append", false)
-    GDArray.append = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "append_array", false)
-    GDArray.append_array = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2307260970)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "resize", false)
-    GDArray.resize = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 848867239)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "insert", false)
-    GDArray.insert = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3176316662)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "remove_at", false)
-    GDArray.remove_at = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2823966027)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "fill", false)
-    GDArray.fill = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "erase", false)
-    GDArray.erase = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3316032543)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "front", false)
-    GDArray.front = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "back", false)
-    GDArray.back = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "pick_random", false)
-    GDArray.pick_random = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "find", false)
-    GDArray.find = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2336346817)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "find_custom", false)
-    GDArray.find_custom = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2145562546)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "rfind", false)
-    GDArray.rfind = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2336346817)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "rfind_custom", false)
-    GDArray.rfind_custom = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2145562546)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "count", false)
-    GDArray.count = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1481661226)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "has", false)
-    GDArray.has = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3680194679)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "pop_back", false)
-    GDArray.pop_back = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1321915136)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "pop_front", false)
-    GDArray.pop_front = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1321915136)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "pop_at", false)
-    GDArray.pop_at = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3518259424)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "sort", false)
-    GDArray.sort = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "sort_custom", false)
-    GDArray.sort_custom = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3470848906)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "shuffle", false)
-    GDArray.shuffle = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "bsearch", false)
-    GDArray.bsearch = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3372222236)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "bsearch_custom", false)
-    GDArray.bsearch_custom = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 161317131)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "reverse", false)
-    GDArray.reverse = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "duplicate", false)
-    GDArray.duplicate = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 636440122)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "slice", false)
-    GDArray.slice = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1393718243)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "filter", false)
-    GDArray.filter = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4075186556)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "map", false)
-    //parameters are incorrect
-    GDArray.gdmap = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4075186556)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "reduce", false)
-    GDArray.reduce = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4272450342)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "any", false)
-    GDArray.gdany = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4129521963)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "all", false)
-    GDArray.all = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 4129521963)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "max", false)
-    GDArray.max = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "min", false)
-    GDArray.min = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "is_typed", false)
-    GDArray.is_typed = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "is_same_typed", false)
-    GDArray.is_same_typed = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 2988181878)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "get_typed_builtin", false)
-    GDArray.get_typed_builtin = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3173160232)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "get_typed_class_name", false)
-    GDArray.get_typed_class_name = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1825232092)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "get_typed_script", false)
-    GDArray.get_typed_script = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 1460142086)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "make_read_only", false)
-    GDArray.make_read_only = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3218959716)
-    Destructors.stringNameDestructor(&arraySize)
-
-    StringConstruct.stringNameNewLatin(&arraySize, "is_read_only", false)
-    GDArray.is_read_only = gdAPI.builtinMethodBindCall(.ARRAY, &arraySize, 3918633141)
-    Destructors.stringNameDestructor(&arraySize)
-
-    Destructors.stringNameDestructor(&arrayClass)
-
-    //dictionary_SN: GDE.StringName
-    //StringConstruct.stringNameNewString(&dictionary_SN, "")
-
-    GDDictionary_Methods.Destroy = variant_get_ptr_destructor(.DICTIONARY)
-    NodePath_Methods.Destroy = variant_get_ptr_destructor(.NODE_PATH)
-    Callable_Methods.Destroy = variant_get_ptr_destructor(.CALLABLE)
-    Signal_Methods.Destroy = variant_get_ptr_destructor(.SIGNAL)
-    PackedByteArray_Methods.Destroy = variant_get_ptr_destructor(.PACKED_BYTE_ARRAY)
-    PackedInt32Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_INT32_ARRAY)
-    PackedInt64Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_INT64_ARRAY)
-    PackedFloat32Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_FLOAT32_ARRAY)
-    PackedFloat64Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_FLOAT64_ARRAY)
-    PackedVector2Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_VECTOR2_ARRAY)
-    PackedVector3Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_VECTOR3_ARRAY)
-    PackedVector4Array_Methods.Destroy = variant_get_ptr_destructor(.PACKED_VECTOR4_ARRAY)
-    PackedColorArray_Methods.Destroy = variant_get_ptr_destructor(.PACKED_COLOR_ARRAY)
-    
-    //constructor.variantNil = cast(GDE.InterfaceVariantNewNil)gdAPI.p_get_proc_address("variant_new_nil")
-    //constructor.variantToVec2Constructor = cast(GDE.TypeFromVariantConstructorFunc)gdAPI.getVariantToTypeConstuctor(.VECTOR2)
-
-    //Destructors.
-    Destructors.variantDestroy = cast(GDE.InterfaceVariantDestroy)p_get_proc_address("variant_destroy")
-    Destructors.ObjectDestroy = cast(GDE.InterfaceObjectDestroy)p_get_proc_address("object_destroy")
-
-    ArrayHelp.packedi32Destroy = cast(GDE.PtrDestructor)variant_get_ptr_destructor(.PACKED_INT32_ARRAY)
-
-    //Destructors.stringNameDestructor(arraySize)
-    //Destructors.stringNameDestructor(arrayClass)
-
-    Methods.objectEmitSignal = classDBGetMethodBind("Object", "emit_signal", 4047867050)
-    Methods.getSingleton = cast(GDE.InterfaceGlobalGetSingleton)gdAPI.p_get_proc_address("global_get_singleton")
-    Methods.makeCallable = cast(GDE.InterfaceCallableCustomCreate2)gdAPI.p_get_proc_address("callable_custom_create2")
-    Methods.ObjGetClassName = cast(GDE.InterfaceObjectGetClassName)gdAPI.p_get_proc_address("object_get_class_name")
-    Methods.checkCast = cast(GDE.InterfaceObjectCastTo)gdAPI.p_get_proc_address("object_cast_to")
-    //Methods.node2dSetPosition = classDBGetMethodBind("Node2D", "set_position", 743155724)
-
-
-    gdAPI.regGetObj = cast(GDE.InterfaceRefGetObject)gdAPI.p_get_proc_address("ref_get_object")
-
-    
-    StringConstruct.stringNameNewLatin(&PhysicsServer2D_SN, "PhysicsServer2D", false)
-    StringConstruct.stringNameNewLatin(&RenderServer_SN, "RenderingServer", false)
-    StringConstruct.stringNameNewLatin(&Input_SN, "Input", false)
-    
-    Print.Error = cast(GDE.InterfacePrintError)gdAPI.p_get_proc_address("print_error")
-    Print.ErrorWithMessage = cast(GDE.InterfacePrintErrorWithMessage)gdAPI.p_get_proc_address("print_error_with_message")
-    Print.Warning = cast(GDE.InterfacePrintWarning)gdAPI.p_get_proc_address("print_warning")
-    Print.WarningWithMessage = cast(GDE.InterfacePrintWarningWithMessage)gdAPI.p_get_proc_address("print_warning_with_message")
-    
-}
-
-/*
-classCreate :: proc "c" () {
-
-}
-*/
-
-
 /* Get a binding to a method from Godot's class DB.
 * Pass in the class and method name as strings. The function will convert Odin strings to Godot's StringName.
 * 
@@ -573,14 +56,14 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #
     native_class_name: GDE.StringName;
     method_name: GDE.StringName;
     
-    StringConstruct.stringNameNewLatin(&native_class_name, className, false)
-    StringConstruct.stringNameNewLatin(&method_name, methodName, false)
+    gdAPI.StringName_Utils.Latin1Chars(&native_class_name, className, false)
+    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
     
-    methodBind = gdAPI.classDBGetMethodBind(&native_class_name, &method_name, hash)
+    methodBind = gdAPI.ClassDB.GetMethodBind(&native_class_name, &method_name, hash)
     assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
     
-    Destructors.stringNameDestructor(&native_class_name)
-    Destructors.stringNameDestructor(&method_name)
+    StringName_Methods.Destroy(&native_class_name)
+    StringName_Methods.Destroy(&method_name)
 
     return methodBind
 }
@@ -591,39 +74,18 @@ classDBGetMethodBind2 :: proc(className: ^GDE.StringName, methodName: cstring, h
     assert(className != nil, "ClassName is nil. Did you accidentally free this early?")
     method_name: GDE.StringName;
     
-    StringConstruct.stringNameNewLatin(&method_name, methodName, false)
+    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
     
-    methodBind = gdAPI.classDBGetMethodBind(className, &method_name, hash)
+    methodBind = gdAPI.ClassDB.GetMethodBind(className, &method_name, hash)
     assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
     
     
-    Destructors.stringNameDestructor(&method_name)
+    StringName_Methods.Destroy(&method_name)
 
     return methodBind
 }
 
 
-
-destructProperty :: proc(info: ^GDE.PropertyInfo) {
-    
-    if info.name != nil{
-        Destructors.stringNameDestructor(info.name)
-    }
-    if info.class_name != nil {
-        Destructors.stringNameDestructor(info.class_name)
-    }
-    if info.hint_string != nil {
-        Destructors.stringDestruction(info.hint_string)
-    }
-    
-    //See above TODO. If malloc is not needed, wouldn't need to free.
-    if info.name != nil{
-    free(info.name)}
-    if info.hint_string != nil {
-    free(info.class_name)}
-    if info.class_name != nil {
-    free(info.hint_string)}
-}
 
 
 
@@ -634,9 +96,9 @@ destructProperty :: proc(info: ^GDE.PropertyInfo) {
 variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: GDE.ConstVariantPtrargs, r_error: ^GDE.CallError) {
     
     for type, index in typeList {
-        if type != VariantGetters.variantGetType(argList[index]) {
+        if type != gdAPI.Variant_Utils.GetType(argList[index]) {
             r_error.error = .CALL_ERROR_INVALID_ARGUMENT
-            r_error.argument = i32(VariantGetters.variantGetType(argList[index]))
+            r_error.argument = i32(gdAPI.Variant_Utils.GetType(argList[index]))
             r_error.expected = i32(type)
             return
         }
@@ -653,22 +115,23 @@ stringNameCompare :: proc {
 //stringName::stringName; stringName::cstring; cstring::cstring
 stringNameCompare_cstring :: proc "c" (l_value: GDE.ConstStringNamePtr, r_value: cstring) -> (ret: bool) {
     r_name: GDE.StringName
-    StringConstruct.stringNameNewLatin(&r_name, r_value, false)
-    defer(Destructors.stringNameDestructor(&r_name))
+    gdAPI.StringName_Utils.Latin1Chars(&r_name, r_value, false)
+    defer(StringName_Methods.Destroy(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    StringName_Methods.Compare(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
     return ret
 }
+
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
 stringNameCompare_string :: proc(l_value: GDE.ConstStringNamePtr, r_value: string) -> (ret: bool) {
     r_name: GDE.StringName
     StringConstruct.stringNameNewString(&r_name, r_value)
-    defer(Destructors.stringNameDestructor(&r_name))
+    defer(StringName_Methods.Destroy(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    StringName_Methods.Compare(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
     return ret
 }
 //TODO: make a proc group for stringName compare
@@ -676,7 +139,7 @@ stringNameCompare_string :: proc(l_value: GDE.ConstStringNamePtr, r_value: strin
 stringNameCompare_StringName :: proc(l_value: GDE.ConstStringNamePtr, r_value: GDE.StringNamePtr) -> (ret: bool) {
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    operator.stringNameEqual(cast([^]rawptr)l_value, cast([^]rawptr)r_value, &ret)
+    StringName_Methods.Compare(cast([^]rawptr)l_value, cast([^]rawptr)r_value, &ret)
     return ret
 }
 
@@ -684,9 +147,9 @@ StringNameGetBasename :: proc(StringName: ^GDE.StringName, r_String: ^GDE.gdstri
     @(static)stringNameGetBasename: GDE.PtrBuiltInMethod
     if stringNameGetBasename == nil {
         ClassDB:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassDB, "get_basename", false)
-        defer(Destructors.stringNameDestructor(&ClassDB))
-        stringNameGetBasename = gdAPI.builtinMethodBindCall(.STRING_NAME, &ClassDB, 3942272618)
+        gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "get_basename", false)
+        defer(StringName_Methods.Destroy(&ClassDB))
+        stringNameGetBasename = gdAPI.Variant_Utils.GetPtrBuiltinMethod(.STRING_NAME, &ClassDB, 3942272618)
     }
     stringNameGetBasename(StringName, nil, r_String, 0)
 
@@ -696,9 +159,9 @@ GDStringJoin :: proc(packedString: ^GDE.PackedStringArray, r_String: ^GDE.gdstri
     @(static)gdStringJoin: GDE.PtrBuiltInMethod
     if gdStringJoin == nil {
         ClassDB:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassDB, "join", false)
-        defer(Destructors.stringNameDestructor(&ClassDB))
-        gdStringJoin = gdAPI.builtinMethodBindCall(.STRING, &ClassDB, 3595973238)
+        gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "join", false)
+        defer(StringName_Methods.Destroy(&ClassDB))
+        gdStringJoin = gdAPI.Variant_Utils.GetPtrBuiltinMethod(.STRING, &ClassDB, 3595973238)
     }
 
     args:= [1]rawptr {packedString}
@@ -713,8 +176,8 @@ get_ClassTagName :: proc(classTagName: string) -> ClassTag {
     
     classTagName_SN: GDE.StringName
     StringConstruct.stringNameNewString(&classTagName_SN, classTagName)
-    defer(Destructors.stringNameDestructor(&classTagName_SN))
-    return gdAPI.getClassTag(&classTagName_SN)
+    defer(StringName_Methods.Destroy(&classTagName_SN))
+    return gdAPI.ClassDB.GetClassTag(&classTagName_SN)
 }
 
 get_All_ClassTag :: proc {
@@ -773,19 +236,19 @@ getMainLoop :: proc "c" () -> (gdLoop: GDE.ObjectPtr) {
     @(static)getMainLoop:GDE.MethodBindPtr
 
     ClassDB:GDE.StringName
-    StringConstruct.stringNameNewLatin(&ClassDB, "Engine", false)
-    defer(Destructors.stringNameDestructor(&ClassDB))
-    myEngine:= Methods.getSingleton(&ClassDB)
+    gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "Engine", false)
+    defer(StringName_Methods.Destroy(&ClassDB))
+    myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
     
     if getMainLoop == nil {
     
         loopMain: GDE.StringName
-        StringConstruct.stringNameNewLatin(&loopMain, "get_main_loop", false)
-        defer(Destructors.stringNameDestructor(&loopMain))
-        getMainLoop = gdAPI.classDBGetMethodBind(&ClassDB, &loopMain, 1016888095)
+        gdAPI.StringName_Utils.Latin1Chars(&loopMain, "get_main_loop", false)
+        defer(StringName_Methods.Destroy(&loopMain))
+        getMainLoop = gdAPI.ClassDB.GetMethodBind(&ClassDB, &loopMain, 1016888095)
     }
 
-    gdAPI.objectMethodBindPtrCall(getMainLoop, myEngine, nil, &gdLoop)
+    gdAPI.Object_Utils.MethodBindPtrcall(getMainLoop, myEngine, nil, &gdLoop)
     return
 }
 
@@ -793,17 +256,17 @@ getRoot :: proc "c" () -> GDE.ObjectPtr {
     @(static)getRoot: GDE.MethodBindPtr
     if getRoot == nil {
         ClassNamegr:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassNamegr, "SceneTree", false)
-        defer(Destructors.stringNameDestructor(&ClassNamegr))
+        gdAPI.StringName_Utils.Latin1Chars(&ClassNamegr, "SceneTree", false)
+        defer(StringName_Methods.Destroy(&ClassNamegr))
         
         methodNamegr: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodNamegr, "get_root", false)
-        defer(Destructors.stringNameDestructor(&methodNamegr))
-        getRoot = gdAPI.classDBGetMethodBind(&ClassNamegr, &methodNamegr, 1757182445)
+        gdAPI.StringName_Utils.Latin1Chars(&methodNamegr, "get_root", false)
+        defer(StringName_Methods.Destroy(&methodNamegr))
+        getRoot = gdAPI.ClassDB.GetMethodBind(&ClassNamegr, &methodNamegr, 1757182445)
     }
     mySceneTree:= getMainLoop()
     r_ret:GDE.ObjectPtr
-    gdAPI.objectMethodBindPtrCall(getRoot, mySceneTree, nil, &r_ret)
+    gdAPI.Object_Utils.MethodBindPtrcall(getRoot, mySceneTree, nil, &r_ret)
     return r_ret
 }
 
@@ -811,17 +274,17 @@ get_current_scene :: proc "c" () -> GDE.ObjectPtr {
     @(static)getCurrentScene: GDE.MethodBindPtr
     if getCurrentScene == nil {
         ClassNamegr:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassNamegr, "SceneTree", false)
-        defer(Destructors.stringNameDestructor(&ClassNamegr))
+        gdAPI.StringName_Utils.Latin1Chars(&ClassNamegr, "SceneTree", false)
+        defer(StringName_Methods.Destroy(&ClassNamegr))
         
         methodNamegr: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodNamegr, "get_current_scene", false)
-        defer(Destructors.stringNameDestructor(&methodNamegr))
-        getCurrentScene = gdAPI.classDBGetMethodBind(&ClassNamegr, &methodNamegr, 3160264692)
+        gdAPI.StringName_Utils.Latin1Chars(&methodNamegr, "get_current_scene", false)
+        defer(StringName_Methods.Destroy(&methodNamegr))
+        getCurrentScene = gdAPI.ClassDB.GetMethodBind(&ClassNamegr, &methodNamegr, 3160264692)
     }
     mySceneTree:= getMainLoop()
     r_ret:GDE.ObjectPtr
-    gdAPI.objectMethodBindPtrCall(getCurrentScene, mySceneTree, nil, &r_ret)
+    gdAPI.Object_Utils.MethodBindPtrcall(getCurrentScene, mySceneTree, nil, &r_ret)
     return r_ret
 }
 
@@ -833,8 +296,8 @@ callDeferred :: proc(Object: ^GDE.Object, method: ^GDE.StringName, r_Variant: ^G
     @(static)CallDeferred: GDE.MethodBindPtr
     if CallDeferred == nil {
         ClassDB:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassDB, "Object", false)
-        defer(Destructors.stringNameDestructor(&ClassDB))
+        gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "Object", false)
+        defer(StringName_Methods.Destroy(&ClassDB))
         CallDeferred = classDBGetMethodBind2(&ClassDB, "call_deferred", 3400424181)
     }
 
@@ -842,7 +305,7 @@ callDeferred :: proc(Object: ^GDE.Object, method: ^GDE.StringName, r_Variant: ^G
     method_arg := tovariant(method, GDE.StringName)
     args:= [?]^GDE.Variant {&method_arg}
     r_error: GDE.CallError
-    gdAPI.objectMethodBindCall(CallDeferred, Object, raw_data(args[:]), 1, r_Variant, &r_error)
+    gdAPI.Object_Utils.MethodBindCall(CallDeferred, Object, raw_data(args[:]), 1, r_Variant, &r_error)
 }
 
 
@@ -850,12 +313,12 @@ ObjectToString :: proc(Object: ^GDE.Object, r_String: ^GDE.gdstring) {
     @(static)objectToString: GDE.MethodBindPtr
     if objectToString == nil {
         ClassDB:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassDB, "Object", false)
-        defer(Destructors.stringNameDestructor(&ClassDB))
+        gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "Object", false)
+        defer(StringName_Methods.Destroy(&ClassDB))
         objectToString = classDBGetMethodBind2(&ClassDB, "to_string", 2841200299)
     }
 
-    gdAPI.objectMethodBindPtrCall(objectToString, Object, nil, r_String)
+    gdAPI.Object_Utils.MethodBindPtrcall(objectToString, Object, nil, r_String)
 }
 
 
@@ -869,8 +332,8 @@ Input_SN:GDE.StringName
 getInputSingleton :: proc "c" () {
     
     
-    StringConstruct.stringNameNewLatin(&Input_SN, "Input", false)
-    InputSingleton = Methods.getSingleton(&Input_SN)
+    gdAPI.StringName_Utils.Latin1Chars(&Input_SN, "Input", false)
+    InputSingleton = gdAPI.GlobalGetSingleton(&Input_SN)
 
 }
 
@@ -879,7 +342,7 @@ isAnythingPressed :: proc(r_bool: ^GDE.Bool) {
     if IsAnythingPressed == nil do IsAnythingPressed = classDBGetMethodBind2(&Input_SN, "is_anything_pressed", 36873697)
 
     assert(InputSingleton != nil)
-    gdAPI.objectMethodBindPtrCall(IsAnythingPressed, InputSingleton, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsAnythingPressed, InputSingleton, nil, r_bool)
 }
 isKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     @(static)IsKeyPressed: GDE.MethodBindPtr
@@ -887,7 +350,7 @@ isKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr { keycode }
-    gdAPI.objectMethodBindPtrCall(IsKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
 isPhysicalKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     @(static)IsPhysicalKeyPressed: GDE.MethodBindPtr
@@ -895,7 +358,7 @@ isPhysicalKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr { keycode }
-    gdAPI.objectMethodBindPtrCall(IsPhysicalKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsPhysicalKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
 isLabelKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
     @(static)IsLabelKeyPressed: GDE.MethodBindPtr
@@ -903,7 +366,7 @@ isLabelKeyPressed :: proc(keycode: ^GDE.Key, r_bool: ^GDE.Bool) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr { keycode }
-    gdAPI.objectMethodBindPtrCall(IsLabelKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsLabelKeyPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
 isMouseButtonPressed :: proc(button: ^GDE.MouseButton, r_bool: ^GDE.Bool) {
     @(static)IsMouseButtonPressed: GDE.MethodBindPtr
@@ -911,28 +374,28 @@ isMouseButtonPressed :: proc(button: ^GDE.MouseButton, r_bool: ^GDE.Bool) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr {button}
-    gdAPI.objectMethodBindPtrCall(IsMouseButtonPressed, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsMouseButtonPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
 getLastMouseVelocity :: proc(r_v2Pos: ^GDE.Vector2) {
     @(static)GetLastMouseVelocity: GDE.MethodBindPtr
     if GetLastMouseVelocity == nil do GetLastMouseVelocity = classDBGetMethodBind2(&Input_SN, "get_last_mouse_velocity", 1497962370)
 
     assert(InputSingleton != nil)
-    gdAPI.objectMethodBindPtrCall(GetLastMouseVelocity, InputSingleton, nil, r_v2Pos)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetLastMouseVelocity, InputSingleton, nil, r_v2Pos)
 }
 getLastMouseScreenVelocity :: proc(r_v2Pos: ^GDE.Vector2) {
     @(static)GetLastMouseScreenVelocity: GDE.MethodBindPtr
     if GetLastMouseScreenVelocity == nil do GetLastMouseScreenVelocity = classDBGetMethodBind2(&Input_SN, "get_last_mouse_screen_velocity", 1497962370)
 
     assert(InputSingleton != nil)
-    gdAPI.objectMethodBindPtrCall(GetLastMouseScreenVelocity, InputSingleton, nil, r_v2Pos)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetLastMouseScreenVelocity, InputSingleton, nil, r_v2Pos)
 }
 getMouseButtonMask :: proc(r_mouseMask: ^GDE.MouseButtonMask) {
     @(static)GetLastMouseScreenVelocity: GDE.MethodBindPtr
     if GetLastMouseScreenVelocity == nil do GetLastMouseScreenVelocity = classDBGetMethodBind2(&Input_SN, "get_mouse_button_mask", 2512161324)
 
     assert(InputSingleton != nil)
-    gdAPI.objectMethodBindPtrCall(GetLastMouseScreenVelocity, InputSingleton, nil, r_mouseMask)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetLastMouseScreenVelocity, InputSingleton, nil, r_mouseMask)
 }
 setMouseMode :: proc(mouseMode: ^GDE.MouseMode) {
     @(static)SetMouseMode: GDE.MethodBindPtr
@@ -940,14 +403,14 @@ setMouseMode :: proc(mouseMode: ^GDE.MouseMode) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr {mouseMode}
-    gdAPI.objectMethodBindPtrCall(SetMouseMode, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(SetMouseMode, InputSingleton, raw_data(args[:]), nil)
 }
 getMouseMode :: proc(r_mouseMode: ^GDE.MouseMode) {
     @(static)GetMouseMode: GDE.MethodBindPtr
     if GetMouseMode == nil do GetMouseMode = classDBGetMethodBind2(&Input_SN, "get_mouse_mode", 965286182)
 
     assert(InputSingleton != nil)
-    gdAPI.objectMethodBindPtrCall(GetMouseMode, InputSingleton, nil, r_mouseMode)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetMouseMode, InputSingleton, nil, r_mouseMode)
 }
 //Default of exact_match should be false
 isActionPressed :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
@@ -956,7 +419,7 @@ isActionPressed :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool:
 
     assert(InputSingleton != nil)
     args:= [2]rawptr {action, exact_match}
-    gdAPI.objectMethodBindPtrCall(IsActionPressed, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsActionPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
 isActionJustPressed :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
     @(static)IsActionJustPressed: GDE.MethodBindPtr
@@ -964,7 +427,7 @@ isActionJustPressed :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_b
 
     assert(InputSingleton != nil)
     args:= [2]rawptr {action, exact_match}
-    gdAPI.objectMethodBindPtrCall(IsActionJustPressed, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsActionJustPressed, InputSingleton, raw_data(args[:]), r_bool)
 }
 isActionJustReleased :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.Bool) {
     @(static)IsActionJustReleased: GDE.MethodBindPtr
@@ -972,7 +435,7 @@ isActionJustReleased :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_
 
     assert(InputSingleton != nil)
     args:= [2]rawptr {action, exact_match}
-    gdAPI.objectMethodBindPtrCall(IsActionJustReleased, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsActionJustReleased, InputSingleton, raw_data(args[:]), r_bool)
 }
 getActionStrength :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.float) {
     @(static)GetActionStrength: GDE.MethodBindPtr
@@ -980,7 +443,7 @@ getActionStrength :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_boo
 
     assert(InputSingleton != nil)
     args:= [2]rawptr {action, exact_match}
-    gdAPI.objectMethodBindPtrCall(GetActionStrength, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetActionStrength, InputSingleton, raw_data(args[:]), r_bool)
 }
 getActionRawStrength :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_bool: ^GDE.float) {
     @(static)GetActionRawStrength: GDE.MethodBindPtr
@@ -988,7 +451,7 @@ getActionRawStrength :: proc(action: ^GDE.StringName, exact_match: ^GDE.Bool, r_
 
     assert(InputSingleton != nil)
     args:= [2]rawptr {action, exact_match}
-    gdAPI.objectMethodBindPtrCall(GetActionRawStrength, InputSingleton, raw_data(args[:]), r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetActionRawStrength, InputSingleton, raw_data(args[:]), r_bool)
 }
 //Strength default 1
 actionPress :: proc(action: ^GDE.StringName, strength: ^GDE.float) {
@@ -997,7 +460,7 @@ actionPress :: proc(action: ^GDE.StringName, strength: ^GDE.float) {
 
     assert(InputSingleton != nil)
     args:= [2]rawptr {action, strength}
-    gdAPI.objectMethodBindPtrCall(ActionPress, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(ActionPress, InputSingleton, raw_data(args[:]), nil)
 }
 actionRelease :: proc(action: ^GDE.StringName) {
     @(static)ActionRelease: GDE.MethodBindPtr
@@ -1005,7 +468,7 @@ actionRelease :: proc(action: ^GDE.StringName) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr {action}
-    gdAPI.objectMethodBindPtrCall(ActionRelease, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(ActionRelease, InputSingleton, raw_data(args[:]), nil)
 }
 warpMouse :: proc(position: ^GDE.Vector2) {
     @(static)WarpMouse: GDE.MethodBindPtr
@@ -1013,7 +476,7 @@ warpMouse :: proc(position: ^GDE.Vector2) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr {position}
-    gdAPI.objectMethodBindPtrCall(WarpMouse, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(WarpMouse, InputSingleton, raw_data(args[:]), nil)
 }
 setDefaultCursorShape :: proc(cursorShape: ^GDE.CursorShape) {
     @(static)SetDefaultCursorShape: GDE.MethodBindPtr
@@ -1021,7 +484,7 @@ setDefaultCursorShape :: proc(cursorShape: ^GDE.CursorShape) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr {cursorShape}
-    gdAPI.objectMethodBindPtrCall(SetDefaultCursorShape, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(SetDefaultCursorShape, InputSingleton, raw_data(args[:]), nil)
 }
 getCurrentCursorShape :: proc(r_cursorShape: ^GDE.CursorShape) {
     @(static)GetCurrentCursorShape: GDE.MethodBindPtr
@@ -1029,7 +492,7 @@ getCurrentCursorShape :: proc(r_cursorShape: ^GDE.CursorShape) {
 
     assert(InputSingleton != nil)
     //args:= [1]rawptr {cursorShape}
-    gdAPI.objectMethodBindPtrCall(GetCurrentCursorShape, InputSingleton, nil, r_cursorShape)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetCurrentCursorShape, InputSingleton, nil, r_cursorShape)
 }
 
 //image should be a resource object
@@ -1040,7 +503,7 @@ setCustomMouseCursor :: proc(image: ^GDE.ObjectPtr, shape: ^GDE.CursorShape, hot
 
     assert(InputSingleton != nil)
     args:= [3]rawptr {image, shape, hotspot}
-    gdAPI.objectMethodBindPtrCall(SetCustomMouseCursor, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(SetCustomMouseCursor, InputSingleton, raw_data(args[:]), nil)
 }
 
 //TODO: figure out what this does. The name isn't very clear considering there's no return value.
@@ -1050,7 +513,7 @@ parseInputEvent :: proc(event: ^GDE.ObjectPtr) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr {event}
-    gdAPI.objectMethodBindPtrCall(ParseInputEvent, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(ParseInputEvent, InputSingleton, raw_data(args[:]), nil)
 }
 setUseAccumulatedInput :: proc(enable: ^GDE.Bool) {
     @(static)SetUseAccumulatedInput: GDE.MethodBindPtr
@@ -1058,21 +521,21 @@ setUseAccumulatedInput :: proc(enable: ^GDE.Bool) {
 
     assert(InputSingleton != nil)
     args:= [1]rawptr {enable}
-    gdAPI.objectMethodBindPtrCall(SetUseAccumulatedInput, InputSingleton, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(SetUseAccumulatedInput, InputSingleton, raw_data(args[:]), nil)
 }
 isUsingAccumulatedInput :: proc(r_enable: ^GDE.Bool) {
     @(static)IsUsingAccumulatedInput: GDE.MethodBindPtr
     if IsUsingAccumulatedInput == nil do IsUsingAccumulatedInput = classDBGetMethodBind2(&Input_SN, "is_using_accumulated_input", 2240911060)
 
     assert(InputSingleton != nil)
-    gdAPI.objectMethodBindPtrCall(IsUsingAccumulatedInput, InputSingleton, nil, r_enable)
+    gdAPI.Object_Utils.MethodBindPtrcall(IsUsingAccumulatedInput, InputSingleton, nil, r_enable)
 }
 FlushBufferedEvents :: proc() {
     @(static)FlushBufferedEvents: GDE.MethodBindPtr
     if FlushBufferedEvents == nil do FlushBufferedEvents = classDBGetMethodBind2(&Input_SN, "flush_buffered_events", 3218959716)
 
     assert(InputSingleton != nil)
-    gdAPI.objectMethodBindPtrCall(FlushBufferedEvents, InputSingleton, nil, nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(FlushBufferedEvents, InputSingleton, nil, nil)
 }
 
 //**************************\\
@@ -1099,27 +562,27 @@ loadResource :: proc(path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectP
 
     if load == nil {
         ClassNameres:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassNameres, "ResourceLoader", false)
-        defer(Destructors.stringNameDestructor(&ClassNameres))
+        gdAPI.StringName_Utils.Latin1Chars(&ClassNameres, "ResourceLoader", false)
+        defer(StringName_Methods.Destroy(&ClassNameres))
         
         methodNameres: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodNameres, "load", false)
-        defer(Destructors.stringNameDestructor(&methodNameres))
-        load = gdAPI.classDBGetMethodBind(&ClassNameres, &methodNameres, 3358495409)
+        gdAPI.StringName_Utils.Latin1Chars(&methodNameres, "load", false)
+        defer(StringName_Methods.Destroy(&methodNameres))
+        load = gdAPI.ClassDB.GetMethodBind(&ClassNameres, &methodNameres, 3358495409)
     }
     
     pathS: GDE.gdstring
     hintS: GDE.gdstring
-    StringConstruct.stringNewLatin(&pathS, path)
-    defer(Destructors.stringDestruction(&pathS))
+    gdAPI.Strings_Utils.NewWithLatin1Chars(&pathS, path)
+    defer(String_Methods.Destroy(&pathS))
 
-    StringConstruct.stringNewLatin(&hintS, hint)
-    defer(Destructors.stringDestruction(&hintS))
+    gdAPI.Strings_Utils.NewWithLatin1Chars(&hintS, hint)
+    defer(String_Methods.Destroy(&hintS))
 
     args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
     r_resource: GDE.ObjectPtr
 
-    gdAPI.objectMethodBindPtrCall(load, getMainLoop(), raw_data(args_res[:]), &r_resource)
+    gdAPI.Object_Utils.MethodBindPtrcall(load, getMainLoop(), raw_data(args_res[:]), &r_resource)
     return r_resource
 }
 
@@ -1127,7 +590,7 @@ getRid :: proc(ref: GDE.ObjectPtr, r_ret: ^GDE.RID) {
     @(static)GetRID: GDE.MethodBindPtr
     if GetRID == nil do GetRID = classDBGetMethodBind("Resource", "get_rid", 2944877500)
     
-    gdAPI.objectMethodBindPtrCall(GetRID, ref, nil, r_ret)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetRID, ref, nil, r_ret)
 }
     
 
@@ -1139,7 +602,7 @@ freeRID :: proc(body: ^GDE.RID) {
 
     assert(body.id != 0 && PhysServer2dObj != nil)
     args:= [1]rawptr {body}
-    gdAPI.objectMethodBindPtrCall(FreeRID, PhysServer2dObj, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(FreeRID, PhysServer2dObj, raw_data(args[:]), nil)
 }
 
 
@@ -1157,7 +620,7 @@ queueRedraw :: proc(object: GDE.ObjectPtr) {
     //dummyReturn: GDE.TypePtr
 
     //Acutal code starts here.
-    gdAPI.objectMethodBindPtrCall(QueueRedraw, object, nil, nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(QueueRedraw, object, nil, nil)
 }
 
 //**************************\\
@@ -1169,7 +632,7 @@ drawTexture2D :: proc(object: GDE.ObjectPtr, image: ^GDE.ObjectPtr, position: ^G
     if DrawTexture == nil do DrawTexture = classDBGetMethodBind("CanvasItem", "draw_texture", 520200117)
 
     args :=  [3]rawptr{image, position, color}
-    gdAPI.objectMethodBindPtrCall(DrawTexture, object, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(DrawTexture, object, raw_data(args[:]), nil)
 }
 
 
@@ -1182,7 +645,7 @@ getWorld2D :: proc(viewport: GDE.TypePtr, r_world: ^GDE.TypePtr) {
     if GetWorld2D == nil do GetWorld2D = classDBGetMethodBind("Viewport", "get_world_2d", 2339128592)
     
     
-    gdAPI.objectMethodBindPtrCall(GetWorld2D, cast(GDE.ObjectPtr)viewport, nil, r_world)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetWorld2D, cast(GDE.ObjectPtr)viewport, nil, r_world)
 }
 
 //**************************\\
@@ -1193,7 +656,7 @@ getViewpRect :: proc(object: GDE.ObjectPtr, r_rect: ^GDE.Rec2) {
     @(static)GetViewpRect: GDE.MethodBindPtr
     if GetViewpRect == nil do GetViewpRect = classDBGetMethodBind("CanvasGroup", "get_viewport_rect", 1639390495)
 
-    gdAPI.objectMethodBindPtrCall(GetViewpRect, object, nil, r_rect)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetViewpRect, object, nil, r_rect)
 }
 
 
@@ -1205,18 +668,18 @@ setTexture :: proc "c" (dest: GDE.ObjectPtr, texture: ^GDE.ObjectPtr) {
     @(static)set_texture: GDE.MethodBindPtr
     if set_texture == nil {
         ClassNamespr:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassNamespr, "Sprite2D", false)
-        defer(Destructors.stringNameDestructor(&ClassNamespr))
+        gdAPI.StringName_Utils.Latin1Chars(&ClassNamespr, "Sprite2D", false)
+        defer(StringName_Methods.Destroy(&ClassNamespr))
         
         methodNamespr: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodNamespr, "set_texture", false)
-        defer(Destructors.stringNameDestructor(&methodNamespr))
-        set_texture = gdAPI.classDBGetMethodBind(&ClassNamespr, &methodNamespr, 4051416890)
+        gdAPI.StringName_Utils.Latin1Chars(&methodNamespr, "set_texture", false)
+        defer(StringName_Methods.Destroy(&methodNamespr))
+        set_texture = gdAPI.ClassDB.GetMethodBind(&ClassNamespr, &methodNamespr, 4051416890)
     }
     
     args_spr:= [?]rawptr {texture}
     dummyReturn:rawptr
-    gdAPI.objectMethodBindPtrCall(set_texture, dest, raw_data(args_spr[:]), &dummyReturn)
+    gdAPI.Object_Utils.MethodBindPtrcall(set_texture, dest, raw_data(args_spr[:]), &dummyReturn)
 }
 
 
@@ -1230,7 +693,7 @@ getSizeTexture2D :: proc(object: GDE.ObjectPtr, r_size: ^GDE.Vector2) {
     if GetSize == nil do GetSize = classDBGetMethodBind("Texture2D", "get_size", 3341600327)
 
     
-    gdAPI.objectMethodBindPtrCall(GetSize, object, nil, r_size)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetSize, object, nil, r_size)
 }
 
 //**************************\\
@@ -1261,7 +724,7 @@ getViewport :: proc(object: GDE.ObjectPtr, r_viewport: ^GDE.ObjectPtr) {
     if GetViewport == nil do GetViewport = classDBGetMethodBind("Node", "get_viewport", 3596683776)
     
     viewport: GDE.TypePtr
-    gdAPI.objectMethodBindPtrCall(GetViewport, object, nil, r_viewport)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetViewport, object, nil, r_viewport)
 }
 
 /*
@@ -1277,13 +740,13 @@ addChild :: proc(parent: GDE.ObjectPtr, child: ^GDE.ObjectPtr, force_readable_na
     @(static)addChild: GDE.MethodBindPtr
     if addChild == nil {
         ClassName:GDE.StringName
-        StringConstruct.stringNameNewLatin(&ClassName, "Node", false)
-        defer(Destructors.stringNameDestructor(&ClassName))
+        gdAPI.StringName_Utils.Latin1Chars(&ClassName, "Node", false)
+        defer(StringName_Methods.Destroy(&ClassName))
         
         methodName: GDE.StringName
-        StringConstruct.stringNameNewLatin(&methodName, "add_child", false)
-        defer(Destructors.stringNameDestructor(&methodName))
-        addChild = gdAPI.classDBGetMethodBind(&ClassName, &methodName, 3863233950)
+        gdAPI.StringName_Utils.Latin1Chars(&methodName, "add_child", false)
+        defer(StringName_Methods.Destroy(&methodName))
+        addChild = gdAPI.ClassDB.GetMethodBind(&ClassName, &methodName, 3863233950)
     }
     
 
@@ -1291,7 +754,7 @@ addChild :: proc(parent: GDE.ObjectPtr, child: ^GDE.ObjectPtr, force_readable_na
     args:= [?]rawptr {child, &force_readable_name, &internalMode}
     
     dummyReturn:rawptr
-    gdAPI.objectMethodBindPtrCall(addChild, parent, raw_data(args[:]), dummyReturn)
+    gdAPI.Object_Utils.MethodBindPtrcall(addChild, parent, raw_data(args[:]), dummyReturn)
 }
 
 
@@ -1306,7 +769,7 @@ RenderServer_SN: GDE.StringName
 //Yes... It's a single line function because it doesn't exist at API startup.
 //You will need to call this at some point 
 getRenderServer2dObj :: proc() -> GDE.ObjectPtr {
-    if RenderServerObj == nil do RenderServerObj = Methods.getSingleton(&RenderServer_SN)
+    if RenderServerObj == nil do RenderServerObj = gdAPI.GlobalGetSingleton(&RenderServer_SN)
     return RenderServerObj
 }
 
@@ -1320,7 +783,7 @@ freeRenderRID :: proc(resourceId: ^GDE.RID, renderServer: GDE.ObjectPtr = Render
     
     assert(resourceId.id != 0)
     args :=[?]rawptr {resourceId}
-    gdAPI.objectMethodBindPtrCall(FreeRenderRID, renderServer, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(FreeRenderRID, renderServer, raw_data(args[:]), nil)
 }
 
 //*************************\\
@@ -1334,7 +797,7 @@ getAlloweredSizeFlagsHorizontal :: proc(container: GDE.ObjectPtr, r_sizeFlags: ^
     if GetAlloweredSizeFlagsHorizontal ==nil do GetAlloweredSizeFlagsHorizontal = classDBGetMethodBind("Container", "_get_allowed_size_flags_horizontal", 1930428628)
     
     assert(container != nil)
-    gdAPI.objectMethodBindPtrCall(GetAlloweredSizeFlagsHorizontal, container, nil, r_sizeFlags)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetAlloweredSizeFlagsHorizontal, container, nil, r_sizeFlags)
 }
 
 getAlloweredSizeFlagsVertical :: proc(container: GDE.ObjectPtr, r_sizeFlags: ^GDE.PackedInt32Array) {
@@ -1342,7 +805,7 @@ getAlloweredSizeFlagsVertical :: proc(container: GDE.ObjectPtr, r_sizeFlags: ^GD
     if GetAlloweredSizeFlagsVertical ==nil do GetAlloweredSizeFlagsVertical = classDBGetMethodBind("Container", "_get_allowed_size_flags_vertical", 1930428628)
     
     assert(container != nil)
-    gdAPI.objectMethodBindPtrCall(GetAlloweredSizeFlagsVertical, container, nil, r_sizeFlags)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetAlloweredSizeFlagsVertical, container, nil, r_sizeFlags)
 }
 queueSort :: proc(container: GDE.ObjectPtr) {
     @(static)QueueSort: GDE.MethodBindPtr
@@ -1350,7 +813,7 @@ queueSort :: proc(container: GDE.ObjectPtr) {
     
     assert(container != nil)
     //args :=[?]rawptr {resourceId}
-    gdAPI.objectMethodBindPtrCall(QueueSort, container, nil, nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(QueueSort, container, nil, nil)
 }
 fitChildInRect :: proc(container: GDE.ObjectPtr, child: ^GDE.ObjectPtr, rect: ^GDE.Rec2) {
     @(static)FitChildInRect: GDE.MethodBindPtr
@@ -1358,7 +821,7 @@ fitChildInRect :: proc(container: GDE.ObjectPtr, child: ^GDE.ObjectPtr, rect: ^G
     
     assert(container != nil)
     args :=[?]rawptr {child, rect}
-    gdAPI.objectMethodBindPtrCall(FitChildInRect, container, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(FitChildInRect, container, raw_data(args[:]), nil)
 }
 
 
@@ -1383,7 +846,7 @@ BodyState :: enum u32 {
 //Yes... It's a single line function because it doesn't exist at API startup.
 //You will need to call this at some point 
 getPhysServer2dObj :: proc() -> GDE.ObjectPtr {
-    if PhysServer2dObj == nil do PhysServer2dObj = Methods.getSingleton(&PhysicsServer2D_SN)
+    if PhysServer2dObj == nil do PhysServer2dObj = gdAPI.GlobalGetSingleton(&PhysicsServer2D_SN)
     return PhysServer2dObj
 }
 
@@ -1393,14 +856,14 @@ circleShapeCreate :: proc(r_shape: ^GDE.RID, physServer := PhysServer2dObj) {
     if CircleShapeCreate == nil do CircleShapeCreate = classDBGetMethodBind2(&PhysicsServer2D_SN, "circle_shape_create", 529393457)
     
     
-    gdAPI.objectMethodBindPtrCall(CircleShapeCreate, PhysServer2dObj, nil, r_shape)
+    gdAPI.Object_Utils.MethodBindPtrcall(CircleShapeCreate, PhysServer2dObj, nil, r_shape)
 }
  
 getSpace :: proc(world2d: GDE.TypePtr, r_space: ^GDE.TypePtr) {
     @(static)GetSpace: GDE.MethodBindPtr
     if GetSpace == nil do GetSpace = classDBGetMethodBind("World2D", "get_space", 2944877500)
     
-    gdAPI.objectMethodBindPtrCall(GetSpace, cast(GDE.ObjectPtr)world2d, nil, r_space)
+    gdAPI.Object_Utils.MethodBindPtrcall(GetSpace, cast(GDE.ObjectPtr)world2d, nil, r_space)
 }
 
 bodySetSpace :: proc(body: ^GDE.RID, space: ^GDE.TypePtr, physServer := PhysServer2dObj) {
@@ -1413,7 +876,7 @@ bodySetSpace :: proc(body: ^GDE.RID, space: ^GDE.TypePtr, physServer := PhysServ
 
     args:= [2]rawptr {body, space}
 
-    gdAPI.objectMethodBindPtrCall(SetSpace, physServer, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(SetSpace, physServer, raw_data(args[:]), nil)
 }
 
 bodyAddShape :: proc(body: ^GDE.RID, shape: ^GDE.RID, trans2d: GDE.Transform2D = {1,0,0,1,0,0}, disabled: ^GDE.Bool, physServer := PhysServer2dObj){
@@ -1424,7 +887,7 @@ bodyAddShape :: proc(body: ^GDE.RID, shape: ^GDE.RID, trans2d: GDE.Transform2D =
     trans2d:=trans2d
     args:= [?]rawptr {body, shape, &trans2d, disabled}
 
-    gdAPI.objectMethodBindPtrCall(BodyAddShape, physServer, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(BodyAddShape, physServer, raw_data(args[:]), nil)
 }
 
 shapeSetData :: proc(shape: ^GDE.RID, data: ^GDE.Int, physServer := PhysServer2dObj){
@@ -1436,7 +899,7 @@ shapeSetData :: proc(shape: ^GDE.RID, data: ^GDE.Int, physServer := PhysServer2d
     variant_from(&shapedata, data)
     shape_data:= [?]rawptr {shape, &shapedata}
     
-    gdAPI.objectMethodBindPtrCall(ShapeSetData, physServer, raw_data(shape_data[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(ShapeSetData, physServer, raw_data(shape_data[:]), nil)
 }
 
 bodyCreate :: proc(r_body: ^GDE.RID, physServer := PhysServer2dObj) {
@@ -1445,7 +908,7 @@ bodyCreate :: proc(r_body: ^GDE.RID, physServer := PhysServer2dObj) {
 
     assert(physServer != nil)
 
-    gdAPI.objectMethodBindPtrCall(BodyCreate, physServer, nil, r_body)
+    gdAPI.Object_Utils.MethodBindPtrcall(BodyCreate, physServer, nil, r_body)
 
 }
 
@@ -1463,7 +926,7 @@ bodySetCollisionMask :: proc(body: ^GDE.RID, mask: ^u32, physServer:= PhysServer
 
     args:= [2]rawptr {body, mask}
 
-    gdAPI.objectMethodBindPtrCall(BodySetCollisionMask, physServer, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(BodySetCollisionMask, physServer, raw_data(args[:]), nil)
 }
 
 bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Variant, physServer:= PhysServer2dObj) {
@@ -1474,7 +937,7 @@ bodySetState :: proc(body: ^GDE.RID, bodyState: ^BodyState, trans_v: ^GDE.Varian
     
     args:= [?]rawptr {body, bodyState, trans_v}
 
-    gdAPI.objectMethodBindPtrCall(BodySetState, physServer, raw_data(args[:]), nil)
+    gdAPI.Object_Utils.MethodBindPtrcall(BodySetState, physServer, raw_data(args[:]), nil)
 }
 
 
