@@ -19,7 +19,7 @@ import "base:runtime"
     //*****************\\
     //*****Methods*****\\
     //*****************\\
-    
+
 init_ref :: proc(RefCounted: ^Object, r_ret: ^Bool){
     @(static)INIT_REF: GDE.MethodBindPtr
     if INIT_REF == nil do INIT_REF = classDBGetMethodBind3(.RefCounted, "init_ref", 2240911060)

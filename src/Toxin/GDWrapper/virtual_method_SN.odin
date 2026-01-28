@@ -488,7 +488,7 @@ init_AudioStream_Virtual_Info :: proc () {
     _get_parameter_list.p_hash = 3995934104
     _has_loop.p_hash = 36873697
     _get_bar_beats.p_hash = 3905245786
-    
+
 
     _instantiate_playback.name = StringConstruct.stringNameNewString_r("_instantiate_playback")
     _get_stream_name.name = StringConstruct.stringNameNewString_r("_get_stream_name")

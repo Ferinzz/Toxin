@@ -105,7 +105,7 @@ Create :: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GD
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^GDW.Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
-    
+
 
     return object
 }

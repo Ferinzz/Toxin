@@ -555,67 +555,6 @@ FlushBufferedEvents :: proc() {
     gdAPI.Object_Utils.MethodBindPtrcall(FlushBufferedEvents, InputSingleton, nil, nil)
 }
 
-//**************************\\
-//*****Resource Methods*****\\
-//**************************\\
-
-
-//https://docs.godotengine.org/en/stable/classes/class_resourceloader.html#enum-resourceloader-cachemode
-//default is 0
-cache_mode :: enum Int {
-    CACHE_MODE_IGNORE,
-    CACHE_MODE_REUSE,
-    CACHE_MODE_REPLACE,
-    CACHE_MODE_IGNORE_DEEP,
-    CACHE_MODE_REPLACE_DEEP,
-}
-
-//WARNING DO NOT USE WITH RANDOM PNG ETC.
-//The Resource only works with files that have already been imported into the engine.
-//If you just have a file sitting in the directory and haven't interacted with the editor to import it 
-//use Image->load() instead. Jesus fucking christ it took a while to find confirmation about this.
-loadResource :: proc(path, hint: cstring, cacheMode: ^cache_mode) -> ^Object{
-    @(static)load: GDE.MethodBindPtr
-
-    if load == nil {
-        load = classDBGetMethodBind3(.ResourceLoader, "load", 3358495409)
-    }
-    
-    pathS: gdstring
-    hintS: gdstring
-    gdAPI.Strings_Utils.NewWithLatin1Chars(&pathS, path)
-    defer(String_Methods.Destroy(&pathS))
-
-    gdAPI.Strings_Utils.NewWithLatin1Chars(&hintS, hint)
-    defer(String_Methods.Destroy(&hintS))
-
-    args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
-    r_resource: ^Object
-
-    gdAPI.Object_Utils.MethodBindPtrcall(load, getMainLoop(), raw_data(args_res[:]), &r_resource)
-    return r_resource
-}
-
-getRid :: proc(ref: ^Object, r_ret: ^RID) {
-    @(static)GetRID: GDE.MethodBindPtr
-    if GetRID == nil do GetRID = classDBGetMethodBind3(.Resource, "get_rid", 2944877500)
-    
-    gdAPI.Object_Utils.MethodBindPtrcall(GetRID, ref, nil, r_ret)
-}
-    
-
-
-
-freeRID :: proc(body: ^RID) {
-    @(static)FreeRID: GDE.MethodBindPtr
-    if FreeRID == nil do FreeRID = classDBGetMethodBind3(.PhysicsServer2D, "free_rid", 2722037293)
-
-    assert(body.id != 0 && PhysServer2dObj != nil)
-    args:= [1]rawptr {body}
-    gdAPI.Object_Utils.MethodBindPtrcall(FreeRID, PhysServer2dObj, raw_data(args[:]), nil)
-}
-
-
 
 
 //*************************\\
@@ -677,7 +616,7 @@ getViewpRect :: proc(object: ^Object, r_rect: ^Rec2) {
 setTexture :: proc(dest: ^Object, texture: ^^Object) {    
     @(static)set_texture: GDE.MethodBindPtr
     if set_texture == nil do set_texture = classDBGetMethodBind3(.Sprite2D, "set_texture", 4051416890)
-    
+
     args_spr:= [?]rawptr {texture}
     dummyReturn:rawptr
     gdAPI.Object_Utils.MethodBindPtrcall(set_texture, dest, raw_data(args_spr[:]), &dummyReturn)
@@ -693,7 +632,6 @@ getSizeTexture2D :: proc(object: ^Object, r_size: ^Vector2) {
     @(static)GetSize: GDE.MethodBindPtr
     if GetSize == nil do GetSize = classDBGetMethodBind3(.Texture2D, "get_size", 3341600327)
 
-    
     gdAPI.Object_Utils.MethodBindPtrcall(GetSize, object, nil, r_size)
 }
 
@@ -723,7 +661,7 @@ Side :: enum i64 {
 getViewport :: proc(object: ^Object, r_viewport: ^^Object) {
     @(static)GetViewport: GDE.MethodBindPtr
     if GetViewport == nil do GetViewport = classDBGetMethodBind3(.Node, "get_viewport", 3596683776)
-    
+
     viewport: GDE.TypePtr
     gdAPI.Object_Utils.MethodBindPtrcall(GetViewport, object, nil, r_viewport)
 }
@@ -774,7 +712,7 @@ getRenderServer2dObj :: proc() -> ^Object {
 freeRenderRID :: proc(resourceId: ^RID, renderServer: ^Object = RenderServerObj) {
     @(static)FreeRenderRID: GDE.MethodBindPtr
     if FreeRenderRID ==nil do FreeRenderRID = classDBGetMethodBind3(.RenderingServer, "free_rid", 2722037293)
-    
+
     assert(resourceId.id != 0)
     args :=[?]rawptr {resourceId}
     gdAPI.Object_Utils.MethodBindPtrcall(FreeRenderRID, renderServer, raw_data(args[:]), nil)
@@ -789,7 +727,7 @@ freeRenderRID :: proc(resourceId: ^RID, renderServer: ^Object = RenderServerObj)
 getAlloweredSizeFlagsHorizontal :: proc(container: ^Object, r_sizeFlags: ^PackedInt32Array) {
     @(static)GetAlloweredSizeFlagsHorizontal: GDE.MethodBindPtr
     if GetAlloweredSizeFlagsHorizontal ==nil do GetAlloweredSizeFlagsHorizontal = classDBGetMethodBind3(.Container, "_get_allowed_size_flags_horizontal", 1930428628)
-    
+
     assert(container != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(GetAlloweredSizeFlagsHorizontal, container, nil, r_sizeFlags)
 }
@@ -797,14 +735,14 @@ getAlloweredSizeFlagsHorizontal :: proc(container: ^Object, r_sizeFlags: ^Packed
 getAlloweredSizeFlagsVertical :: proc(container: ^Object, r_sizeFlags: ^PackedInt32Array) {
     @(static)GetAlloweredSizeFlagsVertical: GDE.MethodBindPtr
     if GetAlloweredSizeFlagsVertical ==nil do GetAlloweredSizeFlagsVertical = classDBGetMethodBind3(.Container, "_get_allowed_size_flags_vertical", 1930428628)
-    
+
     assert(container != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(GetAlloweredSizeFlagsVertical, container, nil, r_sizeFlags)
 }
 queueSort :: proc(container: ^Object) {
     @(static)QueueSort: GDE.MethodBindPtr
     if QueueSort ==nil do QueueSort = classDBGetMethodBind3(.Container, "queue_sort", 3218959716)
-    
+
     assert(container != nil)
     //args :=[?]rawptr {resourceId}
     gdAPI.Object_Utils.MethodBindPtrcall(QueueSort, container, nil, nil)
@@ -812,7 +750,7 @@ queueSort :: proc(container: ^Object) {
 fitChildInRect :: proc(container: ^Object, child: ^^Object, rect: ^Rec2) {
     @(static)FitChildInRect: GDE.MethodBindPtr
     if FitChildInRect ==nil do FitChildInRect = classDBGetMethodBind3(.Container, "fit_child_in_rect", 1993438598)
-    
+
     assert(container != nil)
     args :=[?]rawptr {child, rect}
     gdAPI.Object_Utils.MethodBindPtrcall(FitChildInRect, container, raw_data(args[:]), nil)
@@ -848,15 +786,14 @@ circleShapeCreate :: proc(r_shape: ^RID, physServer := PhysServer2dObj) {
     @(static)CircleShapeCreate: GDE.MethodBindPtr
     assert(PhysServer2dObj != nil)
     if CircleShapeCreate == nil do CircleShapeCreate = classDBGetMethodBind3(.PhysicsServer2D, "circle_shape_create", 529393457)
-    
-    
+
     gdAPI.Object_Utils.MethodBindPtrcall(CircleShapeCreate, PhysServer2dObj, nil, r_shape)
 }
  
 getSpace :: proc(world2d: GDE.TypePtr, r_space: ^GDE.TypePtr) {
     @(static)GetSpace: GDE.MethodBindPtr
     if GetSpace == nil do GetSpace = classDBGetMethodBind3(.World2D, "get_space", 2944877500)
-    
+
     gdAPI.Object_Utils.MethodBindPtrcall(GetSpace, cast(^Object)world2d, nil, r_space)
 }
 
@@ -888,7 +825,6 @@ shapeSetData :: proc(shape: ^RID, data: ^Int, physServer := PhysServer2dObj){
     @(static)ShapeSetData: GDE.MethodBindPtr
     if ShapeSetData == nil do ShapeSetData = classDBGetMethodBind3(.PhysicsServer2D, "shape_set_data", 3175752987)
 
-    
     shapedata: GDE.Variant
     variant_from(&shapedata, data)
     shape_data:= [?]rawptr {shape, &shapedata}
@@ -928,7 +864,7 @@ bodySetState :: proc(body: ^RID, bodyState: ^BodyState, trans_v: ^GDE.Variant, p
     if BodySetState == nil do BodySetState = classDBGetMethodBind3(.PhysicsServer2D, "body_set_state", 1706355209)
 
     assert(physServer != nil && body.id != 0 && trans_v.VType == .TRANSFORM2D)
-    
+
     args:= [?]rawptr {body, bodyState, trans_v}
 
     gdAPI.Object_Utils.MethodBindPtrcall(BodySetState, physServer, raw_data(args[:]), nil)

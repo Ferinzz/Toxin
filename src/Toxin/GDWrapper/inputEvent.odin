@@ -74,7 +74,7 @@ init_Input :: proc (classDB_methods: ^$T) {
 InputEvent_is_action :: proc(input_event: ^InputEvent, action: ^StringName, exact_match: ^Bool, r_bool: ^Int) {
     @(static)isAction: GDE.MethodBindPtr
     if isAction == nil do isAction = classDBGetMethodBind3(.InputEvent, "is_action", 1558498928)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { action, exact_match }
     gdAPI.Object_Utils.MethodBindPtrcall(isAction, input_event, raw_data(args[:]), r_bool)
@@ -83,7 +83,7 @@ InputEvent_is_action :: proc(input_event: ^InputEvent, action: ^StringName, exac
 InputEvent_is_action_pressed :: proc(input_event: ^InputEvent, action: ^StringName, allow_echo: ^Bool, exact_match: ^Bool, r_bool: ^Int) {
     @(static)isActionPressed: GDE.MethodBindPtr
     if isActionPressed == nil do isActionPressed = classDBGetMethodBind3(.InputEvent, "is_action_pressed", 1631499404)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { action, allow_echo, exact_match }
     gdAPI.Object_Utils.MethodBindPtrcall(isActionPressed, input_event, raw_data(args[:]), r_bool)
@@ -92,7 +92,7 @@ InputEvent_is_action_pressed :: proc(input_event: ^InputEvent, action: ^StringNa
 InputEvent_is_action_released :: proc(input_event: ^InputEvent, action: ^StringName, exact_match: ^Bool, r_bool: ^Int) {
     @(static)isActionReleased: GDE.MethodBindPtr
     if isActionReleased == nil do isActionReleased = classDBGetMethodBind3(.InputEvent, "is_action_released", 1558498928)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { action, exact_match }
     gdAPI.Object_Utils.MethodBindPtrcall(isActionReleased, input_event, raw_data(args[:]), r_bool)
@@ -101,7 +101,7 @@ InputEvent_is_action_released :: proc(input_event: ^InputEvent, action: ^StringN
 InputEvent_get_action_strength :: proc(input_event: ^InputEvent, action: ^StringName, exact_match: ^Bool, r_strength: ^float) {
     @(static)getActionStrength: GDE.MethodBindPtr
     if getActionStrength == nil do getActionStrength = classDBGetMethodBind3(.InputEvent, "get_action_strength", 801543509)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { action, exact_match }
     gdAPI.Object_Utils.MethodBindPtrcall(getActionStrength, input_event, raw_data(args[:]), r_strength)
@@ -110,7 +110,7 @@ InputEvent_get_action_strength :: proc(input_event: ^InputEvent, action: ^String
 InputEvent_is_canceled :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
     @(static)isCanceled: GDE.MethodBindPtr
     if isCanceled == nil do isCanceled = classDBGetMethodBind3(.InputEvent, "is_canceled", 36873697)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(isCanceled, input_event, nil, r_bool)
 }
@@ -118,7 +118,7 @@ InputEvent_is_canceled :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
 InputEvent_is_pressed :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
     @(static)isPressed: GDE.MethodBindPtr
     if isPressed == nil do isPressed = classDBGetMethodBind3(.InputEvent, "is_pressed", 36873697)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(isPressed, input_event, nil, r_bool)
 }
@@ -126,7 +126,7 @@ InputEvent_is_pressed :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
 InputEvent_is_released :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
     @(static)isReleased: GDE.MethodBindPtr
     if isReleased == nil do isReleased = classDBGetMethodBind3(.InputEvent, "is_released", 36873697)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(isReleased, input_event, nil, r_bool)
 }
@@ -134,7 +134,7 @@ InputEvent_is_released :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
 InputEvent_is_echo :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
     @(static)isEcho: GDE.MethodBindPtr
     if isEcho == nil do isEcho = classDBGetMethodBind3(.InputEvent, "is_echo", 36873697)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(isEcho, input_event, nil, r_bool)
 }
@@ -142,7 +142,7 @@ InputEvent_is_echo :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
 InputEvent_as_text :: proc(input_event: ^InputEvent, r_string: ^gdstring) {
     @(static)asText: GDE.MethodBindPtr
     if asText == nil do asText = classDBGetMethodBind3(.InputEvent, "as_text", 201670096)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(asText, input_event, nil, r_string)
 }
@@ -150,7 +150,7 @@ InputEvent_as_text :: proc(input_event: ^InputEvent, r_string: ^gdstring) {
 InputEvent_is_match :: proc(input_event: ^InputEvent, event: ^InputEvent, exact_match: ^Bool, r_string: ^gdstring) {
     @(static)isMatch: GDE.MethodBindPtr
     if isMatch == nil do isMatch = classDBGetMethodBind3(.InputEvent, "is_match", 1754951977)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { event, exact_match }
     gdAPI.Object_Utils.MethodBindPtrcall(isMatch, input_event, raw_data(args[:]), r_string)
@@ -159,7 +159,7 @@ InputEvent_is_match :: proc(input_event: ^InputEvent, event: ^InputEvent, exact_
 InputEvent_is_action_type :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
     @(static)isActionType: GDE.MethodBindPtr
     if isActionType == nil do isActionType = classDBGetMethodBind3(.InputEvent, "is_action_type", 36873697)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(isActionType, input_event, nil, r_bool)
 }
@@ -167,7 +167,7 @@ InputEvent_is_action_type :: proc(input_event: ^InputEvent, r_bool: ^Bool) {
 InputEvent_accumulate :: proc(input_event: ^InputEvent, with_event: ^InputEvent, r_bool: ^Bool) {
     @(static)Accumulate: GDE.MethodBindPtr
     if Accumulate == nil do Accumulate = classDBGetMethodBind3(.InputEvent, "accumulate", 1062211774)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { with_event }
     gdAPI.Object_Utils.MethodBindPtrcall(Accumulate, input_event, raw_data(args[:]), r_bool)
@@ -176,7 +176,7 @@ InputEvent_accumulate :: proc(input_event: ^InputEvent, with_event: ^InputEvent,
 InputEvent_xformed_by :: proc(input_event: ^InputEvent, xform: ^Transform2D, local_ofs: ^Vector2, r_InputEvent: ^InputEvent) {
     @(static)xformedBy: GDE.MethodBindPtr
     if xformedBy == nil do xformedBy = classDBGetMethodBind3(.InputEvent, "xformed_by", 1282766827)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { xformedBy, local_ofs }
     gdAPI.Object_Utils.MethodBindPtrcall(xformedBy, input_event, raw_data(args[:]), r_InputEvent)
@@ -186,7 +186,7 @@ InputEvent_xformed_by :: proc(input_event: ^InputEvent, xform: ^Transform2D, loc
 InputEvent_set_device :: proc(input_event: ^InputEvent, device: ^Int) {
     @(static)setDevice: GDE.MethodBindPtr
     if setDevice == nil do setDevice = classDBGetMethodBind3(.InputEvent, "set_device", 1286410249)
-    
+
     assert(input_event != nil)
     args:= [?]rawptr { device }
     gdAPI.Object_Utils.MethodBindPtrcall(setDevice, input_event, raw_data(args[:]), nil)
@@ -223,7 +223,7 @@ init_InputEventMouse :: proc() {
 InputEventMouseButton_get_button_index :: proc(input_event: ^InputEvent, r_MouseButton: ^MouseButton) {
     @(static)getbuttonindex: GDE.MethodBindPtr
     if getbuttonindex == nil do getbuttonindex = classDBGetMethodBind3(.InputEventMouseButton, "get_button_index", 1132662608)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(getbuttonindex, input_event, nil, r_MouseButton)
 }
@@ -231,7 +231,7 @@ InputEventMouseButton_get_button_index :: proc(input_event: ^InputEvent, r_Mouse
 InputEventMouseMotion_get_screen_relative :: proc(input_event: ^InputEvent, r_Pos: ^Vector2) {
     @(static)getscreenrelative: GDE.MethodBindPtr
     if getscreenrelative == nil do getscreenrelative = classDBGetMethodBind3(.InputEventMouseMotion, "get_screen_relative", 3341600327)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(getscreenrelative, input_event, nil, r_Pos)
 }
@@ -239,7 +239,7 @@ InputEventMouseMotion_get_screen_relative :: proc(input_event: ^InputEvent, r_Po
 InputEventMouse_get_global_position :: proc(input_event: ^InputEvent, r_Pos: ^Vector2) {
     @(static)getglobalposition: GDE.MethodBindPtr
     if getglobalposition == nil do getglobalposition = classDBGetMethodBind3(.InputEventMouse, "get_global_position", 3341600327)
-    
+
     assert(input_event != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(getglobalposition, input_event, nil, r_Pos)
 }

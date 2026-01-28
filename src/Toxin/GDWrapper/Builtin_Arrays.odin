@@ -6,10 +6,10 @@ import "gdAPI"
 //WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 
 init_array_types:: proc() {
-    
+
     arrayClass: StringName
     arraySize: StringName
-    
+
     PackedStringArray_Methods.GetIndex = cast(proc(p_base: ^PackedStringArray, index: Int, r_ret: ^Variant))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_STRING_ARRAY)
     PackedStringArray_Methods.SetIndex = gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_STRING_ARRAY)
     PackedStringArray_Methods.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_STRING_ARRAY)

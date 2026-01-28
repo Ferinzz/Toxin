@@ -85,7 +85,7 @@ MainLoopFrameCallback :: proc "c" () {
     if !callOnce {
         //These are good to set in a singleton at some point.
         //These are statically stored and thus only need to be called once when the game engine is fully initialize.
-        
+
         callOnce = true
         myMainLoopCallbacks.frame_func = nil
     }

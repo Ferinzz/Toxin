@@ -16,7 +16,6 @@ godotContext: runtime.Context
 initGodotContext :: proc "contextless" () {
     godotContext = runtime.default_context()
     godotContext.assertion_failure_proc = failureProc
-    
 }
 
 failureProc :: proc(prefix, message: string, loc: runtime.Source_Code_Location) -> ! {
