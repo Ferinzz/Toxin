@@ -1,7 +1,8 @@
 package main
 
-import GDW "GDWrapper"
-import GDE "GDWrapper/gdAPI/gdextension"
+import GDW "Toxin/GDWrapper"
+//import GDE "Toxin/GDWrapper/gdAPI/gdextension"
+import "Toxin"
 import "base:runtime"
 import "core:fmt"
 
@@ -11,7 +12,7 @@ import "core:fmt"
 //Godot will be passing us a pointer to this struct during callbacks.
 //Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
-    someProperty: GDE.Int,
+    someProperty: GDW.Int,
 }
 
 munum::enum{
@@ -19,36 +20,43 @@ munum::enum{
     a7=7
 }
 
-self_reggy:: proc(self: ^GDW.Registerer, init_level: GDE.InitializationLevel) {
-    me:=(^GDW.GDW_class_deets)(self)
-    GDW.Register(me, init_level, GDW.make_get_virtual_func(THIS_CLASS_NAME_VTable))
+self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
+    me:=(^Toxin.Class_Deets)(self)
+    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable))
 }
 
-THIS_CLASS_NAME_deets: GDW.GDW_class_deets = {
-    self_register =self_reggy,
-    init_level= .INITIALIZATION_SCENE,
+THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
+    self_register = self_reggy,
+    init_level = .INITIALIZATION_SCENE,
     GDClass_Index = .Node2D,
     class_struct = THIS_CLASS_NAME,
-    binder= THIS_CLASS_NAME_Export,
+    binder = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
 }
-
 
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
+
 /*
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
 */
 THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
-    _ready= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME)) {
+    _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
         fmt.println("Hello mom!")
         fmt.println(self^)
+        from_position_default :f64= 0
+        murray: GDW.Array
+        r_ret: GDW.Variant
+        fmt.println(Toxin.GetArrayIndex)
+        myArray: Toxin.Class_Array
+        Toxin.BuiltinMake(&myArray)
+        myArray->GetIndex(3, &r_ret)
     },
-    _enter_tree= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME)) {},
-    _process= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^GDE.float}){},
+    _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {},
+    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^GDW.float}){},
 }
 
 //******************************\\
@@ -56,11 +64,11 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
 //******************************\\
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
-THIS_CLASS_NAME_Export :: proc(className: ^GDE.StringName){
+THIS_CLASS_NAME_Export :: proc(className: ^GDW.StringName){
     context = runtime.default_context()
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {GDE.ClassMethodFlags.NORMAL}, "arg1")
-    
+    GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {.NORMAL}, "arg1")
+
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
@@ -69,7 +77,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^GDE.StringName){
 }
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
-somePublicFunction :: proc "c" (classStruct: ^GDW.Class_Container(THIS_CLASS_NAME), arg1: GDE.Int) {
+somePublicFunction :: proc "c" (classStruct: ^GDW.Class_Container(THIS_CLASS_NAME), arg1: GDW.Int) {
     //do stuff
 }
 
@@ -84,7 +92,8 @@ somePublicFunction :: proc "c" (classStruct: ^GDW.Class_Container(THIS_CLASS_NAM
 * r_return: Return value sent to the connected class.
 * r_error: Error to report to the connected class, or .CALL_OK
 */
-THIS_CLASS_NAME_signalCallback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDE.Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError){
+/*
+THIS_CLASS_NAME_signalCallback :: proc "c" (callable_userdata: rawptr, p_args: GDE.ConstVariantPtrargs, p_argument_count: GDW.Int, r_return: ^GDW.Variant, r_error: ^GDE.CallError){
     context = runtime.default_context()
 
     /*
@@ -97,3 +106,4 @@ THIS_CLASS_NAME_signalCallback :: proc "c" (callable_userdata: rawptr, p_args: G
     r_error.error = .CALL_ERROR_INSTANCE_IS_NULL
     return
 }
+*/
