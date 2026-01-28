@@ -157,7 +157,7 @@ stringNameCompare :: proc {
 
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare_cstring :: proc "c" (l_value: ^StringName, r_value: cstring) -> (ret: bool) {
+stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (ret: bool) {
     r_name: StringName
     gdAPI.StringName_Utils.Latin1Chars(&r_name, r_value, false)
     defer(StringName_Methods.Destroy(&r_name))
@@ -349,12 +349,9 @@ ObjectToString :: proc(Object: ^Object, r_String: ^gdstring) {
 InputSingleton : ^Object
 Input_SN:StringName
 
-getInputSingleton :: proc "c" () {
-    
-    
+getInputSingleton :: proc() {
     gdAPI.StringName_Utils.Latin1Chars(&Input_SN, "Input", false)
     InputSingleton = gdAPI.GlobalGetSingleton(&Input_SN)
-
 }
 
 isAnythingPressed :: proc(r_bool: ^Bool) {
