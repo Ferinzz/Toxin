@@ -43,6 +43,7 @@ Class_Deets :: struct {
     SN : GDW.StringName,
     binder: proc(className: ^GDW.StringName),
 }
+
 InitializationLevel :: enum {
 	INITIALIZATION_CORE,
 	INITIALIZATION_SERVERS,
@@ -99,9 +100,9 @@ Create :: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GD
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast(^GDW.Object)gdAPI.Memory_Uils.MemAlloc(size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
+    self: = cast(^GDW.Class_Container(GDW.CC_Dummy))gdAPI.Memory_Uils.MemAlloc(size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
     mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
-    self.proxy= object
+    self.self= object
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^GDW.Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)

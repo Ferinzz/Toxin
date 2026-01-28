@@ -6,7 +6,7 @@ import "GDWrapper/gdAPI"
 import "base:runtime"
 import "core:fmt"
 
-Scene_Init_Callback:: proc();
+Scene_Init_Callback:: proc "contextless" ();
 
 scene_inits:[500]^Class_Deets
 
@@ -61,21 +61,21 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which depend on core classes.
             */
-            ClassDB.self.obj = GDW.Library
-            init_classDB(&ClassDB)
-            
-            SN: GDW.StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-            SN_p: ^GDW.StringName = &SN
-            ret: Class_Array
-            gdMakeArray(&ret)
-            ret2: Class_Array
-            gdMakeArray(&ret2)
-            rando: rawptr = new(rawptr)
-            ret2.self^ = ClassDB -> class_get_method_list(rando, SN_p, false)
-            dict: GDW.Dictionary
-            ret2.self^ = ClassDB -> class_get_signal(rando, SN_p, SN_p)
+            // ClassDB.self.obj = GDW.Library
+            // init_classDB(&ClassDB)
+            // 
+            // SN: GDW.StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
+            // SN_p: ^GDW.StringName = &SN
+            // ret: Class_Array
+            // gdMakeArray(&ret)
+            // ret2: Class_Array
+            // gdMakeArray(&ret2)
+            // rando: rawptr = new(rawptr)
+            // ret2.self^ = ClassDB -> class_get_method_list(rando, SN_p, false)
+            // dict: GDW.Dictionary
+            // ret2.self^ = ClassDB -> class_get_signal(rando, SN_p, SN_p)
 
-            return    
+            return
         case .INITIALIZATION_SCENE:
             /*
             * Register the different classes which depend on servers classes.
@@ -122,7 +122,7 @@ extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLe
             /*
             * Free the different classes which depend on core classes.
             */
-            return    
+            return
         case .INITIALIZATION_SCENE:
             /*
             * Free the different classes which depend on servers classes.

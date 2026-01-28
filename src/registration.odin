@@ -8,6 +8,7 @@ init:: proc "contextless" ()  {
 
 @(init)
 asdf :: proc "contextless" () {
-    //Toxin.inits.scene = init
+    Toxin.inits.scene = init
+    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
     init()
 }

@@ -5,10 +5,16 @@ import "gdAPI"
 import "core:fmt"
 import sics "base:intrinsics"
 
+/*
 init_classDB :: proc (classDB_methods: ^$T) {
     classDB_methods.class_get_method_list = cast(sics.type_field_type(T, "class_get_method_list"))(cast(^MethodBind)classDBGetMethodBind3(.ClassDB, "class_get_method_list", 3504980660)).method
     classDB_methods.class_get_signal = cast(sics.type_field_type(T, "class_get_signal"))(cast(^MethodBind)classDBGetMethodBind3(.ClassDB, "class_get_signal", 3061114238)).method
 }
+*/
+
+get_name2_mb: ^MethodBind
+set_name2_mb: ^MethodBind
+
 /*
 class_get_method_list :: proc() {
     SN: StringName = StringConstruct.stringNameNewString_r("ClassDB")

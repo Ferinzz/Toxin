@@ -41,20 +41,26 @@ MainLoopStartupCallback :: proc "c" () {
     root:= GDW.getRoot()
     scene:= GDW.get_current_scene()
     SN: GDW.StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-    SN_p: ^GDW.StringName = &SN
     rando: rawptr = new(rawptr)
-    minput: Input_C
-    minput.self = (gdAPI.ClassDB.ConstructObject(GDW.GDClass_StringName_get(.Node)))
-    make_Input(&minput)
+    minput: Node_C
+    fmt.println(size_of(minput))
+    //minput.self = (gdAPI.ClassDB.ConstructObject(GDW.GDClass_StringName_get(.Node)))
+    make_Node(&minput)
     fmt.println(cast(^[30]u8)minput.self.proxy)
     //GDW.Node_set_name(minput.self, SN_p)
-    minput.is_action_released(minput.self, SN_p)
+    //minput.set_name(minput.self, SN_p)
     SN2: GDW.StringName// = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-    SN_p2: ^GDW.StringName = &SN2
-    SN_p = minput.get_name(minput.self, SN_p2)
-    mint: int
+    SN_p2: GDW.StringName
+
+    minput.set_name(minput, {&SN})
+    minput->get_name({nil}, &SN_p2)
+    minput->set_name({&SN})
+    minput->get_name({nil}, &SN_p2)
+
+    
+    mint: GDW.Int
     check:bool = true
-    mint = minput.get_child_count(minput.self, check)
+    minput->get_child_count({&check}, &mint)
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
 

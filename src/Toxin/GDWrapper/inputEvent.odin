@@ -63,13 +63,24 @@ InputEvent_Options :: enum {
     //InputEventFromWindow,
     InputEvent,
 };
-
+/*
 init_Input :: proc (classDB_methods: ^$T) {
-    classDB_methods.is_action_released = cast(sics.type_field_type(T, "is_action_released"))(cast(^MethodBind)classDBGetMethodBind3(.Node, "set_name", 3304788590)).method
+    classDB_methods.set_name = cast(sics.type_field_type(T, "set_name"))(cast(^MethodBind)classDBGetMethodBind3(.Node, "set_name", 3304788590)).method
     classDB_methods.get_name = cast(sics.type_field_type(T, "get_name"))(cast(^MethodBind)classDBGetMethodBind3(.Node, "get_name", 2002593661)).method
     classDB_methods.get_child_count = cast(sics.type_field_type(T, "get_child_count"))(cast(^MethodBind)classDBGetMethodBind3(.Node, "get_child_count", 894402480)).method
+    
+    classDB_methods.set_name2 = cast(sics.type_field_type(T, "set_name2"))(cast(^MethodBind)classDBGetMethodBind3(.Node, "set_name", 3304788590)).method
+    classDB_methods.get_name = cast(sics.type_field_type(T, "get_name2"))(cast(^MethodBind)classDBGetMethodBind3(.Node, "get_name", 2002593661)).method
+    classDB_methods.get_child_count2 = cast(sics.type_field_type(T, "get_child_count2"))(cast(^MethodBind)classDBGetMethodBind3(.Node, "get_child_count", 894402480)).method
     //classDB_methods.class_get_signal = cast(sics.type_field_type(T, "class_get_signal"))(cast(^MethodBind)classDBGetMethodBind3(.ClassDB, "class_get_signal", 3061114238)).method
 }
+
+ClassDB
+
+set_name2:: proc (self: ^InputEvent, name: rawptr) {
+
+}
+*/
 
 InputEvent_is_action :: proc(input_event: ^InputEvent, action: ^StringName, exact_match: ^Bool, r_bool: ^Int) {
     @(static)isAction: GDE.MethodBindPtr

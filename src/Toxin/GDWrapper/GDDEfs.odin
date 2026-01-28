@@ -10,8 +10,10 @@ import GDE "gdAPI/gdextension"
 /******************/
 /******************/
 
+CC_Dummy:: struct{}
+
 Class_Container :: struct ($Class_Structure: typeid) {
-    self: Object, //Keep as first so it can be trivially cast.
+    self: ^Object, //Keep as first so it can be trivially cast.
     using class: Class_Structure,
 }
 

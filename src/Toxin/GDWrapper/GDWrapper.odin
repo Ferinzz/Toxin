@@ -108,12 +108,29 @@ classDBGetMethodBind3 :: proc(className: ClassName_Index, methodName: cstring, h
     return methodBind
 }
 
-//Container for Godot's Vector class. Mainly used for padding where necessary.
+make_generic_methodbind_call :: proc($procsig: typeid, mbb: ^MethodBind) -> rawptr {
+    @(static) mb:^MethodBind
+    mb= mbb
+
+    //Not sure why this is receiving the Node struct as if it's a pointer despite passing it as itself.
+    //Maybe implicitly converting it to a pointer due to size.
+    generic:: proc(self: ^Class_Container(CC_Dummy), arg1: struct{rawptr}, r_ret: rawptr){
+        args:=arg1
+        r_ret:=r_ret
+        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)mb, self.self, cast([^]rawptr)&args, r_ret)
+    }
+    return cast(rawptr)generic
+}
+
+//Do not use. Used for padding where necessary. Container for Godot's Vector class.
 cowData :: struct {
     _ptr: rawptr,
     data: rawptr,
 }
 
+//Godot creates a class which has several utility methods and the below properties.
+//Of interest if you feel like being hacky would be the method value, which is a direct pointer to the method which you could call if you're brave enough.
+//(Don't call them directly. The setup needed to do so feels very hacky and property fields are verrrry inconsistent.)
 MethodBind :: struct #align(8) {
     //vtable: rawptr,
     vtable: Int,
@@ -157,6 +174,7 @@ stringNameCompare :: proc {
 
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
+@(deprecated="use stringNameCompare_string")
 stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (ret: bool) {
     r_name: StringName
     gdAPI.StringName_Utils.Latin1Chars(&r_name, r_value, false)

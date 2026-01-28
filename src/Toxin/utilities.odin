@@ -9,7 +9,7 @@ import "core:reflect"
 
 //a pointer uniquely identifying the given built-in class in the ClassDB.
 
-ClassTag:: GDW.ClassTag
+ClassTag :: GDW.ClassTag
 
 InputEvent :: GDW.InputEvent
 

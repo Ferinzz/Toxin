@@ -348,7 +348,6 @@ variant_to :: proc {
         assert(p_variant.VType == .FLOAT, loc = loc)
         mem.copy(p_dest, &p_variant.data, 8)
     }
-    
     StringFromVariant :: proc(p_variant: ^GDE.Variant, p_dest: ^gdstring, loc := #caller_location) {
         @(static) string2v: GDE.TypeFromVariantConstructorFunc
         if string2v == nil do string2v = gdAPI.Variant_Utils.GetVariantToTypeConstructor(.STRING)
@@ -426,7 +425,6 @@ variant_to :: proc {
         if trans2d2V == nil do trans2d2V = gdAPI.Variant_Utils.GetVariantToTypeConstructor(.TRANSFORM2D)
         trans2d2V(p_dest, p_variant)
     }
-
     ColorFromVariant :: proc(p_variant: ^GDE.Variant, p_dest: ^Color, loc := #caller_location) {
         assert(p_variant.VType == .COLOR, loc = loc)
         mem.copy(p_dest, &p_variant.data, 16)
@@ -474,7 +472,6 @@ variant_to :: proc {
         if dictionary2v == nil do dictionary2v = gdAPI.Variant_Utils.GetVariantToTypeConstructor(.DICTIONARY)
         dictionary2v(p_dest, p_variant)
     }
-
     ArrayFromVariant :: proc(p_variant: ^GDE.Variant, p_dest: ^Array, loc := #caller_location) {
         assert(p_variant.VType == .ARRAY, loc = loc)
         @(static) array2v: GDE.TypeFromVariantConstructorFunc
