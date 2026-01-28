@@ -48,13 +48,13 @@ MainLoopStartupCallback :: proc "c" () {
     make_Input(&minput)
     fmt.println(cast(^[30]u8)minput.self.proxy)
     //GDW.Node_set_name(minput.self, SN_p)
-    minput.is_action_released(minput.self,SN_p)
+    minput.is_action_released(minput.self, SN_p)
     SN2: GDW.StringName// = GDW.StringConstruct.stringNameNewString_r("ClassDB")
     SN_p2: ^GDW.StringName = &SN2
-    SN_p = minput.get_name(minput.self,SN_p2)
+    SN_p = minput.get_name(minput.self, SN_p2)
     mint: int
     check:bool = true
-    mint = minput.get_child_count(minput.self,check)
+    mint = minput.get_child_count(minput.self, check)
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
 

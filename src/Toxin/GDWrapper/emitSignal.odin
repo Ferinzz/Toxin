@@ -146,15 +146,7 @@ connectToSignal :: proc(callback: ^GDE.CallableCustomInfo2, signal_name: ^String
     //Keep a static pointer to the connect_to method. If not already assigned, fetch it.
     @(static) connect_to: GDE.MethodBindPtr
     if connect_to == nil{
-        sn_SceneTree:StringName
-        gdAPI.StringName_Utils.Latin1Chars(&sn_SceneTree, "Object", false)
-        Connect: StringName
-        gdAPI.StringName_Utils.Latin1Chars(&Connect, "connect", false)
-        
-        connect_to = gdAPI.ClassDB.GetMethodBind(&sn_SceneTree, &Connect, 1518946055)
-
-        StringName_Methods.Destroy(&sn_SceneTree)
-        StringName_Methods.Destroy(&Connect)
+        connect_to = classDBGetMethodBind3(.SceneTree, "connect", 1518946055)
     }
     
     myCallable:Callable
