@@ -9,6 +9,7 @@ getIndex_v:: proc {
     GetArrayIndex,
     GetPackStringIndex,
 }
+
 GetArrayIndex:: proc(p_base: ^GDW.Class_Array, index: GDW.Int, r_ret: ^GDW.Variant) {
     GDW.GDArray_Methods.GetIndex(p_base, index, r_ret)
 }

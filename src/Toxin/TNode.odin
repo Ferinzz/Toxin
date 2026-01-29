@@ -25,7 +25,35 @@ Node_methods_list:: struct {
     get_child_count: proc (self: ^Node_C, check_inheritance: struct{^Bool}, r_count: ^Int, loc := #caller_location),
 }
 
-@(require_results)
-fdjkafdj ::  proc (self: ^Node_C, padding: struct{rawptr}, r_ret: ^StringName) -> ^StringName {
-    return nil
+Node_Signals ::struct {
+    ready: rawptr,
+    renamed: rawptr,
+    tree_entered: rawptr,
+    tree_exiting: rawptr,
+    tree_exited: rawptr,
+    child_entered_tree: rawptr,
+    // "arguments": [
+    // {
+    // "name": "node",
+    // "type": "Node"
+    // }
+    child_exiting_tree: rawptr,
+    // "arguments": [
+    // {
+    // "name": "node",
+    // "type": "Node"
+    // }
+    child_order_changed: rawptr,
+    replacing_by: rawptr,
+    // "arguments": [
+    // {
+    // "name": "node",
+    // "type": "Node"
+    //}
+    editor_description_changed: rawptr,
+    // {
+    // "name": "node",
+    // "type": "Node"
+    // }
+    editor_state_changed: rawptr,
 }

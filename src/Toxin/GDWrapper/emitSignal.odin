@@ -38,7 +38,7 @@ registerSignal :: proc(className, signalName: cstring, arg_type: []GDE.VariantTy
 
     assert(len(arg_type) == count, "registerSignal: Length of []arg_type list does not match with count provided", loc)
     assert(len(arg_name) == count, "registerSignal: Length of []arg_name list does not match with count provided", loc)
-    
+
     s_className: StringName
     s_signalName: StringName
     gdAPI.StringName_Utils.Latin1Chars(&s_className, className, false)
@@ -74,25 +74,25 @@ registerSignal :: proc(className, signalName: cstring, arg_type: []GDE.VariantTy
 register_Signal :: #force_inline proc(className: string, $arg_type: typeid, loc := #caller_location) -> ( signalName_SN: StringName, Error: EmitError)
     where (sics.type_is_struct(arg_type) && sics.type_is_named(arg_type))
     {
-    
+
     className_SN: StringName
     //signalName_SN: StringName
     StringConstruct.stringNameNewString(&className_SN, className)
     StringConstruct.stringNameNewString(&signalName_SN, type_info_of(arg_type).variant.(runtime.Type_Info_Named).name)
 
     signalProp:[sics.type_struct_field_count(arg_type)]GDE.PropertyInfo
-    
+
     for name, index in type_info_of(arg_type).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Struct).names[:sics.type_struct_field_count(arg_type)] {
 
         // Lookup the type of the value at this index.
         // Do a search for this type in the GDE.GDTypes list. This ensures that only types supported by Godot are sent to Godot.
         variantIndex, ok := slice.linear_search(GDE.GDTypes[:], (type_info_of(arg_type).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Struct).types[:sics.type_struct_field_count(arg_type)])[index].id)
-        
+
         if ok == false {
             return signalName_SN, .WRONG_TYPE
         }
         variant_type:=GDE.VariantType(variantIndex)
-        
+
         prop:= make_property(variant_type, name)
         signalProp[index] = prop
     }
@@ -128,7 +128,45 @@ emitSignal :: proc{
 }
 
 /*
+* Callable is a 'heap' allocated value. You are responsible for deleting it when you are done with it.
+* r_callable: An uninitialized pointer which will hold the Callable as a return value.
+* call_info: detailed information to be used to build the GDE.CallableCustomInfo2 struct.
+*/
+Create_Callable :: proc(r_callable: ^Callable, 
+        callable_userdata:       rawptr, //Should be a proc of some kind.
+        
+        object_id:               ^Object, //Pointer to the Object which is connecting elsewhere.
+        call_func:               GDE.CallableCustomCall, //Override if you would like to have your own call instead of the generic one GDWrapper implemented.
+        is_valid_func:           GDE.CallableCustomIsValid, //If it's possible the callable is destroyed before disconnecting.
+        free_func:               GDE.CallableCustomFree, //Only needed if some memory it was using needs to be freed.
+        hash_func:               GDE.CallableCustomHash, //Godot runs a hash method twice. Not sure what that's used for.
+        equal_func:              GDE.CallableCustomEqual, //proc which will compare two callable_userdata in order to determine if they match.
+        less_than_func:          GDE.CallableCustomLessThan, //May be useful if you're sotring them in an array?
+        to_string_func:          GDE.CallableCustomToString, //Stringify the Callable info.
+        get_argument_count_func: GDE.CallableCustomGetArgumentCount, //Helper func to get arg count at runtime.
+        token:                   GDE.ClassDB = Library, //Should be the GDE's library pointer.
+    ) {
+    //
+    s_call_info:GDE.CallableCustomInfo2 = {
+        callable_userdata= callable_userdata,
+        token= token,
+        object_id= gdAPI.Object_Utils.GetInstanceId(object_id),
+        call_func= call_func,
+        is_valid_func= is_valid_func,
+        free_func= free_func,
+        hash_func = hash_func,
+        equal_func= equal_func,
+        less_than_func= less_than_func,
+        to_string_func= to_string_func,
+        get_argument_count_func= get_argument_count_func,
+    }
+    gdAPI.Callable_Utils.CustomCreate2(r_callable, (&s_call_info))
+}
+
+/*
 * Connection to another object's signal
+* There seems to be several connect and disconnect rules for signals, at least for C#
+** I believe that GDE should not run afowl of the worst of it due to us always(?) using Connect
 * callback: A struct containing information about how Godot should handle your particular signal callback.
 * At minimum shoudl include the following.
 ** callable_userdata: rawptr to the function which should be used.
@@ -141,19 +179,16 @@ a pointer to the object, the StringName of the signal and class_name, a Callable
 * Careful when retrieving the object of a refCounted object. It will check the signals for refCount instead of the object itself... ie get_scene_tree
 */
 @require_results
-connectToSignal :: proc(callback: ^GDE.CallableCustomInfo2, signal_name: ^StringName, object: ^Object, flags: ConnectFlags = nil, loc := #caller_location) -> GDE.CallErrorType {
+connectToSignal :: proc(object: ^Object, callback: ^Callable, signal_name: ^StringName, flags: ConnectFlags = nil, loc := #caller_location) -> GDE.CallErrorType {
 
     //Keep a static pointer to the connect_to method. If not already assigned, fetch it.
     @(static) connect_to: GDE.MethodBindPtr
     if connect_to == nil{
         connect_to = classDBGetMethodBind3(.SceneTree, "connect", 1518946055)
     }
-    
-    myCallable:Callable
-    gdAPI.Callable_Utils.CustomCreate2(&myCallable, callback)
 
     flags:=flags
-    args:= [?]rawptr {signal_name, &myCallable, &flags}
+    args:= [?]rawptr {signal_name, callback, &flags}
     ret_err:GDE.CallErrorType
     gdAPI.Object_Utils.MethodBindPtrcall(connect_to, object, raw_data(args[:]), &ret_err)
 

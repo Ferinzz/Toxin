@@ -152,6 +152,7 @@ Variant :: struct #align(8) {
     data: [2]u64
 }
 
+//Sometimes const means a multipointer, sometimes it means runtime const..
 VariantPtr 							:: ^Variant
 ConstVariantPtr 					:: ^Variant
 ConstVariantPtrargs 				:: [^]ConstVariantPtr
@@ -166,7 +167,7 @@ ObjectPtr 							:: ^Object
 ConstObjectPtr 						:: [^]Object
 UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
-ConstTypePtr 						:: [^]rawptr
+ConstTypePtr 						:: rawptr
 UninitializedTypePtr 				:: rawptr
 MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64

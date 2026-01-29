@@ -58,8 +58,9 @@ MainLoopStartupCallback :: proc "c" () {
     minput->get_name(&SN_p2)
     minput->set_name({&SN})
     minput->get_name(&SN_p2)
-
-    
+    callee: Callable
+    GDW.Create_Callable(&callee, {&callee, GDW.Library, minput.self, nil, nil, nil, nil, nil, nil, nil})
+    gdAPI.Callable_Utils.CustomGetUserData(&callee, GDW.Library)
     mint: GDW.Int
     check: Bool = true
     minput->get_child_count({&check}, &mint)
