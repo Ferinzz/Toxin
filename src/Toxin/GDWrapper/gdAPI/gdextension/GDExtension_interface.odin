@@ -9,8 +9,8 @@ import "core:c"
 * Most pointers are either rawptr or multipointers [^]rawptr. I haven't made anything distinct as it's not necessary to be too strict.?
 */
 Int     :: i64
-/* VARIANT TYPES */
 
+/* VARIANT TYPES */
 //VARIANT_MAX is used in Godot as a bounds value. There's some functions and arrays that use this to set/check for out of bounds settings.
 ////WARNING: if the order of the variantType enum changes, GDTypes needs to be updated in GDDEfs file.
 VariantType :: enum {

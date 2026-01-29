@@ -1,8 +1,9 @@
 package Toxin
 
-import GDW "GDWrapper"
-import GDE "GDWrapper/gdAPI/gdextension"
-import "GDWrapper/gdAPI"
+import GDW "shared:GDWrapper"
+import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "shared:GDWrapper/gdAPI"
+
 import "base:runtime"
 import "core:fmt"
 
@@ -27,7 +28,11 @@ import "core:fmt"
 scene_tree_obj: ^GDW.Object
 root_node_instance: ^GDW.Object
 
-/* Called when starting the main loop. */
+/* Called when starting the main loop.
+* This is the point in time to grab the reference to a mainLoop. For example if you wrote your own and want to listen in on it.
+* This is also the point after which the servers should have been booted up. You can safely get their Singletons.
+* Fake singletons. :Experimental: Add your own class to the root of the scene. Based on Godot's management of Singletons this should be how you can make your own singleton system. This hasn't been tested with scene switching.
+*/
 MainLoopStartupCallback :: proc "c" () {
     context = runtime.default_context()
     GDW.getPhysServer2dObj()
@@ -40,26 +45,23 @@ MainLoopStartupCallback :: proc "c" () {
     //Fetch the root of the current sceneTree
     root:= GDW.getRoot()
     scene:= GDW.get_current_scene()
-    SN: GDW.StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
+    SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
     rando: rawptr = new(rawptr)
     minput: Node_C
     fmt.println(size_of(minput))
-    //minput.self = (gdAPI.ClassDB.ConstructObject(GDW.GDClass_StringName_get(.Node)))
     make_Node(&minput)
     fmt.println(cast(^[30]u8)minput.self.proxy)
-    //GDW.Node_set_name(minput.self, SN_p)
-    //minput.set_name(minput.self, SN_p)
-    SN2: GDW.StringName// = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-    SN_p2: GDW.StringName
+    SN2: StringName
+    SN_p2: StringName
 
-    minput.set_name(minput, {&SN})
-    minput->get_name({nil}, &SN_p2)
+    minput.set_name(&minput, {&SN})
+    minput->get_name(&SN_p2)
     minput->set_name({&SN})
-    minput->get_name({nil}, &SN_p2)
+    minput->get_name(&SN_p2)
 
     
     mint: GDW.Int
-    check:bool = true
+    check: Bool = true
     minput->get_child_count({&check}, &mint)
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.

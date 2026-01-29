@@ -108,19 +108,19 @@ classDBGetMethodBind3 :: proc(className: ClassName_Index, methodName: cstring, h
     return methodBind
 }
 
-make_generic_methodbind_call :: proc($procsig: typeid, mbb: ^MethodBind) -> rawptr {
-    @(static) mb:^MethodBind
-    mb= mbb
+// make_generic_methodbind_call :: proc($procsig: typeid, mbb: ^MethodBind) -> rawptr {
+//     @(static) mb:^MethodBind
+//     mb= mbb
 
-    //Not sure why this is receiving the Node struct as if it's a pointer despite passing it as itself.
-    //Maybe implicitly converting it to a pointer due to size.
-    generic:: proc(self: ^Class_Container(CC_Dummy), arg1: struct{rawptr}, r_ret: rawptr){
-        args:=arg1
-        r_ret:=r_ret
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)mb, self.self, cast([^]rawptr)&args, r_ret)
-    }
-    return cast(rawptr)generic
-}
+//     //Not sure why this is receiving the Node struct as if it's a pointer despite passing it as itself.
+//     //Maybe implicitly converting it to a pointer due to size.
+//     generic:: proc(self: ^Class_Container(CC_Dummy), arg1: struct{rawptr}, r_ret: rawptr){
+//         args:=arg1
+//         r_ret:=r_ret
+//         gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)mb, self.self, cast([^]rawptr)&args, r_ret)
+//     }
+//     return cast(rawptr)generic
+// }
 
 //Do not use. Used for padding where necessary. Container for Godot's Vector class.
 cowData :: struct {

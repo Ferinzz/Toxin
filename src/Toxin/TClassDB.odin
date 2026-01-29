@@ -1,8 +1,8 @@
 package Toxin
 
-import GDE "GDWrapper/gdAPI/gdextension"
-import GDW "GDWrapper"
-import "GDWrapper/gdAPI"
+import GDE "shared:GDWrapper/gdAPI/gdextension"
+import GDW "shared:GDWrapper"
+import "shared:GDWrapper/gdAPI"
 
 /*
 make_ClassDB :: proc(ClassDB: ^ClassDB_C) {
@@ -18,12 +18,12 @@ ClassDB_C :: struct {
 ClassDB_methods_list:: struct {
     Get_Class_List: GDE.MethodBindPtr,
     set_name: proc "fastcall" (self: GDW.ClassDB, name: rawptr),
-    set_name2: proc (self: GDW.ClassDB, vals: struct{r_name: ^GDW.StringName}),
-    get_name: proc "fastcall" (self: GDW.ClassDB, r_name: rawptr) -> ^GDW.StringName,
-    get_name2: proc (self: GDW.ClassDB, vals: struct{r_name: ^GDW.StringName}, r_ret: ^GDW.StringName) -> ^GDW.StringName,
+    set_name2: proc (self: GDW.ClassDB, vals: struct{r_name: ^StringName}),
+    get_name: proc "fastcall" (self: GDW.ClassDB, r_name: rawptr) -> ^StringName,
+    get_name2: proc (self: GDW.ClassDB, vals: struct{r_name: ^StringName}, r_ret: ^StringName) -> ^StringName,
     get_child_count: proc "fastcall" (self: GDW.ClassDB, r_count: bool) -> int,
     get_child_count2: proc (self: GDW.ClassDB, r_count: ^bool) -> int,
-    //class_get_signal: proc(self: ClassDB_C, ret: rawptr, className: ^GDW.StringName, signalName: ^GDW.StringName) -> GDW.Array,
+    //class_get_signal: proc(self: ClassDB_C, ret: rawptr, className: ^StringName, signalName: ^StringName) -> GDW.Array,
     //class_has_signal
 }
 

@@ -11,7 +11,7 @@ SN_Error :: enum {
     BAD_INDEX,
 }
 
-GDClass_StringName_get :: proc(classname_index: GDW.ClassName_Index) -> ^GDW.StringName {
+GDClass_StringName_get :: proc(classname_index: GDW.ClassName_Index) -> ^StringName {
     //ClassName_StringNames[classname_index]
     if GDW.ClassName_StringNames[classname_index].ptr == nil {
         GDW.StringConstruct.stringNameNewString(&ClassName_StringNames[classname_index], reflect.enum_field_names(ClassName_Index)[classname_index])

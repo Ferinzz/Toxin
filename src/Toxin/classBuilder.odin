@@ -1,9 +1,9 @@
 package Toxin
 
 import "base:runtime"
-import GDE "GDWrapper/gdAPI/gdextension"
-import GDW "GDWrapper"
-import "GDWrapper/gdAPI"
+import GDE "shared:GDWrapper/gdAPI/gdextension"
+import GDW "shared:GDWrapper"
+import "shared:GDWrapper/gdAPI"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:mem"
@@ -15,6 +15,7 @@ import "core:mem"
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
 Class_Container :: GDW.Class_Container
+CC_Dummy:: struct{}
 
 
 /*
@@ -39,9 +40,9 @@ Class_Deets :: struct {
     init_level: InitializationLevel,
     GDClass_Index: GDW.ClassName_Index,
     vtable: rawptr,
-    GDClass_StringName: ^GDW.StringName,
-    SN : GDW.StringName,
-    binder: proc(className: ^GDW.StringName),
+    GDClass_StringName: ^StringName,
+    SN : StringName,
+    binder: proc(className: ^StringName),
 }
 
 InitializationLevel :: enum {
@@ -144,7 +145,7 @@ Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassDB) {
 */
 make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type_is_pointer(T) != true {
 
-    intermediate:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^GDW.StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
+    intermediate:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
         context = runtime.default_context()
         arg:= cast(^T)p_class_userdata.vtable
         //Will exit early if there is a match on the value.

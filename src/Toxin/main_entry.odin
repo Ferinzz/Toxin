@@ -1,8 +1,8 @@
 package Toxin
 
-import GDW "GDWrapper"
-import GDE "GDWrapper/gdAPI/gdextension"
-import "GDWrapper/gdAPI"
+import GDW "shared:GDWrapper"
+import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "shared:GDWrapper/gdAPI"
 import "base:runtime"
 import "core:fmt"
 
@@ -64,8 +64,8 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             // ClassDB.self.obj = GDW.Library
             // init_classDB(&ClassDB)
             // 
-            // SN: GDW.StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-            // SN_p: ^GDW.StringName = &SN
+            // SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
+            // SN_p: ^StringName = &SN
             // ret: Class_Array
             // gdMakeArray(&ret)
             // ret2: Class_Array
