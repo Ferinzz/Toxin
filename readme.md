@@ -1,3 +1,5 @@
+Forgive me Odin for I have sinned. Along with the creation of this repo I have summoned the deep inheritance system of a C++ application. Some will be shallow, some will be 7 layers deep. Most will create a system of triple procedure jumps. For that is the nature of interop with a game engine built up using a node system. Although I may have faltered I will not fall. Code which is used for Odin within Odin will remain pure. Standing strong on their own as they proceed through their lifetime within the applications they will reside within. Until the day of Ragnarok where all memory will be wiped.
+
 This repo is to provide a wrapper for Godot's API.
 
 Current features include :
@@ -14,7 +16,6 @@ Not yet implemented or needs more work
 * More object methods
 * Review the memory system more closely
 * Add allocator variables to communicate allocs instead of using default alloc everwhere
-~change cstring types to string types~
 
 Feel free to make suggestions
 

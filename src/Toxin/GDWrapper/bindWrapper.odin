@@ -66,6 +66,7 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: stri
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
+        //Some types need to be deleted when being passed in via set. Copy on Write or some such means that any changes in the editor of from a script using your exported value will trigger this.
         when sics.type_field_type(classStruct, fieldName) == StringName {
             StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
