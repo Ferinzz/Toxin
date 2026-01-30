@@ -7,6 +7,7 @@ import "shared:GDWrapper/gdAPI"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:mem"
+import "core:reflect"
 
 /*
 * Container type for the class Node.
@@ -102,7 +103,7 @@ Create :: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GD
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
     self: = cast(^GDW.Class_Container(GDW.CC_Dummy))gdAPI.Memory_Uils.MemAlloc(size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
-    mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
+    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^GDW.Object))
     self.self= object
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^GDW.Object)self)
