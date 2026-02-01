@@ -8,7 +8,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     get_Interface_Address = p_get_proc_address
 
     //Function_Pointer.FunctionPtr = cast(GDE.InterfaceFunctionPtr)get_Interface_Address("")
-    //Function_Pointer.GetProcAddress = cast(GDE.InterfaceGetProcAddress)get_Interface_Address("")
+    Function_Pointer.GetProcAddress = p_get_proc_address
 
     GD_Version_Get.GetGodotVersion = cast(GDE.InterfaceGetGodotVersion)get_Interface_Address("get_godot_version")
     GD_Version_Get.GetGodotVersion2 = cast(GDE.InterfaceGetGodotVersion2)get_Interface_Address("get_godot_version2")

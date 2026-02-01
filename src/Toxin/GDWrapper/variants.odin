@@ -21,7 +21,46 @@ import sics "base:intrinsics"
 
 //Variant types found in the enum GDE.VariantType ref original C bindings for updates to the list.
 
-
+variant_union :: union {
+    Bool,
+    Int,
+    float,
+    gdstring,
+    Vector2,
+    Vector2i,
+    Rec2,
+    Rec2i,
+    Vector3,
+    Vector3i,
+    Transform2D,
+    Vector4,
+    Vector4i,
+    Plane,
+    Quaternion,
+    AABB,
+    Basis,
+    Transform3D,
+    Projection,
+    Color,
+    StringName,
+    NodePath,
+    RID,
+    Object,
+    Callable,
+    Signal,
+    Dictionary,
+    Array,
+    PackedByteArray,
+    PackedInt32Array,
+    PackedInt64Array,
+    PackedFloat32Array,
+    PackedFloat64Array,
+    PackedStringArray,
+    PackedVector2Array,
+    PackedVector3Array,
+    PackedColorArray,
+    PackedVector4Array,
+}
 
 /* Pass a type (int, i32, f64 etc.) and get the corresponding enum value that Godot will ID the variant type as.
 * These are going to be very fragile. If th enum changes order, the union will need to change to match it.
@@ -32,6 +71,10 @@ import sics "base:intrinsics"
 typetoenum :: proc($U: typeid) -> GDE.VariantType {
     ret, _ := (slice.linear_search(GDTypes[:], U))
     return cast(GDE.VariantType)ret
+}
+
+enumtotype :: proc(varType: GDE.VariantType) -> typeid {
+    return type_of(GDTypes[varType])
 }
 
 

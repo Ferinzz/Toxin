@@ -4,7 +4,13 @@ import GDE "gdAPI/gdextension"
 import "gdAPI"
 
 Signal_Methods: struct {
+	Create0: GDE.PtrConstructor,
     Destroy: GDE.PtrDestructor,
+}
+
+init_Signal_Methods :: proc() {
+	Signal_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.SIGNAL, 0)
+	Callable_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 0)
 }
 
 /*
@@ -114,6 +120,7 @@ Signal_Methods: struct {
 
 
 Callable_Methods: struct {
+	Create0: GDE.PtrConstructor,
     Destroy: GDE.PtrDestructor,
     is_custom: GDE.PtrBuiltInMethod,
     get_object: GDE.PtrBuiltInMethod,
@@ -324,123 +331,3 @@ Callable_Methods: struct {
 */
 
 
-
-
-NodePath_Methods: struct {
-    Destroy: GDE.PtrDestructor,
-}
-
-/*
-{
-	"name": "is_absolute",
-	"return_type": "bool",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 3918633141
-},
-{
-	"name": "get_name_count",
-	"return_type": "int",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 3173160232
-},
-{
-	"name": "get_name",
-	"return_type": "StringName",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 2948586938,
-	"arguments": [
-		{
-			"name": "idx",
-			"type": "int"
-		}
-	]
-},
-{
-	"name": "get_subname_count",
-	"return_type": "int",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 3173160232
-},
-{
-	"name": "hash",
-	"return_type": "int",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 3173160232
-},
-{
-	"name": "get_subname",
-	"return_type": "StringName",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 2948586938,
-	"arguments": [
-		{
-			"name": "idx",
-			"type": "int"
-		}
-	]
-},
-{
-	"name": "get_concatenated_names",
-	"return_type": "StringName",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 1825232092
-},
-{
-	"name": "get_concatenated_subnames",
-	"return_type": "StringName",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 1825232092
-},
-{
-	"name": "slice",
-	"return_type": "NodePath",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 421628484,
-	"arguments": [
-		{
-			"name": "begin",
-			"type": "int"
-		},
-		{
-			"name": "end",
-			"type": "int",
-			"default_value": "2147483647"
-		}
-	]
-},
-{
-	"name": "get_as_property_path",
-	"return_type": "NodePath",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 1598598043
-},
-{
-	"name": "is_empty",
-	"return_type": "bool",
-	"is_vararg": false,
-	"is_const": true,
-	"is_static": false,
-	"hash": 3918633141
-}
-,
-*/
