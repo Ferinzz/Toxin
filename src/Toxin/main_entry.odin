@@ -56,7 +56,19 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which should be considered Core to the rest of the system.
             */
-            GDW.init_array_types(&GDArray_Methods)
+            //Initialize the Methods of Array types for later use.
+            GDW.init_array_types(&GDArray_Methods,
+            &PackedByteArray_Methods,
+            &PackedInt32Array_Methods,
+            &PackedInt64Array_Methods,
+            &PackedFloat32Array_Methods,
+            &PackedFloat64Array_Methods,
+            &PackedStringArray_Methods,
+            &PackedVector2Array_Methods,
+            &PackedVector3Array_Methods,
+            &PackedColorArray_Methods,
+            &PackedVector4Array_Methods,
+            &GDDictionary_Methods,)
             return
         case .INITIALIZATION_SERVERS:
             /*

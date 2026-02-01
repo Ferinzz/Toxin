@@ -4,6 +4,7 @@ import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "shared:GDWrapper/gdAPI"
 import "base:runtime"
+import sics "base:intrinsics"
 
 callable_container:: struct {
     function: rawptr,
@@ -24,4 +25,22 @@ Signal_Callback :: proc "c" (callable_self: callable_container, p_args: GDE.Cons
         argument = i32(p_argument_count),
         expected = 0,
     }
+}
+
+/*
+* I already have a Variant -> type proc generator for normal exports.
+* I can make changes to the bindnoreturn2 proc in order to generate the variant->type system.
+* All signal procs should therefore use pointers as parameters.
+*/
+
+some_Signal :: proc(val1: ^Array, val2: ^float, val3: ^Basis) -> Vector2 {
+    return {0,3}
+}
+
+some_callback :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context=runtime.default_context()
+    p_args:=p_args[:p_argument_count]
+    r_arg::sics.type_proc_return_type(type_of(some_Signal), 0)
+    newproc:=cast(proc(rawptr,rawptr,rawptr) -> (r_arg))some_Signal
+    ret:= newproc(&p_args[0].data, &p_args[1].data, &p_args[2].data)
 }

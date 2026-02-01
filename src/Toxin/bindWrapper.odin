@@ -75,6 +75,7 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: stri
             Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
             classStruct, fieldName)
         }
+        //If it is a type which needs to be destroyed, destroy it.
         when sics.type_field_type(classStruct, fieldName) == StringName {
             GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
@@ -2030,7 +2031,7 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
         yourclassstruct.someField^ = valuePassedInByGodot //someField is of type Int
     }
     */
-    
+
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> field_Type {
         context = runtime.default_context()
 
@@ -2442,6 +2443,11 @@ destructProperty :: proc(info: ^GDE.PropertyInfo) {
     free(info.hint_string)}
 }
 
+/*
+* TODO: update to only pass the pointers to the getter/setter in order to simplify some of this.
+** Return will still need specific types.
+** Variant type validation would still need type validation.
+*/
 //This is messy. I dunno if this is better or worse than having 7 individual functions... Lots of casting. Eh.
 //This is also using some really old functions for the variant conversion since they provide a return instead of needing an empty pointer.
 bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE.ClassMethodPtrCall, GDE.ClassMethodCall) {
