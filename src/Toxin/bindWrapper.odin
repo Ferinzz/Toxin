@@ -46,7 +46,7 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: stri
     //I don't want you to have to learn the VariantType enum and pass that in. Instead, I will do a lookup based on the type.
     //If the type shown in Godot does not align with the Odin type, the order of GDE.VariantType enum and GDTypes need to be validated again.
     //get the index from the GDTypes array, this is in order of to the VariantType enum placement.
-    index, ok := slice.linear_search(GDTypes[:], sics.type_field_type(classStruct, fieldName))
+    index, ok := slice.linear_search(GDW.GDTypes[:], sics.type_field_type(classStruct, fieldName))
     if ok == false {
         panic("The type sent to makePublic was not found in GDW.GDTypes. Please check the list of valid Godot types.", loc)
     }
@@ -67,14 +67,22 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: stri
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
+        when  sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Signal ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
-            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == Array {
-            GDArray.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            GDW.GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
             PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
@@ -129,6 +137,14 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: stri
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
+        when sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Signal ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -246,6 +262,14 @@ Export_String_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
+        when sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Signal ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
         when sics.type_field_type(classStruct, fieldName) == StringName {
             StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
@@ -457,57 +481,8 @@ Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        when sics.type_field_type(classStruct, fieldName) == StringName {
-            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == gdstring {
-            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Array {
-            GDArray.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
-            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Dictionary {
-            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == NodePath {
-            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Callable {
-            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Signal {
-            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedByteArray {
-            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedInt32Array {
-            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedInt64Array {
-            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedFloat32Array {
-            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedFloat64Array {
-            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector2Array {
-            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector3Array {
-            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector4Array {
-            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedColorArray {
-            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
+        Verify_Heap_Init(p_classData, classStruct, fieldName)
+        Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -519,6 +494,9 @@ Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
+        //Verify_Heap_Init(classStruct, fieldName)
+
+        Verify_Heap_Init(p_classData, classStruct, fieldName)
         return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1663,7 +1641,15 @@ Export_Dictionary_type :: proc(className_SN: ^StringName, $classStruct: typeid, 
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Dictionary) {
         context = runtime.default_context()
-        
+
+        when sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Signal ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
         if (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName))).id != nil {    
             GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
@@ -1679,6 +1665,15 @@ Export_Dictionary_type :: proc(className_SN: ^StringName, $classStruct: typeid, 
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> Dictionary {
         context = runtime.default_context()
+
+        when sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Signal ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
         return (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -1736,6 +1731,14 @@ Export_Dictionary_Localizable_String :: proc(className_SN: ^StringName, $classSt
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Dictionary) {
         context = runtime.default_context()
         
+        when sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Signal ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
         if (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName))).id != nil {    
             GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
@@ -1751,6 +1754,9 @@ Export_Dictionary_Localizable_String :: proc(className_SN: ^StringName, $classSt
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> Dictionary {
         context = runtime.default_context()
+        if (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName))).id == nil {    
+            GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+        }
         return (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
@@ -2099,6 +2105,153 @@ makePropertyFull_string :: #force_inline proc(type: GDE.VariantType, name: strin
     return info
 }
 
+//MUST have these types initialized before attempting to access them. Godot will panic otherwise (Yay RAII..)
+Verify_Heap_Init :: proc {
+    Verify_Array_Init,
+    Verify_PackedColorArray_Init,
+    Verify_PackedVector4Array_Init,
+    Verify_PackedVector3Array_Init,
+    Verify_PackedVector2Array_Init,
+    Verify_PackedFloat64Array_Init,
+    Verify_PackedFloat32Array_Init,
+    Verify_PackedInt64Array_Init,
+    Verify_PackedInt32Array_Init,
+    Verify_PackedByteArray_Init,
+    Verify_Signal_Init,
+    Verify_Callable_Init,
+    Verify_Dictionary_Init,
+    Verify_PackedStringArray_Init,
+}
+
+_Heap_Not_Init :: proc(classStruct: typeid, fieldName: string, var_type: string) -> string {
+    return fmt.tprintf("Error: %s should be initialized in Create proc. %[2]s :: struct {{{{ %[1]s: %[0]s}", var_type, fieldName, type_info_of(classStruct).variant.(runtime.Type_Info_Named).name)
+}
+
+Verify_Array_Init :: proc(p_classData: ^Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.id {
+    GDArray_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Array"))
+    }
+}
+};
+
+//Verify_Heap_Init2 :: proc($classStruct: typeid, $fieldName: string,){
+Verify_PackedStringArray_Init :: proc(p_classData: ^PackedStringArray, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedStringArray_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedStringArray"))
+    }
+}
+};
+Verify_Dictionary_Init :: proc(p_classData: ^Dictionary, classStruct: typeid, fieldName: string) {
+if nil == p_classData.id {
+    GDW.GDDictionary_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+            fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Dictionary"))
+    }
+}
+};
+
+Verify_Callable_Init :: proc(p_classData: ^Callable, classStruct: typeid, fieldName: string) {
+if nil == p_classData.ref {
+    GDW.Callable_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Callable"))
+    }
+}
+};
+
+Verify_Signal_Init :: proc(p_classData: ^Signal, classStruct: typeid, fieldName: string) {
+if p_classData.objectid.proxy == nil {
+    GDW.Signal_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Signal"))
+    }
+}
+};
+Verify_PackedByteArray_Init :: proc(p_classData: ^PackedByteArray, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedByteArray_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedByteArray"))
+    }
+}
+};
+
+Verify_PackedInt32Array_Init :: proc(p_classData: ^PackedInt32Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedInt32Array_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt32Array"))
+    }
+}
+};
+
+Verify_PackedInt64Array_Init :: proc(p_classData: ^PackedInt64Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedInt64Array_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt64Array"))
+    }
+}
+};
+
+Verify_PackedFloat32Array_Init :: proc(p_classData: ^PackedFloat32Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedFloat32Array_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat32Array"))
+    }
+}
+};
+
+Verify_PackedFloat64Array_Init :: proc(p_classData: ^PackedFloat64Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedFloat64Array_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat64Array"))
+    }
+}
+};
+
+Verify_PackedVector2Array_Init :: proc(p_classData: ^PackedVector2Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedVector2Array_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector2Array"))
+    }
+}
+};
+
+Verify_PackedVector3Array_Init :: proc(p_classData: ^PackedVector3Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedVector3Array_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector3Array"))
+    }
+}
+};
+
+Verify_PackedVector4Array_Init :: proc(p_classData: ^PackedVector4Array, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedVector4Array_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector4Array"))
+    }
+}
+};
+
+Verify_PackedColorArray_Init :: proc(p_classData: ^PackedColorArray, classStruct: typeid, fieldName: string) {
+if nil == p_classData.proxy {
+    GDW.PackedColorArray_Methods.Create0(p_classData, nil)
+    when ODIN_DEBUG {
+        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedColorArray"))
+    }
+}
+};
+
 /*
 * Will call bindNoReturn2 to create callback functions for Godot to call your function with.
 * Once callbacks are created will supply all information in methodInfo so that your function can be bound to Godot.
@@ -2134,31 +2287,31 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
         argsInfo: [argcount]GDE.PropertyInfo
         
         index:int
-        index, _ = slice.linear_search(GDTypes[:], sics.type_proc_parameter_type(T, 1))
+        index, _ = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 1))
         argsInfo[0] = make_property(GDE.VariantType(index), argNames[0])
 
         when argcount > 1 
-        {index, _  = slice.linear_search(GDTypes[:], sics.type_proc_parameter_type(T, 2))
+        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 2))
         argsInfo[1] = make_property(GDE.VariantType(index), argNames[1])}
         
         when argcount > 2 
-        {index, _  = slice.linear_search(GDTypes[:], sics.type_proc_parameter_type(T, 3))
+        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 3))
         argsInfo[2] = make_property(GDE.VariantType(index), argNames[2])}
         
         when argcount > 3
-        {index, _  = slice.linear_search(GDTypes[:], sics.type_proc_parameter_type(T, 4))
+        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 4))
         argsInfo[3] = make_property(GDE.VariantType(index), argNames[3])}
         
         when argcount > 4
-        {index, _  = slice.linear_search(GDTypes[:], sics.type_proc_parameter_type(T, 5))
+        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 5))
          argsInfo[4] = make_property(GDE.VariantType(index), argNames[4])}
         
         when argcount > 5
-        {index, _  = slice.linear_search(GDTypes[:], sics.type_proc_parameter_type(T, 6))
+        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 6))
         argsInfo[5] = make_property(GDE.VariantType(index), argNames[5])}
         
         when argcount > 6
-        {index, _  = slice.linear_search(GDTypes[:], sics.type_proc_parameter_type(T, 7))
+        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 7))
         argsInfo[6] = make_property(GDE.VariantType(index), argNames[6])}
     }
     else do argsInfo:= 0
@@ -2183,7 +2336,7 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
     //Check if there's a return at compile-time. If there is, search the array for the corresponding type.
     //Else set 0.
     when sics.type_proc_return_count(T) > 0 {
-    returnType, ok:= slice.linear_search(GDTypes[:], sics.type_proc_return_type(T, 0))
+    returnType, ok:= slice.linear_search(GDW.GDTypes[:], sics.type_proc_return_type(T, 0))
     if !ok {
         panic("Type is not a part of the GDTypes. Please verify the list in GDE.GDEfs.", loc)
     }}
@@ -2217,10 +2370,10 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
         methodInfo.arguments_metadata = &args_metadata[0]
     }
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
     
     //Destructor things.
-    StringName_Methods.Destroy(&methodStringName)
+    GDW.StringName_Methods.Destroy(&methodStringName)
     //StringName_Methods.Destroy(&classNameString)
     destructProperty(&returnInfo)
 
@@ -2327,7 +2480,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance)
-                variant_from(cast(^GDE.Variant)r_return, &result)
+                GDW.variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance)
             }
@@ -2365,9 +2518,9 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 return
             }
             
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1)}
+            gdTypeList:= [argcount-1]GDE.VariantType {GDW.typetoenum(argT1)}
             
-            variantTypeCheck(gdTypeList[:], p_args, r_error)
+            GDW.variantTypeCheck(gdTypeList[:], p_args, r_error)
 
             func := cast(P)method_userdata
 
@@ -2375,9 +2528,9 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1))
                     variant_from(cast(^GDE.Variant)r_return, &result)
             } else {
-                fmt.println(fromvariant(cast(^GDE.Variant)p_args[0], argT1))
+                fmt.println(GDW.fromvariant(cast(^GDE.Variant)p_args[0], argT1))
                 fmt.println((cast(^GDE.Variant)p_args[0]).data)
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1))
+                func(cast(argT0)p_instance, GDW.fromvariant(cast(^GDE.Variant)p_args[0], argT1))
             }
         }
     return godotPtrCallback, godotVariantCallback
@@ -2681,4 +2834,3 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
         panic("yikes")
     }
 }}}}}}}}
-
