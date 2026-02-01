@@ -18,7 +18,6 @@ Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
     gdAPI.loadAPI(p_get_proc_address)
     init_StringName_Methods()
     init_String_Methods()
-    init_array_types()
 
     StringConstruct.stringNameNewString = proc(StringName_r: ^StringName, name: string) {
         gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
