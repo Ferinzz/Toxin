@@ -143,7 +143,6 @@ Projection :: distinct #row_major matrix[4,4]f32
 Will need to test to determine if major or minor. Likely reimplements C# version.
  */
 Transform2D ::  distinct #row_major matrix[3,2]f32
-//Transform2D :: distinct [6]f32
 
 /*3×4 matrix. A Basis, scale and shear. Combine with origin to do translations.
 Will need to test to determine if major or minor. Likely reimplements C# version.
@@ -188,12 +187,15 @@ Object :: GDE.Object
 or a custom callable used for different purposes.
 object is a union of u64 (objectID) or ^custom callable.
 Use gdAPI.ObjectGetInstanceFromId to get the ObjectPtr
+Callable contains a union on Godot's side. We should only be making CustomCallables through our system.
 */
 //https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L47
 Callable :: distinct struct{
     stringName: StringName,
-    objectId: u64,
+    ref: CustomCallable,
 }
+
+CustomCallable:: distinct rawptr
 
 /*Represents a signal of an Object instance. Like all Variant types,
 it can be stored in variables and passed to functions. Signals allow all connected
