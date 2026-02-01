@@ -35,8 +35,8 @@ CC_Dummy:: struct{}
 */
 Class_Deets :: struct {
     using registerer: Registerer, //Keep as first value in order to trivially cast it.
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> ^GDW.Object, //Cast to the Object class that your class extends.
-    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassDB),
+    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Object), //Cast to the Object class that your class extends.
+    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr),
     class_struct: typeid,
     init_level: InitializationLevel,
     GDClass_Index: GDW.ClassName_Index,
@@ -94,9 +94,8 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 //construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
 //This is different from Godot's ready, which is called sometime after this.
 //Returns a pointer to Class_Container(your_class_struct)
-Create :: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> ^GDW.Object {
-
-    context = runtime.default_context()
+Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Class_Container(GDW.CC_Dummy)) {
+    //context = runtime.default_context()
 
     object: ^GDW.Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
 
@@ -104,13 +103,19 @@ Create :: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GD
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
     self: = cast(^GDW.Class_Container(GDW.CC_Dummy))gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^GDW.Object))
     mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^GDW.Object))
+    //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
     self.self= object
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^GDW.Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
 
 
-    return object
+    return self
+}
+Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Object) {
+    context = runtime.default_context()
+    class:= Create(p_class_user_data, p_notify_postinitialize)
+    return class.self
 }
 
 /*
@@ -119,7 +124,7 @@ Create :: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GD
 * This procedure is associated with your class via the class_info struct built-up in the Register procedure.
 * GDE.ClassInstancePtr is a pointer to a Class_Container(T:typeid)
 */
-Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassDB) {
+Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){
         return
@@ -174,8 +179,8 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
 }
 
 Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_table: GDE.ClassGetVirtual2 = nil, \
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Object) = Create, \
-    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassDB) = Destroy, \
+    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Object) = Class_Init, \
+    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) = Destroy, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
     // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.

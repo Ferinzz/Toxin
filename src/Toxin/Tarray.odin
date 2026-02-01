@@ -22,12 +22,16 @@ BuiltinMake:: proc{
 }
 
 Class_Array :: GDW.Class_Array
+GDArray_Methods : GDW.GDArray_Methods_list
 
 gdMakeArray:: proc(p_array: ^Class_Array) {
     p_array.methods = &GDW.GDArray_Methods
-    p_array->create0(nil)
+    p_array->Create0(nil)
 }
 
+default_Array_class: Class_Array = {
+    methods = &GDArray_Methods
+}
 
 /*
 Tmake:: proc {

@@ -4,6 +4,7 @@ import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "shared:GDWrapper/gdAPI"
 
+
 import "base:runtime"
 import "core:fmt"
 
@@ -35,6 +36,8 @@ root_node_instance: ^GDW.Object
 */
 MainLoopStartupCallback :: proc "c" () {
     context = runtime.default_context()
+    indx_ret: Variant
+    //default_Array_class->GetIndex(0, &indx_ret)
     GDW.getPhysServer2dObj()
     GDW.getRenderServer2dObj()
     //GDW.class_get_method_list()
@@ -59,8 +62,20 @@ MainLoopStartupCallback :: proc "c" () {
     minput->set_name({&SN})
     minput->get_name(&SN_p2)
     callee: Callable
-    GDW.Create_Callable(&callee, {&callee, GDW.Library, minput.self, nil, nil, nil, nil, nil, nil, nil})
+    GDW.Create_Callable(&callee, &callee, minput.self, nil, nil, nil, nil, nil, nil, nil, nil, GDW.Library)
+    contained:callable_container ={
+        function=rawptr(testProc),
+        callable=callee,
+    }
+    var:GDE.Variant={
+        VType=.INT,
+        data={46,0}
+    }
+    varargs:=[]^Variant{&var}
+    r_errors:GDE.CallError
+    Signal_Callback(contained, raw_data(varargs[:]), 1, nil, &r_errors)
     gdAPI.Callable_Utils.CustomGetUserData(&callee, GDW.Library)
+
     mint: GDW.Int
     check: Bool = true
     minput->get_child_count({&check}, &mint)
@@ -115,3 +130,7 @@ myMainLoopCallbacks: GDE.MainLoopCallbacks = {
 
 
 //I register the GDE.MainLoopCallbacks struct in the init of the Extension.
+
+testProc::proc(){
+
+}

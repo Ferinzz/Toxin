@@ -6,7 +6,7 @@ import "shared:GDWrapper/gdAPI"
 import "base:runtime"
 import "core:fmt"
 
-Scene_Init_Callback:: proc "contextless" ();
+Scene_Init_Callback:: proc ();
 
 scene_inits:[500]^Class_Deets
 
@@ -56,6 +56,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which should be considered Core to the rest of the system.
             */
+            GDW.init_array_types(&GDArray_Methods)
             return
         case .INITIALIZATION_SERVERS:
             /*
@@ -81,7 +82,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             * Register the different classes which depend on servers classes.
             */
             //THIS_CLASS_NAME_deets->self_register(init_Level)
-
+            inits.scene()
             //Need to register our MainLoop callbacks at some point.
             gdAPI.RegisterMainLoopCallbacks(GDW.Library, &myMainLoopCallbacks)
             return

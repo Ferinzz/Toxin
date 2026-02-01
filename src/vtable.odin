@@ -1,7 +1,6 @@
 package main
 
-import GDW "Toxin/GDWrapper"
-//import GDE "Toxin/GDWrapper/gdAPI/gdextension"
+import GDW "shared:GDWrapper"
 import "Toxin"
 import "base:runtime"
 import "core:fmt"
@@ -13,6 +12,10 @@ import "core:fmt"
 //Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
     someProperty: GDW.Int,
+    receive: GDW.AABB,
+    rarray: GDW.Array,
+    stringname: Toxin.StringName,
+    godotstring: Toxin.gdstring,
 }
 
 munum::enum{
@@ -22,7 +25,7 @@ munum::enum{
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
     me:=(^Toxin.Class_Deets)(self)
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable))
+    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), Toxin.Class_Init) // THIS_CLASS_NAME_Init)
 }
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
@@ -32,6 +35,15 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     class_struct = THIS_CLASS_NAME,
     binder = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
+}
+
+//If there's nothing that is heap allocated, can yse Toxin.Class_Init instead.
+//This class has a Array type and this must initialize it at object creation (RAII)
+THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
+    context = runtime.default_context()
+    class:= cast(^GDW.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    Toxin.GDArray_Methods.Create0(&class.class.rarray, nil)
+    return class.self
 }
 
 //******************************\\
@@ -48,12 +60,17 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
         fmt.println("Hello mom!")
         fmt.println(self^)
         from_position_default :f64= 0
-        murray: GDW.Array
-        r_ret: GDW.Variant
+        murray: Toxin.Array
+        r_ret: Toxin.Variant
         fmt.println(Toxin.GetArrayIndex)
         myArray: Toxin.Class_Array
         Toxin.BuiltinMake(&myArray)
         myArray->GetIndex(3, &r_ret)
+        myNode: Toxin.Node_C
+        Toxin.Maker(&myNode)
+        mbewl: i64
+        Toxin.GDArray_Methods.Create0(cast(rawptr)(&self.rarray),nil)
+        //myNode->call_deferred({nil}, &mbewl)
     },
     _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {},
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^GDW.float}){},
@@ -64,7 +81,7 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
 //******************************\\
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
-THIS_CLASS_NAME_Export :: proc(className: ^GDW.StringName){
+THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {.NORMAL}, "arg1")
@@ -74,6 +91,11 @@ THIS_CLASS_NAME_Export :: proc(className: ^GDW.StringName){
     //as normal and call bindMethod and then bindProperty.
     GDW.Export(className, THIS_CLASS_NAME, "someProperty")
     GDW.Export_Enum(className, THIS_CLASS_NAME, munum)
+    Toxin.Export(className, THIS_CLASS_NAME, "receive")
+    Toxin.Export(className, THIS_CLASS_NAME, "rarray")
+    Toxin.Export(className, THIS_CLASS_NAME, "stringname")
+    Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
+    
 }
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
