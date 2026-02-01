@@ -129,21 +129,33 @@ emitSignal :: proc{
 
 /*
 * Callable is a 'heap' allocated value. You are responsible for deleting it when you are done with it.
+* Godot implements a Callable as an ENTIRE class. In reality it has several more values than those described in the type definition of GDE.
 * r_callable: An uninitialized pointer which will hold the Callable as a return value.
-* call_info: detailed information to be used to build the GDE.CallableCustomInfo2 struct.
+* callable_userdata: some information which you'd want to receive in the CallableCustomCall callback.
+* object_id: object to be stored with the callable class. Can be retrieved via Callable's get_object.
+* call_func: a callback which you'd like thid Callable to call.
+* is_valid_func: proc which returns true if the call_func is valid.
+* free_func: called when Callable is freed. Cleanup proc.
+* hash_func: function which provides a hash with which to identify this particular Callable.
+* equal_func: proc to compare two callable_userdata against each other to determine if they are the same Callable.
+* less_than_func: same but asks if it's a less than. If you're storing by index?
+* to_string_func: stringify the Callable info.
+* get_argument_count_func: Helper to get the count of arguments for this Callable. Can be updated based on the bind/unbind methods.
+* token: A unique identifying value which confirms this Callable the one we expect. Typically the Library.
+* proc types which are set to nil have their own default methods on Godot's side.
 */
 Create_Callable :: proc(r_callable: ^Callable, 
-        callable_userdata:       rawptr, //Should be a proc of some kind.
+        callable_userdata:       rawptr, //Should be something you can use to determine the Callable and/or the function to call.
         
-        object_id:               ^Object, //Pointer to the Object which is connecting elsewhere.
-        call_func:               GDE.CallableCustomCall, //Override if you would like to have your own call instead of the generic one GDWrapper implemented.
-        is_valid_func:           GDE.CallableCustomIsValid, //If it's possible the callable is destroyed before disconnecting.
-        free_func:               GDE.CallableCustomFree, //Only needed if some memory it was using needs to be freed.
-        hash_func:               GDE.CallableCustomHash, //Godot runs a hash method twice. Not sure what that's used for.
-        equal_func:              GDE.CallableCustomEqual, //proc which will compare two callable_userdata in order to determine if they match.
-        less_than_func:          GDE.CallableCustomLessThan, //May be useful if you're sotring them in an array?
-        to_string_func:          GDE.CallableCustomToString, //Stringify the Callable info.
-        get_argument_count_func: GDE.CallableCustomGetArgumentCount, //Helper func to get arg count at runtime.
+        object_id:               ^Object, //Pointer to the Object instance which should be used as _this_ function's instance.
+        call_func:               GDE.CallableCustomCall, //Up to the user to define, as its implementation will depend on how callable_userdata is provided.
+        is_valid_func:           GDE.CallableCustomIsValid = nil, //If it's possible the callable is destroyed before disconnecting.
+        free_func:               GDE.CallableCustomFree = nil, //Only needed if some memory it was using needs to be freed.
+        hash_func:               GDE.CallableCustomHash = nil, //Godot runs a hash method twice. Not sure what that's used for.
+        equal_func:              GDE.CallableCustomEqual = nil, //proc which will compare two callable_userdata in order to determine if they match.
+        less_than_func:          GDE.CallableCustomLessThan = nil, //May be useful if you're sotring them in an array?
+        to_string_func:          GDE.CallableCustomToString = nil, //Stringify the Callable info.
+        get_argument_count_func: GDE.CallableCustomGetArgumentCount = nil, //Helper func to get arg count at runtime.
         token:                   GDE.ClassDB = Library, //Should be the GDE's library pointer.
     ) {
     //
@@ -162,6 +174,19 @@ Create_Callable :: proc(r_callable: ^Callable,
     }
     gdAPI.Callable_Utils.CustomCreate2(r_callable, (&s_call_info))
 }
+
+/*
+* Callable sizes
+* Callable 16
+*** StringName
+*** union {ObjectID, ^CustomCallable}
+* All our Callable should be custom so we can assume that it will always be holding a CustomCallable.
+* CustomExtensionCallable: 104
+*** {CustomCallable{}, userdata, token, object{id}, ..proc pointers}
+* There is no method unique to this class to get the Objectid that we passed in.
+* CANNOT USE EXTENSION'S GET OBJECT FROM OBJECTID!?
+* will need to use Callable's get_object method in order to get the object with any certainty.
+*/
 
 /*
 * Connection to another object's signal
@@ -197,7 +222,6 @@ connectToSignal :: proc(object: ^Object, callback: ^Callable, signal_name: ^Stri
     return ret_err
 
 }
-
 
 //I'm not sure if the StringName of a signal is used anywhere at all. Maybe when receiving one?
 //If not, I should consider asking the user to store this as a Variant to reduce the amount of assignments to convert to a Variant.
