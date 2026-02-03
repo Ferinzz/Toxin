@@ -8,9 +8,9 @@ import "core:c"
 * Feel free to rename whatever you need to be shorter.
 * Most pointers are either rawptr or multipointers [^]rawptr. I haven't made anything distinct as it's not necessary to be too strict.?
 */
+Int     :: i64
 
 /* VARIANT TYPES */
-
 //VARIANT_MAX is used in Godot as a bounds value. There's some functions and arrays that use this to set/check for out of bounds settings.
 ////WARNING: if the order of the variantType enum changes, GDTypes needs to be updated in GDDEfs file.
 VariantType :: enum {
@@ -123,7 +123,36 @@ VariantOperator :: enum {
 // - Some types have no destructor (see `extension_gdAPI.json`'s `has_destructor` field), for
 //   them it is always safe to skip the constructor for the return value if you are in a hurry ;-)
 
+//The value we get back for a string name is just the pointer to the Godot's interned string pool.
+//If you've use the name once you'll already created a string name with the specific text you'll have already added that string to the pool.
+//What we have access to is just the pointer.
+StringName :: distinct struct{
+    ptr: rawptr
+}
 
+/*
+* Pointer to a string stored in Godot. Format Unicode.
+* Variable size.
+* Warning: during class create process set ptr to nil
+*/
+gdstring :: distinct struct{
+    ptr: rawptr
+}
+//extension_api says size is dependent on the build config, but callable uses u64 with no typedef.
+Object :: distinct struct{
+    proxy:rawptr,
+}
+
+//Check Godot's docs for more info about each variant type: https://docs.godotengine.org/en/stable/classes/index.html#variant-types
+//Set to 40 if double is double precision
+//Data itself is in the _data union : https://github.com/godotengine/godot/blob/45fc515ae3574e9c1f9deacaa6960dec68a7d38b/core/variant/variant.h#L263
+//After testing won't always need to use Godot's functions. Check Godot's _data union to know if the info is stack or heap and needs to be freed.
+Variant :: struct #align(8) {
+    VType: VariantType,
+    data: [2]u64
+}
+
+//Sometimes const means a multipointer, sometimes it means runtime const..
 VariantPtr 							:: ^Variant
 ConstVariantPtr 					:: ^Variant
 ConstVariantPtrargs 				:: [^]ConstVariantPtr
@@ -138,14 +167,14 @@ ObjectPtr 							:: ^Object
 ConstObjectPtr 						:: [^]Object
 UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
-ConstTypePtr 						:: [^]rawptr
+ConstTypePtr 						:: rawptr
 UninitializedTypePtr 				:: rawptr
 MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64
 
 RefPtr 								:: rawptr
 ConstRefPtr 						:: [^]RefPtr
-ClassLibraryPtr  					:: distinct rawptr
+ClassDB  							:: distinct ^Object
 ConstTypePtrargs					:: [^]rawptr
 
 
@@ -185,7 +214,7 @@ PtrDestructor 					:: proc "c" (p_base: TypePtr);
 PtrSetter 						:: proc "c" (p_base: TypePtr, 	 p_value: ConstTypePtr);
 PtrGetter 						:: proc "c" (p_base: ConstTypePtr, r_value:  TypePtr);
 PtrIndexedSetter 				:: proc "c" (p_base: TypePtr, 	 p_index: Int, 		  p_value: ConstTypePtr);
-PtrIndexedGetter 				:: proc "c" (p_base: ConstTypePtr, p_index:  Int, 		  r_value: TypePtr);
+PtrIndexedGetter 				:: proc "c" (p_base: ConstTypePtr, p_index:  Int, 		  r_value: VariantPtr);
 PtrKeyedSetter 					:: proc "c" (p_base: TypePtr, 	 p_key: ConstTypePtr,  p_value: ConstTypePtr);
 PtrKeyedGetter 					:: proc "c" (p_base: ConstTypePtr, p_key:  ConstTypePtr, r_value: TypePtr);
 PtrKeyedChecker 				:: proc "c" (p_base: ConstVariantPtr, p_key:  ConstVariantPtr) -> u32;
@@ -193,8 +222,8 @@ PtrUtilityFunction 				:: proc "c" (r_return: TypePtr,    p_args: ConstTypePtrar
 ClassConstructor :: proc "c" () -> ObjectPtr;
 
 ClassCreationInfo :: struct {
-	is_virtual: Bool,
-	is_abstract: Bool,
+	is_virtual: b8,
+	is_abstract: b8,
 	set_func: ClassSet,
 	get_func: ClassGet,
 	get_property_list_func: ClassGetPropertyList,
@@ -213,9 +242,9 @@ ClassCreationInfo :: struct {
 } // Deprecated. Use ClassCreationInfo4 instead.
 
 ClassCreationInfo2 :: struct {
-	is_virtual: Bool,
-	is_abstract: Bool,
-	is_exposed: Bool,
+	is_virtual: b8,
+	is_abstract: b8,
+	is_exposed: b8,
 	set_func: ClassSet,
 	get_func: ClassGet,
 	get_property_list_func: ClassGetPropertyList,
@@ -247,10 +276,10 @@ ClassCreationInfo2 :: struct {
 
 
 ClassCreationInfo3 :: struct {
-	is_virtual: Bool,
-	is_abstract: Bool,
-	is_exposed: Bool,
-	is_runtime: Bool,
+	is_virtual: b8,
+	is_abstract: b8,
+	is_exposed: b8,
+	is_runtime: b8,
 	set_func: ClassSet,
 	get_func: ClassGet,
 	get_property_list_func: ClassGetPropertyList,
@@ -283,10 +312,10 @@ ClassCreationInfo3 :: struct {
 //For more information about class functions check Godot docs
 //https://docs.godotengine.org/en/stable/classes/class_object.html#Methods
 ClassCreationInfo4 :: struct {
-	is_virtual:            Bool, //For inheritance where instantiation is not allowed.
-	is_abstract:           Bool, //Can't instantiate directly.
-	is_exposed:            Bool, //Will be visible in the editor true/false
-	is_runtime:            Bool, //Class isn't created compiled but created at runtime.
+	is_virtual:            b8, //For inheritance where instantiation is not allowed.
+	is_abstract:           b8, //Can't instantiate directly.
+	is_exposed:            b8, //Will be visible in the editor true/false
+	is_runtime:            b8, //Class isn't created compiled but created at runtime.
 	icon_path:             ConstStringPtr, //For some reason does not work with stringnewutf8
 	//Use these if you want a general purpose callback to handle get/set of variables which you did not specify distinctly.
 	set_func:             ClassSet, //Fallback function that Godot will call if it can't find the getter/setter for a registered property.
@@ -319,6 +348,10 @@ ClassCreationInfo4 :: struct {
 
 ClassCreationInfo5 :: ClassCreationInfo4
 
+PackedStringArray :: struct { 
+    proxy: rawptr, //This is only used for C#. C# is a safe language and as a result it needs to provide its pointer to itself in the struct itself. We add this for the padding.
+    data: [^]gdstring
+}
 /* Passed a pointer to a PackedStringArray that should be filled with the classes that may be used by the GDExtension. */
 EditorGetClassesUsedCallback :: proc "c" (p_packed_string_array: ^PackedStringArray);
 
@@ -330,7 +363,7 @@ InstanceBindingCallbacks :: struct {
 
 InstanceBindingCreateCallback 	:: proc "c" (p_token: rawptr, p_instance: rawptr) -> rawptr;
 InstanceBindingFreeCallback 		:: proc "c" (p_token: rawptr, p_instance: rawptr, p_binding: rawptr);
-InstanceBindingReferenceCallback :: proc "c" (p_token: rawptr, p_binding: rawptr, p_reference: Bool) -> Bool;
+InstanceBindingReferenceCallback :: proc "c" (p_token: rawptr, p_binding: rawptr, p_reference: b8) -> b8;
 
 
 /* EXTENSION CLASSES */
@@ -338,27 +371,27 @@ InstanceBindingReferenceCallback :: proc "c" (p_token: rawptr, p_binding: rawptr
 //p_instance is a pointer to allocated memory of our custom class's struct.
 ClassInstancePtr :: ObjectPtr;
 
-ClassSet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_value: ConstVariantPtr) -> Bool
-ClassGet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> Bool
+ClassSet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_value: ConstVariantPtr) -> b8
+ClassGet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8
 ClassGetRID  				:: proc "c" (p_instance: ClassInstancePtr) -> u64
 
 //p_instance is a pointer to allocated memory of our custom class's struct.
 ClassGetPropertyList 		:: proc "c" (p_instance: ClassInstancePtr, r_count: ^u32) -> [^]PropertyInfo;
 ClassFreePropertyList 		:: proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo);
 ClassFreePropertyList2 		:: proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo , p_count: u32);
-ClassPropertyCanRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr) -> Bool
-ClassPropertyGetRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr,  r_ret: VariantPtr) -> Bool
-ClassValidateProperty 		:: proc "c" (p_instance: ClassInstancePtr, p_property: ^PropertyInfo) -> Bool
+ClassPropertyCanRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr) -> b8
+ClassPropertyGetRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr,  r_ret: VariantPtr) -> b8
+ClassValidateProperty 		:: proc "c" (p_instance: ClassInstancePtr, p_property: ^PropertyInfo) -> b8
 ClassNotification 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32); // Deprecated. Use ClassNotification2 instead.
-ClassNotification2 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32,  p_reversed: Bool);
-ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: Bool, p_out: StringPtr);
+ClassNotification2 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32,  p_reversed: b8);
+ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: b8, p_out: StringPtr);
 ClassReference 				:: proc "c" (p_instance: ClassInstancePtr);
 ClassUnreference 			:: proc "c" (p_instance: ClassInstancePtr);
 ClassCallVirtual 			:: proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtr ,  r_ret: TypePtr);
 //p_class_userdata is a pointer to whatever you make which should live the whole lifetime of the class.
 //I believe this is typically used to pass context in C.
 ClassCreateInstance 		:: proc "c" (p_class_userdata: rawptr) -> ObjectPtr;
-ClassCreateInstance2 		:: proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: Bool) -> ObjectPtr;
+ClassCreateInstance2 		:: proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: b8) -> ObjectPtr;
 ClassFreeInstance 			:: proc "c" (p_class_userdata: rawptr, p_instance: ClassInstancePtr);
 ClassRecreateInstance 		:: proc "c" (p_class_userdata: rawptr, p_object: ObjectPtr) -> ClassInstancePtr;
 ClassGetVirtual 			:: proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr) -> ClassCallVirtual;
@@ -382,6 +415,272 @@ PropertyInfo :: struct {
 	usage:      PropertyUsageFlagsbits, //PropertyUsageFlags, // Bitfield of `PropertyUsageFlags` (defined in `extension_gdAPI.json`). https://docs.godotengine.org/en/stable/classes/class_@globalscope.html#enum-globalscope-propertyusageflags
 }
 
+//To know what to actually do with this flag set check docs linked below.
+//https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyhint
+PropertyHint :: enum u32 {
+    //The property has no hint for the editor.
+    NONE = 0,
+    
+    //Hints that an int or float property should be within a range specified via the hint string "min,max" or "min,max,step". The hint string can optionally include "or_greater" and/or "or_less" to allow manual input going respectively above the max or below the min values.
+    //Example: "-360,360,1,or_greater,or_less".
+    //Additionally, other keywords can be included: "exp" for exponential range editing, "radians_as_degrees" for editing radian angles in degrees (the range values are also in degrees), "degrees" to hint at an angle and "hide_slider" to hide the slider.
+    RANGE = 1,
+    
+    //Hints that an int or String property is an enumerated value to pick in a list specified via a hint string.
+    //The hint string is a comma separated list of names such as "Hello,Something,Else". Whitespaces are not removed from either end of a name. For integer properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending :integer to the name, e.g. "Zero,One,Three:3,Four,Six:6".
+    ENUM = 2,
+
+    //Hints that a String property can be an enumerated value to pick in a list specified via a hint string such as "Hello,Something,Else".
+    //Unlike PROPERTY_HINT_ENUM, a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
+    ENUM_SUGGESTION = 3,
+
+    //Hints that a float property should be edited via an exponential easing function. The hint string can include "attenuation" to flip the curve horizontally and/or "positive_only" to exclude in/out easing and limit values to be greater than or equal to zero.
+    EXP_EASING = 4,
+
+    //Hints that a vector property should allow its components to be linked. For example, this allows Vector2.x and Vector2.y to be edited together.
+    LINK = 5,
+
+    //Hints that an int property is a bitmask with named bit flags.
+    //The hint string is a comma separated list of names such as "Bit0,Bit1,Bit2,Bit3". Whitespaces are not removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on. Explicit values can also be specified by appending :integer to the name, e.g. "A:4,B:8,C:16". You can also combine several flags ("A:4,B:8,AB:12,C:16").
+    //Note: A flag value must be at least 1 and at most 2 ** 32 - 1.
+    //Note: Unlike PROPERTY_HINT_ENUM, the previous explicit value is not taken into account. For the hint "A:16,B,C", A is 16, B is 2, C is 4.
+    FLAGS = 6,
+
+    //Hints that an int property is a bitmask using the optionally named 2D render layers.
+    LAYERS_2D_RENDER = 7,
+
+    //Hints that an int property is a bitmask using the optionally named 2D physics layers.
+    LAYERS_2D_PHYSICS = 8,
+
+    //Hints that an int property is a bitmask using the optionally named 2D navigation layers.
+    LAYERS_2D_NAVIGATION = 9,
+
+    //Hints that an int property is a bitmask using the optionally named 3D render layers.
+    LAYERS_3D_RENDER = 10,
+
+    //Hints that an int property is a bitmask using the optionally named 3D physics layers.
+    LAYERS_3D_PHYSICS = 11,
+
+    //Hints that an int property is a bitmask using the optionally named 3D navigation layers.
+    LAYERS_3D_NAVIGATION = 12,
+
+    //Hints that a String property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like "*.png,*.jpg".
+    FILE = 13,
+
+    //Hints that a String property is a path to a directory. Editing it will show a file dialog for picking the path.
+    DIR = 14,
+
+    //Hints that a String property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like "*.png,*.jpg".
+    GLOBAL_FILE = 15,
+
+    //Hints that a String property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
+    GLOBAL_DIR = 16,
+
+    //Hints that a property is an instance of a Resource-derived type, optionally specified via the hint string (e.g. "Texture2D"). Editing it will show a popup menu of valid resource types to instantiate.
+    RESOURCE_TYPE = 17,
+
+    //Hints that a String property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+    MULTILINE_TEXT = 18,
+
+    //Hints that a String property is an Expression.
+    EXPRESSION = 19,
+
+    //Hints that a String property should show a placeholder text on its input field, if empty. The hint string is the placeholder text to use.
+    PLACEHOLDER_TEXT = 20,
+
+    //Hints that a Color property should be edited without affecting its transparency (Color.a is not editable).
+    COLOR_NO_ALPHA = 21,
+
+    //Hints that the property's value is an object encoded as object ID, with its type specified in the hint string. Used by the debugger.
+    OBJECT_ID = 22,
+
+    //If a property is String, hints that the property represents a particular type (class). This allows to select a type from the create dialog. The property will store the selected type as a string.
+    //If a property is Array, hints the editor how to show elements. The hint_string must encode nested types using ":" and "/".
+    TYPE_STRING = 23,
+
+    //Deprecated: This hint is not used by the engine.
+    NODE_PATH_TO_EDITED_NODE = 24,
+
+    //Hints that an object is too big to be sent via the debugger.
+    OBJECT_TOO_BIG = 25,
+
+    //Hints that the hint string specifies valid node types for property of type NodePath.
+    NODE_PATH_VALID_TYPES = 26,
+
+    //Hints that a String property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the project's directory. The hint string can be a set of filters with wildcards like "*.png,*.jpg". See also FileDialog.filters.
+    SAVE_FILE = 27,
+
+    //Hints that a String property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like "*.png,*.jpg". See also FileDialog.filters.
+    GLOBAL_SAVE_FILE = 28,
+
+    //Deprecated: This hint is not used by the engine.
+    INT_IS_OBJECTID = 29,
+
+    //Hints that an int property is a pointer. Used by GDExtension.
+    INT_IS_POINTER = 30,
+
+    //Hints that a property is an Array with the stored type specified in the hint string. The hint string contains the type of the array (e.g. "String").
+    //Use the hint string format from PROPERTY_HINT_TYPE_STRING for more control over the stored type.
+    ARRAY_TYPE = 31,
+
+    //Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
+    LOCALE_ID = 32,
+
+    //Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
+    LOCALIZABLE_STRING = 33,
+
+    //Hints that a property is an instance of a Node-derived type, optionally specified via the hint string (e.g. "Node2D"). Editing it will show a dialog for picking a node from the scene.
+    //This is saved as a NodePath in the tscn. Seeing as there's no Node type itself, it seems like this is mainly to allow you to ref the correct thing based on the NodePath.
+    NODE_TYPE = 34,
+
+    //Hints that a quaternion property should disable the temporary euler editor.
+    HIDE_QUATERNION_EDIT = 35,
+
+    //Hints that a string property is a password, and every character is replaced with the secret character.
+    PASSWORD = 36,
+
+    //Hints that an integer property is a bitmask using the optionally named avoidance layers.
+    LAYERS_AVOIDANCE = 37,
+
+    //Hints that a property is a Dictionary with the stored types specified in the hint string. The hint string contains the key and value types separated by a semicolon (e.g. "int;String").
+    //Use the hint string format from PROPERTY_HINT_TYPE_STRING for more control over the stored types.
+    DICTIONARY_TYPE = 38,
+
+    //Hints that a Callable property should be displayed as a clickable button. When the button is pressed, the callable is called. The hint string specifies the button text and optionally an icon from the "EditorIcons" theme type.
+    //"Click me!" - A button with the text "Click me!" and the default "Callable" icon.
+    //"Click me!,ColorRect" - A button with the text "Click me!" and the "ColorRect" icon.
+    //Note: A Callable cannot be properly serialized and stored in a file, so it is recommended to use PROPERTY_USAGE_EDITOR instead of PROPERTY_USAGE_DEFAULT.
+    TOOL_BUTTON = 39,
+
+    //Hints that a property will be changed on its own after setting, such as AudioStreamPlayer.playing or GPUParticles3D.emitting.
+    ONESHOT = 40,
+
+    //Hints that a boolean property will enable the feature associated with the group that it occurs in. The property will be displayed as a checkbox on the group header. Only works within a group or subgroup.
+    //By default, disabling the property hides all properties in the group. Use the optional hint string "checkbox_only" to disable this behavior.
+    GROUP_ENABLE = 42,
+
+    //Hints that a String or StringName property is the name of an input action. This allows the selection of any action name from the Input Map in the Project Settings. The hint string may contain two options separated by commas:
+    //If it contains "show_builtin", built-in input actions are included in the selection.
+    //If it contains "loose_mode", loose mode is enabled. This allows inserting any action name even if it's not present in the input map.
+    INPUT_NAME = 43,
+
+    //Like PROPERTY_HINT_FILE, but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using PROPERTY_HINT_FILE when possible.
+    FILE_PATH = 44,
+
+    //Represents the size of the PropertyHint enum.
+    MAX = 45,
+
+}
+
+
+PROPERTY_USAGE_DEFAULT : PropertyUsageFlagsbits: {PropertyUsageFlags.STORAGE, PropertyUsageFlags.EDITOR}
+PropertyUsageFlagsbits:: distinct bit_set [PropertyUsageFlags; u32]
+//To know what to actually do with this flag set check docs linked below.
+//https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyusageflags
+//PROPERTY_USAGE_DEFAULT = 6,
+//An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
+
+PropertyUsageFlags:: enum u32 {
+//The property is not stored, and does not display in the editor. This is the default for non-exported properties.
+//Odin calls this nil
+//PROPERTY_USAGE_NONE = 0,
+
+  Not_A_Value, //Because there is no '1'
+
+  STORAGE,
+  //NO_EDITOR = 2
+//Default usage but without showing the property in the editor (storage).
+//The property is serialized and saved in the scene file (default for exported properties).
+
+
+  EDITOR,
+//The property is shown in the EditorInspector (default for exported properties).
+
+  //PROPERTY_USAGE_DEFAULT = 6,
+//Default usage (storage and editor).
+
+  INTERNAL,
+//The property is excluded from the class reference.
+
+  CHECKABLE, 
+//The property can be checked in the EditorInspector.
+
+  CHECKED, 
+//The property is checked in the EditorInspector.
+
+  GROUP, 
+//Used to group properties together in the editor. See EditorInspector.
+
+  CATEGORY, 
+//Used to categorize properties together in the editor
+
+  SUBGROUP, 
+//Used to group properties together in the editor in a subgroup (under a group). See EditorInspector.
+
+  CLASS_IS_BITFIELD,
+//The property is a bitfield, i.e. it contains multiple flags represented as bits.
+
+  NO_INSTANCE_STATE,
+//The property does not save its state in PackedScene.
+
+  RESTART_IF_CHANGED,
+//Editing the property prompts the user for restarting the editor.
+
+  SCRIPT_VARIABLE,
+//The property is a script variable. PROPERTY_USAGE_SCRIPT_VARIABLE can be used to distinguish between exported script variables from built-in variables (which don't have this usage flag). By default, PROPERTY_USAGE_SCRIPT_VARIABLE is not applied to variables that are created by overriding Object._get_property_list() in a script.
+
+  STORE_IF_NULL,
+//The property value of type Object will be stored even if its value is null.
+
+  UPDATE_ALL_IF_MODIFIED, 
+//If this property is modified, all inspector fields will be refreshed.
+
+  SCRIPT_DEFAULT_VALUE,
+//Deprecated: This flag is not used by the engine.
+
+  CLASS_IS_ENUM,
+//The property is a variable of enum type, i.e. it only takes named integer constants from its associated enumeration.
+
+  NIL_IS_VARIANT,
+//If property has nil as default value, its type will be Variant.
+
+  ARRAY,
+//The property is an array.
+
+  ALWAYS_DUPLICATE, 
+//When duplicating a resource with Resource.duplicate(), and this flag is set on a property of that resource, the property should always be duplicated, regardless of the subresources bool parameter.
+
+  NEVER_DUPLICATE, 
+//When duplicating a resource with Resource.duplicate(), and this flag is set on a property of that resource, the property should never be duplicated, regardless of the subresources bool parameter.
+
+  HIGH_END_GFX, 
+//The property is only shown in the editor if modern renderers are supported (the Compatibility rendering method is excluded).
+
+  NODE_PATH_FROM_SCENE_ROOT, 
+//The NodePath property will always be relative to the scene's root. Mostly useful for local resources.
+
+  RESOURCE_NOT_PERSISTENT, 
+//Use when a resource is created on the fly, i.e. the getter will always return a different instance. ResourceSaver needs this information to properly save such resources.
+
+  KEYING_INCREMENTS, 
+//Inserting an animation key frame of this property will automatically increment the value, allowing to easily keyframe multiple values in a row.
+
+  DEFERRED_SET_RESOURCE, 
+//Deprecated: This flag is not used by the engine.
+
+  EDITOR_INSTANTIATE_OBJECT, 
+//When this property is a Resource and base object is a Node, a resource instance will be automatically created whenever the node is created in the editor.
+
+  EDITOR_BASIC_SETTING, 
+//The property is considered a basic setting and will appear even when advanced mode is disabled. Used for project settings.
+
+  READ_ONLY, 
+//The property is read-only in the EditorInspector.
+
+  SECRET, 
+//An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
+
+}
 
 MethodInfo :: struct {
 	name: StringNamePtr,
@@ -466,7 +765,7 @@ ClassMethodInfo :: struct {
 	 *
 	 * @todo Consider dropping `has_return_value` and making the other two properties match `MethodInfo` and `ClassVirtualMethod` for consistency in future version of this struct.
 	 */
-	has_return_value: Bool,
+	has_return_value: b8,
 	return_value_info: ^PropertyInfo,
 	return_value_metadata: ClassMethodArgumentMetadata,
 
@@ -498,23 +797,23 @@ ClassVirtualMethodInfo :: struct {
 
 
 CallableCustomCall		:: proc "c" (callable_userdata: rawptr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
-CallableCustomIsValid	:: proc "c" (callable_userdata: rawptr) -> Bool;
+CallableCustomIsValid	:: proc "c" (callable_userdata: rawptr) -> b8;
 CallableCustomFree		:: proc "c" (callable_userdata: rawptr);
 
 CallableCustomHash		:: proc "c" (callable_userdata: rawptr) -> u32;
-CallableCustomEqual		:: proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> Bool;
-CallableCustomLessThan	:: proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> Bool;
+CallableCustomEqual		:: proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> b8;
+CallableCustomLessThan	:: proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> b8;
 
-CallableCustomToString	:: proc "c" (callable_userdata: rawptr, r_is_valid: ^Bool, r_out: StringPtr);
+CallableCustomToString	:: proc "c" (callable_userdata: rawptr, r_is_valid: ^b8, r_out: StringPtr);
 
-CallableCustomGetArgumentCount :: proc "c" (callable_userdata: rawptr, r_is_valid: ^Bool) -> Int;
+CallableCustomGetArgumentCount :: proc "c" (callable_userdata: rawptr, r_is_valid: ^b8) -> Int;
 
 
 CallableCustomInfo :: struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
 	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
-	 * `ClassLibraryPtr` passed to the entry symbol function.
+	 * `ClassDB` passed to the entry symbol function.
 	 *
 	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
 	 * `callable_userdata` together are used as the identity of the callable for hashing and comparison purposes.
@@ -541,7 +840,7 @@ CallableCustomInfo2 :: struct {
 	/* Only `call_func` and `token` are strictly required, however, `object_id` should be passed if its not a static method.
 	 *
 	 * `token` should point to an address that uniquely identifies the GDExtension (for example, the
-	 * `ClassLibraryPtr` passed to the entry symbol function.
+	 * `ClassDB` passed to the entry symbol function.
 	 *
 	 * `hash_func`, `equal_func`, and `less_than_func` are optional. If not provided both `call_func` and
 	 * `callable_userdata` together are used as the identity of the callable for hashing and comparison purposes.
@@ -553,7 +852,7 @@ CallableCustomInfo2 :: struct {
 	 * `free_func` is necessary if `callable_userdata` needs to be cleaned up when the callable is freed.
 	 */
 	callable_userdata: rawptr,
-	token: ClassLibraryPtr,
+	token: ClassDB,
 
 	object_id: GDObjectInstanceID,
 	call_func: CallableCustomCall,
@@ -576,18 +875,18 @@ CallableCustomInfo2 :: struct {
 
 ScriptInstanceDataPtr :: rawptr; // Pointer to custom ScriptInstance native implementation.
 
-ScriptInstanceSet				:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, p_value: VariantPtr) -> Bool;
-ScriptInstanceGet				:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> Bool;
+ScriptInstanceSet				:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, p_value: VariantPtr) -> b8;
+ScriptInstanceGet				:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8;
 ScriptInstanceGetPropertyList	:: proc "c" (p_instance: ScriptInstanceDataPtr, r_count: ^u32) -> PropertyInfo;
 ScriptInstanceFreePropertyList	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^PropertyInfo); // Deprecated. Use ScriptInstanceFreePropertyList2 instead.
 ScriptInstanceFreePropertyList2	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^PropertyInfo, p_count: u32);
-ScriptInstanceGetClassCategory	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_class_category: ^PropertyInfo) -> Bool;
+ScriptInstanceGetClassCategory	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_class_category: ^PropertyInfo) -> b8;
 
-ScriptInstanceGetPropertyType	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^Bool) -> VariantType;
-ScriptInstanceValidateProperty	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_property: ^PropertyInfo) -> Bool;
+ScriptInstanceGetPropertyType	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^b8) -> VariantType;
+ScriptInstanceValidateProperty	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_property: ^PropertyInfo) -> b8;
 
-ScriptInstancePropertyCanRevert :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> Bool;
-ScriptInstancePropertyGetRevert :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> Bool;
+ScriptInstancePropertyCanRevert :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> b8;
+ScriptInstancePropertyGetRevert :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8;
 
 ScriptInstanceGetOwner			:: proc "c" (p_instance: ScriptInstanceDataPtr) -> ObjectPtr;
 ScriptInstancePropertyStateAdd	:: proc "c" (p_name: ConstStringNamePtr, p_value: ConstVariantPtr, p_userdata: rawptr);
@@ -597,20 +896,20 @@ ScriptInstanceGetMethodList		:: proc "c" (p_instance: ScriptInstanceDataPtr, r_c
 ScriptInstanceFreeMethodList	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: [^]MethodInfo); // Deprecated. Use ScriptInstanceFreeMethodList2 instead.
 ScriptInstanceFreeMethodList2	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^MethodInfo, p_count: u32);
 
-ScriptInstanceHasMethod			:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> Bool;
+ScriptInstanceHasMethod			:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> b8;
 
-ScriptInstanceGetMethodArgumentCount :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^Bool) -> Int;
+ScriptInstanceGetMethodArgumentCount :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^b8) -> Int;
 
 ScriptInstanceCall				:: proc "c" (p_self: ScriptInstanceDataPtr, p_method: ConstStringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
 ScriptInstanceNotification		:: proc "c" (p_instance: ScriptInstanceDataPtr, p_what: i32); // Deprecated. Use ScriptInstanceNotification2 instead.
-ScriptInstanceNotification2		:: proc "c" (p_instance: ScriptInstanceDataPtr, p_what: i32, p_reversed: Bool);
-ScriptInstanceToString			:: proc "c" (p_instance: ScriptInstanceDataPtr, r_is_valid: ^Bool, r_out: StringPtr);
+ScriptInstanceNotification2		:: proc "c" (p_instance: ScriptInstanceDataPtr, p_what: i32, p_reversed: b8);
+ScriptInstanceToString			:: proc "c" (p_instance: ScriptInstanceDataPtr, r_is_valid: ^b8, r_out: StringPtr);
 
 ScriptInstanceRefCountIncremented :: proc "c" (p_instance: ScriptInstanceDataPtr);
-ScriptInstanceRefCountDecremented :: proc "c" (p_instance: ScriptInstanceDataPtr) -> Bool;
+ScriptInstanceRefCountDecremented :: proc "c" (p_instance: ScriptInstanceDataPtr) -> b8;
 
 ScriptInstanceGetScript			:: proc "c" (p_instance: ScriptInstanceDataPtr) -> ObjectPtr;
-ScriptInstanceIsPlaceholder		:: proc "c" (p_instance: ScriptInstanceDataPtr) -> Bool;
+ScriptInstanceIsPlaceholder		:: proc "c" (p_instance: ScriptInstanceDataPtr) -> b8;
 
 ScriptLanguagePtr :: rawptr;
 
@@ -738,7 +1037,7 @@ InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunct
  *
  * For example:
  *
- *   Bool my_extension_init(InterfaceGetProcAddress p_get_proc_address, ClassLibraryPtr p_library, Initialization *r_initialization);
+ *   b8 my_extension_init(InterfaceGetProcAddress p_get_proc_address, ClassDB p_library, Initialization *r_initialization);
  *
  * This function's name must be specified as the 'entry_symbol' in the GDExtension.gdextension file.
  *
@@ -766,7 +1065,7 @@ InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunct
  * All of these interface functions are described below, together with the name that's used to load it,
  * and the function pointer typedef that shows its signature.
  */
-InitializationFunction :: proc "c" (p_get_proc_address: InterfaceGetProcAddress, p_library: ClassLibraryPtr, r_initialization: ^Initialization) -> Bool;
+InitializationFunction :: proc "c" (p_get_proc_address: InterfaceGetProcAddress, p_library: ClassDB, r_initialization: ^Initialization) -> b8;
 
 /* INTERFACE */
 
@@ -886,7 +1185,7 @@ InterfaceMemFree :: proc "c" (p_ptr: rawptr)
  *
  * @return A pointer to the allocated memory, or NULL if unsuccessful.
  */
-InterfaceMemAlloc2 :: proc "c" (p_bytes: u64, p_pad_align: Bool) -> rawptr;
+InterfaceMemAlloc2 :: proc "c" (p_bytes: u64, p_pad_align: b8) -> rawptr;
 
 /**
  * @name mem_realloc2
@@ -900,7 +1199,7 @@ InterfaceMemAlloc2 :: proc "c" (p_bytes: u64, p_pad_align: Bool) -> rawptr;
  *
  * @return A pointer to the allocated memory, or NULL if unsuccessful.
  */
-InterfaceMemRealloc2 :: proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: Bool) -> rawptr;
+InterfaceMemRealloc2 :: proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: b8) -> rawptr;
 
 /**
  * @name mem_free2
@@ -911,7 +1210,7 @@ InterfaceMemRealloc2 :: proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: Bool
  * @param p_ptr A pointer to the previously allocated memory.
  * @param p_pad_align If true, the given memory was allocated with prepadding.
  */
-InterfaceMemFree2 :: proc "c" (p_bytes: u64, p_pad_align: Bool);
+InterfaceMemFree2 :: proc "c" (p_bytes: u64, p_pad_align: b8);
 
 
 /* INTERFACE: Godot Logging */
@@ -928,7 +1227,7 @@ InterfaceMemFree2 :: proc "c" (p_bytes: u64, p_pad_align: Bool);
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintError :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: Bool);
+InterfacePrintError :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_error_with_message
@@ -943,7 +1242,7 @@ InterfacePrintError :: proc "c" (p_description: cstring, p_function: cstring, p_
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintErrorWithMessage :: proc "c" (p_description: cstring, p_message: cstring,p_function: cstring, p_file: cstring,  p_line: i32, p_editor_notify: Bool);
+InterfacePrintErrorWithMessage :: proc "c" (p_description: cstring, p_message: cstring,p_function: cstring, p_file: cstring,  p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_warning
@@ -957,7 +1256,7 @@ InterfacePrintErrorWithMessage :: proc "c" (p_description: cstring, p_message: c
  * @param p_line The line where the warning occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintWarning :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring,  p_line: int,  p_editor_notify: Bool);
+InterfacePrintWarning :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring,  p_line: int,  p_editor_notify: b8);
 
 /**
  * @name print_warning_with_message
@@ -972,7 +1271,7 @@ InterfacePrintWarning :: proc "c" (p_description: cstring, p_function: cstring, 
  * @param p_line The line where the warning occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintWarningWithMessage :: proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: Bool);
+InterfacePrintWarningWithMessage :: proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_script_error
@@ -986,7 +1285,7 @@ InterfacePrintWarningWithMessage :: proc "c" (p_description: cstring, p_message:
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintScriptError :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: Bool);
+InterfacePrintScriptError :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_script_error_with_message
@@ -1001,7 +1300,7 @@ InterfacePrintScriptError :: proc "c" (p_description: cstring, p_function: cstri
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintScriptErrorWithMessage :: proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: Bool);
+InterfacePrintScriptErrorWithMessage :: proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name get_native_struct_size
@@ -1096,7 +1395,7 @@ InterfaceVariantCallStatic :: proc "c" (p_type: VariantType, p_method: StringNam
  *
  * @see Variant::evaluate()
  */
-InterfaceVariantEvaluate :: proc "c" (p_op: VariantOperator, p_a: VariantPtr, p_b: ConstVariantPtr, r_return: UninitializedVariantPtr, r_valid: ^Bool);
+InterfaceVariantEvaluate :: proc "c" (p_op: VariantOperator, p_a: VariantPtr, p_b: ConstVariantPtr, r_return: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set
@@ -1111,7 +1410,7 @@ InterfaceVariantEvaluate :: proc "c" (p_op: VariantOperator, p_a: VariantPtr, p_
  *
  * @see Variant::set()
  */
-InterfaceVariantSet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^Bool);
+InterfaceVariantSet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set_named
@@ -1126,7 +1425,7 @@ InterfaceVariantSet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_v
  *
  * @see Variant::set_named()
  */
-InterfaceVariantSetNamed :: proc "c" (p_self: VariantPtr, p_key: ConstStringNamePtr, p_value: ConstVariantPtr, r_valid: ^Bool);
+InterfaceVariantSetNamed :: proc "c" (p_self: VariantPtr, p_key: ConstStringNamePtr, p_value: ConstVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set_keyed
@@ -1141,7 +1440,7 @@ InterfaceVariantSetNamed :: proc "c" (p_self: VariantPtr, p_key: ConstStringName
  *
  * @see Variant::set_keyed()
  */
-InterfaceVariantSetKeyed :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^Bool);
+InterfaceVariantSetKeyed :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set_indexed
@@ -1155,7 +1454,7 @@ InterfaceVariantSetKeyed :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  * @param r_oob A pointer to a boolean which will be set to true if the index is out of bounds.
  */
-InterfaceVariantSetIndexed :: proc "c" (p_self: VariantPtr, p_index: Int, p_value: ConstVariantPtr, r_valid: ^Bool, r_oob: ^Bool);
+InterfaceVariantSetIndexed :: proc "c" (p_self: VariantPtr, p_index: Int, p_value: ConstVariantPtr, r_valid: ^b8, r_oob: ^b8);
 
 /**
  * @name variant_get
@@ -1168,7 +1467,7 @@ InterfaceVariantSetIndexed :: proc "c" (p_self: VariantPtr, p_index: Int, p_valu
  * @param r_ret A pointer to a Variant which will be assigned the value.
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  */
-InterfaceVariantGet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^Bool);
+InterfaceVariantGet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_get_named
@@ -1181,7 +1480,7 @@ InterfaceVariantGet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, r_r
  * @param r_ret A pointer to a Variant which will be assigned the value.
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  */
-InterfaceVariantGetNamed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstStringNamePtr, r_ret: UninitializedVariantPtr, r_valid: ^Bool);
+InterfaceVariantGetNamed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstStringNamePtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_get_keyed
@@ -1194,7 +1493,7 @@ InterfaceVariantGetNamed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstStrin
  * @param r_ret A pointer to a Variant which will be assigned the value.
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  */
-InterfaceVariantGetKeyed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^Bool);
+InterfaceVariantGetKeyed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_get_indexed
@@ -1208,7 +1507,7 @@ InterfaceVariantGetKeyed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVaria
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  * @param r_oob A pointer to a boolean which will be set to true if the index is out of bounds.
  */
-InterfaceVariantGetIndexed :: proc "c" (p_self: ConstVariantPtr, p_index: Int, r_ret: UninitializedVariantPtr, r_valid: ^Bool, r_oob: ^Bool);
+InterfaceVariantGetIndexed :: proc "c" (p_self: ConstVariantPtr, p_index: Int, r_ret: UninitializedVariantPtr, r_valid: ^b8, r_oob: ^b8);
 
 /**
  * @name variant_iter_init
@@ -1224,7 +1523,7 @@ InterfaceVariantGetIndexed :: proc "c" (p_self: ConstVariantPtr, p_index: Int, r
  *
  * @see Variant::iter_init()
  */
-InterfaceVariantIterInit :: proc "c" (p_self: ConstVariantPtr, r_iter: UninitializedVariantPtr, r_valid: ^Bool) -> Bool;
+InterfaceVariantIterInit :: proc "c" (p_self: ConstVariantPtr, r_iter: UninitializedVariantPtr, r_valid: ^b8) -> b8;
 
 /**
  * @name variant_iter_next
@@ -1240,7 +1539,7 @@ InterfaceVariantIterInit :: proc "c" (p_self: ConstVariantPtr, r_iter: Uninitial
  *
  * @see Variant::iter_next()
  */
-InterfaceVariantIterNext :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_valid: ^Bool) -> Bool;
+InterfaceVariantIterNext :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_valid: ^b8) -> b8;
 
 /**
  * @name variant_iter_get
@@ -1255,7 +1554,7 @@ InterfaceVariantIterNext :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPt
  *
  * @see Variant::iter_get()
  */
-InterfaceVariantIterGet :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^Bool);
+InterfaceVariantIterGet :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_hash
@@ -1299,7 +1598,7 @@ InterfaceVariantRecursiveHash :: proc "c" (p_self: ConstVariantPtr, p_recursion_
  *
  * @see Variant::hash_compare()
  */
-InterfaceVariantHashCompare :: proc "c" (p_self: ConstVariantPtr, p_other: ConstVariantPtr) -> Bool;
+InterfaceVariantHashCompare :: proc "c" (p_self: ConstVariantPtr, p_other: ConstVariantPtr) -> b8;
 
 /**
  * @name variant_booleanize
@@ -1311,7 +1610,7 @@ InterfaceVariantHashCompare :: proc "c" (p_self: ConstVariantPtr, p_other: Const
  *
  * @return The boolean value of the Variant.
  */
-InterfaceVariantBooleanize :: proc "c" (p_self: ConstVariantPtr) -> Bool;
+InterfaceVariantBooleanize :: proc "c" (p_self: ConstVariantPtr) -> b8;
 
 /**
  * @name variant_duplicate
@@ -1323,7 +1622,7 @@ InterfaceVariantBooleanize :: proc "c" (p_self: ConstVariantPtr) -> Bool;
  * @param r_ret A pointer to a Variant to store the duplicated value.
  * @param p_deep Whether or not to duplicate deeply (when supported by the Variant type).
  */
-InterfaceVariantDuplicate :: proc "c" (p_self: ConstVariantPtr, r_ret: VariantPtr, p_deep: Bool);
+InterfaceVariantDuplicate :: proc "c" (p_self: ConstVariantPtr, r_ret: VariantPtr, p_deep: b8);
 
 /**
  * @name variant_stringify
@@ -1359,7 +1658,7 @@ InterfaceVariantGetType :: proc "c" (p_self: ConstVariantPtr) -> VariantType;
  *
  * @return
  */
-InterfaceVariantHasMethod :: proc "c" (p_self: ConstVariantPtr, p_method: ConstStringNamePtr) -> Bool;
+InterfaceVariantHasMethod :: proc "c" (p_self: ConstVariantPtr, p_method: ConstStringNamePtr) -> b8;
 
 /**
  * @name variant_has_member
@@ -1372,7 +1671,7 @@ InterfaceVariantHasMethod :: proc "c" (p_self: ConstVariantPtr, p_method: ConstS
  *
  * @return
  */
-InterfaceVariantHasMember :: proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> Bool;
+InterfaceVariantHasMember :: proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> b8;
 
 /**
  * @name variant_has_key
@@ -1386,7 +1685,7 @@ InterfaceVariantHasMember :: proc "c" (p_type: VariantType, p_member: ConstStrin
  *
  * @return true if the key exists; otherwise false.
  */
-InterfaceVariantHasKey :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_valid: ^Bool) -> Bool;
+InterfaceVariantHasKey :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_valid: ^b8) -> b8;
 
 /**
  * @name variant_get_object_instance_id
@@ -1425,7 +1724,7 @@ InterfaceVariantGetTypeName :: proc "c" (p_type: VariantType, r_name: Uninitiali
  *
  * @return true if the conversion is possible; otherwise false.
  */
-InterfaceVariantCanConvert :: proc "c" (p_from: VariantType, p_to: VariantType) -> Bool;
+InterfaceVariantCanConvert :: proc "c" (p_from: VariantType, p_to: VariantType) -> b8;
 
 /**
  * @name variant_can_convert_strict
@@ -1438,7 +1737,7 @@ InterfaceVariantCanConvert :: proc "c" (p_from: VariantType, p_to: VariantType) 
  *
  * @return true if the conversion is possible; otherwise false.
  */
-InterfaceVariantCanConvertStrict :: proc "c" (p_from: VariantType, p_to: VariantType) -> Bool;
+InterfaceVariantCanConvertStrict :: proc "c" (p_from: VariantType, p_to: VariantType) -> b8;
 
 /**
  * @name get_variant_from_type_constructor
@@ -1782,7 +2081,7 @@ InterfaceStringNewWithUtf16CharsAndLen :: proc "c" (r_dest: UninitializedStringP
  *
  * @return Error code signifying if the operation successful.
  */
-InterfaceStringNewWithUtf16CharsAndLen2 :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int, p_default_little_endian: Bool) -> Int;
+InterfaceStringNewWithUtf16CharsAndLen2 :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int, p_default_little_endian: b8) -> Int;
 
 /**
  * @name string_new_with_utf32_chars_and_len
@@ -2007,7 +2306,7 @@ InterfaceStringResize :: proc "c" (p_self: StringPtr, p_resize: Int) -> Int;
  * @param p_contents A pointer to a C string (null terminated and Latin-1 or ASCII encoded).
  * @param p_is_static Whether the StringName reuses the buffer directly (see above).
  */
-InterfaceStringNameNewWithLatin1Chars :: proc "c" (r_dest: UninitializedStringNamePtr, p_contents: cstring, p_is_static: Bool);
+InterfaceStringNameNewWithLatin1Chars :: proc "c" (r_dest: UninitializedStringNamePtr, p_contents: cstring, p_is_static: b8);
 
 /**
  * @name string_name_new_with_utf8_chars
@@ -2090,7 +2389,7 @@ InterfaceEditorHelpLoadXmlFromUtf8CharsAndLen :: proc "c" (p_data: cstring, p_si
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_callback The callback to retrieve the list of classes used.
  */
-InterfaceEditorRegisterGetClassesUsedCallback :: proc "c" (p_library: ClassLibraryPtr, p_callback: EditorGetClassesUsedCallback);
+InterfaceEditorRegisterGetClassesUsedCallback :: proc "c" (p_library: ClassDB, p_callback: EditorGetClassesUsedCallback);
 
 /**
  * @name register_main_loop_callbacks
@@ -2101,7 +2400,7 @@ InterfaceEditorRegisterGetClassesUsedCallback :: proc "c" (p_library: ClassLibra
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_callbacks A pointer to the structure that contains the callbacks.
  */
-InterfaceRegisterMainLoopCallbacks :: proc "c" (p_library: ClassLibraryPtr, p_callbacks: ^MainLoopCallbacks);
+InterfaceRegisterMainLoopCallbacks :: proc "c" (p_library: ClassDB, p_callbacks: ^MainLoopCallbacks);
 
 /* INTERFACE: FileAccess Utilities */
 
@@ -2182,7 +2481,7 @@ InterfaceImagePtr :: proc "c" (p_instance: ObjectPtr) -> ^u8;
  *
  * @see WorkerThreadPool::add_group_task()
  */
-InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, p_func : proc "c" (rawptr, u32), p_userdata: rawptr, p_elements: Int, p_tasks: int, p_high_priority: Bool, p_description: ConstStringPtr) -> i64;
+InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, p_func : proc "c" (rawptr, u32), p_userdata: rawptr, p_elements: Int, p_tasks: int, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
 
 /**
  * @name worker_thread_pool_add_native_task
@@ -2198,7 +2497,7 @@ InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, 
  *
  * @return The task ID.
  */
-InterfaceWorkerThreadPoolAddNativeTask :: proc "c" (p_instance: ObjectPtr, p_func : proc "c" (rawptr), p_userdata: rawptr, p_high_priority: Bool, p_description: ConstStringPtr) -> i64;
+InterfaceWorkerThreadPoolAddNativeTask :: proc "c" (p_instance: ObjectPtr, p_func : proc "c" (rawptr), p_userdata: rawptr, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
 
 /* INTERFACE: Packed Array */
 
@@ -2265,7 +2564,7 @@ InterfacePackedFloat32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_in
  *
  * @return A pointer to the requested 64-bit float.
  */
-InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^float;
+InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^f64;
 
 /**
  * @name packed_float64_array_operator_index_const
@@ -2278,7 +2577,7 @@ InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  *
  * @return A const pointer to the requested 64-bit float.
  */
-InterfacePackedFloat64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^float;
+InterfacePackedFloat64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^f64;
 
 /**
  * @name packed_int32_array_operator_index
@@ -2441,6 +2740,15 @@ InterfacePackedVector4ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  * Using typePtr because the array could be holding float or int types
  */
 InterfacePackedVector4ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
+
+Vector4 :: distinct struct{
+    x: f32,
+    y: f32,
+    z: f32,
+    w: f32,
+}
+//Color represented in RGBA
+Color :: distinct Vector4
 
 /**
  * @name packed_color_array_operator_index
@@ -2679,7 +2987,7 @@ InterfaceObjectSetInstance :: proc "c" (p_o: ObjectPtr, p_classname: ConstString
  *
  * @return true if successful in getting the class name; otherwise false.
  */
-InterfaceObjectGetClassName :: proc "c" (p_object: ConstObjectPtr, p_library: ClassLibraryPtr, r_class_name: UninitializedStringNamePtr) -> Bool;
+InterfaceObjectGetClassName :: proc "c" (p_object: ConstObjectPtr, p_library: ClassDB, r_class_name: UninitializedStringNamePtr) -> b8;
 
 /**
  * @name object_cast_to
@@ -2729,7 +3037,7 @@ InterfaceObjectGetInstanceId :: proc "c" (p_object: ConstObjectPtr) -> GDObjectI
  *
  * @returns true if the object has a script and that script has a method with the given name. Returns false if the object has no script.
  */
-InterfaceObjectHasScriptMethod :: proc "c" (p_object: ConstObjectPtr, p_method: ConstStringNamePtr) -> Bool;
+InterfaceObjectHasScriptMethod :: proc "c" (p_object: ConstObjectPtr, p_method: ConstStringNamePtr) -> b8;
 
 /**
  * @name object_call_script_method
@@ -2988,7 +3296,7 @@ InterfaceClassdbGetClassTag :: proc "c" (p_classname: ConstStringNamePtr) -> raw
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo struct.
  */
-InterfaceClassdbRegisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr,  p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo);
+InterfaceClassdbRegisterExtensionClass :: proc "c" (p_library: ClassDB,  p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo);
 
 /**
  * @name classdb_register_extension_class2
@@ -3004,7 +3312,7 @@ InterfaceClassdbRegisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr, 
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass2 :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo2);
+InterfaceClassdbRegisterExtensionClass2 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo2);
 
 /**
  * @name classdb_register_extension_class3
@@ -3020,7 +3328,7 @@ InterfaceClassdbRegisterExtensionClass2 :: proc "c" (p_library: ClassLibraryPtr,
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo3);
+InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo3);
 
 /**
  * @name classdb_register_extension_class4
@@ -3036,7 +3344,7 @@ InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassLibraryPtr,
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo4);
+InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo4);
 
 /**
  * @name classdb_register_extension_class5
@@ -3051,7 +3359,7 @@ InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassLibraryPtr,
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass5 :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo5);
+InterfaceClassdbRegisterExtensionClass5 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo5);
 
 /**
  * @name classdb_register_extension_class_method
@@ -3065,7 +3373,7 @@ InterfaceClassdbRegisterExtensionClass5 :: proc "c" (p_library: ClassLibraryPtr,
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
-InterfaceClassdbRegisterExtensionClassMethod :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassMethodInfo);
+InterfaceClassdbRegisterExtensionClassMethod :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassMethodInfo);
 
 /**
  * @name classdb_register_extension_class_virtual_method
@@ -3079,7 +3387,7 @@ InterfaceClassdbRegisterExtensionClassMethod :: proc "c" (p_library: ClassLibrar
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
-InterfaceClassdbRegisterExtensionClassVirtualMethod :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassVirtualMethodInfo);
+InterfaceClassdbRegisterExtensionClassVirtualMethod :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassVirtualMethodInfo);
 
 /**
  * @name classdb_register_extension_class_integer_constant
@@ -3098,7 +3406,7 @@ InterfaceClassdbRegisterExtensionClassVirtualMethod :: proc "c" (p_library: Clas
  * @param p_constant_value The constant value.
  * @param p_is_bitfield Whether or not this constant is part of a bitfield.
  */
-InterfaceClassdbRegisterExtensionClassIntegerConstant :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_enum_name: ConstStringNamePtr, p_constant_name: ConstStringNamePtr, p_constant_value: Int, p_is_bitfield: Bool);
+InterfaceClassdbRegisterExtensionClassIntegerConstant :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_enum_name: ConstStringNamePtr, p_constant_name: ConstStringNamePtr, p_constant_value: Int, p_is_bitfield: b8);
 
 /**
  * @name classdb_register_extension_class_property
@@ -3114,7 +3422,7 @@ InterfaceClassdbRegisterExtensionClassIntegerConstant :: proc "c" (p_library: Cl
  * @param p_setter A pointer to a StringName with the name of the setter method.
  * @param p_getter A pointer to a StringName with the name of the getter method.
  */
-InterfaceClassdbRegisterExtensionClassProperty :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr);
+InterfaceClassdbRegisterExtensionClassProperty :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr);
 
 /**
  * @name classdb_register_extension_class_property_indexed
@@ -3131,7 +3439,7 @@ InterfaceClassdbRegisterExtensionClassProperty :: proc "c" (p_library: ClassLibr
  * @param p_getter A pointer to a StringName with the name of the getter method.
  * @param p_index The index to pass as the first argument to the getter and setter methods.
  */
-InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr, p_index: Int);
+InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr, p_index: Int);
 
 /**
  * @name classdb_register_extension_class_property_group
@@ -3144,7 +3452,7 @@ InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: Cl
  * @param p_group_name A pointer to a String with the group name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this group.
  */
-InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_group_name: ConstStringPtr, p_prefix: ConstStringPtr);
+InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_group_name: ConstStringPtr, p_prefix: ConstStringPtr);
 
 /**
  * @name classdb_register_extension_class_property_subgroup
@@ -3157,7 +3465,7 @@ InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: Clas
  * @param p_subgroup_name A pointer to a String with the subgroup name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this subgroup.
  */
-InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_subgroup_name: ConstStringPtr, p_prefix: ConstStringPtr);
+InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_subgroup_name: ConstStringPtr, p_prefix: ConstStringPtr);
 
 /**
  * @name classdb_register_extension_class_signal
@@ -3173,7 +3481,7 @@ InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: C
  * @param p_argument_info A pointer to a PropertyInfo struct.
  * @param p_argument_count The number of arguments the signal receives.
  */
-InterfaceClassdbRegisterExtensionClassSignal :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr, p_signal_name: ConstStringNamePtr, p_argument_info: ^PropertyInfo, p_argument_count: Int);
+InterfaceClassdbRegisterExtensionClassSignal :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_signal_name: ConstStringNamePtr, p_argument_info: ^PropertyInfo, p_argument_count: Int);
 
 /**
  * @name classdb_unregister_extension_class
@@ -3184,7 +3492,7 @@ InterfaceClassdbRegisterExtensionClassSignal :: proc "c" (p_library: ClassLibrar
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  */
-InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr, p_class_name: ConstStringNamePtr); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
+InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
 
 /**
  * @name get_library_path
@@ -3195,7 +3503,7 @@ InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassLibraryPtr
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param r_path A pointer to a String which will receive the path.
  */
-InterfaceGetLibraryPath :: proc "c" (p_library: ClassLibraryPtr, r_path: UninitializedStringPtr);
+InterfaceGetLibraryPath :: proc "c" (p_library: ClassDB, r_path: UninitializedStringPtr);
 
 /**
  * @name editor_add_plugin

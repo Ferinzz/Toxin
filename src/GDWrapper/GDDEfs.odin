@@ -1,21 +1,27 @@
-package gdextension
+package GDWrapper
+
+import GDE "gdAPI/gdextension"
 
 //Will likely need to make some build specific definitions since the size of things changes based on the Godot build used.
 
 /******************/
 /******************/
-/*******DEFS********/
+/*******DEFS*******/
 /******************/
 /******************/
 
+CC_Dummy:: struct{}
+
+Class_Container :: struct ($Class_Structure: typeid) {
+    self: ^Object, //Keep as first so it can be trivially cast.
+    using class: Class_Structure,
+}
+
 //Check Godot's docs for more info about each variant type: https://docs.godotengine.org/en/stable/classes/index.html#variant-types
-//Set to 40 if double is double precision
+//Set to 40Bytes if double is double precision
 //Data itself is in the _data union : https://github.com/godotengine/godot/blob/45fc515ae3574e9c1f9deacaa6960dec68a7d38b/core/variant/variant.h#L263
 //After testing won't always need to use Godot's functions. Check Godot's _data union to know if the info is stack or heap and needs to be freed.
-Variant :: struct #align(8) {
-    VType: VariantType,
-    data: [2]u64
-}
+Variant :: GDE.Variant
 
 
 /*This is what Godot's data is represented as in C++.
@@ -44,7 +50,8 @@ VariantData :: union #align(16) {
 */
 
 //optional in Godot. These are mainly to define pointer etc variable lengths in C.
-Int     :: i64
+
+Int     :: GDE.Int
 Bool    :: b8
 float   :: f64
 ObjectInstanceID :: u64
@@ -103,7 +110,7 @@ Vector4 :: distinct struct{
     w: f32,
 }
 
-Vector4i :: distinct struct{
+Vector4i :: distinct struct #packed{
     x: i32,
     y: i32,
     z: i32,
@@ -136,7 +143,6 @@ Projection :: distinct #row_major matrix[4,4]f32
 Will need to test to determine if major or minor. Likely reimplements C# version.
  */
 Transform2D ::  distinct #row_major matrix[3,2]f32
-//Transform2D :: distinct [6]f32
 
 /*3×4 matrix. A Basis, scale and shear. Combine with origin to do translations.
 Will need to test to determine if major or minor. Likely reimplements C# version.
@@ -144,23 +150,19 @@ Will need to test to determine if major or minor. Likely reimplements C# version
 Transform3D :: distinct #row_major matrix[3,4]f32
 
 //Color represented in RGBA
-Color :: distinct Vector4
+Color :: GDE.Color
 
 //The value we get back for a string name is just the pointer to the Godot's interned string pool.
 //If you've use the name once you'll already created a string name with the specific text you'll have already added that string to the pool.
 //What we have access to is just the pointer.
-StringName :: distinct struct{
-    ptr: rawptr
-}
+StringName :: GDE.StringName
 
 /*
 * Pointer to a string stored in Godot. Format Unicode.
 * Variable size.
 * Warning: during class create process set ptr to nil
 */
-gdstring :: distinct struct{
-    ptr: rawptr
-}
+gdstring :: GDE.gdstring
 
 /*https://docs.godotengine.org/en/stable/classes/class_nodepath.html
 A filesystem representation of the node tree. Is not a direct pointer to the Node.
@@ -179,20 +181,21 @@ RID :: distinct struct{
 }
 
 //extension_api says size is dependent on the build config, but callable uses u64 with no typedef.
-Object :: distinct struct{
-    proxy:rawptr,
-}
+Object :: GDE.Object
 
 /*Represents a function. It can either be a method within an Object instance,
 or a custom callable used for different purposes.
 object is a union of u64 (objectID) or ^custom callable.
 Use gdAPI.ObjectGetInstanceFromId to get the ObjectPtr
+Callable contains a union on Godot's side. We should only be making CustomCallables through our system.
 */
 //https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L47
 Callable :: distinct struct{
     stringName: StringName,
-    objectId: u64,
+    ref: CustomCallable,
 }
+
+CustomCallable:: distinct rawptr
 
 /*Represents a signal of an Object instance. Like all Variant types,
 it can be stored in variables and passed to functions. Signals allow all connected
@@ -281,10 +284,9 @@ PackedFloat32Array :: packedArray(f32)
 
 PackedFloat64Array :: packedArray(f64)
 
+PackedStringArray :: GDE.PackedStringArray
 
 //Godot only has one type for both an array of vecN and vecNi.
-PackedStringArray :: packedArray(gdstring)
-
 PackedVector2Array :: packedArray(Vector2)
 
 PackedVector3Array :: packedArray(Vector3)
@@ -627,7 +629,7 @@ GDTypes := [?]typeid {
   typeid_of(PackedVector4Array),
 }
 
-GDTypes_strings := [VariantType]string {
+GDTypes_strings := [GDE.VariantType]string {
   .NIL = "nil",
   .BOOL = "bool",
   .INT = "int",

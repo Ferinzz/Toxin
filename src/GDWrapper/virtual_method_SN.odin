@@ -16,20 +16,20 @@ import sics "base:intrinsics"
 */
 
 Method_Callback_Compare_Info :: struct {
-    name: GDE.StringName,
+    name: StringName,
     p_hash: u32,
 };
 
 //Use this if you're just doing a Node, as it's the type for VTable directly.
 //This is the base of everything else, don't need to pass it through its own special vtable group.
 Node_v_table:: struct (T: typeid) {
-    _physics_process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^GDE.float}),
-    _process: proc "c" (self: ^Class_Container(T), using p_args: ^struct{delta: ^GDE.float}),
+    _physics_process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^float}),
+    _process: proc "c" (self: ^Class_Container(T), using p_args: ^struct{delta: ^float}),
     _input: proc "c" (self: ^Class_Container(T), input: ^struct{inp: ^^InputEvent}),
     _ready: proc "c" (self: ^Class_Container(T)),
     _enter_tree: proc "c" (self: ^Class_Container(T)),
     _exit_tree: proc "c" (self: ^Class_Container(T)),
-    _get_accessibility_configuration_warnings: proc "c" (self: ^Class_Container(T)) -> GDE.PackedStringArray,
+    _get_accessibility_configuration_warnings: proc "c" (self: ^Class_Container(T)) -> PackedStringArray,
     _get_configuration_warnings: proc "c" (self: ^Class_Container(T)),
     _get_focused_accessibility_element: proc "c" (self: ^Class_Container(T)),
     _shortcut_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
@@ -67,10 +67,10 @@ vControl:: struct($T: typeid) {
 
 //"inherits": "Node2D",
 Texture2D_v_table:: struct (T: typeid){
-    _is_pixel_opaque: proc "c" (self: ^Class_Container(T), using args: ^struct {x: ^GDE.Int, y: ^GDE.Int}),
-    _get_height: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
-    _get_width: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
-    _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^GDE.RID, rect: ^GDE.Rec2, src_rect: ^GDE.Rec2, modulate: ^GDE.Color, transpose: ^GDE.Bool, clip_uv: ^GDE.Bool }),
+    _is_pixel_opaque: proc "c" (self: ^Class_Container(T), using args: ^struct {x: ^Int, y: ^Int}),
+    _get_height: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^Int),
+    _get_width: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^Int),
+    _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^RID, rect: ^Rec2, src_rect: ^Rec2, modulate: ^Color, transpose: ^Bool, clip_uv: ^Bool }),
 }
 
 CanvasItem_v_table:: struct(T: typeid){
@@ -79,14 +79,14 @@ CanvasItem_v_table:: struct(T: typeid){
 
 //"inherits": "CanvasItem",
 Control_v_table:: struct(T: typeid) {
-    _has_point: proc "c" (self: ^Class_Container(T), using p_args: ^struct{point: ^GDE.Vector2}),
-    _structured_text_parser: proc "c" (self: ^Class_Container(T), using p_args: ^struct{args: ^GDE.Array, text: ^GDE.gdstring}),
+    _has_point: proc "c" (self: ^Class_Container(T), using p_args: ^struct{point: ^Vector2}),
+    _structured_text_parser: proc "c" (self: ^Class_Container(T), using p_args: ^struct{args: ^Array, text: ^gdstring}),
     _get_minimum_size: proc "c" (self: ^Class_Container(T)),
-    _get_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
-    _get_drag_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2}),
-    _can_drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
-    _drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^GDE.Vector2, data: ^GDE.Variant}),
-    _make_custom_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{for_text: ^GDE.gdstring}),
+    _get_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2}),
+    _get_drag_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2}),
+    _can_drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2, data: ^GDE.Variant}),
+    _drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2, data: ^GDE.Variant}),
+    _make_custom_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{for_text: ^gdstring}),
     _accessibility_get_contextual_info: proc "c" (self: ^Class_Container(T)),
     _get_accessibility_container_name: proc "c" (self: ^Class_Container(T),  using p_args: ^struct{node: ^GDE.Node}),
     _gui_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{event: ^^InputEvent}),
@@ -211,7 +211,7 @@ CollisionObject2D_Virtual_Info: struct {
 
 //"inherits": "Node2D",
 CollisionObject2D_v_table:: struct (T: typeid){
-    _input_event: proc "c" (self: ^Class_Container(T), using args: ^struct {viewport: ^GDE.ObjectPtr, event: ^^InputEvent, shape_idx: ^GDE.Int}),
+    _input_event: proc "c" (self: ^Class_Container(T), using args: ^struct {viewport: ^^Object, event: ^^InputEvent, shape_idx: ^Int}),
 }
 
 //"inherits": "Node3D",
@@ -222,7 +222,7 @@ CollisionObject3D_Virtual_Info: struct {
 };
 
 
-Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
+Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
 
         using Node_Virtuals_Info
         
@@ -266,7 +266,7 @@ Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
     return nil, false
 }
 
-Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
+Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
         if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw, true
@@ -275,7 +275,7 @@ Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name
 }
 
 
-Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
+Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
         if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw, true
@@ -283,7 +283,7 @@ Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
     return nil, false
 }
 
-Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
+Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CollisionObject2D_Virtual_Info
         if (stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
             if class_v_table._input_event == nil do return nil
@@ -292,7 +292,7 @@ Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr
     return nil, false
 }
 
-Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: GDE.ConstStringNamePtr, p_hash: u32) -> (rawptr, bool) {
+Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using Texture2D_Virtuals_Info
         if (stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
             if class_v_table._is_pixel_opaque == nil do return nil
@@ -488,7 +488,7 @@ init_AudioStream_Virtual_Info :: proc () {
     _get_parameter_list.p_hash = 3995934104
     _has_loop.p_hash = 36873697
     _get_bar_beats.p_hash = 3905245786
-    
+
 
     _instantiate_playback.name = StringConstruct.stringNameNewString_r("_instantiate_playback")
     _get_stream_name.name = StringConstruct.stringNameNewString_r("_get_stream_name")

@@ -157,8 +157,8 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: stri
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    bindMethod(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod(className_SN, "get_"+fieldName, get, methodType = methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
@@ -272,7 +272,7 @@ Export_String_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $
             classStruct, fieldName)
         }
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
             String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
@@ -334,8 +334,8 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     enumName:= type_info_of(out_enum).variant.(runtime.Type_Info_Named).name
     defer delete(enumName)
     enumName_SN: StringName
-    StringConstruct.stringNameNewString(&enumName_SN, enumName)
-    defer(StringName_Methods.Destroy(&enumName_SN))
+    GDW.StringConstruct.stringNameNewString(&enumName_SN, enumName)
+    defer(GDW.StringName_Methods.Destroy(&enumName_SN))
 
 
     info:=type_info_of(out_enum).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
@@ -343,9 +343,9 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     //Loop through each entry in the enum to add their name and value to the hint string.
     for field, ind in info.names {
         field_SN: StringName
-        StringConstruct.stringNameNewString(&field_SN, field)
-        gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
-        StringName_Methods.Destroy(&field_SN)
+        GDW.StringConstruct.stringNameNewString(&field_SN, field)
+        gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
+        GDW.StringName_Methods.Destroy(&field_SN)
     }
 }
 
@@ -922,8 +922,8 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
     bsname:= fmt.aprint(type_info_of(outbit_set).variant.(runtime.Type_Info_Named).name)
     defer delete(bsname)
     bsname_SN: StringName
-    StringConstruct.stringNameNewString(&bsname_SN, bsname)
-    defer(StringName_Methods.Destroy(&bsname_SN))
+    GDW.StringConstruct.stringNameNewString(&bsname_SN, bsname)
+    defer(GDW.StringName_Methods.Destroy(&bsname_SN))
 
     //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
     when sics.type_is_enum((sics.type_bit_set_elem_type(outbit_set))) {
@@ -933,22 +933,22 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
         for field,index in flag_enum.names {
             
             field_SN: StringName
-            StringConstruct.stringNameNewString(&field_SN, field)
+            GDW.StringConstruct.stringNameNewString(&field_SN, field)
             
             //The index of an enum represents the index of the bool in a bit_set.
             //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
             gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
-            StringName_Methods.Destroy(&field_SN)
+            GDW.StringName_Methods.Destroy(&field_SN)
         }
 
     } else {
         for i:= type_info_of(outbit_set).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).lower; i< type_info_of(outbit_set).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
             field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN: StringName
-            StringConstruct.stringNameNewString(&field_SN, field)
+            GDW.StringConstruct.stringNameNewString(&field_SN, field)
             gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
             delete(field)
-            StringName_Methods.Destroy(&field_SN)
+            GDW.StringName_Methods.Destroy(&field_SN)
         }
     }
 }
@@ -1373,7 +1373,7 @@ Export_Input_Name :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
             String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
@@ -2118,8 +2118,6 @@ Verify_Heap_Init :: proc {
     Verify_PackedInt64Array_Init,
     Verify_PackedInt32Array_Init,
     Verify_PackedByteArray_Init,
-    Verify_Signal_Init,
-    Verify_Callable_Init,
     Verify_Dictionary_Init,
     Verify_PackedStringArray_Init,
 }
@@ -2139,13 +2137,14 @@ if nil == p_classData.id {
 
 //Verify_Heap_Init2 :: proc($classStruct: typeid, $fieldName: string,){
 Verify_PackedStringArray_Init :: proc(p_classData: ^PackedStringArray, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedStringArray_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedStringArray"))
     }
 }
 };
+
 Verify_Dictionary_Init :: proc(p_classData: ^Dictionary, classStruct: typeid, fieldName: string) {
 if nil == p_classData.id {
     GDW.GDDictionary_Methods.Create0(p_classData, nil)
@@ -2155,25 +2154,8 @@ if nil == p_classData.id {
 }
 };
 
-Verify_Callable_Init :: proc(p_classData: ^Callable, classStruct: typeid, fieldName: string) {
-if nil == p_classData.ref {
-    GDW.Callable_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Callable"))
-    }
-}
-};
-
-Verify_Signal_Init :: proc(p_classData: ^Signal, classStruct: typeid, fieldName: string) {
-if p_classData.objectid.proxy == nil {
-    GDW.Signal_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Signal"))
-    }
-}
-};
 Verify_PackedByteArray_Init :: proc(p_classData: ^PackedByteArray, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedByteArray_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedByteArray"))
@@ -2182,7 +2164,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedInt32Array_Init :: proc(p_classData: ^PackedInt32Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedInt32Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt32Array"))
@@ -2191,7 +2173,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedInt64Array_Init :: proc(p_classData: ^PackedInt64Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedInt64Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt64Array"))
@@ -2200,7 +2182,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedFloat32Array_Init :: proc(p_classData: ^PackedFloat32Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedFloat32Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat32Array"))
@@ -2209,7 +2191,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedFloat64Array_Init :: proc(p_classData: ^PackedFloat64Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedFloat64Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat64Array"))
@@ -2218,7 +2200,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedVector2Array_Init :: proc(p_classData: ^PackedVector2Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedVector2Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector2Array"))
@@ -2227,7 +2209,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedVector3Array_Init :: proc(p_classData: ^PackedVector3Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedVector3Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector3Array"))
@@ -2236,7 +2218,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedVector4Array_Init :: proc(p_classData: ^PackedVector4Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedVector4Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector4Array"))
@@ -2245,7 +2227,7 @@ if nil == p_classData.proxy {
 };
 
 Verify_PackedColorArray_Init :: proc(p_classData: ^PackedColorArray, classStruct: typeid, fieldName: string) {
-if nil == p_classData.proxy {
+if nil == p_classData.data {
     GDW.PackedColorArray_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedColorArray"))
@@ -2267,12 +2249,11 @@ if nil == p_classData.proxy {
 */
 bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
                         function: $T,
-                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
-                        argNames: ..string, loc:= #caller_location
+                        argNames: ..string,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, loc:= #caller_location
                         )
                         where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
     {
-
     methodStringName: StringName
     gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
 
@@ -2318,8 +2299,7 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
     else do argsInfo:= 0
     
 
-    //These would allow us to use types other than f64 and i64 all the time. But is it worth the complication
-    //considering it would be casting it back and forth all over again?
+    //These are only in existence when Godot is compiled in debug mode. Can ignore in release builds.
     when sics.type_proc_parameter_count(T) - 1 > 0 {
         
         args_metadata: [argcount]GDE.ClassMethodArgumentMetadata
@@ -2344,8 +2324,8 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
     else
     {returnType:= 0 }
 
-    //string passed doesn't show up in Editor Documentation.? Leaving as something random for now.
-    returnInfo: GDE.PropertyInfo = make_property(GDE.VariantType(returnType), "123")
+    //only necessary to have a specific string when the export type is not default.
+    returnInfo: GDE.PropertyInfo = make_property(GDE.VariantType(returnType), "")
 
     methodInfo : GDE.ClassMethodInfo = {
         name = &methodStringName,
@@ -2357,6 +2337,9 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
     }
 
     
+    when sics.type_proc_return_count(T) > 1 {
+        #panic("Godot does not support multiple returns. Consider using an Array as return.")
+    } else {
     when sics.type_proc_return_count(T) > 0 {
     
         methodInfo.has_return_value = returnType != 0
@@ -2370,12 +2353,13 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
         methodInfo.arguments_info = &argsInfo[0]
         methodInfo.arguments_metadata = &args_metadata[0]
     }
+    }
 
     gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
     
     //Destructor things.
     GDW.StringName_Methods.Destroy(&methodStringName)
-    //StringName_Methods.Destroy(&classNameString)
+    //GDW.StringName_Methods.Destroy(&classNameString)
     destructProperty(&returnInfo)
 
 }
@@ -2486,7 +2470,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
             func := cast(P)method_userdata
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance)
-                GDW.variant_from(cast(^GDE.Variant)r_return, &result)
+                copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance)
             }
@@ -2524,19 +2508,19 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 return
             }
             
-            gdTypeList:= [argcount-1]GDE.VariantType {GDW.typetoenum(argT1)}
+            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1)}
             
-            GDW.variantTypeCheck(gdTypeList[:], p_args, r_error)
+            variantTypeCheck(gdTypeList[:], p_args, r_error)
 
             func := cast(P)method_userdata
 
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1))
-                    variant_from(cast(^GDE.Variant)r_return, &result)
+                    copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
-                fmt.println(GDW.fromvariant(cast(^GDE.Variant)p_args[0], argT1))
+                fmt.println(fromvariant(cast(^GDE.Variant)p_args[0], argT1))
                 fmt.println((cast(^GDE.Variant)p_args[0]).data)
-                func(cast(argT0)p_instance, GDW.fromvariant(cast(^GDE.Variant)p_args[0], argT1))
+                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1))
             }
         }
     return godotPtrCallback, godotVariantCallback
@@ -2580,7 +2564,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                             fromvariant(cast(GDE.VariantPtr)p_args[1], argT2))
-                variant_from(cast(^GDE.Variant)r_return, &result)
+                copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2))
             }
@@ -2627,7 +2611,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
             when sics.type_proc_return_count(P) > 0 {
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3))
-                variant_from(cast(^GDE.Variant)r_return, &result)
+                copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3))
             }
@@ -2675,7 +2659,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4))
-                variant_from(cast(^GDE.Variant)r_return, &result)
+                copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4))
@@ -2725,7 +2709,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5))
-                variant_from(cast(^GDE.Variant)r_return, &result)
+                copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5))
@@ -2777,7 +2761,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
                     fromvariant(cast(GDE.VariantPtr)p_args[5], argT6))
-                variant_from(cast(^GDE.Variant)r_return, &result)
+                copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6))
@@ -2829,7 +2813,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                     fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
                     fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
                     fromvariant(cast(GDE.VariantPtr)p_args[5], argT6), fromvariant(cast(GDE.VariantPtr)p_args[6], argT7))
-                variant_from(cast(^GDE.Variant)r_return, &result)
+                copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
                 func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
                     fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6), fromvariant(cast(^GDE.Variant)p_args[6], argT7))

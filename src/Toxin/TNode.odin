@@ -25,35 +25,35 @@ Node_methods_list:: struct {
     get_child_count: proc (self: ^Node_C, check_inheritance: struct{^Bool}, r_count: ^Int, loc := #caller_location),
 }
 
-Node_Signals ::struct {
-    ready: rawptr,
-    renamed: rawptr,
-    tree_entered: rawptr,
-    tree_exiting: rawptr,
-    tree_exited: rawptr,
-    child_entered_tree: rawptr,
+Node_Signals :: struct {
+    ready: proc "c" (self: ^Object),
+    renamed: proc "c" (self: ^Object),
+    tree_entered: proc "c" (self: ^Object),
+    tree_exiting: proc "c" (self: ^Object),
+    tree_exited: proc "c" (self: ^Object),
+    child_entered_tree: proc "c" (self: ^Object, node: Node),
     // "arguments": [
     // {
     // "name": "node",
     // "type": "Node"
     // }
-    child_exiting_tree: rawptr,
+    child_exiting_tree: proc "c" (self: ^Object, node: Node),
     // "arguments": [
     // {
     // "name": "node",
     // "type": "Node"
     // }
-    child_order_changed: rawptr,
-    replacing_by: rawptr,
+    child_order_changed: proc "c" (self: ^Object),
+    replacing_by: proc "c" (self: ^Object, node: Node),
     // "arguments": [
     // {
     // "name": "node",
     // "type": "Node"
     //}
-    editor_description_changed: rawptr,
+    editor_description_changed: proc "c" (self: ^Object, node: Node),
     // {
     // "name": "node",
     // "type": "Node"
     // }
-    editor_state_changed: rawptr,
+    editor_state_changed: proc "c" (self: ^Object),
 }

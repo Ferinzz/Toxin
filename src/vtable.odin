@@ -25,7 +25,7 @@ munum::enum{
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
     me:=(^Toxin.Class_Deets)(self)
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), Toxin.Class_Init) // THIS_CLASS_NAME_Init)
+    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
 }
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
@@ -42,6 +42,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
     class:= cast(^GDW.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    
     Toxin.GDArray_Methods.Create0(&class.class.rarray, nil)
     return class.self
 }
@@ -66,6 +67,40 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
         myArray: Toxin.Class_Array
         Toxin.BuiltinMake(&myArray)
         myArray->GetIndex(3, &r_ret)
+        receive:Toxin.Variant
+        aabber: Toxin.AABB = {
+            4,5,0,0,12,18
+        }
+        vecker: Toxin.Vector2 = { 6, 92 }
+        
+        GDW.new_variant_from_methods(&receive, &vecker)
+        GDW.new_type_from_methods(&vecker, &receive)
+        Toxin.variant_Destroy(&receive)
+        GDW.new_variant_from_methods(&receive, &vecker)
+        GDW.new_type_from_methods(&vecker, &receive)
+        Toxin.variant_Destroy(&receive)
+
+        GDW.new_variant_from_methods(&receive, &myArray.self)
+        GDW.new_type_from_methods(&myArray.self, &receive)
+        Toxin.copy_from_variant(&myArray.self, &receive)
+        Toxin.variant_Destroy(&receive)
+        GDW.new_variant_from_methods(&receive, &myArray.self)
+        GDW.new_type_from_methods(&myArray.self, &receive)
+        Toxin.variant_Destroy(&receive)
+
+        GDW.new_variant_from_methods(&receive, &myArray.self)
+        GDW.new_type_from_methods(&myArray.self, &receive)
+        Toxin.variant_Destroy(&receive)
+        GDW.new_variant_from_methods(&receive, &aabber)
+        Toxin.copy_from_variant(&aabber, &receive)
+        GDW.new_type_from_methods(&aabber, &receive)
+        GDW.new_variant_from_methods(&receive, &aabber)
+        GDW.new_type_from_methods(&aabber, &receive)
+        GDW.new_variant_from_methods(&receive, &aabber)
+        GDW.new_type_from_methods(&aabber, &receive)
+        fmt.println((transmute(^Toxin.AABB)receive.data[0])^)
+        fmt.println(size_of(Toxin.Vector4))
+        fmt.println((cast(^Toxin.variant_union)(&receive.data[0])).AABB^)
         myNode: Toxin.Node_C
         Toxin.Maker(&myNode)
         mbewl: i64
@@ -84,22 +119,22 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    GDW.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, {.NORMAL}, "arg1")
+    Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, "arg1")
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
-    GDW.Export(className, THIS_CLASS_NAME, "someProperty")
-    GDW.Export_Enum(className, THIS_CLASS_NAME, munum)
+    Toxin.Export(className, THIS_CLASS_NAME, "someProperty")
+    Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
     Toxin.Export(className, THIS_CLASS_NAME, "receive")
     Toxin.Export(className, THIS_CLASS_NAME, "rarray")
     Toxin.Export(className, THIS_CLASS_NAME, "stringname")
     Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
-    
+
 }
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
-somePublicFunction :: proc "c" (classStruct: ^GDW.Class_Container(THIS_CLASS_NAME), arg1: GDW.Int) {
+somePublicFunction :: proc "c" (classStruct: ^GDW.Class_Container(THIS_CLASS_NAME), arg1: Toxin.Int) {
     //do stuff
 }
 

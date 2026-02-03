@@ -62,7 +62,7 @@ MainLoopStartupCallback :: proc "c" () {
     minput->set_name({&SN})
     minput->get_name(&SN_p2)
     callee: Callable
-    GDW.Create_Callable(&callee, &callee, minput.self, nil, nil, nil, nil, nil, nil, nil, nil, GDW.Library)
+    Create_Callable(&callee, &callee, minput.self, nil, nil, nil, nil, nil, nil, nil, nil, GDW.Library)
     contained:callable_container ={
         function=rawptr(testProc),
         callable=callee,

@@ -8,7 +8,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     get_Interface_Address = p_get_proc_address
 
     //Function_Pointer.FunctionPtr = cast(GDE.InterfaceFunctionPtr)get_Interface_Address("")
-    //Function_Pointer.GetProcAddress = cast(GDE.InterfaceGetProcAddress)get_Interface_Address("")
+    Function_Pointer.GetProcAddress = p_get_proc_address
 
     GD_Version_Get.GetGodotVersion = cast(GDE.InterfaceGetGodotVersion)get_Interface_Address("get_godot_version")
     GD_Version_Get.GetGodotVersion2 = cast(GDE.InterfaceGetGodotVersion2)get_Interface_Address("get_godot_version2")
@@ -21,11 +21,11 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 //*************\\
     //Threading.WorkerThreadPoolGroupTask = cast(GDE.WorkerThreadPoolGroupTask)get_Interface_Address("")
     //Threading.WorkerThreadPoolTask = cast(GDE.WorkerThreadPoolTask)get_Interface_Address("")
-    /* INTERFACE: WorkerThreadPool Utilities */
+    /* GDE.Interface: WorkerThreadPool Utilities */
     Threading.WorkerThreadPoolAddNativeGroupTask = cast(GDE.InterfaceWorkerThreadPoolAddNativeGroupTask)get_Interface_Address("worker_thread_pool_add_native_group_task")
     Threading.WorkerThreadPoolAddNativeTask = cast(GDE.InterfaceWorkerThreadPoolAddNativeTask)get_Interface_Address("worker_thread_pool_add_native_task")
 
-/* INTERFACE: Memory */
+/* GDE.Interface: Memory */
     Memory_Uils.MemAlloc = cast(GDE.InterfaceMemAlloc)get_Interface_Address("mem_alloc")
     Memory_Uils.MemRealloc = cast(GDE.InterfaceMemRealloc)get_Interface_Address("mem_realloc")
     Memory_Uils.MemFree = cast(GDE.InterfaceMemFree)get_Interface_Address("mem_free")
@@ -35,7 +35,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Memory_Uils.GetNativeStructSize = cast(GDE.InterfaceGetNativeStructSize)get_Interface_Address("get_native_struct_size")
 
 
-/* INTERFACE: Godot Logging */
+/* GDE.Interface: Godot Logging */
     Logging.PrintError = cast(GDE.InterfacePrintError)get_Interface_Address("print_error")
     Logging.PrintErrorWithMessage = cast(GDE.InterfacePrintErrorWithMessage)get_Interface_Address("print_error_with_message")
     Logging.PrintWarning = cast(GDE.InterfacePrintWarning)get_Interface_Address("print_warning")
@@ -43,7 +43,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Logging.PrintScriptError = cast(GDE.InterfacePrintScriptError)get_Interface_Address("print_script_error")
     Logging.PrintScriptErrorWithMessage = cast(GDE.InterfacePrintScriptErrorWithMessage)get_Interface_Address("print_script_error_with_message")
 
-/* INTERFACE: Variant */
+/* GDE.Interface: Variant */
     Variant_Utils.NewCopy = cast(GDE.InterfaceVariantNewCopy)get_Interface_Address("variant_new_copy")
     Variant_Utils.NewNil = cast(GDE.InterfaceVariantNewNil)get_Interface_Address("variant_new_nil")
     Variant_Utils.Destroy = cast(GDE.InterfaceVariantDestroy)get_Interface_Address("variant_destroy")
@@ -94,7 +94,7 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Variant_Utils.GetPtrUtilityFunction = cast(GDE.InterfaceVariantGetPtrUtilityFunction)get_Interface_Address("variant_get_ptr_utility_function")
 
 
-/* INTERFACE: String Utilities */
+/* GDE.Interface: String Utilities */
     Strings_Utils.NewWithLatin1Chars = cast(GDE.InterfaceStringNewWithLatin1Chars)get_Interface_Address("string_new_with_latin1_chars")
     Strings_Utils.NewWithUtf8Chars = cast(GDE.InterfaceStringNewWithUtf8Chars)get_Interface_Address("string_new_with_utf8_chars")
     Strings_Utils.NewWithUtf16Chars = cast(GDE.InterfaceStringNewWithUtf16Chars)get_Interface_Address("string_new_with_utf16_chars")
@@ -122,26 +122,26 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Strings_Utils.Resize = cast(GDE.InterfaceStringResize)get_Interface_Address("string_resize")
 
 
-/* INTERFACE: StringName Utilities */
+/* GDE.Interface: StringName Utilities */
     StringName_Utils.Latin1Chars = cast(GDE.InterfaceStringNameNewWithLatin1Chars)get_Interface_Address("string_name_new_with_latin1_chars")
     StringName_Utils.Utf8Chars = cast(GDE.InterfaceStringNameNewWithUtf8Chars)get_Interface_Address("string_name_new_with_utf8_chars")
     StringName_Utils.Utf8CharsAndLen = cast(GDE.InterfaceStringNameNewWithUtf8CharsAndLen)get_Interface_Address("string_name_new_with_utf8_chars_and_len")
 
-/* INTERFACE: XMLParser Utilities */
+/* GDE.Interface: XMLParser Utilities */
     XMLParse_Utils.XmlParserOpenBuffer = cast(GDE.InterfaceXmlParserOpenBuffer)get_Interface_Address("xml_parser_open_buffer")
     XMLParse_Utils.EditorHelpLoadXmlFromUtf8Chars = cast(GDE.InterfaceEditorHelpLoadXmlFromUtf8Chars)get_Interface_Address("editor_help_load_xml_from_utf8_chars")
     XMLParse_Utils.EditorHelpLoadXmlFromUtf8CharsAndLen = cast(GDE.InterfaceEditorHelpLoadXmlFromUtf8CharsAndLen)get_Interface_Address("editor_help_load_xml_from_utf8_chars_and_len")
     XMLParse_Utils.EditorRegisterGetClassesUsedCallback = cast(GDE.InterfaceEditorRegisterGetClassesUsedCallback)get_Interface_Address("editor_register_get_classes_used_callback")
 
-/* INTERFACE: FileAccess Utilities */
+/* GDE.Interface: FileAccess Utilities */
     FileAccess_Utils.StoreBuffer = cast(GDE.InterfaceFileAccessStoreBuffer)get_Interface_Address("file_access_store_buffer")
     FileAccess_Utils.GetBuffer = cast(GDE.InterfaceFileAccessGetBuffer)get_Interface_Address("file_access_get_buffer")
 
-/* INTERFACE: Image Utilities */
+/* GDE.Interface: Image Utilities */
     Image_Utils.ImagePtrw = cast(GDE.InterfaceImagePtrw)get_Interface_Address("image_ptrw")
     Image_Utils.ImagePtr = cast(GDE.InterfaceImagePtr)get_Interface_Address("image_ptr")
 
-/* INTERFACE: Packed Array */
+/* GDE.Interface: Packed Array */
     Packed_Array_Utils.ByteArrayOperatorIndex = cast(GDE.InterfacePackedByteArrayOperatorIndex)get_Interface_Address("packed_byte_array_operator_index")
     Packed_Array_Utils.ByteArrayOperatorIndexConst = cast(GDE.InterfacePackedByteArrayOperatorIndexConst)get_Interface_Address("packed_byte_array_operator_index_const")
     Packed_Array_Utils.Float32ArrayOperatorIndex = cast(GDE.InterfacePackedFloat32ArrayOperatorIndex)get_Interface_Address("packed_float32_array_operator_index")
@@ -168,13 +168,13 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Packed_Array_Utils.ArraySetTyped = cast(GDE.InterfaceArraySetTyped)get_Interface_Address("array_set_typed")
 
 
-/* INTERFACE: Dictionary */
+/* GDE.Interface: Dictionary */
     Dictionary_Utils.OperatorIndex = cast(GDE.InterfaceDictionaryOperatorIndex)get_Interface_Address("dictionary_operator_index")
     Dictionary_Utils.OperatorIndexConst = cast(GDE.InterfaceDictionaryOperatorIndexConst)get_Interface_Address("dictionary_operator_index_const")
     Dictionary_Utils.SetTyped = cast(GDE.InterfaceDictionarySetTyped)get_Interface_Address("dictionary_set_typed")
 
 
-/* INTERFACE: Object */
+/* GDE.Interface: Object */
     Object_Utils.MethodBindCall = cast(GDE.InterfaceObjectMethodBindCall)get_Interface_Address("object_method_bind_call")
     Object_Utils.MethodBindPtrcall = cast(GDE.InterfaceObjectMethodBindPtrcall)get_Interface_Address("object_method_bind_ptrcall")
     Object_Utils.Destroy = cast(GDE.InterfaceObjectDestroy)get_Interface_Address("object_destroy")
@@ -190,12 +190,12 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Object_Utils.CallScriptMethod = cast(GDE.InterfaceObjectCallScriptMethod)get_Interface_Address("object_call_script_method")
 
 
-/* INTERFACE: Reference */
+/* GDE.Interface: Reference */
     Reference_Utils.RefGetObject = cast(GDE.InterfaceRefGetObject)get_Interface_Address("ref_get_object")
     Reference_Utils.RefSetObject = cast(GDE.InterfaceRefSetObject)get_Interface_Address("ref_set_object")
 
 
-/* INTERFACE: Script Instance */
+/* GDE.Interface: Script Instance */
     Script_Utils.ScriptInstanceCreate = cast(GDE.InterfaceScriptInstanceCreate)get_Interface_Address("script_instance_create")
     Script_Utils.ScriptInstanceCreate2 = cast(GDE.InterfaceScriptInstanceCreate2)get_Interface_Address("script_instance_create2")
     Script_Utils.ScriptInstanceCreate3 = cast(GDE.InterfaceScriptInstanceCreate3)get_Interface_Address("script_instance_create3")
@@ -204,12 +204,12 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
     Script_Utils.ObjectGetScriptInstance = cast(GDE.InterfaceObjectGetScriptInstance)get_Interface_Address("object_get_script_instance")
     Script_Utils.ObjectSetScriptInstance = cast(GDE.InterfaceObjectSetScriptInstance)get_Interface_Address("object_set_script_instance")
 
-/* INTERFACE: Callable */
+/* GDE.Interface: Callable */
     Callable_Utils.CustomCreate = cast(GDE.InterfaceCallableCustomCreate)get_Interface_Address("callable_custom_create")
     Callable_Utils.CustomCreate2 = cast(GDE.InterfaceCallableCustomCreate2)get_Interface_Address("callable_custom_create2")
     Callable_Utils.CustomGetUserData = cast(GDE.InterfaceCallableCustomGetUserData)get_Interface_Address("callable_custom_get_userdata")
 
-/* INTERFACE: ClassDB */
+/* GDE.Interface: ClassDB */
     ClassDB.ConstructObject = cast(GDE.InterfaceClassdbConstructObject)get_Interface_Address("classdb_construct_object")
     ClassDB.ConstructObject2 = cast(GDE.InterfaceClassdbConstructObject2)get_Interface_Address("classdb_construct_object2")
     ClassDB.GetMethodBind = cast(GDE.InterfaceClassdbGetMethodBind)get_Interface_Address("classdb_get_method_bind")

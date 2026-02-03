@@ -25,8 +25,8 @@ Class_Array :: GDW.Class_Array
 GDArray_Methods : GDW.GDArray_Methods_list
 
 gdMakeArray:: proc(p_array: ^Class_Array) {
-    p_array.methods = &GDW.GDArray_Methods
-    p_array->Create0(nil)
+    p_array.methods = &GDArray_Methods
+    p_array.Create0(&p_array.self, nil)
 }
 
 default_Array_class: Class_Array = {
