@@ -1,4 +1,4 @@
-#+ignore
+
 package Toxin
 
 import "base:runtime"
@@ -10,8 +10,6 @@ import "core:fmt"
 import "core:slice"
 import "core:strings"
 import "core:strconv"
-import "core:mem"
-
 
 
 /*
@@ -27,8 +25,35 @@ import "core:mem"
 
 //Create a hints struct.
 //Specific to make Public add an extra layer for hingts
-//Metadata seems useless?
 
+Export_Class_Values :: proc {
+    Export,
+    Export_Int_As_Enum,
+    Export_String_As_Enum,
+    Export_Enum,
+    Export_Range,
+    Export_Ranged_Array,
+    Export_Easing,
+    Export_Array_Type,
+    Export_Pointer,
+    Export_Color_No_Alpha,
+    Export_Int_As_Flags,
+    Export_Flags,
+    Export_Layers,
+    Export_Path,
+    Export_Locale,
+    Export_Password,
+    Export_With_Placeholder_Text,
+    Export_Input_Name,
+    Export_Multiline,
+    Export_Node_Path_Types,
+    Export_Object_ID,
+    Export_Dictionary_type,
+    Export_Dictionary_Localizable_String,
+    Export_Tool_Button,
+    Export_Callable_As_Tool_Button,
+    Export_proc_As_Tool_Button,
+}
 
 
 /*
@@ -56,112 +81,15 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: stri
 
     variant_type:=GDE.VariantType(index)
 
-    //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
-    //In this case, this stringName is used to recognize this class in their classDB.
-    //type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
-    className:= type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
-
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = make_property(variant_type, fieldName)
-    prop_info:= Make_Property_Full(variant_type, fieldName, .NONE, "", className, property_usage)
+    //prop_info:= Make_Property_Full(variant_type, fieldName, .NONE, "", className, property_usage)
 
-    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
-    //This makes a really long line, but that's how generics go.
-    set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
-        context = runtime.default_context()
-
-        when  sics.type_field_type(classStruct, fieldName) == Array ||
-        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
-        sics.type_field_type(classStruct, fieldName) == Signal ||
-        sics.type_field_type(classStruct, fieldName) == Callable ||
-        sics.type_field_type(classStruct, fieldName) == Dictionary {
-            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
-            classStruct, fieldName)
-        }
-        //If it is a type which needs to be destroyed, destroy it.
-        when sics.type_field_type(classStruct, fieldName) == StringName {
-            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == gdstring {
-            GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Array {
-            GDW.GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
-            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Dictionary {
-            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == NodePath {
-            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Callable {
-            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Signal {
-            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedByteArray {
-            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedInt32Array {
-            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedInt64Array {
-            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedFloat32Array {
-            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedFloat64Array {
-            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector2Array {
-            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector3Array {
-            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector4Array {
-            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedColorArray {
-            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
-    }
-    /*
-    The above creates a proc that does the following - replace Int with whatever the field's type is.
-    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: Int) {
-        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type Int
-    }
-    */
-
-    get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
-        context = runtime.default_context()
-        when sics.type_field_type(classStruct, fieldName) == Array ||
-        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
-        sics.type_field_type(classStruct, fieldName) == Signal ||
-        sics.type_field_type(classStruct, fieldName) == Callable ||
-        sics.type_field_type(classStruct, fieldName) == Dictionary {
-            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
-            classStruct, fieldName)
-        }
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
-    }
-    /*
-    The above creates a proc that does the following - replace Int with whatever the field's type is.
-    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> Int {
-        return yourclassstruct.someField^ //someField is of type Int
-    }
-    */
-
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType = methodType, loc = loc)
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
@@ -230,8 +158,17 @@ Export_Int_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $fie
     prop_info:= Make_Property_Full(.INT, fieldName, .ENUM, string(output[:]), className, property_usage)
 
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, &className_SN, fieldName, .INT, Int, methodType, &prop_info, loc)
+    //bind_export(classStruct, &className_SN, fieldName, .INT, Int, methodType, &prop_info, loc)
 
+    get,set:= make_getter_and_setter2(classStruct, fieldName, Int)
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    //Register the information with Godot in order for the variable to be accessible.
+    Bind_Property(className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
+    
     destructProperty(&prop_info)
     delete(output)
 }
@@ -262,6 +199,7 @@ Export_String_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $
     res, err:=strings.join(options[:], ",")
     defer(delete(res))
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
@@ -271,16 +209,16 @@ Export_String_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $
         sics.type_field_type(classStruct, fieldName) == Signal ||
         sics.type_field_type(classStruct, fieldName) == Callable ||
         sics.type_field_type(classStruct, fieldName) == Dictionary {
-            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
             classStruct, fieldName)
         }
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
-            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -291,7 +229,7 @@ Export_String_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -299,12 +237,19 @@ Export_String_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
     
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
     //Defines the information about the variable properties in a way Godot's editor understands
     when sics.type_field_type(classStruct, fieldName) == gdstring {
         prop_info:= Make_Property_Full(.STRING, fieldName, .ENUM, res, className, property_usage)
@@ -332,7 +277,6 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     {
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
-    className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
     
     enumName:= type_info_of(out_enum).variant.(runtime.Type_Info_Named).name
     defer delete(enumName)
@@ -436,7 +380,15 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
     prop_info:= Make_Property_Full(.INT, fieldName, .RANGE, output, className, property_usage)
 
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
+    //bind_export(classStruct, className_SN, fieldName, .INT, sics.type_field_type(classStruct, fieldName), methodType, &prop_info, loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    Bind_Property(className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
 
     destructProperty(&prop_info)
     delete(min)
@@ -480,14 +432,15 @@ Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
     {
     methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
         Verify_Heap_Init(p_classData, classStruct, fieldName)
-        Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -501,7 +454,7 @@ Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
         //Verify_Heap_Init(classStruct, fieldName)
 
         Verify_Heap_Init(p_classData, classStruct, fieldName)
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -509,12 +462,20 @@ Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
+
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    //bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     output: string
 
@@ -631,12 +592,20 @@ Export_Easing :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-    
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], className, property_usage)
     
     //Create all necessary information and Register the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    //bind_export(classStruct, className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    Bind_Property(className_SN, fieldName, .FLOAT, &prop_info, "get_"+fieldName, "set_"+fieldName)
+
     destructProperty(&info)
 }
 
@@ -701,7 +670,15 @@ Export_Array_Type :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
     info: GDE.PropertyInfo = Make_Property_Full(.ARRAY, fieldName, .ARRAY_TYPE, final_hint_string, className, property_usage)
 
     //Creates all necessary info before Registering the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    //bind_export(classStruct, className_SN, fieldName, .ARRAY, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    Bind_Property(className_SN, fieldName, .ARRAY, &prop_info, "get_"+fieldName, "set_"+fieldName)
     destructProperty(&info)
     delete(final_hint_string)
 }
@@ -751,14 +728,14 @@ Export_Pointer :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNa
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_IS_POINTER, "", className, property_usage)
     
-    
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     //Since I can't cast from int to a pointer I swapped to doing a transmute instead.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Int) {
         context = runtime.default_context()
 
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -769,7 +746,7 @@ Export_Pointer :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNa
     
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> Int {
         context = runtime.default_context()
-        return (cast(^Int)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^Int)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -777,11 +754,18 @@ Export_Pointer :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNa
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    //bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, Int)
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
@@ -808,7 +792,16 @@ Export_Color_No_Alpha :: proc(className_SN: ^StringName, $classStruct: typeid, $
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", className, property_usage)
 
     //Register the information with Godot in order for the variable to be accessible.
-    bind_export(classStruct, className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+    //bind_export(classStruct, className_SN, fieldName, .FLOAT, sics.type_field_type(classStruct, fieldName), methodType, &info, loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    //Register the information with Godot in order for the variable to be accessible.
+    Bind_Property(className_SN, fieldName, .FLOAT, &info, "get_"+fieldName, "set_"+fieldName)
     destructProperty(&info)
 }
 
@@ -863,10 +856,11 @@ Export_Int_As_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
         //Defines the information about the variable properties in a way Godot's editor understands
         prop_info:= Make_Property_Full(.INT, fieldName, .FLAGS, string(output[:]), className, property_usage)
     }
+    /*
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Int) {
         context = runtime.default_context()
         
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -878,8 +872,8 @@ Export_Int_As_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> Int {
         context = runtime.default_context()
 
-        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^Int)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^Int)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -887,11 +881,18 @@ Export_Int_As_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    //bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
     //bind_export(classStruct, className_SN, fieldName, .INT, Int, methodType, &prop_info, loc)
@@ -995,10 +996,11 @@ Export_Layers :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, property_usage)
 
+
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Int) {
         context = runtime.default_context()
         ////fmt.println(godotValue)
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = transmute(sics.type_field_type(classStruct, fieldName))(sics.type_bit_set_underlying_type(sics.type_field_type(classStruct, fieldName))(godotValue))
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1010,8 +1012,8 @@ Export_Layers :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> Int {
         context = runtime.default_context()
 
-        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^Int)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^Int)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1019,6 +1021,7 @@ Export_Layers :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
@@ -1091,14 +1094,15 @@ Export_Path :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName:
 
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, className, property_usage)
-    
+
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1109,7 +1113,7 @@ Export_Path :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName:
     
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1117,11 +1121,18 @@ Export_Path :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName:
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(className_SN, fieldName, .STRING, &info, "get_"+fieldName, "set_"+fieldName)
@@ -1164,14 +1175,15 @@ Export_Locale :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     
 
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .LOCALE_ID, "", className, property_usage)
-    
+
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1182,7 +1194,7 @@ Export_Locale :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1190,11 +1202,18 @@ Export_Locale :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    //bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
@@ -1231,13 +1250,14 @@ Export_Password :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldN
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PASSWORD, placeholder_text, className, property_usage)
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1248,7 +1268,7 @@ Export_Password :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldN
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1256,11 +1276,18 @@ Export_Password :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldN
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    //bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
@@ -1285,21 +1312,21 @@ Export_With_Placeholder_Text :: proc(className_SN: ^StringName, $classStruct: ty
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
                         //This field should only be of type gdstring.
-                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == gdstring)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Placeholder_Text)
     {
 
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
-
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1310,7 +1337,7 @@ Export_With_Placeholder_Text :: proc(className_SN: ^StringName, $classStruct: ty
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1318,11 +1345,18 @@ Export_With_Placeholder_Text :: proc(className_SN: ^StringName, $classStruct: ty
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    //bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, .PLACEHOLDER_TEXT, placeholder_text, className, property_usage)
@@ -1371,17 +1405,18 @@ Export_Input_Name :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
         append(&res, Input_Option_Strings[.show_builtin])
     }
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
-            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1392,7 +1427,7 @@ Export_Input_Name :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1400,11 +1435,18 @@ Export_Input_Name :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     when sics.type_field_type(classStruct, fieldName) == gdstring {
@@ -1453,13 +1495,14 @@ Export_Multiline :: proc(className_SN: ^StringName, $classStruct: typeid, $field
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-         String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+         String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1470,7 +1513,7 @@ Export_Multiline :: proc(className_SN: ^StringName, $classStruct: typeid, $field
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1478,11 +1521,18 @@ Export_Multiline :: proc(className_SN: ^StringName, $classStruct: typeid, $field
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.STRING, fieldName, .MULTILINE_TEXT, "", className, property_usage)
@@ -1513,13 +1563,14 @@ Export_Node_Path_Types :: proc(className_SN: ^StringName, $classStruct: typeid, 
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1530,7 +1581,7 @@ Export_Node_Path_Types :: proc(className_SN: ^StringName, $classStruct: typeid, 
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1538,11 +1589,18 @@ Export_Node_Path_Types :: proc(className_SN: ^StringName, $classStruct: typeid, 
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.NODE_PATH, fieldName, .NODE_PATH_VALID_TYPES, Node_Type, className, property_usage)
@@ -1579,15 +1637,16 @@ Export_Object_ID :: proc(className_SN: ^StringName, $classStruct: typeid, $field
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-        if (cast(^Object)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName))).proxy != nil {
-            //Destructors.ObjectDestroy(cast(^Object)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+        if (cast(^Object)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))).proxy != nil {
+            //Destructors.ObjectDestroy(cast(^Object)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1598,7 +1657,7 @@ Export_Object_ID :: proc(className_SN: ^StringName, $classStruct: typeid, $field
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> sics.type_field_type(classStruct, fieldName) {
         context = runtime.default_context()
-        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1606,11 +1665,18 @@ Export_Object_ID :: proc(className_SN: ^StringName, $classStruct: typeid, $field
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.OBJECT, fieldName, .OBJECT_ID, Object_Type, className, property_usage)
@@ -1641,6 +1707,7 @@ Export_Dictionary_type :: proc(className_SN: ^StringName, $classStruct: typeid, 
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Dictionary) {
@@ -1651,14 +1718,14 @@ Export_Dictionary_type :: proc(className_SN: ^StringName, $classStruct: typeid, 
         sics.type_field_type(classStruct, fieldName) == Signal ||
         sics.type_field_type(classStruct, fieldName) == Callable ||
         sics.type_field_type(classStruct, fieldName) == Dictionary {
-            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
             classStruct, fieldName)
         }
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
-        if (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName))).id != nil {    
-            GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+        if (cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))).id != nil {    
+            GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = Dictionary(godotValue)
+        (cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = Dictionary(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1675,10 +1742,10 @@ Export_Dictionary_type :: proc(className_SN: ^StringName, $classStruct: typeid, 
         sics.type_field_type(classStruct, fieldName) == Signal ||
         sics.type_field_type(classStruct, fieldName) == Callable ||
         sics.type_field_type(classStruct, fieldName) == Dictionary {
-            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
             classStruct, fieldName)
         }
-        return (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1686,11 +1753,18 @@ Export_Dictionary_type :: proc(className_SN: ^StringName, $classStruct: typeid, 
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Hint string should be formatted as "int;String"
     hint_string: string = fmt.aprint(GDTypes_strings[Dictionary_Type.key_type], GDTypes_strings[Dictionary_Type.value_type], sep=";")
@@ -1730,6 +1804,7 @@ Export_Dictionary_Localizable_String :: proc(className_SN: ^StringName, $classSt
     //In this case, this stringName is used to recognize this class in their classDB.
     className := type_info_of(classStruct).variant.(runtime.Type_Info_Named).name
 
+    /*
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Dictionary) {
@@ -1740,14 +1815,14 @@ Export_Dictionary_Localizable_String :: proc(className_SN: ^StringName, $classSt
         sics.type_field_type(classStruct, fieldName) == Signal ||
         sics.type_field_type(classStruct, fieldName) == Callable ||
         sics.type_field_type(classStruct, fieldName) == Dictionary {
-            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))),\
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
             classStruct, fieldName)
         }
         //Need to destroy the Dictionary each time it's set by Godot because copy on write expects other accessors to make a copy before modifying.
-        if (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName))).id != nil {    
-            GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+        if (cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))).id != nil {    
+            GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
-        (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = Dictionary(godotValue)
+        (cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = Dictionary(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1758,10 +1833,10 @@ Export_Dictionary_Localizable_String :: proc(className_SN: ^StringName, $classSt
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> Dictionary {
         context = runtime.default_context()
-        if (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName))).id == nil {    
-            GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
+        if (cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))).id == nil {    
+            GDDictionary.Destroy(cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
-        return (cast(^Dictionary)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^Dictionary)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -1769,11 +1844,18 @@ Export_Dictionary_Localizable_String :: proc(className_SN: ^StringName, $classSt
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+    //bindMethod(className_SN, ("set_"+fieldName), set, methodType, fieldName, loc = loc)
+    //bindMethod(className_SN, ("get_"+fieldName), get, methodType, loc = loc)
+
+    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.DICTIONARY, fieldName, .LOCALIZABLE_STRING, "", className, property_usage)
@@ -1808,7 +1890,7 @@ Export_Tool_Button :: proc(className_SN: ^StringName, $classStruct: typeid, $fie
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> Callable {
         context = runtime.default_context()
-        return (cast(^Callable)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        return (cast(^Callable)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -2025,8 +2107,66 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
     //This makes a really long line, but that's how generics go.
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: field_Type) {
         context = runtime.default_context()
-        ////fmt.println(godotValue)
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
+
+        when  sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
+        //If it is a type which needs to be destroyed, destroy it.
+        when sics.type_field_type(classStruct, fieldName) == StringName {
+            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == gdstring {
+            GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Array {
+            GDW.GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
+            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Dictionary {
+            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == NodePath {
+            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Callable {
+            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Signal {
+            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedByteArray {
+            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedInt32Array {
+            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedInt64Array {
+            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedFloat32Array {
+            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedFloat64Array {
+            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedVector2Array {
+            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedVector3Array {
+            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedVector4Array {
+            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedColorArray {
+            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -2037,9 +2177,9 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
 
     get :: proc "c" (p_classData: ^Class_Container(classStruct)) -> field_Type {
         context = runtime.default_context()
-
-        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^)
-        return (cast(^field_Type)(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))^
+        
+        //fmt.println((cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^)
+        return (cast(^field_Type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -2238,134 +2378,6 @@ if nil == p_classData.data {
 }
 };
 
-/*
-* Will call bindNoReturn2 to create callback functions for Godot to call your function with.
-* Once callbacks are created will supply all information in methodInfo so that your function can be bound to Godot.
-* Once bound these should be available in GDScript.
-* Godot only supports one return value per function.
-*
-* className: Name that holds the method.
-* methodName: Name of the method you're binding; shown in the editor
-* function: Pointer to the function you are binding to Godot
-* argNames: Names of the arguments; shown in the Editor
-* This creates 2 functions.
-*/
-bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
-                        function: $T,
-                        argNames: ..string,
-                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, loc:= #caller_location
-                        )
-                        where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
-    {
-    methodStringName: StringName
-    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
-
-    argcount:: sics.type_proc_parameter_count(T) - 1
-
-    if argcount != len(argNames){
-        panic("Number of args in function does not match number of argNames provided", loc)
-    }
-    
-
-    ptrcallFunc, callFunc:= bindNoReturn2(function, loc=loc)
-    when argcount > 0 {
-        argsInfo: [argcount]GDE.PropertyInfo
-        
-        index:int
-        index, _ = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 1))
-        argsInfo[0] = make_property(GDE.VariantType(index), argNames[0])
-
-        when argcount > 1 
-        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 2))
-        argsInfo[1] = make_property(GDE.VariantType(index), argNames[1])}
-        
-        when argcount > 2 
-        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 3))
-        argsInfo[2] = make_property(GDE.VariantType(index), argNames[2])}
-        
-        when argcount > 3
-        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 4))
-        argsInfo[3] = make_property(GDE.VariantType(index), argNames[3])}
-        
-        when argcount > 4
-        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 5))
-         argsInfo[4] = make_property(GDE.VariantType(index), argNames[4])}
-        
-        when argcount > 5
-        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 6))
-        argsInfo[5] = make_property(GDE.VariantType(index), argNames[5])}
-        
-        when argcount > 6
-        {index, _  = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 7))
-        argsInfo[6] = make_property(GDE.VariantType(index), argNames[6])}
-    }
-    else do argsInfo:= 0
-    
-
-    //These are only in existence when Godot is compiled in debug mode. Can ignore in release builds.
-    when sics.type_proc_parameter_count(T) - 1 > 0 {
-        
-        args_metadata: [argcount]GDE.ClassMethodArgumentMetadata
-        args_metadata[0]= GDE.ClassMethodArgumentMetadata.NONE
-
-        when argcount > 1 do args_metadata[1] = GDE.ClassMethodArgumentMetadata.NONE
-        when argcount > 2 do args_metadata[2] = GDE.ClassMethodArgumentMetadata.NONE
-        when argcount > 3 do args_metadata[3] = GDE.ClassMethodArgumentMetadata.NONE
-        when argcount > 4 do args_metadata[4] = GDE.ClassMethodArgumentMetadata.NONE
-        when argcount > 5 do args_metadata[5] = GDE.ClassMethodArgumentMetadata.NONE
-        when argcount > 6 do args_metadata[6] = GDE.ClassMethodArgumentMetadata.NONE
-    }
-    else do args_metadata:= 0
-
-    //Check if there's a return at compile-time. If there is, search the array for the corresponding type.
-    //Else set 0.
-    when sics.type_proc_return_count(T) > 0 {
-    returnType, ok:= slice.linear_search(GDW.GDTypes[:], sics.type_proc_return_type(T, 0))
-    if !ok {
-        panic("Type is not a part of the GDTypes. Please verify the list in GDE.GDEfs.", loc)
-    }}
-    else
-    {returnType:= 0 }
-
-    //only necessary to have a specific string when the export type is not default.
-    returnInfo: GDE.PropertyInfo = make_property(GDE.VariantType(returnType), "")
-
-    methodInfo : GDE.ClassMethodInfo = {
-        name = &methodStringName,
-        method_userdata = cast(rawptr)function,
-
-        call_func = callFunc,
-        ptrcall_func = ptrcallFunc,
-        method_flags = (methodType),
-    }
-
-    
-    when sics.type_proc_return_count(T) > 1 {
-        #panic("Godot does not support multiple returns. Consider using an Array as return.")
-    } else {
-    when sics.type_proc_return_count(T) > 0 {
-    
-        methodInfo.has_return_value = returnType != 0
-        methodInfo.return_value_info = &returnInfo
-        methodInfo.return_value_metadata = GDE.ClassMethodArgumentMetadata.NONE
-    }
-
-    when sics.type_proc_parameter_count(T) - 1 > 0{
-    
-        methodInfo.argument_count = u32(argcount)
-        methodInfo.arguments_info = &argsInfo[0]
-        methodInfo.arguments_metadata = &args_metadata[0]
-    }
-    }
-
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
-    
-    //Destructor things.
-    GDW.StringName_Methods.Destroy(&methodStringName)
-    //GDW.StringName_Methods.Destroy(&classNameString)
-    destructProperty(&returnInfo)
-
-}
 
 Bind_Property :: proc {
     bindProperty,
@@ -2437,397 +2449,236 @@ destructProperty :: proc(info: ^GDE.PropertyInfo) {
 */
 //This is messy. I dunno if this is better or worse than having 7 individual functions... Lots of casting. Eh.
 //This is also using some really old functions for the variant conversion since they provide a return instead of needing an empty pointer.
-bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE.ClassMethodPtrCall, GDE.ClassMethodCall) {
-    argcount:: sics.type_proc_parameter_count(P)
-    argT0 :: sics.type_proc_parameter_type(P, 0)
-    
+bindNoReturn3 ::  proc(function: $P, loc:=#caller_location) -> (GDE.ClassMethodCall) {//, GDE.ClassMethodPtrCall) {
 
-    when argcount == 1 {
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance)
-            } else {
-                func(cast(argT0)p_instance)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+    godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small o args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance)
-                copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                func(cast(argT0)p_instance)
+        context= runtime.default_context()
+        if p_argument_count != 1 {
+            r_error^= {
+                error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+                argument= i32(p_argument_count),
+                expected = 1,
             }
         }
-    return godotPtrCallback, godotVariantCallback
-
-    } else {
-        argT1 :: sics.type_proc_parameter_type(P, 1)
-        when argcount == 2 {
+        gdTypeList:= [1]GDE.VariantType {.INT}
         
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^)
-            } else {
-                func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small 1 args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-            beholder:Variant={}
-            beholder.VType=(cast(^GDE.Variant)p_args[0]).VType
-            beholder.data=(cast(^GDE.Variant)p_args[0]).data
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1)}
-            vtyped:=(cast(^GDE.Variant)p_args[0]).VType
-            variantTypeCheck(gdTypeList[:], p_args, r_error)
-            //(cast(^GDE.Variant)p_args[0]).VType = .NIL
-            //(cast(^GDE.Variant)p_args[0]).VType = vtyped
-            func := cast(P)method_userdata
-            //mem.copy(cast(^[3]i64)p_args[0], rawptr(([3]i64{})[:]), 24)
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1))
-                    copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                fmt.printfln("%b", transmute([3]i64)((cast(^GDE.Variant)p_args[0])^))
-                fmt.printfln("%b", transmute([3]i64)(beholder))
-                fmt.println(fromvariant(cast(^GDE.Variant)p_args[0], argT1))
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1))
-            }
-        }
-    return godotPtrCallback, godotVariantCallback
-    }else {
-        argT2 :: sics.type_proc_parameter_type(P, 2)
-        when argcount == 3 {
-        
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^)
-            } else {
-                func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small 1 args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-            
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1), typetoenum(argT2)}
-            
-            variantTypeCheck(gdTypeList[:], p_args[:], r_error)
-
-            func := cast(P)method_userdata
-
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
-                            fromvariant(cast(GDE.VariantPtr)p_args[1], argT2))
-                copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2))
-            }
-        }
-    return godotPtrCallback, godotVariantCallback
-    }else {
-        argT3 :: sics.type_proc_parameter_type(P, 3)
-        when argcount == 4 {
-        
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^,
-                            (cast(^argT3)p_args[2])^)
-            } else {
-                func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small 1 args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-            
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3)}
-            
-            variantTypeCheck(gdTypeList[:], p_args[:], r_error)
-
-            func := cast(P)method_userdata
-
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
-                    fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3))
-                copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3))
-            }
-        }
-    return godotPtrCallback, godotVariantCallback
-    }else {
-        argT4 :: sics.type_proc_parameter_type(P, 4)
-        when argcount == 5 {
-        
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^,
-                            (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^)
-            } else {
-                func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small 1 args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-            
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4)}
-            
-            variantTypeCheck(gdTypeList[:], p_args[:], r_error)
-
-            func := cast(P)method_userdata
-
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
-                    fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
-                    fromvariant(cast(GDE.VariantPtr)p_args[3], argT4))
-                copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
-                    fromvariant(cast(^GDE.Variant)p_args[3], argT4))
-            }
-        }
-    return godotPtrCallback, godotVariantCallback
-    }else {
-        argT5 :: sics.type_proc_parameter_type(P, 5)
-        when argcount == 6 {
-        
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^,
-                            (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^)
-            } else {
-                func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^,
-                    (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-                
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small 1 args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-            
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4), typetoenum(argT5)}
-            
-            variantTypeCheck(gdTypeList[:], p_args[:], r_error)
-
-            func := cast(P)method_userdata
-
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
-                    fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
-                    fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5))
-                copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
-                    fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5))
-            }
-        }
-    return godotPtrCallback, godotVariantCallback
-    }else {
-        argT6 :: sics.type_proc_parameter_type(P, 6)
-        when argcount == 7 {
-        
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^,
-                            (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^, (cast(^argT6)p_args[5])^)
-            } else {
-                func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^,
-                    (cast(^argT4)p_args[3])^, (cast(^argT6)p_args[5])^)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small 1 args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-            
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4), typetoenum(argT5),
-                    typetoenum(argT6)}
-            
-            variantTypeCheck(gdTypeList[:], p_args[:], r_error)
-
-            func := cast(P)method_userdata
-
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
-                    fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
-                    fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
-                    fromvariant(cast(GDE.VariantPtr)p_args[5], argT6))
-                copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
-                    fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6))
-            }
-        }
-    return godotPtrCallback, godotVariantCallback
-    }else {
-        argT7 :: sics.type_proc_parameter_type(P, 7)
-        when argcount == 8 {
-        
-        godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
-            context = runtime.default_context()
-
-            func := cast(P)method_userdata
-            when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^,
-                            (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^, (cast(^argT5)p_args[4])^, (cast(^argT6)p_args[5])^, (cast(^argT7)p_args[6])^)
-            } else {
-                func(cast(argT0)p_instance, (cast(^argT1)p_args[0])^, (cast(^argT2)p_args[1])^, (cast(^argT3)p_args[2])^, (cast(^argT4)p_args[3])^,
-                    (cast(^argT4)p_args[3])^, (cast(^argT6)p_args[5])^, (cast(^argT7)p_args[6])^)
-            }
-        }
-        godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-
-            context = runtime.default_context()
-            if p_argument_count < argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error small 1 args")
-                return
-            }
-            if p_argument_count > argcount-1 {
-                r_error.error = .CALL_ERROR_TOO_MANY_ARGUMENTS
-                r_error.expected = argcount
-                fmt.println("error big")
-                return
-            }
-            
-            gdTypeList:= [argcount-1]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4), typetoenum(argT5),
-                    typetoenum(argT6), typetoenum(argT7)}
-            
-            variantTypeCheck(gdTypeList[:], p_args[:], r_error)
-
-            func := cast(P)method_userdata
-
-            when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, fromvariant(cast(GDE.VariantPtr)p_args[0], argT1),
-                    fromvariant(cast(GDE.VariantPtr)p_args[1], argT2), fromvariant(cast(GDE.VariantPtr)p_args[2], argT3),
-                    fromvariant(cast(GDE.VariantPtr)p_args[3], argT4), fromvariant(cast(GDE.VariantPtr)p_args[4], argT5),
-                    fromvariant(cast(GDE.VariantPtr)p_args[5], argT6), fromvariant(cast(GDE.VariantPtr)p_args[6], argT7))
-                copy_to_variant(cast(^GDE.Variant)r_return, &result)
-            } else {
-                func(cast(argT0)p_instance, fromvariant(cast(^GDE.Variant)p_args[0], argT1), fromvariant(cast(^GDE.Variant)p_args[1], argT2), fromvariant(cast(^GDE.Variant)p_args[2], argT3),
-                    fromvariant(cast(^GDE.Variant)p_args[3], argT4), fromvariant(cast(^GDE.Variant)p_args[4], argT5), fromvariant(cast(^GDE.Variant)p_args[5], argT6), fromvariant(cast(^GDE.Variant)p_args[6], argT7))
-            }
-        }
-    return godotPtrCallback, godotVariantCallback
-    } else {
-        panic("yikes")
+        variantTypeCheck(gdTypeList[:], p_args, r_error)
+        val: sics.type_elem_type(sics.type_field_type(sics.type_proc_parameter_type(P, 2), "self"))
+        call:=cast(proc(rawptr, rawptr, rawptr, rawptr))method_userdata
+        copy_from_variant(&val, p_args[0])
+        vars:=[1]rawptr{&val}
+        call(method_userdata, p_instance, &vars, r_return)
+        //GDW.new_variant_from_methods(r_return, &val)
+        r_error^={}
     }
-}}}}}}}}
+    fmt.println(godotVariantCallback)
+    return godotVariantCallback
+}
+
+bindNoReturn4 ::  proc(function: $P, loc:=#caller_location) -> (GDE.ClassMethodCall) {//, GDE.ClassMethodPtrCall) {
+
+    godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+        context= runtime.default_context()
+        if p_argument_count != 0 {
+            r_error^= {
+                error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+                argument= i32(p_argument_count),
+                expected = 1,
+            }
+        }
+        call:=cast(proc(rawptr, rawptr, rawptr, rawptr))method_userdata
+        tr_return: sics.type_elem_type(sics.type_proc_parameter_type(P, 3))
+        call(method_userdata, p_instance, nil, &tr_return)
+        r_error.error = .CALL_OK
+        r_error.expected = 12
+        r_error.argument = 1
+        GDW.new_variant_from_methods(r_return, &tr_return)
+    }
+    fmt.println(godotVariantCallback)
+    return godotVariantCallback
+}
+
+bindMethod32 :: #force_inline proc(className: ^StringName, methodName: string,
+                        function: $T,
+                        argNames: string,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, loc:= #caller_location
+                        )
+                        where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
+    {
+    methodStringName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
+
+    callFunc:= bindNoReturn3(function, loc=loc)
+
+        argsInfo: [1]GDE.PropertyInfo
+
+        index:int
+        index, _ = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 1))
+        argsInfo[0] = make_property(GDE.VariantType(index), argNames)
+
+        args_metadata: [1]GDE.ClassMethodArgumentMetadata
+        args_metadata[0]= GDE.ClassMethodArgumentMetadata.NONE
+
+
+    //only necessary to have a specific string when the export type is not default.
+    returnInfo: GDE.PropertyInfo = make_property(.NIL, "")
+
+    methodInfo : GDE.ClassMethodInfo = {
+        name = &methodStringName,
+        method_userdata = cast(rawptr)function,
+
+        call_func = callFunc,
+        ptrcall_func = GDE.ClassMethodPtrCall(function),
+        method_flags = (methodType),
+    }
+    
+        methodInfo.argument_count = 1
+        methodInfo.arguments_info = &argsInfo[0]
+        methodInfo.arguments_metadata = &args_metadata[0]
+
+
+    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    
+    //Destructor things.
+    GDW.StringName_Methods.Destroy(&methodStringName)
+    //GDW.StringName_Methods.Destroy(&classNameString)
+    destructProperty(&returnInfo)
+}
+
+bindMethod33 :: #force_inline proc(className: ^StringName, methodName: string,
+                        function: $T,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, loc:= #caller_location
+                        )
+                        where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
+    {
+    methodStringName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
+
+    callFunc:= bindNoReturn4(function, loc=loc)
+
+
+    //only necessary to have a specific string when the export type is not default.
+    returnInfo: GDE.PropertyInfo = make_property(.NIL, "")
+
+    methodInfo : GDE.ClassMethodInfo = {
+        name = &methodStringName,
+        method_userdata = cast(rawptr)function,
+
+        call_func = callFunc,
+        ptrcall_func = GDE.ClassMethodPtrCall(function),
+        method_flags = (methodType),
+    }
+    
+        methodInfo.argument_count = 0
+        methodInfo.arguments_info = nil
+        methodInfo.arguments_metadata = nil
+
+
+    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    
+    //Destructor things.
+    GDW.StringName_Methods.Destroy(&methodStringName)
+    //GDW.StringName_Methods.Destroy(&classNameString)
+    destructProperty(&returnInfo)
+}
+
+ObjSize::size_of(Object)
+
+make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field_Type: typeid) -> (getter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: rawptr, r_ret: ^field_Type), setter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: ^struct{self:^field_Type}, r_ret: GDE.TypePtr)) {
+    
+    //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
+    //This makes a really long line, but that's how generics go.
+    godotPtrCallback :: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: ^struct{self:^sics.type_field_type(classStruct, fieldName)}, r_ret: GDE.TypePtr){
+        context = runtime.default_context()
+
+        when  sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
+        //If it is a type which needs to be destroyed, destroy it.
+        when sics.type_field_type(classStruct, fieldName) == StringName {
+            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == gdstring {
+            GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Array {
+            GDW.GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
+            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Dictionary {
+            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == NodePath {
+            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Callable {
+            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == Signal {
+            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedByteArray {
+            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedInt32Array {
+            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedInt64Array {
+            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedFloat32Array {
+            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedFloat64Array {
+            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedVector2Array {
+            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedVector3Array {
+            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedVector4Array {
+            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        when sics.type_field_type(classStruct, fieldName) == PackedColorArray {
+            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        }
+        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = godotValue.self^
+    }
+    /*
+    The above creates a proc that does the following - replace Int with whatever the field's type is.
+    set :: proc "c" (yourclassstruct: ^Class_Container(classStruct), valuePassedInByGodot: Int) {
+        yourclassstruct.someField^ = valuePassedInByGodot //someField is of type Int
+    }
+    */
+
+    godotgetPtrCallback :: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: rawptr, r_ret: ^sics.type_field_type(classStruct, fieldName)){
+        context = runtime.default_context()
+        when sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Signal ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary {
+            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
+            classStruct, fieldName)
+        }
+        //r_ret^ = {}
+        //GDW.new_variant_from_methods(r_ret, (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))))
+        r_ret^ = (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
+    }
+    /*
+    The above creates a proc that does the following - replace Int with whatever the field's type is.
+    get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> Int {
+        return yourclassstruct.someField^ //someField is of type Int
+    }
+    */
+    return godotgetPtrCallback, godotPtrCallback
+}

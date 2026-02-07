@@ -13,7 +13,7 @@ Int     :: i64
 /* VARIANT TYPES */
 //VARIANT_MAX is used in Godot as a bounds value. There's some functions and arrays that use this to set/check for out of bounds settings.
 ////WARNING: if the order of the variantType enum changes, GDTypes needs to be updated in GDDEfs file.
-VariantType :: enum {
+VariantType :: enum i32 {
 	NIL,
 
 	/*  atomic types */
@@ -147,11 +147,11 @@ Object :: distinct struct{
 //Set to 40 if double is double precision
 //Data itself is in the _data union : https://github.com/godotengine/godot/blob/45fc515ae3574e9c1f9deacaa6960dec68a7d38b/core/variant/variant.h#L263
 //After testing won't always need to use Godot's functions. Check Godot's _data union to know if the info is stack or heap and needs to be freed.
-Variant :: struct #align(8) {
+Variant :: struct  {
     VType: VariantType,
     data: [2]u64
 }
-
+//#align(8)
 //Sometimes const means a multipointer, sometimes it means runtime const..
 VariantPtr 							:: ^Variant
 ConstVariantPtr 					:: ^Variant
@@ -198,7 +198,7 @@ CallErrorType :: enum {
 	CALL_ERROR_METHOD_NOT_CONST, // Used for const call.
 }
 
-CallError :: struct {
+CallError :: struct #packed {
 	error: CallErrorType,
 	argument: i32,
 	expected: i32,

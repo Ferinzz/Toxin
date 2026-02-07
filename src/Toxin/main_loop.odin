@@ -36,7 +36,7 @@ root_node_instance: ^GDW.Object
 */
 MainLoopStartupCallback :: proc "c" () {
     context = runtime.default_context()
-    indx_ret: Variant
+    //indx_ret: Variant
     //default_Array_class->GetIndex(0, &indx_ret)
     GDW.getPhysServer2dObj()
     GDW.getRenderServer2dObj()
@@ -48,37 +48,21 @@ MainLoopStartupCallback :: proc "c" () {
     //Fetch the root of the current sceneTree
     root:= GDW.getRoot()
     scene:= GDW.get_current_scene()
-    SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-    rando: rawptr = new(rawptr)
-    minput: Node_C
-    fmt.println(size_of(minput))
-    make_Node(&minput)
-    fmt.println(cast(^[30]u8)minput.self.proxy)
-    SN2: StringName
-    SN_p2: StringName
+    //SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
+    //rando: rawptr = new(rawptr)
+    //minput: Node_C
+    //fmt.println(size_of(minput))
+    //make_Node(&minput)
+    //fmt.println(cast(^[30]u8)minput.self.proxy)
+    //SN2: StringName
+    //SN_p2: StringName
+//
+    //minput.set_name(&minput, {&SN})
+    //minput->get_name(&SN_p2)
+    //minput->set_name({&SN})
+    //minput->get_name(&SN_p2)
 
-    minput.set_name(&minput, {&SN})
-    minput->get_name(&SN_p2)
-    minput->set_name({&SN})
-    minput->get_name(&SN_p2)
-    callee: Callable
-    Create_Callable(&callee, &callee, minput.self, nil, nil, nil, nil, nil, nil, nil, nil, GDW.Library)
-    contained:callable_container ={
-        function=rawptr(testProc),
-        callable=callee,
-    }
-    var:GDE.Variant={
-        VType=.INT,
-        data={46,0}
-    }
-    varargs:=[]^Variant{&var}
-    r_errors:GDE.CallError
-    Signal_Callback(contained, raw_data(varargs[:]), 1, nil, &r_errors)
-    gdAPI.Callable_Utils.CustomGetUserData(&callee, GDW.Library)
 
-    mint: GDW.Int
-    check: Bool = true
-    minput->get_child_count({&check}, &mint)
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
 

@@ -267,7 +267,6 @@ AudioStreamWAV_get_mix_rate :: proc(player: ^Object, r_mix_rate: ^Int) {
     if AudioStreamWAVgetmixrate == nil {
         AudioStreamWAVgetmixrate = classDBGetMethodBind3(.AudioStreamWAV, "get_mix_rate", 3905245786)
     }
-    args:= [1]rawptr {r_mix_rate}
 
     gdAPI.Object_Utils.MethodBindPtrcall(AudioStreamWAVgetmixrate, player, nil, r_mix_rate)
 }

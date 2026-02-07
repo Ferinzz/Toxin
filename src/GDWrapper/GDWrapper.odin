@@ -565,7 +565,6 @@ getViewport :: proc(object: ^Object, r_viewport: ^^Object) {
     @(static)GetViewport: GDE.MethodBindPtr
     if GetViewport == nil do GetViewport = classDBGetMethodBind3(.Node, "get_viewport", 3596683776)
 
-    viewport: GDE.TypePtr
     gdAPI.Object_Utils.MethodBindPtrcall(GetViewport, object, nil, r_viewport)
 }
 
@@ -583,9 +582,7 @@ addChild :: proc(parent: ^Object, child: ^^Object, force_readable_name: Bool = f
     if addChild == nil {
         addChild = classDBGetMethodBind3(.Node, "add_child", 3863233950)
     }
-    
 
-    internal: InternalMode = internalMode
     args:= [?]rawptr {child, &force_readable_name, &internalMode}
     
     dummyReturn:rawptr

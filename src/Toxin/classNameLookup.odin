@@ -2,7 +2,7 @@
 package Toxin
 
 //import GDE "GDWrapper/gdAPI/gdextension"
-import GDW "GDWrapper"
+import GDW "shared:GDWrapper"
 
 ClassNameString :: string
 

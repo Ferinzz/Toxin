@@ -251,7 +251,7 @@ variant_Destroy :: proc(var: ^Variant) {
 
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.
-fromvariant :: proc(variant: ^Variant, $T: typeid) -> T {
+copy_from_variant_r :: proc(variant: ^Variant, $T: typeid) -> T {
     ret: T
 
     when T == bool || T == Bool{
@@ -763,4 +763,86 @@ PackedVec4ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedVector4
     if p_from.data == nil {
         panic("PackedVector4Array was not initialized before using with Godot method.", loc)
     }
+}
+
+//Use this if you need a return based on the typeID instead of passing it to a pointer.
+fromvariant :: proc(variant: ^Variant, $T: typeid) -> T {
+    ret: T
+
+    when T == bool || T == Bool{
+        copy_from_variant(&ret, variant)
+    } else when T == i64 || T == Int {
+        copy_from_variant(&ret, variant)
+    } else when T == f64 || T == float {
+        copy_from_variant(&ret, variant)
+    } else when T == Vector2{
+        copy_from_variant(&ret, variant)
+    } else when T == Vector2i{
+        copy_from_variant(&ret, variant)
+    } else when T == Rec2{
+        copy_from_variant(&ret, variant)
+    } else when T == Rec2i{
+        copy_from_variant(&ret, variant)
+    } else when T == Vector3{
+        copy_from_variant(&ret, variant)
+    } else when T == Vector3i{
+        copy_from_variant(&ret, variant)
+    } else when T == Transform2D{
+        copy_from_variant(&ret, variant)
+    } else when T == Vector4{
+        copy_from_variant(&ret, variant)
+    } else when T == Vector4i{
+        copy_from_variant(&ret, variant)
+    } else when T == Plane{
+        copy_from_variant(&ret, variant)
+    } else when T == Quaternion{
+        copy_from_variant(&ret, variant)
+    } else when T == AABB{
+        copy_from_variant(&ret, variant)
+    } else when T == Basis{
+        copy_from_variant(&ret, variant)
+    } else when T == Projection{
+        copy_from_variant(&ret, variant)
+    } else when T == Color{
+        copy_from_variant(&ret, variant)
+    } else when T == StringName{
+        copy_from_variant(&ret, variant)
+    } else when T == gdstring{
+        copy_from_variant(&ret, variant)
+    } else when T == NodePath{
+        copy_from_variant(&ret, variant)
+    } else when T == RID{
+        copy_from_variant(&ret, variant)
+    } else when T == Object{
+        copy_from_variant(&ret, variant)
+    } else when T == Callable{
+        copy_from_variant(&ret, variant)
+    } else when T == Signal{
+        copy_from_variant(&ret, variant)
+    } else when T == Dictionary{
+        copy_from_variant(&ret, variant)
+    } else when T == Array{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedByteArray{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedInt32Array{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedInt64Array{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedFloat32Array{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedFloat64Array{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedStringArray{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedVector2Array{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedVector3Array{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedColorArray{
+        copy_from_variant(&ret, variant)
+    } else when T == PackedVector4Array{
+        copy_from_variant(&ret, variant)
+    }
+    return ret
 }

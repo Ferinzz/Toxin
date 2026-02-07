@@ -5,7 +5,7 @@ import "shared:GDWrapper/gdAPI"
 
 Node :: ^GDW.Object
 make_Node :: proc(p_Node_C: ^Node_C) {
-    p_Node_C.self = cast(Node)gdAPI.ClassDB.ConstructObject(GDW.GDClass_StringName_get(.Node))
+    p_Node_C.self = gdAPI.ClassDB.ConstructObject(GDW.GDClass_StringName_get(.Node))
     p_Node_C.methods = &Node_methods
     p_Node_C.objectc_methods = cast(^Objectc_methods_list(Node_C))&Objectc_methods
     GDW.Node_Input(&Node_methods)
