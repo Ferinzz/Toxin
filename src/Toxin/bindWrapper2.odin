@@ -2122,7 +2122,7 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
             GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == Array {
-            GDW.GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
             PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
@@ -2281,7 +2281,7 @@ if nil == p_classData.id {
 //Verify_Heap_Init2 :: proc($classStruct: typeid, $fieldName: string,){
 Verify_PackedStringArray_Init :: proc(p_classData: ^PackedStringArray, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedStringArray_Methods.Create0(p_classData, nil)
+    PackedStringArray_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedStringArray"))
     }
@@ -2290,7 +2290,7 @@ if nil == p_classData.data {
 
 Verify_Dictionary_Init :: proc(p_classData: ^Dictionary, classStruct: typeid, fieldName: string) {
 if nil == p_classData.id {
-    GDW.GDDictionary_Methods.Create0(p_classData, nil)
+    GDDictionary_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
             fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Dictionary"))
     }
@@ -2299,7 +2299,7 @@ if nil == p_classData.id {
 
 Verify_PackedByteArray_Init :: proc(p_classData: ^PackedByteArray, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedByteArray_Methods.Create0(p_classData, nil)
+    PackedByteArray_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedByteArray"))
     }
@@ -2308,7 +2308,7 @@ if nil == p_classData.data {
 
 Verify_PackedInt32Array_Init :: proc(p_classData: ^PackedInt32Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedInt32Array_Methods.Create0(p_classData, nil)
+    PackedInt32Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt32Array"))
     }
@@ -2317,7 +2317,7 @@ if nil == p_classData.data {
 
 Verify_PackedInt64Array_Init :: proc(p_classData: ^PackedInt64Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedInt64Array_Methods.Create0(p_classData, nil)
+    PackedInt64Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt64Array"))
     }
@@ -2326,7 +2326,7 @@ if nil == p_classData.data {
 
 Verify_PackedFloat32Array_Init :: proc(p_classData: ^PackedFloat32Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedFloat32Array_Methods.Create0(p_classData, nil)
+    PackedFloat32Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat32Array"))
     }
@@ -2335,7 +2335,7 @@ if nil == p_classData.data {
 
 Verify_PackedFloat64Array_Init :: proc(p_classData: ^PackedFloat64Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedFloat64Array_Methods.Create0(p_classData, nil)
+    PackedFloat64Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat64Array"))
     }
@@ -2344,7 +2344,7 @@ if nil == p_classData.data {
 
 Verify_PackedVector2Array_Init :: proc(p_classData: ^PackedVector2Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedVector2Array_Methods.Create0(p_classData, nil)
+    PackedVector2Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector2Array"))
     }
@@ -2353,7 +2353,7 @@ if nil == p_classData.data {
 
 Verify_PackedVector3Array_Init :: proc(p_classData: ^PackedVector3Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedVector3Array_Methods.Create0(p_classData, nil)
+    PackedVector3Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector3Array"))
     }
@@ -2362,7 +2362,7 @@ if nil == p_classData.data {
 
 Verify_PackedVector4Array_Init :: proc(p_classData: ^PackedVector4Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedVector4Array_Methods.Create0(p_classData, nil)
+    PackedVector4Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector4Array"))
     }
@@ -2371,7 +2371,7 @@ if nil == p_classData.data {
 
 Verify_PackedColorArray_Init :: proc(p_classData: ^PackedColorArray, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    GDW.PackedColorArray_Methods.Create0(p_classData, nil)
+    PackedColorArray_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedColorArray"))
     }
@@ -2461,18 +2461,16 @@ bindNoReturn3 ::  proc(function: $P, loc:=#caller_location) -> (GDE.ClassMethodC
                 expected = 1,
             }
         }
-        gdTypeList:= [1]GDE.VariantType {.INT}
-        
-        variantTypeCheck(gdTypeList[:], p_args, r_error)
+
+        //gdTypeList:= [1]GDE.VariantType {.INT}
+        //variantTypeCheck(gdTypeList[:], p_args, r_error)
         val: sics.type_elem_type(sics.type_field_type(sics.type_proc_parameter_type(P, 2), "self"))
         call:=cast(proc(rawptr, rawptr, rawptr, rawptr))method_userdata
         copy_from_variant(&val, p_args[0])
         vars:=[1]rawptr{&val}
         call(method_userdata, p_instance, &vars, r_return)
-        //GDW.new_variant_from_methods(r_return, &val)
         r_error^={}
     }
-    fmt.println(godotVariantCallback)
     return godotVariantCallback
 }
 
@@ -2607,7 +2605,7 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
             GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == Array {
-            GDW.GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
             PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
