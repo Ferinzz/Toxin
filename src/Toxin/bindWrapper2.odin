@@ -2102,6 +2102,7 @@ bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^StringNam
     Bind_Property_Prop_Info(className_SN, fieldName, variant_type, prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 }
 
+@(deprecated="use make_getter_setter2")
 make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: typeid, $fieldName: string) -> (getter: proc "c" (p_classData: ^Class_Container(classStruct)) -> field_Type, setter: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: field_Type)) {
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
