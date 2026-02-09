@@ -16,9 +16,21 @@ import "base:runtime"
 */
 
 
-    //*****************\\
-    //*****Methods*****\\
-    //*****************\\
+RefCounted_init:: proc(list: ^RefCounted_Methods_list){
+    list.init_ref = classDBGetMethodBind3(.RefCounted, "init_ref", 2240911060)
+    list.reference = classDBGetMethodBind3(.RefCounted, "reference", 2240911060)
+    list.unreference = classDBGetMethodBind3(.RefCounted, "unreference", 2240911060)
+}
+
+RefCounted_Methods_list :: struct {
+    init_ref: GDE.MethodBindPtr,
+    reference: GDE.MethodBindPtr,
+    unreference: GDE.MethodBindPtr,
+}
+
+//*****************\\
+//*****Methods*****\\
+//*****************\\
 
 init_ref :: proc(RefCounted: ^Object, r_ret: ^Bool){
     @(static)INIT_REF: GDE.MethodBindPtr

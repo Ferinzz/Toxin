@@ -80,7 +80,7 @@ Rec2 :: distinct struct {
     width: f32,
     height: f32,
 }
-    
+
 
 //Original has 2 Vector2i
 Rec2i :: distinct struct {
@@ -190,8 +190,12 @@ Use gdAPI.ObjectGetInstanceFromId to get the ObjectPtr
 Callable contains a union on Godot's side. We should only be making CustomCallables through our system.
 */
 //https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L47
-Callable :: distinct struct{
-    stringName: StringName,
+Callable :: struct {
+  call_p: ^Callable_Class,
+}
+
+Callable_Class :: distinct struct{
+    stringName: StringName, //Blank for us. Can put what we want in the 64 bit. Teehee.
     ref: CustomCallable,
 }
 

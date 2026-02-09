@@ -81,13 +81,13 @@ variant_union :: struct #raw_union {
     Plane: Plane,
     Color: Color,
     Quaternion: Quaternion,
-    gdstring: gdstring,
-    StringName: StringName,
-    NodePath: NodePath,
+    gdstring: gdstring, // RefCounted
+    StringName: StringName, // RefCounted
+    NodePath: NodePath, // RefCounted
     RID: RID,
-    Object: Object,
-    Callable: Callable,
-    Signal: Signal,
+    Object: Object, // RefCounted
+    Callable: Callable, // RefCounted
+    Signal: Signal, // RefCounted
     Dictionary: Dictionary, //Godot: construct dict, ref count dict, copy class ptr.
     Transform2D: ^Transform2D, //Godot: bucket alloc cleaned by Godot if sent by Godot.
     AABB: ^AABB, //Godot: bucket alloc cleaned by Godot if sent by Godot.
@@ -215,33 +215,34 @@ type_from_variant_error :: struct {
 deinit_list:: bit_set[GDE.VariantType; i64]
 
 needs_deinit: deinit_list : {
-		.AABB,
-		.BASIS,
-		.TRANSFORM2D,
-        .TRANSFORM3D,
-		.PROJECTION,
+	.AABB,
+	.BASIS,
+	.TRANSFORM2D,
+    .TRANSFORM3D,
+	.PROJECTION,
 
-        // misc types
-		.STRING_NAME,
-		.NODE_PATH,
-		.OBJECT,
-		.CALLABLE,
-		.SIGNAL,
-		.DICTIONARY,
-		.ARRAY,
+    // misc types
+    .STRING,
+	.STRING_NAME,
+	.NODE_PATH,
+	.OBJECT,
+	.CALLABLE,
+	.SIGNAL,
+	.DICTIONARY,
+	.ARRAY,
 
-		// typed arrays
-		.PACKED_BYTE_ARRAY,
-		.PACKED_INT32_ARRAY,
-		.PACKED_INT64_ARRAY,
-		.PACKED_FLOAT32_ARRAY,
-		.PACKED_FLOAT64_ARRAY,
-		.PACKED_STRING_ARRAY,
-		.PACKED_VECTOR2_ARRAY,
-		.PACKED_VECTOR3_ARRAY,
-		.PACKED_COLOR_ARRAY,
-		.PACKED_VECTOR4_ARRAY,
-	};
+	// typed arrays
+	.PACKED_BYTE_ARRAY,
+	.PACKED_INT32_ARRAY,
+	.PACKED_INT64_ARRAY,
+	.PACKED_FLOAT32_ARRAY,
+	.PACKED_FLOAT64_ARRAY,
+	.PACKED_STRING_ARRAY,
+	.PACKED_VECTOR2_ARRAY,
+	.PACKED_VECTOR3_ARRAY,
+	.PACKED_COLOR_ARRAY,
+	.PACKED_VECTOR4_ARRAY,
+};
 
 variant_Destroy :: proc(var: ^Variant) {
     if  (needs_deinit & {var.VType}) == {var.VType} {
@@ -845,4 +846,93 @@ fromvariant :: proc(variant: ^Variant, $T: typeid) -> T {
         copy_from_variant(&ret, variant)
     }
     return ret
+}
+
+ref_count_AABB :: proc(source: ^AABB, copy: ^AABB) {
+    arg:=[1]rawptr {source}
+    GDW.AABB_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_BASIS :: proc(source: ^Basis, copy: ^Basis) {
+    arg:=[1]rawptr {source}
+    GDW.Basis_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_TRANSFORM2D :: proc(source: ^Transform2D, copy: ^Transform2D) {
+    arg:=[1]rawptr {source}
+    GDW.Transform2D_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_TRANSFORM3D :: proc(source: ^Transform3D, copy: ^Transform3D) {
+    arg:=[1]rawptr {source}
+    GDW.Transform3D_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PROJECTION :: proc(source: ^Projection, copy: ^Projection) {
+    arg:=[1]rawptr {source}
+    GDW.Projection_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_STRING :: proc(source: ^gdstring, copy: ^gdstring) {
+    arg:=[1]rawptr {source}
+    GDW.String_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_STRING_NAME :: proc(source: ^StringName, copy: ^StringName) {
+    arg:=[1]rawptr {source}
+    GDW.StringName_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_NODE_PATH :: proc(source: ^NodePath, copy: ^NodePath) {
+    arg:=[1]rawptr {source}
+    GDW.NodePath_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_SIGNAL :: proc(source: ^Signal, copy: ^Signal) {
+    arg:=[1]rawptr {source}
+    GDW.Signal_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_CALLABLE :: proc(source: ^Callable, copy: ^Callable) {
+    arg:=[1]rawptr {source}
+    GDW.Callable_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_DICTIONARY :: proc(source: ^Dictionary, copy: ^Dictionary) {
+    arg:=[1]rawptr {source}
+    GDDictionary_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_ARRAY :: proc(source: ^Array, copy: ^Array) {
+    arg:=[1]rawptr{source }
+    GDArray_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_BYTE_ARRAY :: proc(source: ^PackedByteArray, copy: ^PackedByteArray) {
+    arg:=[1]rawptr {source}
+    PackedByteArray_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_INT32_ARRAY :: proc(source: ^PackedInt32Array, copy: ^PackedInt32Array) {
+    arg:=[1]rawptr {source}
+    PackedInt32Array_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_INT64_ARRAY :: proc(source: ^PackedInt64Array, copy: ^PackedInt64Array) {
+    arg:=[1]rawptr {source}
+    PackedInt64Array_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_FLOAT32_ARRAY :: proc(source: ^PackedFloat32Array, copy: ^PackedFloat32Array) {
+    arg:=[1]rawptr {source}
+    PackedInt64Array_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_FLOAT64_ARRAY :: proc(source: ^PackedFloat64Array, copy: ^PackedFloat64Array) {
+    arg:=[1]rawptr {source}
+    PackedInt64Array_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_STRING_ARRAY :: proc(source: ^PackedStringArray, copy: ^PackedStringArray) {
+    arg:=[1]rawptr {source}
+    PackedStringArray_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_VECTOR2_ARRAY :: proc(source: ^PackedVector2Array, copy: ^PackedVector2Array) {
+    arg:=[1]rawptr {source}
+    PackedVector2Array_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_VECTOR3_ARRAY :: proc(source: ^PackedVector3Array, copy: ^PackedVector3Array) {
+    arg:=[1]rawptr {source}
+    PackedVector3Array_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_COLOR_ARRAY :: proc(source: ^PackedColorArray, copy: ^PackedColorArray) {
+    arg:=[1]rawptr {source}
+    PackedColorArray_Methods.Create1(copy, raw_data(arg[:]))
+}
+ref_count_PACKED_VECTOR4_ARRAY :: proc(source: ^PackedVector4Array, copy: ^PackedVector4Array) {
+    arg:=[1]rawptr {source}
+    PackedVector4Array_Methods.Create1(copy, raw_data(arg[:]))
 }

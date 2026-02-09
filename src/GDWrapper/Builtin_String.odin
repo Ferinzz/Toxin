@@ -6,19 +6,23 @@ import "gdAPI"
 
 String_Methods: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     Compare: GDE.PtrOperatorEvaluator,
     Destroy: GDE.PtrDestructor,
 }
 
 init_String_Methods :: proc() {
     NodePath_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.NODE_PATH, 0)
+    NodePath_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.NODE_PATH, 1)
     String_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 0)
+    String_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 1)
     String_Methods.Compare = gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_EQUAL, .STRING, .STRING)
     String_Methods.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(.STRING)
 }
 
 NodePath_Methods: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     Destroy: GDE.PtrDestructor,
 }
 

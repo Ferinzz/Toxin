@@ -213,10 +213,10 @@ Export_String_As_Enum :: proc(className_SN: ^StringName, $classStruct: typeid, $
             classStruct, fieldName)
         }
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            GDW.StringName_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
-            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -281,7 +281,7 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     enumName:= type_info_of(out_enum).variant.(runtime.Type_Info_Named).name
     defer delete(enumName)
     enumName_SN: StringName
-    GDW.StringConstruct.stringNameNewString(&enumName_SN, enumName)
+    GDW.StringConstruct(&enumName_SN, enumName)
     defer(GDW.StringName_Methods.Destroy(&enumName_SN))
 
 
@@ -290,7 +290,7 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     //Loop through each entry in the enum to add their name and value to the hint string.
     for field, ind in info.names {
         field_SN: StringName
-        GDW.StringConstruct.stringNameNewString(&field_SN, field)
+        GDW.StringConstruct(&field_SN, field)
         gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
         GDW.StringName_Methods.Destroy(&field_SN)
     }
@@ -1101,7 +1101,7 @@ Export_Path :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName:
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1182,7 +1182,7 @@ Export_Locale :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1256,7 +1256,7 @@ Export_Password :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldN
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1325,7 +1325,7 @@ Export_With_Placeholder_Text :: proc(className_SN: ^StringName, $classStruct: ty
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
 
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1411,10 +1411,10 @@ Export_Input_Name :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            GDW.StringName_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
-            String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -1501,7 +1501,7 @@ Export_Multiline :: proc(className_SN: ^StringName, $classStruct: typeid, $field
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-         String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+         String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -1569,7 +1569,7 @@ Export_Node_Path_Types :: proc(className_SN: ^StringName, $classStruct: typeid, 
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: sics.type_field_type(classStruct, fieldName)) {
         context = runtime.default_context()
         
-        String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
     /*
@@ -2116,55 +2116,72 @@ make_getter_and_setter :: #force_inline proc($classStruct: typeid, $field_Type: 
         }
         //If it is a type which needs to be destroyed, destroy it.
         when sics.type_field_type(classStruct, fieldName) == StringName {
-            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            GDW.StringName_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == gdstring {
-            GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            GDW.String_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == Array {
-            GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            GDArray_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
-            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedStringArray_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == Dictionary {
-            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            GDDictionary_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == NodePath {
-            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            NodePath_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == Callable {
-            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            Callable_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == Signal {
-            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            Signal_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedByteArray {
-            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedByteArray_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedInt32Array {
-            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedInt32Array_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedInt64Array {
-            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedInt64Array_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedFloat32Array {
-            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedFloat32Array_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedFloat64Array {
-            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedFloat64Array_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedVector2Array {
-            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedVector2Array_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedVector3Array {
-            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedVector3Array_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedVector4Array {
-            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedVector4Array_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         when sics.type_field_type(classStruct, fieldName) == PackedColorArray {
-            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            Reference(godotValue)
+            PackedColorArray_Methods.Destroy((^gdstring)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
         }
         (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = sics.type_field_type(classStruct, fieldName)(godotValue)
     }
@@ -2281,7 +2298,7 @@ if nil == p_classData.id {
 //Verify_Heap_Init2 :: proc($classStruct: typeid, $fieldName: string,){
 Verify_PackedStringArray_Init :: proc(p_classData: ^PackedStringArray, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    PackedStringArray_Methods.Create0(p_classData, nil)
+    PackedStringArray_Methods.Create0(p_classData)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedStringArray"))
     }
@@ -2578,7 +2595,6 @@ bindMethod33 :: #force_inline proc(className: ^StringName, methodName: string,
     
     //Destructor things.
     GDW.StringName_Methods.Destroy(&methodStringName)
-    //GDW.StringName_Methods.Destroy(&classNameString)
     destructProperty(&returnInfo)
 }
 
@@ -2594,62 +2610,26 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
         when  sics.type_field_type(classStruct, fieldName) == Array ||
         sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
         sics.type_field_type(classStruct, fieldName) == Dictionary {
-            Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
+            Verify_Heap_Init(((^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))),\
             classStruct, fieldName)
         }
         //If it is a type which needs to be destroyed, destroy it.
-        when sics.type_field_type(classStruct, fieldName) == StringName {
-            GDW.StringName_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+        when sics.type_field_type(classStruct, fieldName) == Array ||
+        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_field_type(classStruct, fieldName) == Dictionary ||
+        sics.type_field_type(classStruct, fieldName) == StringName ||
+        sics.type_field_type(classStruct, fieldName) == gdstring ||
+        sics.type_field_type(classStruct, fieldName) == NodePath ||
+        sics.type_field_type(classStruct, fieldName) == Callable ||
+        sics.type_field_type(classStruct, fieldName) == Signal 
+        {
+            r_sn: sics.type_field_type(classStruct, fieldName)
+            Ref_Count(godotValue.self, &r_sn)
+            Destroy_Builtin((^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
+            (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = r_sn
+        } else {
+            (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = godotValue.self^
         }
-        when sics.type_field_type(classStruct, fieldName) == gdstring {
-            GDW.String_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Array {
-            GDArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+size_of(Object)+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedStringArray {
-            PackedStringArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Dictionary {
-            GDDictionary_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == NodePath {
-            NodePath_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Callable {
-            Callable_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == Signal {
-            Signal_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedByteArray {
-            PackedByteArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedInt32Array {
-            PackedInt32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedInt64Array {
-            PackedInt64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedFloat32Array {
-            PackedFloat32Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedFloat64Array {
-            PackedFloat64Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector2Array {
-            PackedVector2Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector3Array {
-            PackedVector3Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedVector4Array {
-            PackedVector4Array_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        when sics.type_field_type(classStruct, fieldName) == PackedColorArray {
-            PackedColorArray_Methods.Destroy(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-        }
-        (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = godotValue.self^
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
@@ -2668,8 +2648,6 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
             Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
             classStruct, fieldName)
         }
-        //r_ret^ = {}
-        //GDW.new_variant_from_methods(r_ret, (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))))
         r_ret^ = (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
     }
     /*

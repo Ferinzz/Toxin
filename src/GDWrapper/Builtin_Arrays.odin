@@ -23,7 +23,7 @@ GDDictionary_Methods: ^GDDictionary_Methods_list,) {
 
     PackedStringArray_Methods.GetIndex = cast(proc(p_base: ^PackedStringArray, index: Int, r_ret: ^Variant))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_STRING_ARRAY)
     PackedStringArray_Methods.SetIndex = gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_STRING_ARRAY)
-    PackedStringArray_Methods.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_STRING_ARRAY)
+    PackedStringArray_Methods.Destroy = cast(#type proc "c" (dest: ^PackedStringArray))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_STRING_ARRAY)
     gdAPI.StringName_Utils.Latin1Chars(&arraySize, "size", false)
     PackedStringArray_Methods.Size = gdAPI.Variant_Utils.GetPtrBuiltinMethod(.PACKED_STRING_ARRAY, &arraySize, 3173160232)
     StringName_Methods.Destroy(&arraySize)
@@ -55,14 +55,26 @@ GDDictionary_Methods: ^GDDictionary_Methods_list,) {
     PackedInt64Array_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 0)
     PackedFloat32Array_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 0)
     PackedFloat64Array_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT64_ARRAY, 0)
-    PackedStringArray_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 0)
+    PackedStringArray_Methods.Create0 = cast(proc "c" (dest: ^PackedStringArray, src: [^]rawptr = nil))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 0)
     PackedVector2Array_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR2_ARRAY, 0)
     PackedVector3Array_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 0)
     PackedColorArray_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 0)
     PackedVector4Array_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR4_ARRAY, 0)
     GDDictionary_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 0)
-    
+
     GDArray_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 1)
+    PackedByteArray_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_BYTE_ARRAY, 1)
+    PackedInt32Array_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT32_ARRAY, 1)
+    PackedInt64Array_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 1)
+    PackedFloat32Array_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 1)
+    PackedFloat64Array_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT64_ARRAY, 1)
+    PackedStringArray_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 1)
+    PackedVector2Array_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR2_ARRAY, 1)
+    PackedVector3Array_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 1)
+    PackedColorArray_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 1)
+    PackedVector4Array_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR4_ARRAY, 1)
+    GDDictionary_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 1)
+
     GDArray_Methods.Create2 = gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 2)
     GDArray_Methods.Create3 = gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 3)
     GDArray_Methods.Create4 = gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 4)
@@ -77,7 +89,7 @@ GDDictionary_Methods: ^GDDictionary_Methods_list,) {
     
     GDArray_Methods.GetIndex = cast(proc(p_base: ^Class_Array, index: Int, r_ret: ^Variant))gdAPI.Variant_Utils.GetPtrIndexedGetter(.ARRAY)
     GDArray_Methods.SetIndex = gdAPI.Variant_Utils.GetPtrIndexedSetter(.ARRAY)
-    GDArray_Methods.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(.ARRAY)
+    GDArray_Methods.Destroy = cast(#type proc "c" (p_base: ^Array))gdAPI.Variant_Utils.GetPtrDestructor(.ARRAY)
     
 
 
@@ -807,7 +819,8 @@ getIndex :: proc {
 
 PackedStringArray_Methods: ^PackedStringArray_Methods_list
 PackedStringArray_Methods_list :: struct {
-    Create0: GDE.PtrConstructor,
+    Create0: #type proc "c" (dest: ^PackedStringArray, src: [^]rawptr = nil),
+    Create1: GDE.PtrConstructor,
     Size: GDE.PtrBuiltInMethod,
     Resize: GDE.PtrBuiltInMethod,
     Append: GDE.PtrBuiltInMethod,
@@ -815,7 +828,7 @@ PackedStringArray_Methods_list :: struct {
     Set: GDE.PtrBuiltInMethod,
     GetIndex: proc(p_base: ^PackedStringArray, index: Int, r_ret: ^Variant),
     SetIndex: GDE.PtrIndexedSetter,
-    Destroy: GDE.PtrDestructor,
+    Destroy: #type proc "c" (dest: ^PackedStringArray),
 }
 
 GDArray_Methods : GDArray_Methods_list
@@ -840,7 +853,7 @@ GDArray_Methods_list :: struct {
     Create11: GDE.PtrConstructor,
     Create12: GDE.PtrConstructor,
 
-    Destroy: GDE.PtrDestructor,
+    Destroy: #type proc "c" (p_base: ^Array),
 
     GetIndex: proc(p_base: ^Class_Array, index: Int, r_ret: ^Variant),
     SetIndex: GDE.PtrIndexedSetter,
@@ -905,6 +918,7 @@ GDArray_Methods_list :: struct {
 GDDictionary_Methods: GDDictionary_Methods_list
 GDDictionary_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -1354,6 +1368,7 @@ GDDictionary_Methods_list :: struct {
 PackedByteArray_Methods: PackedByteArray_Methods_list
 PackedByteArray_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get:  GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -2389,6 +2404,7 @@ PackedByteArray_Methods_list :: struct {
 PackedInt32Array_Methods: PackedInt32Array_Methods_list
 PackedInt32Array_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -2729,6 +2745,7 @@ PackedInt32Array_Methods_list :: struct {
 PackedInt64Array_Methods: PackedInt64Array_Methods_list
 PackedInt64Array_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -3068,6 +3085,7 @@ PackedInt64Array_Methods_list :: struct {
 PackedFloat32Array_Methods: PackedFloat32Array_Methods_list
 PackedFloat32Array_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -3407,6 +3425,7 @@ PackedFloat32Array_Methods_list :: struct {
 PackedFloat64Array_Methods: PackedFloat64Array_Methods_list
 PackedFloat64Array_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -3764,6 +3783,7 @@ PackedColorArray_Methods : struct {
 PackedVector2Array_Methods: PackedVector2Array_Methods_list
 PackedVector2Array_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -4103,6 +4123,7 @@ PackedVector2Array_Methods_list :: struct {
 PackedVector3Array_Methods: PackedVector3Array_Methods_list
 PackedVector3Array_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -4443,6 +4464,7 @@ PackedVector3Array_Methods_list :: struct {
 PackedVector4Array_Methods: PackedVector4Array_Methods_list
 PackedVector4Array_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,
@@ -4783,6 +4805,7 @@ PackedVector4Array_Methods_list :: struct {
 PackedColorArray_Methods: PackedColorArray_Methods_list
 PackedColorArray_Methods_list :: struct {
     Create0: GDE.PtrConstructor,
+    Create1: GDE.PtrConstructor,
     get: GDE.PtrBuiltInMethod,
     set: GDE.PtrBuiltInMethod,
     size: GDE.PtrBuiltInMethod,

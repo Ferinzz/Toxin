@@ -5,12 +5,15 @@ import "gdAPI"
 
 Signal_Methods: struct {
 	Create0: GDE.PtrConstructor,
+	Create1: GDE.PtrConstructor,
     Destroy: GDE.PtrDestructor,
 }
 
 init_Signal_Methods :: proc() {
 	Signal_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.SIGNAL, 0)
+	Signal_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.SIGNAL, 1)
 	Callable_Methods.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 0)
+	Callable_Methods.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 1)
 }
 
 /*
@@ -121,6 +124,7 @@ init_Signal_Methods :: proc() {
 
 Callable_Methods: struct {
 	Create0: GDE.PtrConstructor,
+	Create1: GDE.PtrConstructor,
     Destroy: GDE.PtrDestructor,
     is_custom: GDE.PtrBuiltInMethod,
     get_object: GDE.PtrBuiltInMethod,

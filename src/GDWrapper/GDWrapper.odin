@@ -19,14 +19,6 @@ Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
     init_StringName_Methods()
     init_String_Methods()
 
-    StringConstruct.stringNameNewString = proc(StringName_r: ^StringName, name: string) {
-        gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
-    }
-    
-    StringConstruct.stringNameNewString_r = proc(name: string) -> (r_ret: StringName) {
-        gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
-        return
-    }
     init_Node_Virtuals_Info()
     init_CanvasItem_Virtuals_Info()
     init_Texture2D_Virtuals_Info()
@@ -35,19 +27,30 @@ Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
     init_AudioStreamPlayback_Virtual_Info()
     init_AudioStream_Virtual_Info()
     //init_classDB()
-    StringConstruct.stringNameNewString(&PhysicsServer2D_SN, "PhysicsServer2D")
-    StringConstruct.stringNameNewString(&RenderServer_SN, "RenderingServer")
+    stringNameNewString(&PhysicsServer2D_SN, "PhysicsServer2D")
+    stringNameNewString(&RenderServer_SN, "RenderingServer")
 
 }
 
 //Use these to build a C++ String or StringName that Godot can use.
-StringConstruct : struct {
-    stringNameNewString: stringNameNewString,
-    stringNameNewString_r: stringNameNewString_r,
-}
+// @(require_results)
+// StringConstruct : struct {
+    // stringNameNewString: stringNameNewString,
+    // stringNameNewString_r: stringNameNewString_r,
+// }
 
-stringNameNewString :: #type proc(StringName_r: ^StringName, name: string)
-stringNameNewString_r :: #type proc(name: string) -> (r_ret: StringName)
+StringConstruct :: proc {
+    stringNameNewString,
+    stringNameNewString_r,
+}
+stringNameNewString :: proc(StringName_r: ^StringName, name: string) {
+        gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
+    }
+@(require_results)
+stringNameNewString_r :: proc(name: string) -> (r_ret: StringName) {
+        gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
+        return
+}
 
 
 
@@ -73,7 +76,7 @@ stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (re
 //stringName::stringName; stringName::cstring; cstring::cstring
 stringNameCompare_string :: proc(l_value: ^StringName, r_value: string) -> (ret: bool) {
     r_name: StringName
-    StringConstruct.stringNameNewString(&r_name, r_value)
+    StringConstruct(&r_name, r_value)
     defer(StringName_Methods.Destroy(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
@@ -121,7 +124,7 @@ GDStringJoin :: proc(packedString: ^PackedStringArray, r_String: ^gdstring) {
 get_ClassTagName :: proc(classTagName: string) -> ClassTag {
     
     classTagName_SN: StringName
-    StringConstruct.stringNameNewString(&classTagName_SN, classTagName)
+    StringConstruct(&classTagName_SN, classTagName)
     defer(StringName_Methods.Destroy(&classTagName_SN))
     return gdAPI.ClassDB.GetClassTag(&classTagName_SN)
 }

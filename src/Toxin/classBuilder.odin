@@ -205,7 +205,7 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
         class_info.get_virtual_func = get_v_table
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct.stringNameNewString(&self.SN, type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name)
+    GDW.StringConstruct(&self.SN, type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name)
 
     self.GDClass_StringName = GDW.GDClass_StringName_get(self.GDClass_Index)
 

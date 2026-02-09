@@ -70,6 +70,8 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             &PackedVector4Array_Methods,
             &GDDictionary_Methods,)
             GDW.Init_Variant_Converters()
+            GDW.RefCounted_init(&RefCounted_Methods_list)
+            GDW.init_Small_Arrays()
             objectEmitSignal = GDW.classDBGetMethodBind3(.Object, "emit_signal", 4047867050)
             return
         case .INITIALIZATION_SERVERS:

@@ -14,7 +14,7 @@ InputEvent_SN : StringName
 
 init_InputEvent :: proc() {
     if InputEvent_SN.ptr == nil {
-        InputEvent_SN = StringConstruct.stringNameNewString_r("InputEvent")
+        InputEvent_SN = StringConstruct("InputEvent")
     }
 
     get_All_ClassTag_array(&InputEvent_Tags)
@@ -220,13 +220,13 @@ InputEventMouse_SN: StringName
 
 init_InputEventMouse :: proc() {
     if InputEventMouseButton_SN.ptr == nil {
-        InputEventMouseButton_SN = StringConstruct.stringNameNewString_r("InputEventMouseButton")
+        InputEventMouseButton_SN = StringConstruct("InputEventMouseButton")
     }
     if InputEventMouseMotion_SN.ptr == nil {
-        InputEventMouseMotion_SN = StringConstruct.stringNameNewString_r("InputEventMouseMotion")
+        InputEventMouseMotion_SN = StringConstruct("InputEventMouseMotion")
     }
     if InputEventMouse_SN.ptr == nil {
-        InputEventMouse_SN = StringConstruct.stringNameNewString_r("InputEventMouse")
+        InputEventMouse_SN = StringConstruct("InputEventMouse")
     }
 };
 

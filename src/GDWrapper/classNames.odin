@@ -22,7 +22,7 @@ SN_Error :: enum {
 GDClass_StringName_get :: proc(classname_index: ClassName_Index) -> ^StringName {
     //ClassName_StringNames[classname_index]
     if ClassName_StringNames[classname_index].ptr == nil {
-        StringConstruct.stringNameNewString(&ClassName_StringNames[classname_index], reflect.enum_field_names(ClassName_Index)[classname_index])
+        StringConstruct(&ClassName_StringNames[classname_index], reflect.enum_field_names(ClassName_Index)[classname_index])
     }
     return &ClassName_StringNames[classname_index]
 }
