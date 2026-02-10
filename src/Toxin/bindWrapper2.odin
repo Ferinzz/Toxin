@@ -26,36 +26,6 @@ import "core:strconv"
 //Create a hints struct.
 //Specific to make Public add an extra layer for hingts
 
-Export_Class_Values :: proc {
-    Export,
-    Export_Int_As_Enum,
-    Export_String_As_Enum,
-    Export_Enum,
-    Export_Range,
-    Export_Ranged_Array,
-    Export_Easing,
-    Export_Array_Type,
-    Export_Pointer,
-    Export_Color_No_Alpha,
-    Export_Int_As_Flags,
-    Export_Flags,
-    Export_Layers,
-    Export_Path,
-    Export_Locale,
-    Export_Password,
-    Export_With_Placeholder_Text,
-    Export_Input_Name,
-    Export_Multiline,
-    Export_Node_Path_Types,
-    Export_Object_ID,
-    Export_Dictionary_type,
-    Export_Dictionary_Localizable_String,
-    Export_Tool_Button,
-    Export_Callable_As_Tool_Button,
-    Export_proc_As_Tool_Button,
-}
-
-
 /*
 * Godot will need a getter and setter to be able to handle variables 'made public'
 * This function will generate basic get and set functions for you. Register their callbacks, register them for use in the editor or GDScripts.
