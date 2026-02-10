@@ -259,6 +259,7 @@ Init_Variant_Converters :: proc() {
     IntToVariant = cast(proc "c" (_: ^Variant, _: ^Int))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.INT)
     FloatToVariant = cast(proc "c" (_: ^Variant, _: ^float))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.FLOAT)
     StringToVariant = cast(proc "c" (_: ^Variant, _: ^gdstring))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.STRING)
+    //StringwPlaceholderToVariant = StringToVariant
     Vec2ToVariant = cast(proc "c" (_: ^Variant, _: ^Vector2))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.VECTOR2)
     Vec2iToVariant = cast(proc "c" (_: ^Variant, _: ^Vector2i))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.VECTOR2I)
     Recf32ToVariant = cast(proc "c" (_: ^Variant, _: ^Rec2))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.RECT2)

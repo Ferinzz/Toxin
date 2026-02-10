@@ -368,7 +368,7 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
     else if sics.type_field_type(classStruct, fieldName) == float {
         field_type = .FLOAT
     } else {
-        failureProc("", "unsupported type in Export_Range", loc)
+        GDW.failureProc("", "unsupported type in Export_Range", loc)
     }
     if len(flag_string) > 0{
         output = strings.concatenate({min,",",max,",",step,",",string(flag_string[:])})
@@ -388,7 +388,7 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
     bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
     bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
-    Bind_Property(className_SN, fieldName, .INT, &info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName)
 
     destructProperty(&prop_info)
     delete(min)
@@ -526,7 +526,7 @@ Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
     else if sics.type_field_type(classStruct, fieldName) == float {
         field_type = .FLOAT
     } else {
-        failureProc("", "unsupported type in Export_Range", loc)
+        GDW.failureProc("", "unsupported type in Export_Range", loc)
         
     }
     if len(flag_string) > 0{
@@ -604,7 +604,7 @@ Export_Easing :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
     bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
-    Bind_Property(className_SN, fieldName, .FLOAT, &prop_info, "get_"+fieldName, "set_"+fieldName)
+    Bind_Property(className_SN, fieldName, .FLOAT, &info, "get_"+fieldName, "set_"+fieldName)
 
     destructProperty(&info)
 }
@@ -888,7 +888,7 @@ Export_Int_As_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $fi
     //bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
     //bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
 
-    get,set:= make_getter_and_setter2(classStruct, fieldName, sics.type_field_type(classStruct, fieldName))
+    get,set:= make_getter_and_setter2(classStruct, fieldName, Int)
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
     bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
@@ -926,7 +926,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
     bsname:= fmt.aprint(type_info_of(outbit_set).variant.(runtime.Type_Info_Named).name)
     defer delete(bsname)
     bsname_SN: StringName
-    GDW.StringConstruct.stringNameNewString(&bsname_SN, bsname)
+    GDW.StringConstruct(&bsname_SN, bsname)
     defer(GDW.StringName_Methods.Destroy(&bsname_SN))
 
     //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
@@ -937,11 +937,11 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
         for field,index in flag_enum.names {
             
             field_SN: StringName
-            GDW.StringConstruct.stringNameNewString(&field_SN, field)
+            GDW.StringConstruct(&field_SN, field)
             
             //The index of an enum represents the index of the bool in a bit_set.
             //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
             GDW.StringName_Methods.Destroy(&field_SN)
         }
 
@@ -949,8 +949,8 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
         for i:= type_info_of(outbit_set).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).lower; i< type_info_of(outbit_set).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
             field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN: StringName
-            GDW.StringConstruct.stringNameNewString(&field_SN, field)
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
+            GDW.StringConstruct(&field_SN, field)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
             delete(field)
             GDW.StringName_Methods.Destroy(&field_SN)
         }
@@ -996,7 +996,7 @@ Export_Layers :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     //Defines the information about the variable properties in a way Godot's editor understands
     prop_info:= Make_Property_Full(.INT, fieldName, hint, "", className, property_usage)
 
-
+    /*
     set :: proc "c" (p_classData: ^Class_Container(classStruct), godotValue: Int) {
         context = runtime.default_context()
         ////fmt.println(godotValue)
@@ -1021,13 +1021,18 @@ Export_Layers :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
         return yourclassstruct.someField^ //someField is of type Int
     }
     */
-
+    */
 
     //These functions handle the creation and export of the getter and setter functions which Godot will call.
     //Godot doesn't call our procedures directly, so we need to pass through this.
-    bindMethod(className_SN, "set_"+fieldName, set, methodType, fieldName, loc = loc)
-    bindMethod(className_SN, "get_"+fieldName, get, methodType, loc = loc)
+    //bindMethod(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    //bindMethod(className_SN, "get_"+fieldName, get, methodType = methodType, loc = loc)
 
+    get,set:= make_getter_and_setter2(classStruct, fieldName, Int)
+    //These functions handle the creation and export of the getter and setter functions which Godot will call.
+    //Godot doesn't call our procedures directly, so we need to pass through this.
+    bindMethod32(className_SN, "set_"+fieldName, set, fieldName, methodType = methodType, loc = loc)
+    bindMethod33(className_SN, "get_"+fieldName, get, methodType, loc = loc)
     //Register the information with Godot in order for the variable to be accessible.
     //bind_export(classStruct, className_SN, fieldName, .INT, Int, methodType, &prop_info, loc)
     Bind_Property_Prop_Info(className_SN, fieldName, .INT, &prop_info, "get_"+fieldName, "set_"+fieldName, loc)
@@ -1312,7 +1317,7 @@ Export_With_Placeholder_Text :: proc(className_SN: ^StringName, $classStruct: ty
                         loc:= #caller_location) \
                         //Catch whether the struct field exists at compile-time. No point trying anything else if the field doesn't exist.
                         //This field should only be of type gdstring.
-                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == Placeholder_Text)
+                        where (sics.type_has_field(classStruct, fieldName) && sics.type_field_type(classStruct, fieldName) == gdstring)
     {
 
     //Creates a string of your classStruct. Godot uses StringName values to reference a lot of things.
@@ -2326,9 +2331,9 @@ if nil == p_classData.data {
 
 Verify_PackedInt32Array_Init :: proc(p_classData: ^PackedInt32Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    PackedInt32Array_Methods.Create0(p_classData, nil)
+    //PackedInt32Array_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt32Array"))
+        //fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt32Array"))
     }
 }
 };
@@ -2599,24 +2604,25 @@ bindMethod33 :: #force_inline proc(className: ^StringName, methodName: string,
     destructProperty(&returnInfo)
 }
 
-ObjSize::size_of(Object)
+ObjSize::size_of(^Object)
 
 make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field_Type: typeid) -> (getter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: rawptr, r_ret: ^field_Type), setter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: ^struct{self:^field_Type}, r_ret: GDE.TypePtr)) {
     
+    field_type:: sics.type_field_type(classStruct, fieldName)
     //Getting to a field in a struct is not immediately available via intrinsics. Relying on built-in offset_of_by_string to get the pointer.
     //This makes a really long line, but that's how generics go.
-    godotPtrCallback :: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: ^struct{self:^sics.type_field_type(classStruct, fieldName)}, r_ret: GDE.TypePtr){
+    godotPtrCallback :: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: ^struct{self:^field_Type}, r_ret: GDE.TypePtr){
         context = runtime.default_context()
 
         when  sics.type_field_type(classStruct, fieldName) == Array ||
-        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_is_specialization_of(field_type, GDW.packedArray) ||
         sics.type_field_type(classStruct, fieldName) == Dictionary {
             Verify_Heap_Init(((^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))),\
             classStruct, fieldName)
         }
-        //If it is a type which needs to be destroyed, destroy it.
+        //If it is a type which needs to be destroyed, Ref_count new source then destroy old.
         when sics.type_field_type(classStruct, fieldName) == Array ||
-        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_is_specialization_of(field_type, GDW.packedArray) ||
         sics.type_field_type(classStruct, fieldName) == Dictionary ||
         sics.type_field_type(classStruct, fieldName) == StringName ||
         sics.type_field_type(classStruct, fieldName) == gdstring ||
@@ -2625,11 +2631,22 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
         sics.type_field_type(classStruct, fieldName) == Signal 
         {
             r_sn: sics.type_field_type(classStruct, fieldName)
+            when sics.type_is_specialization_of(field_type, GDW.packedArray) {
+                PackedInt32Array_Methods.Create0(&r_sn.data, nil)
+                //r_sn.data = nil
+            }
             Ref_Count(godotValue.self, &r_sn)
             Destroy_Builtin((^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
-            (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = r_sn
+            (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = (r_sn)
         } else {
-            (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = godotValue.self^
+            when sics.type_is_bit_set(field_type) {
+                bit_underlying:: sics.type_bit_set_underlying_type(field_type)
+                (cast(^field_type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = transmute(field_type)(bit_underlying(godotValue.self^))
+            } else when field_type == rawptr {
+                (cast(^field_type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = rawptr(uintptr(godotValue.self^))
+            } else {
+                (cast(^field_type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = field_type(godotValue.self^)
+            }
         }
     }
     /*
@@ -2639,17 +2656,26 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
     }
     */
 
-    godotgetPtrCallback :: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: rawptr, r_ret: ^sics.type_field_type(classStruct, fieldName)){
+    godotgetPtrCallback :: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: rawptr, r_ret: ^field_Type){
         context = runtime.default_context()
         when sics.type_field_type(classStruct, fieldName) == Array ||
-        sics.type_is_specialization_of(classStruct, GDW.packedArray) ||
+        sics.type_is_specialization_of(field_type, GDW.packedArray) ||
         sics.type_field_type(classStruct, fieldName) == Signal ||
         sics.type_field_type(classStruct, fieldName) == Callable ||
         sics.type_field_type(classStruct, fieldName) == Dictionary {
             Verify_Heap_Init((cast(^sics.type_field_type(classStruct, fieldName))(rawptr(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))),\
             classStruct, fieldName)
         }
-        r_ret^ = (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
+        when sics.type_is_bit_set(field_type) {
+            bit_underlying:: sics.type_bit_set_underlying_type(field_type)
+            val:=transmute(bit_underlying)((cast(^field_type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^)
+            r_ret^ = Int(val)
+
+        } else when field_type == rawptr {
+            r_ret^ = Int((cast(^uintptr)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^)
+        } else {
+            r_ret^ = (cast(^sics.type_field_type(classStruct, fieldName))(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^
+        }
     }
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
