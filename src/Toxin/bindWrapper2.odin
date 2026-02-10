@@ -1792,7 +1792,6 @@ Gen_Variant_Getter ::  proc(function: $P, loc:=#caller_location) -> (GDE.ClassMe
         r_error.argument = 1
         GDW.new_variant_from_methods(r_return, &tr_return)
     }
-    fmt.println(godotVariantCallback)
     return godotVariantCallback
 }
 
