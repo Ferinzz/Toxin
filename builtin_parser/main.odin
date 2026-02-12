@@ -15,11 +15,7 @@ main :: proc() {
     fmt.println(root)
     data, err := os2.read_entire_file(root, context.allocator)
     fmt.println(err)
-    //fmt.println(string(data[:]))
     val:=json.make_parser(data)
-    //first, err_first:=json.parse(data)
-    //fmt.println(first, err_first)
-    //fmt.println(first.(json.Object)["builtin_classes"].(json.Array)[0].(json.Object)["name"])
     built_different: builtin
     json.unmarshal(data, &built_different)
     fmt.println(built_different.builtin_classes[1])
