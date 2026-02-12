@@ -52,7 +52,12 @@ stringNameNewString_r :: proc(name: string) -> (r_ret: StringName) {
         return
 }
 
-
+Get_Builtin_Method :: proc(variant_type: GDE.VariantType, method_name: string, hash: Int) -> GDE.PtrBuiltInMethod {
+    method_name_SN: StringName
+    defer StringName_Methods.Destroy(&method_name_SN)
+    stringNameNewString(&method_name_SN, method_name)
+    return gdAPI.Variant_Utils.GetPtrBuiltinMethod(variant_type, &method_name_SN, hash)
+}
 
 stringNameCompare :: proc {
     stringNameCompare_string,
