@@ -229,6 +229,11 @@ PackedColorArray :: GDW.PackedColorArray
 
 PackedVector4Array :: GDW.PackedVector4Array
 
+PackedArrayContainer :: struct ($packed_type: typeid) {
+    _: [16]u8,
+    array: packed_type,
+}
+
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyhint
 PropertyHint :: GDW.PropertyHint

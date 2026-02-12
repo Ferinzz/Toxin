@@ -1747,7 +1747,7 @@ destructProperty :: proc(info: ^GDE.PropertyInfo) {
 //This is messy. I dunno if this is better or worse than having 7 individual functions... Lots of casting. Eh.
 //This is also using some really old functions for the variant conversion since they provide a return instead of needing an empty pointer.
 Gen_Variant_Setter ::  proc(function: $P, loc:=#caller_location) -> (GDE.ClassMethodCall) {
-
+    field_type::sics.type_field_type(sics.type_proc_parameter_type(P, 2), "self")
     godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
         context= runtime.default_context()
@@ -1761,7 +1761,7 @@ Gen_Variant_Setter ::  proc(function: $P, loc:=#caller_location) -> (GDE.ClassMe
 
         //gdTypeList:= [1]GDE.VariantType {.INT}
         //variantTypeCheck(gdTypeList[:], p_args, r_error)
-        val: sics.type_elem_type(sics.type_field_type(sics.type_proc_parameter_type(P, 2), "self"))
+        val: sics.type_elem_type(field_type)
         call:=cast(proc(rawptr, rawptr, rawptr, rawptr))method_userdata
         copy_from_variant(&val, p_args[0])
         vars:=[1]rawptr{&val}
@@ -1905,9 +1905,7 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
         field_type == Signal 
         {
             r_sn: field_type
-            when !sics.type_is_specialization_of(field_type, GDW.packedArray) {
-                Ref_Count(godotValue.self, &r_sn)
-            }
+            Ref_Count(godotValue.self, &r_sn)
             Destroy_Builtin((^field_type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))
             (cast(^field_type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName)))^ = (r_sn)
         } else {

@@ -157,13 +157,13 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, "arg1")
+    //Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, "arg1")
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.
     Toxin.Export(className, THIS_CLASS_NAME, "someProperty")
-    Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
+    //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
     Toxin.Export(className, THIS_CLASS_NAME, "receive")
     Toxin.Export(className, THIS_CLASS_NAME, "rarray")
     Toxin.Export(className, THIS_CLASS_NAME, "stringname")
@@ -189,18 +189,18 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin.Export_Password(className, THIS_CLASS_NAME, "my_password", {.STORAGE, .EDITOR, .SECRET})
     default_text: Toxin.Placeholder_Text = "This is my default text."
     Toxin.Export_With_Placeholder_Text(className, THIS_CLASS_NAME, "string_with_default", default_text)
-
-    Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.layers_2d_navigation)
-    Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.PropertyUsageFlagsbits)
-    Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum", {"one", "two", "fdkasljw"})
-    Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum2", {"one", "two", "fdkasljw"})
-    Toxin.Export_Input_Name(className, THIS_CLASS_NAME, "input", {.show_builtin})
-    Toxin.Export_Multiline(className, THIS_CLASS_NAME, "multiline")
-    Toxin.Export_Node_Path_Types(className, THIS_CLASS_NAME,"valid_nodes", "Sprite2D")
-    Toxin.Export_Object_ID(className, THIS_CLASS_NAME, "valid_objects", "")//, string(GDW.ClassName_Strings[.ButtonGroup]))
-    Toxin.Export_Dictionary_type(className, THIS_CLASS_NAME, "dictionary_type", {.INT, .STRING})
-    Toxin.Export(className, THIS_CLASS_NAME, "a_dictionary")
-    Toxin.Export_Dictionary_Localizable_String(className, THIS_CLASS_NAME, "locale_dictionary")
+//
+    //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.layers_2d_navigation)
+    //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.PropertyUsageFlagsbits)
+    //Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum", {"one", "two", "fdkasljw"})
+    //Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum2", {"one", "two", "fdkasljw"})
+    //Toxin.Export_Input_Name(className, THIS_CLASS_NAME, "input", {.show_builtin})
+    //Toxin.Export_Multiline(className, THIS_CLASS_NAME, "multiline")
+    //Toxin.Export_Node_Path_Types(className, THIS_CLASS_NAME,"valid_nodes", "Sprite2D")
+    //Toxin.Export_Object_ID(className, THIS_CLASS_NAME, "valid_objects", "")//, string(GDW.ClassName_Strings[.ButtonGroup]))
+    //Toxin.Export_Dictionary_type(className, THIS_CLASS_NAME, "dictionary_type", {.INT, .STRING})
+    //Toxin.Export(className, THIS_CLASS_NAME, "a_dictionary")
+    //Toxin.Export_Dictionary_Localizable_String(className, THIS_CLASS_NAME, "locale_dictionary")
 
 }
 

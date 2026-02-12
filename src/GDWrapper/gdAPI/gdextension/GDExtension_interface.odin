@@ -717,7 +717,6 @@ ClassMethodFlagNames :: enum u32 {
 //Used internally. Allows to not dump core virtual methods (such as Object._notification()) to the JSON API.
 	VIRTUAL_REQUIRED,
 //Flag for a virtual method that is required. In GDScript, this flag is set for abstract functions.
-	
 }
 
 

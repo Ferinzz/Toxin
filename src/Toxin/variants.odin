@@ -139,16 +139,7 @@ copy_from_variant :: proc{
     DictionaryfromVariant,
 
     ArrayfromVariant,
-    PackedByteArrayfromVariant,
-    Packedi32ArrayfromVariant,
-    Packedi64ArrayfromVariant,
-    Packedf32ArrayfromVariant,
-    Packedf64ArrayfromVariant,
-    PackedStringArrayfromVariant,
-    PackedVec2ArrayfromVariant,
-    PackedVec3ArrayfromVariant,
-    PackedColorArrayfromVariant,
-    PackedVec4ArrayfromVariant,
+    PackedArrayfromVariant,
 }
 
 //Use this if you need a quick return based on the typeID instead of passing it to a pointer.
@@ -511,67 +502,15 @@ ArrayfromVariant :: proc(P_dest: ^Array, p_source: ^Variant) -> type_from_varian
         return {}
     } else do return {.WRONG_TYPE, .ARRAY, p_source.VType}
 }
-PackedByteArrayfromVariant :: proc(P_dest: ^PackedByteArray, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_BYTE_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedByteArray
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_BYTE_ARRAY, p_source.VType}
+PackedArrayfromVariant :: proc(P_dest: $T/^GDW.packedArray, p_source: ^Variant) -> type_from_variant_error {
+    #partial switch p_source.VType {
+        case .PACKED_BYTE_ARRAY, .PACKED_INT32_ARRAY, .PACKED_INT64_ARRAY, .PACKED_FLOAT32_ARRAY, .PACKED_FLOAT64_ARRAY, .PACKED_STRING_ARRAY, .PACKED_VECTOR2_ARRAY, .PACKED_VECTOR3_ARRAY, .PACKED_COLOR_ARRAY, .PACKED_VECTOR4_ARRAY :{
+            P_dest^ = (cast(^PackedArrayContainer(sics.type_elem_type(T)))(uintptr(p_source.data[0]))).array
+            return {}
+        }
+    }
+    return {.WRONG_TYPE, .PACKED_BYTE_ARRAY, p_source.VType}
 }
-Packedi32ArrayfromVariant :: proc(P_dest: ^PackedInt32Array, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_INT32_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedInt32Array
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_INT32_ARRAY, p_source.VType}
-}
-Packedi64ArrayfromVariant :: proc(P_dest: ^PackedInt64Array, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_INT64_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedInt64Array
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_INT64_ARRAY, p_source.VType}
-}
-Packedf32ArrayfromVariant :: proc(P_dest: ^PackedFloat32Array, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_FLOAT32_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedFloat32Array
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_FLOAT32_ARRAY, p_source.VType}
-}
-Packedf64ArrayfromVariant :: proc(P_dest: ^PackedFloat64Array, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_FLOAT64_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedFloat64Array
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_FLOAT64_ARRAY, p_source.VType}
-}
-PackedStringArrayfromVariant :: proc(P_dest: ^PackedStringArray, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_STRING_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedStringArray
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_STRING_ARRAY, p_source.VType}
-}
-PackedVec2ArrayfromVariant :: proc(P_dest: ^PackedVector2Array, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_VECTOR2_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedVector2Array
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_VECTOR2_ARRAY, p_source.VType}
-}
-PackedVec3ArrayfromVariant :: proc(P_dest: ^PackedVector3Array, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_VECTOR3_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedVector3Array
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_VECTOR3_ARRAY, p_source.VType}
-}
-PackedColorArrayfromVariant :: proc(P_dest: ^PackedColorArray, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_COLOR_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedColorArray
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_COLOR_ARRAY, p_source.VType}
-}
-PackedVec4ArrayfromVariant :: proc(P_dest: ^PackedVector4Array, p_source: ^Variant) -> type_from_variant_error {
-    if p_source.VType == .PACKED_VECTOR4_ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).PackedVector4Array
-        return {}
-    } else do return {.WRONG_TYPE, .PACKED_VECTOR4_ARRAY, p_source.VType}
-}
-
 
 /*
 * If a type fits in 128 bits it will be copied into the variant data section.
