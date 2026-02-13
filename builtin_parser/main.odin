@@ -8,6 +8,7 @@ import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
+//import "../builtins"
 
 main :: proc() {
     root, error := os2.get_absolute_path("builtin_parser\\example.json", context.allocator)
@@ -30,11 +31,31 @@ main :: proc() {
         print_warning("failed to create builder", err_buildem)
     }
     final:=build_init_proc(built_different, context.allocator)
+    
+    header:=`package builtins
+        
+import GDW "shared:GDWrapper"
+import "shared:GDWrapper/gdAPI"
+import GDE "shared:GDWrapper/gdAPI/gdextension"
+
+
+`
     for classes in final {
         //fmt.println(classes.method_list)
         //fmt.println(classes.init_proc)
-        fmt.println(classes.constants)
+        //fmt.println(classes.constants)
+
+        file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\builtins\\%s_GD_builtin.odin", classes.name)
+        file, open_err:= os2.create(file_path)
+        if open_err == nil {
+            count, write_err:= os2.write_strings(file, header, classes.method_list, classes.constants, classes.init_proc)
+            fmt.println("wrote: ", count, write_err)
+        } else {
+            print_warning("could not open file_path", open_err)
+        }
+        delete(file_path)
     }
+
 }
 
 print_warning:: proc(message: string, error: os2.Error) {
@@ -95,15 +116,15 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     ///////////////////////////////
     // Structure of the init proc
     //////////////////////////////
-    init_proc_sig:=`init_%s_Methods :: proc(%[0]s_method_store: %[0]s_Methods_list) {{`
+    init_proc_sig:=`init_%s_Methods :: proc(%[0]s_method_store: ^%[0]s_Methods_list) {{`
     //name
     Creators:=`  %s_method_store.Create%[1]v = gdAPI.Variant_Utils.GetPtrConstructor(.%s, %[1]v)`
     //name, index, variant_type
-    Destructors:=`  %s_method_store.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(%w)`
+    Destructors:=`  %s_method_store.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(.%v)`
     //name, variant_type
-    op_eval:= `  %s_method_store.%s_%s = gdAPI.Variant_Utils.GetPtrOperatorEvaluator(%[1]w, %w, %w)`
+    op_eval:= `  %s_method_store.%s_%s = gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.%[1]v, .%v, .%v)`
     //name, eval_enum, variant_type
-    Meth_Getter:=`  %s_method_store.%[2]s = Get_Builtin_Method(%[1]w, "%[2]s", %v)`
+    Meth_Getter:=`  %s_method_store.%[2]s = GDW.Get_Builtin_Method(.%[1]v, "%[2]s", %v)`
     //name ,variant_type, methods[i].name, methods[i].hash
     Closing:=`}`
 
@@ -142,7 +163,15 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         }
 
         //setup Methods
-        for method, idx in BUILT_FROM.methods {
+        for &method, idx in BUILT_FROM.methods {
+            if method.name == "any" { 
+                delete(method.name)
+                method.name = "gdany"
+            }
+            if method.name == "map" { 
+                delete(method.name)
+                method.name = "gdmap"
+            }
             strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, variant_type, method.name, method.hash, newline =true))
             strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_method, method.name, newline =true))
         }
@@ -165,7 +194,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
             .PACKED_VECTOR2_ARRAY,
             .PACKED_VECTOR3_ARRAY,
             .PACKED_COLOR_ARRAY,
-            .PACKED_VECTOR4_ARRAY :
+            .PACKED_VECTOR4_ARRAY,
+            .NIL :
                 for ops in BUILT_FROM.operators {
                     eval_enum:= Which_Ops(ops.name)
                     variant_type2:= Get_Variant_Type_From_String(ops.right_type)
@@ -184,15 +214,15 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         //Constants are just floating around
         //Constants only exist for compound types such as vec2, basis etc.
         consts:= `@(rodata)
-%s :GDE.%s`
-        if len(BUILT_FROM.constants) > 0 {
+%s_%s :GDW.%s`
+        if len(BUILT_FROM.constants) > 0 && BUILT_FROM.name != "Quaternion" {
             outoput, did_alloc:=strings.replace_all(BUILT_FROM.constants[0].value, "(", "= {")
                 //fmt.println(outoput)
             defer(delete(outoput))
             outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
             //fmt.println(outoput)
             defer(delete(outoput2))
-            strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.constants[0].name, outoput2, newline =true))
+            strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.name, BUILT_FROM.constants[0].name, outoput2, newline =true))
         }
 
         //fmt.println(strings.to_string(init_builder))
@@ -351,3 +381,5 @@ Which_Ops :: proc(opsName: string) -> GDE.VariantOperator {
     }
     return .VARIANT_OP_MAX
 }
+
+Reserved_Odin_Types :=[?]string {"map","any"}
