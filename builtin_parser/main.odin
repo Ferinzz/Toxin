@@ -7,6 +7,7 @@ import "base:runtime"
 import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "core:bytes"
 
 main :: proc() {
     root, error := os2.get_absolute_path("builtin_parser\\example.json", context.allocator)
@@ -29,8 +30,11 @@ main :: proc() {
         print_warning("failed to create builder", err_buildem)
     }
     final:=build_init_proc(built_different, context.allocator)
-    //fmt.println(final[30].method_list)
-    //fmt.println(final[30].init_proc)
+    for classes in final {
+        //fmt.println(classes.method_list)
+        //fmt.println(classes.init_proc)
+        fmt.println(classes.constants)
+    }
 }
 
 print_warning:: proc(message: string, error: os2.Error) {
@@ -81,6 +85,7 @@ builtin_set :: struct {
     name: string,
     init_proc: string,
     method_list: string,
+    constants: string,
 }
 
 build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic]builtin_set) {
@@ -117,6 +122,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     for BUILT_FROM, idx in json_data.builtin_classes {
         init_builder:=strings.builder_make(ctx)
         struct_builder:=strings.builder_make(ctx)
+        consts_builder:=strings.builder_make(ctx)
         variant_type:GDE.VariantType= Get_Variant_Type_From_String(BUILT_FROM.name)
         buffer:[250]u8
         //signature and struct declaration
@@ -174,10 +180,25 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], Closing, newline =true))
 
+
+        //Constants are just floating around
+        //Constants only exist for compound types such as vec2, basis etc.
+        consts:= `@(rodata)
+%s :GDE.%s`
+        if len(BUILT_FROM.constants) > 0 {
+            outoput, did_alloc:=strings.replace_all(BUILT_FROM.constants[0].value, "(", "= {")
+                //fmt.println(outoput)
+            defer(delete(outoput))
+            outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
+            //fmt.println(outoput)
+            defer(delete(outoput2))
+            strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.constants[0].name, outoput2, newline =true))
+        }
+
         //fmt.println(strings.to_string(init_builder))
         //fmt.println(strings.to_string(struct_builder))
         //fmt.println(BUILT_FROM.name)
-        append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder)})
+        append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder)})
         //strings.builder_reset(&init_builder)
         //strings.builder_reset(&struct_builder)
         //fmt.println(builtin_map[idx].init_proc)
@@ -330,5 +351,3 @@ Which_Ops :: proc(opsName: string) -> GDE.VariantOperator {
     }
     return .VARIANT_OP_MAX
 }
-
-
