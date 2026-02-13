@@ -75,14 +75,14 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> (string, 
     ///////////////////////////////
     // Structure of the init proc
     //////////////////////////////
-    init_proc_sig:=`init_%s_Methods :: proc() {{`
+    init_proc_sig:=`init_%s_Methods :: proc(%[0]s_method_store: %[0]s_Methods_list) {{`
     //name
-    Destructors:=`  String_Methods.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(%w)`
-    //variant_type
-    Creators:=`  String_Methods.Create%[0]v = gdAPI.Variant_Utils.GetPtrConstructor(.%s, %[0]v)`
-    //index, variant_type
-    Meth_Getter:=`  String_Methods.%[1]s = Get_Builtin_Method(%[0]w, %[1]s, %v)`
-    //,variant_type, methods[i].name, methods[i].hash
+    Destructors:=`  %s_method_store.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(%w)`
+    //name, variant_type
+    Creators:=`  %s_method_store.Create%[1]v = gdAPI.Variant_Utils.GetPtrConstructor(.%s, %[1]v)`
+    //name, index, variant_type
+    Meth_Getter:=`  %s_method_store.%[2]s = Get_Builtin_Method(%[1]w, %[2]s, %v)`
+    //name ,variant_type, methods[i].name, methods[i].hash
     Closing:=`}`
 
     /////////////////////////////
@@ -102,24 +102,24 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> (string, 
     variant_type:VariantType=.STRING
     buffer:[200]u8
     //Openers
-    strings.write_string(&init_builder, fmt.bprintf(buffer[:], init_proc_sig, json_data.builtin_classes[0].name, newline =true))
-    strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_struct_declare, json_data.builtin_classes[0].name, newline =true))
+    strings.write_string(&init_builder, fmt.bprintf(buffer[:], init_proc_sig, BUILT_FROM.name, newline =true))
+    strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_struct_declare, BUILT_FROM.name, newline =true))
 
     //setup Constructors
     for creation, idx in BUILT_FROM.constructors {
-        strings.write_string(&init_builder, fmt.bprintf(buffer[:], Creators, idx, variant_type, newline =true))
+        strings.write_string(&init_builder, fmt.bprintf(buffer[:], Creators, BUILT_FROM.name, idx, variant_type, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_creator, idx, newline =true))
     }
 
     //setup Destructors iff the builtin has one
     if BUILT_FROM.has_destructor {
-        strings.write_string(&init_builder, fmt.bprintf(buffer[:], Destructors, variant_type, newline =true))
+        strings.write_string(&init_builder, fmt.bprintf(buffer[:], Destructors, BUILT_FROM.name, variant_type, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_destructor, newline =true))
     }
 
     //setup Methods
     for method, idx in BUILT_FROM.methods {
-        strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, variant_type, method.name, method.hash, newline =true))
+        strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, variant_type, method.name, method.hash, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_method, method.name, newline =true))
     }
 
