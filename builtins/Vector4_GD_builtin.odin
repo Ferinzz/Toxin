@@ -45,6 +45,10 @@ Vector4_Methods_list :: struct {
 }
 @(rodata)
 Vector4_ZERO :GDW.Vector4= {0, 0, 0, 0}
+@(rodata)
+Vector4_ONE :GDW.Vector4= {1, 1, 1, 1}
+@(rodata)
+Vector4_INF :GDW.Vector4= {inf, inf, inf, inf}
 init_Vector4_Methods :: proc(Vector4_method_store: ^Vector4_Methods_list) {
   Vector4_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 0)
   Vector4_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 1)

@@ -35,6 +35,10 @@ Transform2D_Methods_list :: struct {
 }
 @(rodata)
 Transform2D_IDENTITY :GDW.Transform2D= {1, 0, 0, 1, 0, 0}
+@(rodata)
+Transform2D_FLIP_X :GDW.Transform2D= {-1, 0, 0, 1, 0, 0}
+@(rodata)
+Transform2D_FLIP_Y :GDW.Transform2D= {1, 0, 0, -1, 0, 0}
 init_Transform2D_Methods :: proc(Transform2D_method_store: ^Transform2D_Methods_list) {
   Transform2D_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 0)
   Transform2D_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 1)

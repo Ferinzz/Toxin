@@ -34,6 +34,12 @@ Basis_Methods_list :: struct {
 }
 @(rodata)
 Basis_IDENTITY :GDW.Basis= {1, 0, 0, 0, 1, 0, 0, 0, 1}
+@(rodata)
+Basis_FLIP_X :GDW.Basis= {-1, 0, 0, 0, 1, 0, 0, 0, 1}
+@(rodata)
+Basis_FLIP_Y :GDW.Basis= {1, 0, 0, 0, -1, 0, 0, 0, 1}
+@(rodata)
+Basis_FLIP_Z :GDW.Basis= {1, 0, 0, 0, 1, 0, 0, 0, -1}
 init_Basis_Methods :: proc(Basis_method_store: ^Basis_Methods_list) {
   Basis_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 0)
   Basis_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 1)

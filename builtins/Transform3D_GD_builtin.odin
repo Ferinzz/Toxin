@@ -27,6 +27,12 @@ Transform3D_Methods_list :: struct {
 }
 @(rodata)
 Transform3D_IDENTITY :GDW.Transform3D= {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}
+@(rodata)
+Transform3D_FLIP_X :GDW.Transform3D= {-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}
+@(rodata)
+Transform3D_FLIP_Y :GDW.Transform3D= {1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0}
+@(rodata)
+Transform3D_FLIP_Z :GDW.Transform3D= {1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0}
 init_Transform3D_Methods :: proc(Transform3D_method_store: ^Transform3D_Methods_list) {
   Transform3D_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 0)
   Transform3D_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 1)

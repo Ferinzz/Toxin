@@ -39,6 +39,8 @@ Projection_Methods_list :: struct {
 }
 @(rodata)
 Projection_IDENTITY :GDW.Projection= {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
+@(rodata)
+Projection_ZERO :GDW.Projection= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 init_Projection_Methods :: proc(Projection_method_store: ^Projection_Methods_list) {
   Projection_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 0)
   Projection_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 1)

@@ -207,13 +207,13 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   }`
         property_init:= `%[0]s_init_props :: proc(%[0]s_prop: ^%[0]s_properties, loc:= #caller_location) {{`
         property_methodbind:= `
-  %s_prop.%[1]s = GDW.Get_Method_Getter(.%s, %[1]s)
-  %[0]s_prop.%[1]s = GDW.Get_Method_Setter(.%[2]s, %[1]s)`
+  %s_prop.%[1]s_%[3]s.%[4]s = GDW.Get_Method_Getter(.%[2]s, %[1]s)
+  %[0]s_prop.%[1]s_%[3]s.%[5]s = GDW.Get_Method_Setter(.%[2]s, %[1]s)`
         if len(BUILT_FROM.properties) > 0 {
             strings.write_string(&props_builder, fmt.bprintf(buffer[:], propetry_header, BUILT_FROM.name, newline =true))
             strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_init, BUILT_FROM.name, newline =true))
             for &properties in BUILT_FROM.properties {
-                strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind, BUILT_FROM.name, properties.name, Get_Variant_Type_From_String(properties.type), newline =true))
+                strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind, BUILT_FROM.name, properties.name, Get_Variant_Type_From_String(properties.type), properties.type, properties.getter, properties.setter, newline =true))
                 switch properties.type {
                     case "int":
                         delete(properties.type)

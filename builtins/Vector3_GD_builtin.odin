@@ -61,6 +61,34 @@ Vector3_Methods_list :: struct {
 }
 @(rodata)
 Vector3_ZERO :GDW.Vector3= {0, 0, 0}
+@(rodata)
+Vector3_ONE :GDW.Vector3= {1, 1, 1}
+@(rodata)
+Vector3_INF :GDW.Vector3= {inf, inf, inf}
+@(rodata)
+Vector3_LEFT :GDW.Vector3= {-1, 0, 0}
+@(rodata)
+Vector3_RIGHT :GDW.Vector3= {1, 0, 0}
+@(rodata)
+Vector3_UP :GDW.Vector3= {0, 1, 0}
+@(rodata)
+Vector3_DOWN :GDW.Vector3= {0, -1, 0}
+@(rodata)
+Vector3_FORWARD :GDW.Vector3= {0, 0, -1}
+@(rodata)
+Vector3_BACK :GDW.Vector3= {0, 0, 1}
+@(rodata)
+Vector3_MODEL_LEFT :GDW.Vector3= {1, 0, 0}
+@(rodata)
+Vector3_MODEL_RIGHT :GDW.Vector3= {-1, 0, 0}
+@(rodata)
+Vector3_MODEL_TOP :GDW.Vector3= {0, 1, 0}
+@(rodata)
+Vector3_MODEL_BOTTOM :GDW.Vector3= {0, -1, 0}
+@(rodata)
+Vector3_MODEL_FRONT :GDW.Vector3= {0, 0, 1}
+@(rodata)
+Vector3_MODEL_REAR :GDW.Vector3= {0, 0, -1}
 init_Vector3_Methods :: proc(Vector3_method_store: ^Vector3_Methods_list) {
   Vector3_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 0)
   Vector3_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 1)

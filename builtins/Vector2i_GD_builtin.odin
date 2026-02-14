@@ -30,6 +30,20 @@ Vector2i_Methods_list :: struct {
 }
 @(rodata)
 Vector2i_ZERO :GDW.Vector2i= {0, 0}
+@(rodata)
+Vector2i_ONE :GDW.Vector2i= {1, 1}
+@(rodata)
+Vector2i_MIN :GDW.Vector2i= {-2147483648, -2147483648}
+@(rodata)
+Vector2i_MAX :GDW.Vector2i= {2147483647, 2147483647}
+@(rodata)
+Vector2i_LEFT :GDW.Vector2i= {-1, 0}
+@(rodata)
+Vector2i_RIGHT :GDW.Vector2i= {1, 0}
+@(rodata)
+Vector2i_UP :GDW.Vector2i= {0, -1}
+@(rodata)
+Vector2i_DOWN :GDW.Vector2i= {0, 1}
 init_Vector2i_Methods :: proc(Vector2i_method_store: ^Vector2i_Methods_list) {
   Vector2i_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 0)
   Vector2i_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 1)

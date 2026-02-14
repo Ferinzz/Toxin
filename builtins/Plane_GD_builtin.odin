@@ -27,6 +27,10 @@ Plane_Methods_list :: struct {
 }
 @(rodata)
 Plane_PLANE_YZ :GDW.Plane= {1, 0, 0, 0}
+@(rodata)
+Plane_PLANE_XZ :GDW.Plane= {0, 1, 0, 0}
+@(rodata)
+Plane_PLANE_XY :GDW.Plane= {0, 0, 1, 0}
 init_Plane_Methods :: proc(Plane_method_store: ^Plane_Methods_list) {
   Plane_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 0)
   Plane_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 1)

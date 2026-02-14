@@ -29,6 +29,24 @@ Vector3i_Methods_list :: struct {
 }
 @(rodata)
 Vector3i_ZERO :GDW.Vector3i= {0, 0, 0}
+@(rodata)
+Vector3i_ONE :GDW.Vector3i= {1, 1, 1}
+@(rodata)
+Vector3i_MIN :GDW.Vector3i= {-2147483648, -2147483648, -2147483648}
+@(rodata)
+Vector3i_MAX :GDW.Vector3i= {2147483647, 2147483647, 2147483647}
+@(rodata)
+Vector3i_LEFT :GDW.Vector3i= {-1, 0, 0}
+@(rodata)
+Vector3i_RIGHT :GDW.Vector3i= {1, 0, 0}
+@(rodata)
+Vector3i_UP :GDW.Vector3i= {0, 1, 0}
+@(rodata)
+Vector3i_DOWN :GDW.Vector3i= {0, -1, 0}
+@(rodata)
+Vector3i_FORWARD :GDW.Vector3i= {0, 0, -1}
+@(rodata)
+Vector3i_BACK :GDW.Vector3i= {0, 0, 1}
 init_Vector3i_Methods :: proc(Vector3i_method_store: ^Vector3i_Methods_list) {
   Vector3i_method_store.Create0 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3I, 0)
   Vector3i_method_store.Create1 = gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3I, 1)
