@@ -97,6 +97,15 @@ stringNameCompare_StringName :: proc(l_value: ^StringName, r_value: ^StringName)
     return ret
 }
 
+Get_Method_Getter :: proc(type: GDE.VariantType, name: string) -> GDE.PtrGetter {
+    name_SN:= StringConstruct(name)
+    return gdAPI.Variant_Utils.GetPtrGetter(type, &name_SN)
+}
+Get_Method_Setter :: proc(type: GDE.VariantType, name: string) -> GDE.PtrGetter {
+    name_SN:= StringConstruct(name)
+    return gdAPI.Variant_Utils.GetPtrSetter(type, &name_SN)
+}
+
 StringNameGetBasename :: proc(StringNamePtr: ^StringName, r_String: ^gdstring) {
     @(static)stringNameGetBasename: GDE.PtrBuiltInMethod
     if stringNameGetBasename == nil {

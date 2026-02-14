@@ -30,7 +30,6 @@ main :: proc() {
     if err_buildem != nil {
         print_warning("failed to create builder", err_buildem)
     }
-    //fmt.println(string(data))
     final:=build_init_proc(built_different, context.allocator)
 /*
     header:=`package builtins
@@ -86,14 +85,6 @@ builtin:: struct {
         methods: []methods,
         signals: []signal,
         properties:[]property,
-        constructors: []struct {
-            index: int,
-			arguments: [] struct {
-						name: string,
-						type: string
-					}
-            },
-        has_destructor: bool,
 }};
 signal:: struct {
     name:string,
@@ -133,6 +124,8 @@ builtin_set :: struct {
     init_proc: string,
     method_list: string,
     constants: string,
+    properties: string,
+    properties_init: string,
 }
 
 
@@ -144,7 +137,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     // Structure of the init proc
     ///////////////////////////////
     class_decl:=`%s :: ^Object`
-    init_proc_sig:=`%s_Input_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{`
+    init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{`
     //name, name, name
     Meth_Getter:=`  %s_methods.%s = (cast(^MethodBind)classDBGetMethodBind3(.%s, "%s", %v, loc))`
     //name, method.name, variant_type, method.name, hash
@@ -163,6 +156,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         init_builder:=strings.builder_make(ctx)
         struct_builder:=strings.builder_make(ctx)
         consts_builder:=strings.builder_make(ctx)
+        props_builder:=strings.builder_make(ctx)
+        props_init_builder:=strings.builder_make(ctx)
 
         variant_type:GDE.VariantType= Get_Variant_Type_From_String(BUILT_FROM.name)
         buffer:[250]u8
@@ -171,7 +166,9 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], _MethodBind_List, BUILT_FROM.name, newline =true))
 
         //setup Methods
+        if len(BUILT_FROM.methods) > 0 {
         for &method, idx in BUILT_FROM.methods {
+            if method.is_virtual do continue
             if method.name == "any" { 
                 delete(method.name)
                 method.name = "gdany"
@@ -183,7 +180,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
             strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
             strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, newline =true))
         }
-
+        }
         //pinch it off
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], Closing, newline =true))
@@ -191,7 +188,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
 
         //Constants are just floating around
         //Constants only exist for compound types such as vec2, basis etc.
-        consts:= `%s :: enum {{`
+        consts:= `%s_Constants :: enum {{`
         consts_value:= `  %s= %v,`
         if len(BUILT_FROM.constants) > 0 {
             strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.name, newline =true))
@@ -202,10 +199,47 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
             //fmt.println(strings.to_string(consts_builder))
         }
 
+        //Properties
+        propetry_header:= `%s_properties :: struct {{`
+        property_value:= `  %s_%s :: struct {{
+    %s: proc "c" (p_base: %[0]s r_value: ^%[1]s),
+    %s: proc "c" (p_base: %[0]s, p_value: ^%[1]s),
+  }`
+        property_init:= `%[0]s_init_props :: proc(%[0]s_prop: ^%[0]s_properties, loc:= #caller_location) {{`
+        property_methodbind:= `
+  %s_prop.%[1]s = GDW.Get_Method_Getter(.%s, %[1]s)
+  %[0]s_prop.%[1]s = GDW.Get_Method_Setter(.%[2]s, %[1]s)`
+        if len(BUILT_FROM.properties) > 0 {
+            strings.write_string(&props_builder, fmt.bprintf(buffer[:], propetry_header, BUILT_FROM.name, newline =true))
+            strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_init, BUILT_FROM.name, newline =true))
+            for &properties in BUILT_FROM.properties {
+                strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind, BUILT_FROM.name, properties.name, Get_Variant_Type_From_String(properties.type), newline =true))
+                switch properties.type {
+                    case "int":
+                        delete(properties.type)
+                        properties.type = "Int"
+                    case "String":
+                        delete(properties.type)
+                        properties.type = "gdstring"
+                    case "bool":
+                        delete(properties.type)
+                        properties.type = "Bool"
+                    case "Nil":
+                        delete(properties.type)
+                        properties.type = "nil"
+                }
+                strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value, properties.name, properties.type, properties.getter, properties.setter, newline =true))
+            }
+            strings.write_string(&props_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+            strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+            //fmt.println(strings.to_string(props_builder))
+            fmt.println(strings.to_string(props_init_builder))
+        }
+
         //fmt.println(strings.to_string(init_builder))
-        fmt.println(strings.to_string(struct_builder))
+        //fmt.println(strings.to_string(struct_builder))
         //fmt.println(BUILT_FROM.name)
-        append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder)})
+        append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), strings.to_string(props_builder), strings.to_string(props_init_builder)})
         //strings.builder_reset(&init_builder)
         //strings.builder_reset(&struct_builder)
         //fmt.println(builtin_map[idx].init_proc)
@@ -216,15 +250,15 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
 
 Get_Variant_Type_From_String :: proc(className: string) -> GDE.VariantType {
     switch className {
-        case "Nil" :
+        case "Nil", "nil" :
             return .NIL
-        case "bool" :
+        case "bool", "Bool" :
             return .BOOL
-        case "int" :
+        case "int", "Int" :
 	        return .INT
         case "float" :
 	        return .FLOAT
-        case "String" :
+        case "String", "gdstring" :
 	        return .STRING
         case "Vector2" :
 	        return .VECTOR2
