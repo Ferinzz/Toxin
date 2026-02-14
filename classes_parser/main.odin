@@ -8,10 +8,10 @@ import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
-//import "../builtins"
+//import "../All_Godot_Classes"
 
 main :: proc() {
-    root, error := os2.get_absolute_path("builtin_parser\\example.json", context.allocator)
+    root, error := os2.get_absolute_path("classes_parser\\example.json", context.allocator)
     if error != nil {
         print_warning("error getting root.", error)
         return
@@ -32,7 +32,7 @@ main :: proc() {
     }
     final:=build_init_proc(built_different, context.allocator)
 /*
-    header:=`package builtins
+    header:=`package classes
 
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
@@ -45,17 +45,25 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
         //fmt.println(classes.init_proc)
         //fmt.println(classes.constants)
 
-        file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\builtins\\%s_GD_builtin.odin", classes.name)
+        file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\All_Godot_Classes\\%s_GD_builtin.odin", classes.name)
         file, open_err:= os2.create(file_path)
         if open_err == nil {
-            count, write_err:= os2.write_strings(file, header, classes.method_list, classes.constants, classes.init_proc)
+            count, write_err:= os2.write_strings(file, header, 
+                                                        classes.name,
+                                                        ` :: ^GDW.Object
+
+`,
+                                                        classes.init_proc,
+                                                        classes.method_list,
+                                                        classes.constants,
+                                                        classes.properties,
+                                                        classes.properties_init,)
             fmt.println("wrote: ", count, write_err)
         } else {
             print_warning("could not open file_path", open_err)
         }
         delete(file_path)
-    }
-*/
+    }*/
 }
 
 print_warning:: proc(message: string, error: os2.Error) {
@@ -147,7 +155,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     // Structure of the builtin struct
     /////////////////////////////
     _MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
-    class_name:= `  %s: ^MethodBind,` //method.name
+    class_name:= `  %s: ^GDW.MethodBind,` //method.name
 
     ////////////////////////////
     // Convert the unmarshalled json to Odin procs and structs
@@ -159,8 +167,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         props_builder:=strings.builder_make(ctx)
         props_init_builder:=strings.builder_make(ctx)
 
-        variant_type:GDE.VariantType= Get_Variant_Type_From_String(BUILT_FROM.name)
-        buffer:[250]u8
+        //variant_type:GDE.VariantType= Get_Variant_Type_From_String(BUILT_FROM.name)
+        buffer:[400]u8
         //signature and struct declaration
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], init_proc_sig, BUILT_FROM.name, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], _MethodBind_List, BUILT_FROM.name, newline =true))
@@ -201,19 +209,19 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
 
         //Properties
         propetry_header:= `%s_properties :: struct {{`
-        property_value:= `  %s_%s :: struct {{
-    %s: proc "c" (p_base: %[0]s r_value: ^%[1]s),
-    %s: proc "c" (p_base: %[0]s, p_value: ^%[1]s),
-  }`
+        property_value:= `  %s_%s : struct {{
+    %s: proc "c" (p_base: %s, r_value: ^GDW.%[1]s),`
+        property_value_setter:=`    %s: proc "c" (p_base: %s, p_value: ^GDW.%s),`
+        prop_closure:= `  },
+`
         property_init:= `%[0]s_init_props :: proc(%[0]s_prop: ^%[0]s_properties, loc:= #caller_location) {{`
-        property_methodbind:= `
-  %s_prop.%[1]s_%[3]s.%[4]s = GDW.Get_Method_Getter(.%[2]s, %[1]s)
-  %[0]s_prop.%[1]s_%[3]s.%[5]s = GDW.Get_Method_Setter(.%[2]s, %[1]s)`
+        property_methodbind_getter:= `
+  %s_prop.%[1]s_%[3]s.%[4]s = cast(proc "c" (p_base: %[0]s, r_value: ^GDW.%[3]s))GDW.Get_Method_Getter(.%[2]s, %[1]s)`
+        property_methodbind_setter:= `  %s_prop.%s_%s.%[1]s = cast(proc "c" (p_base: %[0]s, p_value: ^GDW.%[2]s))GDW.Get_Method_Setter(.%[3]s, %[1]s)`
         if len(BUILT_FROM.properties) > 0 {
             strings.write_string(&props_builder, fmt.bprintf(buffer[:], propetry_header, BUILT_FROM.name, newline =true))
             strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_init, BUILT_FROM.name, newline =true))
             for &properties in BUILT_FROM.properties {
-                strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind, BUILT_FROM.name, properties.name, Get_Variant_Type_From_String(properties.type), properties.type, properties.getter, properties.setter, newline =true))
                 switch properties.type {
                     case "int":
                         delete(properties.type)
@@ -228,11 +236,18 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
                         delete(properties.type)
                         properties.type = "nil"
                 }
-                strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value, properties.name, properties.type, properties.getter, properties.setter, newline =true))
+                strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter, BUILT_FROM.name, properties.name, Get_Variant_Type_From_String(properties.type), properties.type, properties.getter, newline =true))
+                strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value, properties.name, properties.type, properties.getter, BUILT_FROM.name, newline =true))
+                if properties.setter != "" {
+                    strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_setter, BUILT_FROM.name, properties.name, properties.type, Get_Variant_Type_From_String(properties.type), newline =true))
+                    strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_setter, properties.setter, BUILT_FROM.name, properties.type, newline =true))
+                }
+                strings.write_string(&props_builder, prop_closure)
+                
             }
             strings.write_string(&props_builder, fmt.bprintf(buffer[:], Closing, newline =true))
             strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
-            //fmt.println(strings.to_string(props_builder))
+            fmt.println(strings.to_string(props_builder))
             fmt.println(strings.to_string(props_init_builder))
         }
 
