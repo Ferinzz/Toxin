@@ -23,7 +23,7 @@ Method_Callback_Compare_Info :: struct {
 
 //Use this if you're just doing a Node, as it's the type for VTable directly.
 //This is the base of everything else, don't need to pass it through its own special vtable group.
-Node_v_table:: struct (T: typeid) {
+Node_v_table:: struct ($T: typeid) {
     _physics_process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^float}),
     _process: proc "c" (self: ^Class_Container(T), using p_args: ^struct{delta: ^float}),
     _input: proc "c" (self: ^Class_Container(T), input: ^struct{inp: ^^InputEvent}),
@@ -38,12 +38,12 @@ Node_v_table:: struct (T: typeid) {
     _unhandled_key_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
 }
 
-vCanvasItem:: struct(T: typeid){
+vCanvasItem:: struct($T: typeid){
     using vNode: Node_v_table(T),
     using vCanvasItem: CanvasItem_v_table(T),
 }
 
-vNode2D:: struct(T: typeid) {
+vNode2D:: struct($T: typeid) {
     using vNode: Node_v_table(T),
     using vCanvasItem: CanvasItem_v_table(T),
 }
@@ -67,19 +67,19 @@ vControl:: struct($T: typeid) {
 }
 
 //"inherits": "Node2D",
-Texture2D_v_table:: struct (T: typeid){
+Texture2D_v_table:: struct ($T: typeid){
     _is_pixel_opaque: proc "c" (self: ^Class_Container(T), using args: ^struct {x: ^Int, y: ^Int}),
     _get_height: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^Int),
     _get_width: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^Int),
     _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^RID, rect: ^Rec2, src_rect: ^Rec2, modulate: ^Color, transpose: ^Bool, clip_uv: ^Bool }),
 }
 
-CanvasItem_v_table:: struct(T: typeid){
-    _draw: proc "c" (self: ^T),
+CanvasItem_v_table:: struct($T: typeid){
+    _draw: proc "c" (self: ^Class_Container(T)),
 }
 
 //"inherits": "CanvasItem",
-Control_v_table:: struct(T: typeid) {
+Control_v_table:: struct($T: typeid) {
     _has_point: proc "c" (self: ^Class_Container(T), using p_args: ^struct{point: ^Vector2}),
     _structured_text_parser: proc "c" (self: ^Class_Container(T), using p_args: ^struct{args: ^Array, text: ^gdstring}),
     _get_minimum_size: proc "c" (self: ^Class_Container(T)),

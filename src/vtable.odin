@@ -5,6 +5,7 @@ import "Toxin"
 import "base:runtime"
 import "core:fmt"
 import GDW "shared:GDWrapper"
+import sics "base:intrinsics"
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
@@ -52,6 +53,15 @@ munum::enum{
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
     me:=(^Toxin.Class_Deets)(self)
+    fmt.println(typeid_of(type_of(THIS_CLASS_NAME_VTable)))
+    tabletype:: sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME))
+    tabletype2:: sics.type_is_subtype_of( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), GDW.Node_v_table)
+    tabletype3:: sics.type_has_field( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), "vNode")
+    tabletype4:: sics.type_has_field( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), "vCanvasItem")
+    fmt.println(tabletype2)
+    fmt.println(tabletype3)
+    fmt.println(tabletype4)
+    fmt.println(typeid_of(tabletype))
     Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
 }
 
@@ -139,14 +149,20 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         //fmt.println((transmute(^Toxin.AABB)receive.data[0])^)
         //fmt.println(size_of(Toxin.Vector4))
         //fmt.println((cast(^Toxin.variant_union)(&receive.data[0])).AABB^)
-        //myNode: Toxin.Node_C
-        //Toxin.Maker(&myNode)
-        //mbewl: i64
+        checker:Toxin.Bool=false
+        mbewl: Toxin.Int
+        myNode: Toxin.Node_C
+        Toxin.Maker(&myNode)
+        myNode->get_child_count({&checker}, &mbewl)
         //Toxin.GDArray_Methods.Create0(cast(rawptr)(&self.rarray),nil)
         //myNode->call_deferred({nil}, &mbewl)
     },
     _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {},
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^Toxin.float}){},
+    _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
+        context = runtime.default_context()
+        fmt.println("yarrr")
+    },
 }
 
 //******************************\\

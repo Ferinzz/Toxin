@@ -30,10 +30,11 @@ main :: proc() {
     if err_buildem != nil {
         print_warning("failed to create builder", err_buildem)
     }
-    final:=build_init_proc(built_different, context.allocator)
-    
+    //fmt.println(string(data))
+    /*final:=build_init_proc(built_different, context.allocator)
+
     header:=`package builtins
-        
+
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
@@ -55,7 +56,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
         }
         delete(file_path)
     }
-
+*/
 }
 
 print_warning:: proc(message: string, error: os2.Error) {
@@ -134,6 +135,7 @@ builtin_set :: struct {
     constants: string,
 }
 
+/*
 build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic]builtin_set) {
     
     builtin_map:= make([dynamic]builtin_set, ctx)
@@ -262,7 +264,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     
     return builtin_map
 }
-
+*/
 Get_Variant_Type_From_String :: proc(className: string) -> GDE.VariantType {
     switch className {
         case "Nil" :

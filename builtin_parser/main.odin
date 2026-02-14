@@ -10,6 +10,8 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
 //import "../builtins"
 
+//TODO!! keyed getter/setter
+
 main :: proc() {
     root, error := os2.get_absolute_path("builtin_parser\\example.json", context.allocator)
     if error != nil {

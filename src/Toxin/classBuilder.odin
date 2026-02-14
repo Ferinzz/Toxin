@@ -151,25 +151,31 @@ Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstan
 */
 make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type_is_pointer(T) != true {
 
+    args::sics.type_has_field( sics.type_base_type(T), "vCanvasItem")
+    fmt.println(args)
     intermediate:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
         context = runtime.default_context()
         arg:= cast(^T)p_class_userdata.vtable
         //Will exit early if there is a match on the value.
         ok:bool=false
         virtual:rawptr=nil
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.Node_v_table){
+        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.Node_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vNode"){
             virtual, ok = GDW.Return_Node_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.CanvasItem_v_table){
+        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.CanvasItem_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vCanvasItem"){
             virtual, ok = GDW.Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.CollisionObject2D_v_table){
+        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.CollisionObject2D_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vCollisionObject2D"){
             virtual, ok = GDW.Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.Texture2D_v_table){
+        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.Texture2D_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vTexture"){
             virtual, ok = GDW.Return_texture_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
