@@ -31,8 +31,8 @@ main :: proc() {
         print_warning("failed to create builder", err_buildem)
     }
     //fmt.println(string(data))
-    /*final:=build_init_proc(built_different, context.allocator)
-
+    final:=build_init_proc(built_different, context.allocator)
+/*
     header:=`package builtins
 
 import GDW "shared:GDWrapper"
@@ -135,7 +135,7 @@ builtin_set :: struct {
     constants: string,
 }
 
-/*
+
 build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic]builtin_set) {
     
     builtin_map:= make([dynamic]builtin_set, ctx)
@@ -144,51 +144,31 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     // Structure of the init proc
     ///////////////////////////////
     class_decl:=`%s :: ^Object`
-    init_proc_sig:=`init_%s_Methods :: proc(%[0]s_method_store: ^%[0]s_Methods_list) {{`
-    //name
-    Creators:=`  %s_method_store.Create%[1]v = gdAPI.Variant_Utils.GetPtrConstructor(.%s, %[1]v)`
-    //name, index, variant_type
-    Destructors:=`  %s_method_store.Destroy = gdAPI.Variant_Utils.GetPtrDestructor(.%v)`
-    //name, variant_type
-    op_eval:= `  %s_method_store.%s_%s = gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.%[1]v, .%v, .%v)`
-    //name, eval_enum, variant_type
-    Meth_Getter:=`  %s_method_store.%[2]s = GDW.Get_Builtin_Method(.%[1]v, "%[2]s", %v)`
-    //name ,variant_type, methods[i].name, methods[i].hash
+    init_proc_sig:=`%s_Input_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{`
+    //name, name, name
+    Meth_Getter:=`  %s_methods.%s = (cast(^MethodBind)classDBGetMethodBind3(.%s, "%s", %v, loc))`
+    //name, method.name, variant_type, method.name, hash
     Closing:=`}`
 
     /////////////////////////////
     // Structure of the builtin struct
     /////////////////////////////
-    bltn_struct_declare:= `%s_Methods_list :: struct {{` //builtin name
-    bltn_creator:= `  Create%v: GDE.PtrConstructor,` //index of Creator
-    bltn_destructor:= `  Destroy: GDE.PtrDestructor,` //Include if Destructor true
-    bltn_method:= `  %s:  GDE.PtrBuiltInMethod,` //Name of method: methods.name
-    bltn_ops:= `  %s_%s: GDE.PtrOperatorEvaluator,`
+    _MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
+    class_name:= `  %s: ^MethodBind,` //method.name
 
     ////////////////////////////
     // Convert the unmarshalled json to Odin procs and structs
     ////////////////////////////
-    for BUILT_FROM, idx in json_data.builtin_classes {
+    for BUILT_FROM, idx in json_data.classes {
         init_builder:=strings.builder_make(ctx)
         struct_builder:=strings.builder_make(ctx)
         consts_builder:=strings.builder_make(ctx)
+
         variant_type:GDE.VariantType= Get_Variant_Type_From_String(BUILT_FROM.name)
         buffer:[250]u8
         //signature and struct declaration
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], init_proc_sig, BUILT_FROM.name, newline =true))
-        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_struct_declare, BUILT_FROM.name, newline =true))
-
-        //setup Constructors
-        for creation, idx in BUILT_FROM.constructors {
-            strings.write_string(&init_builder, fmt.bprintf(buffer[:], Creators, BUILT_FROM.name, idx, variant_type, newline =true))
-            strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_creator, idx, newline =true))
-        }
-
-        //setup Destructors iff the builtin has one
-        if BUILT_FROM.has_destructor {
-            strings.write_string(&init_builder, fmt.bprintf(buffer[:], Destructors, BUILT_FROM.name, variant_type, newline =true))
-            strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_destructor, newline =true))
-        }
+        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], _MethodBind_List, BUILT_FROM.name, newline =true))
 
         //setup Methods
         for &method, idx in BUILT_FROM.methods {
@@ -200,40 +180,10 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
                 delete(method.name)
                 method.name = "gdmap"
             }
-            strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, variant_type, method.name, method.hash, newline =true))
-            strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_method, method.name, newline =true))
+            strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
+            strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, newline =true))
         }
-        
-        #partial switch variant_type {
-            case .STRING_NAME,
-            .INT,
-            .NODE_PATH,
-            .RID,
-            .CALLABLE,
-            .SIGNAL,
-            .DICTIONARY,
-            .ARRAY,
-            .PACKED_BYTE_ARRAY,
-            .PACKED_INT32_ARRAY,
-            .PACKED_INT64_ARRAY,
-            .PACKED_FLOAT32_ARRAY,
-            .PACKED_FLOAT64_ARRAY,
-            .PACKED_STRING_ARRAY,
-            .PACKED_VECTOR2_ARRAY,
-            .PACKED_VECTOR3_ARRAY,
-            .PACKED_COLOR_ARRAY,
-            .PACKED_VECTOR4_ARRAY,
-            .NIL :
-                for ops in BUILT_FROM.operators {
-                    eval_enum:= Which_Ops(ops.name)
-                    variant_type2:= Get_Variant_Type_From_String(ops.right_type)
-                    //If the comparison type is Variant... There is no type in the enum for that. Don't fetch it.
-                    if variant_type2 != .VARIANT_MAX {
-                        strings.write_string(&init_builder, fmt.bprintf(buffer[:], op_eval, BUILT_FROM.name, eval_enum, ops.right_type, variant_type, variant_type2, newline =true))
-                        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_ops, eval_enum, ops.right_type, newline =true))
-                    }
-                }
-        }
+
         //pinch it off
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], Closing, newline =true))
@@ -241,20 +191,19 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
 
         //Constants are just floating around
         //Constants only exist for compound types such as vec2, basis etc.
-        consts:= `@(rodata)
-%s_%s :GDW.%s`
-        if len(BUILT_FROM.constants) > 0 && BUILT_FROM.name != "Quaternion" {
-            outoput, did_alloc:=strings.replace_all(BUILT_FROM.constants[0].value, "(", "= {")
-                //fmt.println(outoput)
-            defer(delete(outoput))
-            outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
-            //fmt.println(outoput)
-            defer(delete(outoput2))
-            strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.name, BUILT_FROM.constants[0].name, outoput2, newline =true))
+        consts:= `%s :: enum {{`
+        consts_value:= `  %s= %v,`
+        if len(BUILT_FROM.constants) > 0 {
+            strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.name, newline =true))
+            for constants in BUILT_FROM.constants {
+                strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts_value, constants.name, constants.value, newline =true))
+            }
+            strings.write_string(&consts_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+            //fmt.println(strings.to_string(consts_builder))
         }
 
         //fmt.println(strings.to_string(init_builder))
-        //fmt.println(strings.to_string(struct_builder))
+        fmt.println(strings.to_string(struct_builder))
         //fmt.println(BUILT_FROM.name)
         append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder)})
         //strings.builder_reset(&init_builder)
@@ -264,7 +213,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     
     return builtin_map
 }
-*/
+
 Get_Variant_Type_From_String :: proc(className: string) -> GDE.VariantType {
     switch className {
         case "Nil" :

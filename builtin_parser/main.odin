@@ -217,13 +217,15 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         consts:= `@(rodata)
 %s_%s :GDW.%s`
         if len(BUILT_FROM.constants) > 0 && BUILT_FROM.name != "Quaternion" {
-            outoput, did_alloc:=strings.replace_all(BUILT_FROM.constants[0].value, "(", "= {")
+            for constants in BUILT_FROM.constants {
+                outoput, did_alloc:=strings.replace_all(constants.value, "(", "= {")
+                    //fmt.println(outoput)
+                defer(delete(outoput))
+                outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
                 //fmt.println(outoput)
-            defer(delete(outoput))
-            outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
-            //fmt.println(outoput)
-            defer(delete(outoput2))
-            strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.name, BUILT_FROM.constants[0].name, outoput2, newline =true))
+                defer(delete(outoput2))
+                strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.name, constants.name, outoput2, newline =true))
+            }
         }
 
         //fmt.println(strings.to_string(init_builder))
