@@ -17,6 +17,7 @@ main :: proc() {
         return
     }
     fmt.println(root)
+    //data, err := os2.read_entire_file(root, context.allocator)
     data, err := os2.read_entire_file("C:\\Odin_programs\\toxin_new_pull\\extension_api.json", context.allocator)
     
     if err != nil {
@@ -62,18 +63,28 @@ print_warning:: proc(message: string, error: os2.Error) {
 }
 
 builtin:: struct {
-    builtin_classes: []struct {
+    classes: []struct {
 		name: string,
-		indexing_return_type: string,
-		is_keyed: bool,
+		is_refcounted: bool,
+		is_instantiable: bool,
+        api_type: string, //Only core or editor
 		constants: []struct
 				{
 					name: string,
 					type: string,
-					value: string,
+					value: int,
 				},
-        operators: []operators,
+        enums: []struct {
+            name: string,
+            is_bitfield: bool,
+            values: [] struct {
+					name: string,
+					value: int,
+            }
+        },
         methods: []methods,
+        signals: []signal,
+        properties:[]property,
         constructors: []struct {
             index: int,
 			arguments: [] struct {
@@ -83,22 +94,37 @@ builtin:: struct {
             },
         has_destructor: bool,
 }};
-operators :: struct {
-	name: string,
-	right_type: string,
-	return_type: string
+signal:: struct {
+    name:string,
+    arguments:[]struct {
+        name:string,
+        type:string,
+    }
 }
 methods:: struct {
     name: string,
-	return_type: string,
-	is_vararg: bool,
 	is_const: bool,
 	is_static: bool,
+    is_required: bool,
+    is_vararg: bool,
+    is_virtual: bool,
 	hash: int,
+    return_value: struct {
+        type: string, //"typedarray::StringName" internally screaming
+        meta: string,
+    },
 	arguments: []struct {
 			name: string,
-			type: string
+			type: string,
+            meta: string,
+			default_value: string,
     }
+}
+property::struct{
+    type:string,
+    name:string,
+    setter:string,
+    getter:string,
 }
 
 builtin_set :: struct {
@@ -115,6 +141,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     ///////////////////////////////
     // Structure of the init proc
     ///////////////////////////////
+    class_decl:=`%s :: ^Object`
     init_proc_sig:=`init_%s_Methods :: proc(%[0]s_method_store: ^%[0]s_Methods_list) {{`
     //name
     Creators:=`  %s_method_store.Create%[1]v = gdAPI.Variant_Utils.GetPtrConstructor(.%s, %[1]v)`
