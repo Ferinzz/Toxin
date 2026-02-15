@@ -8,7 +8,7 @@ import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
-//import "../All_Godot_Classes"
+import "../All_Godot_Classes"
 
 main :: proc() {
   root, error := os2.get_absolute_path("classes_parser\\example.json", context.allocator)
@@ -56,6 +56,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 `,
                             classes.properties,
                             classes.constants,
+                            classes.enums,
                             classes.method_list,
                             classes.init_proc,
                             classes.properties_init,)
@@ -136,6 +137,7 @@ builtin_set :: struct {
   constants: string,
   properties: string,
   properties_init: string,
+  enums: string,
 }
 
 
@@ -168,6 +170,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     consts_builder:=strings.builder_make(ctx)
     props_builder:=strings.builder_make(ctx)
     props_init_builder:=strings.builder_make(ctx)
+    enum_builder:=strings.builder_make(ctx) //btw, several enums have the same name but different fields based on the class they're part of.
 
     buffer:[400]u8
     //signature and struct declaration
@@ -197,7 +200,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
 
     //Constants are just floating around
     //Constants only exist for compound types such as vec2, basis etc.
-    consts:= `%s_Constants :: enum {{`
+    consts:= `%s_Constants :: enum i64 {{`
     consts_value:= `  %s= %v,`
     if len(BUILT_FROM.constants) > 0 {
       strings.write_string(&consts_builder, fmt.bprintf(buffer[:], consts, BUILT_FROM.name, newline =true))
@@ -297,7 +300,7 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
             ok:bool
             temp, ok = strings.remove(option, "-", -1, context.temp_allocator)
             if ok {
-                fmt.println("'-' was removed", option)
+                //fmt.println("'-' was removed", option)
                 option = temp
             }
             strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter_class, BUILT_FROM.name, properties.name, option, properties.getter, newline =true))
@@ -331,6 +334,7 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
         }
         
       }
+      //Close properties and prop inits
       strings.write_string(&props_builder, fmt.bprintf(buffer[:], Closing, newline =true))
       strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
       //fmt.println(strings.to_string(props_builder))
@@ -340,7 +344,27 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
     //fmt.println(strings.to_string(init_builder))
     //fmt.println(strings.to_string(struct_builder))
     //fmt.println(BUILT_FROM.name)
-    append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), strings.to_string(props_builder), strings.to_string(props_init_builder)})
+
+    /////////////////////////
+    // ENUMS
+    ////////////////////////
+    enum_name:= `
+%s_%s :: enum i64 {{`
+    enum_field:= `  %s = %v,`
+
+    if len(BUILT_FROM.enums) > 0 {
+      for constants in BUILT_FROM.enums {
+        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_name, BUILT_FROM.name, constants.name, newline =true))
+        for val in constants.values {
+            strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_field, val.name, val.value, newline =true))
+        }
+        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+      }
+      fmt.println(strings.to_string(enum_builder))
+    }
+
+    //Append all the work we did to the array of classes.
+    append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), strings.to_string(props_builder), strings.to_string(props_init_builder), strings.to_string(enum_builder)})
     //strings.builder_reset(&init_builder)
     //strings.builder_reset(&struct_builder)
     //fmt.println(builtin_map[idx].init_proc)
