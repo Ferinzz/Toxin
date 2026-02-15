@@ -148,7 +148,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   class_decl:=`%s :: ^Object`
   init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{`
   //name, name, name
-  Meth_Getter:=`  %s_methods.%s = (cast(^MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
+  Meth_Getter:=`  %s_methods.%s = (cast(^GDW.MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
   //name, method.name, variant_type, method.name, hash
   Closing:=`}`
 
@@ -226,8 +226,8 @@ OpenXRActionMap_properties :: struct {
 }*/
     property_init:= `%[0]s_init_props :: proc(%[0]s_prop: ^%[0]s_properties, loc:= #caller_location) {{`
     property_methodbind_getter_bltn:= `
-  %s_prop.%s_%s.%s = cast(proc "c" (p_base: %[0]s, r_value: ^GDW.%[3]s))GDW.Get_Method_Getter(.%[4]s, "%[3]s")`
-    property_methodbind_setter_bltn:= `  %s_prop.%s_%s.%s = cast(proc "c" (p_base: %[0]s, p_value: ^GDW.%[3]s))GDW.Get_Method_Setter(.%[4]s, "%[3]s")`
+  %s_prop.%s_%s.%s = cast(proc "c" (p_base: %[0]s, r_value: ^GDW.%[2]s))GDW.Get_Method_Getter(.%[4]s, "%[3]s")`
+    property_methodbind_setter_bltn:= `  %s_prop.%s_%s.%s = cast(proc "c" (p_base: %[0]s, p_value: ^GDW.%[2]s))GDW.Get_Method_Setter(.%[4]s, "%[3]s")`
     property_methodbind_getter_class:= `
   %s_prop.%[1]s_%[2]s.%[3]s = cast(proc "c" (p_base: %[0]s, r_value: ^%[2]s))GDW.Get_Method_Getter(.OBJECT, "%[3]s")`
     property_methodbind_setter_class:= `  %s_prop.%s_%s.%[3]s = cast(proc "c" (p_base: %[0]s, p_value: ^%[2]s))GDW.Get_Method_Setter(.OBJECT, "%[3]s")`
