@@ -8,7 +8,7 @@ import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
-//import "../GD_Classes"
+import "../GD_Classes"
 
 main :: proc() {
   root, error := os2.get_absolute_path("classes_parser\\example.json", context.allocator)
@@ -433,18 +433,23 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
     enum_name:= `
 %s_%s :: enum i64 {{`
     enum_field:= `  %s = %v,`
+    ebit_field:= `  %s,`
+          enum_flags:= `
+%s_%s_Flags :: bit_set [%[0]s_%[1]s; i64]`
 
     if len(BUILT_FROM.enums) > 0 {
       for constants in BUILT_FROM.enums {
         if constants.is_bitfield == true {
-          enum_flags:= `
-%s_Flags :: bit_set [%[1]s_%[0]s; u32]`
         strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_flags,  constants.name, BUILT_FROM.name, newline =false))
-          
         }
-        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_name, BUILT_FROM.name, constants.name, newline =true))
+        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_name, constants.name, BUILT_FROM.name, newline =true))
         for val in constants.values {
+          if constants.is_bitfield {
+            strings.write_string(&enum_builder, fmt.bprintf(buffer[:], ebit_field, val.name, newline =true))
+          } else
+          {
             strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_field, val.name, val.value, newline =true))
+          }
         }
         strings.write_string(&enum_builder, fmt.bprintf(buffer[:], Closing, newline =true))
       }
