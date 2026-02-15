@@ -368,7 +368,7 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
         if strings.contains(properties.type, "bitfield") {
             temp:=properties.type
             ok:bool
-            properties.type, ok = strings.replace(properties.type, "enum::", "", 0, ctx)
+            properties.type, ok = strings.replace(properties.type, "bitfield::", "", 0, ctx)
             assert(ok, "could not allocate new string for type")
             delete(temp)
             variant_type = .INT
@@ -436,6 +436,12 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
 
     if len(BUILT_FROM.enums) > 0 {
       for constants in BUILT_FROM.enums {
+        if constants.is_bitfield == true {
+          enum_flags:= `
+%s_Flags :: bit_set [%[1]s_%[0]s; u32]`
+        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_flags,  constants.name, BUILT_FROM.name, newline =false))
+          
+        }
         strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_name, BUILT_FROM.name, constants.name, newline =true))
         for val in constants.values {
             strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_field, val.name, val.value, newline =true))
@@ -543,63 +549,3 @@ Get_Variant_Type_From_String :: proc(className: string) -> GDE.VariantType {
       return .NIL
   }
 }
-
-Which_Ops :: proc(opsName: string) -> GDE.VariantOperator {
-  switch opsName {
-    case "==":
-      return .VARIANT_OP_EQUAL
-    case "!=":
-      return .VARIANT_OP_NOT_EQUAL
-    case "unary-":
-      return .VARIANT_OP_NEGATE
-    case "unary+":
-      return .VARIANT_OP_POSITIVE
-    case "~":
-      return .VARIANT_OP_BIT_NEGATE
-    case "and":
-      return .VARIANT_OP_AND
-    case "or":
-      return .VARIANT_OP_OR
-    case "xor":
-      return .VARIANT_OP_XOR
-    case "not":
-      return .VARIANT_OP_NOT
-    case "<":
-      return .VARIANT_OP_LESS
-    case "<=":
-      return .VARIANT_OP_LESS_EQUAL
-    case ">":
-      return .VARIANT_OP_GREATER
-    case ">=":
-      return .VARIANT_OP_GREATER_EQUAL
-    case "+":
-      return .VARIANT_OP_ADD
-    case "-":
-      return .VARIANT_OP_SUBTRACT
-    case "*":
-      return .VARIANT_OP_MULTIPLY
-    case "/":
-      return .VARIANT_OP_DIVIDE
-    case "%":
-      return .VARIANT_OP_MODULE
-    case "**":
-      return .VARIANT_OP_POWER
-    case "<<":
-      return .VARIANT_OP_SHIFT_LEFT
-    case ">>":
-      return .VARIANT_OP_SHIFT_RIGHT
-    case "&":
-      return .VARIANT_OP_BIT_AND
-    case "|":
-      return .VARIANT_OP_BIT_OR
-    case "^":
-      return .VARIANT_OP_BIT_XOR
-    case "in" :
-      return .VARIANT_OP_IN
-    case :
-      return .VARIANT_OP_MAX
-  }
-  return .VARIANT_OP_MAX
-}
-
-Reserved_Odin_Types :=[?]string {"map","any"}
