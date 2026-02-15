@@ -8,7 +8,7 @@ import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
-import "../All_Godot_Classes"
+//import "../All_Godot_Classes"
 
 main :: proc() {
   root, error := os2.get_absolute_path("classes_parser\\example.json", context.allocator)
@@ -45,7 +45,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     //fmt.println(classes.init_proc)
     //fmt.println(classes.constants)
 
-    file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\All_Godot_Classes\\%s_GD_builtin.odin", classes.name)
+    file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\All_Godot_Classes\\%s_GD_Class.odin", classes.name)
     file, open_err:= os2.create(file_path)
     if open_err == nil {
       //count, write_err:= os2.write_strings(file, header, 
