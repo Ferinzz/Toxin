@@ -174,7 +174,7 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
             virtual, ok = GDW.Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.Texture2D_v_table) || 
+        when sics.type_is_subtype_of(sics.type_elem_type(T), Texture2D_v_table) || 
         sics.type_has_field( sics.type_base_type(T), "vTexture"){
             virtual, ok = GDW.Return_texture_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual

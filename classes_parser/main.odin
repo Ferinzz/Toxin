@@ -48,7 +48,8 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\All_Godot_Classes\\%s_GD_builtin.odin", classes.name)
     file, open_err:= os2.create(file_path)
     if open_err == nil {
-      count, write_err:= os2.write_strings(file, header, 
+      //count, write_err:= os2.write_strings(file, header, 
+      os2.write_strings(file, header, 
                             classes.name,
                             ` :: ^GDW.Object
 
@@ -58,7 +59,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
                             classes.constants,
                             classes.properties,
                             classes.properties_init,)
-      fmt.println("wrote: ", count, write_err)
+      //fmt.println("wrote: ", count, write_err)
     } else {
       print_warning("could not open file_path", open_err)
     }
@@ -147,7 +148,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   class_decl:=`%s :: ^Object`
   init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{`
   //name, name, name
-  Meth_Getter:=`  %s_methods.%s = (cast(^MethodBind)classDBGetMethodBind3(.%s, "%s", %v, loc))`
+  Meth_Getter:=`  %s_methods.%s = (cast(^MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
   //name, method.name, variant_type, method.name, hash
   Closing:=`}`
 
@@ -211,15 +212,34 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     property_value:= `  %s_%s : struct {{
   %s: proc "c" (p_base: %s, r_value: ^GDW.%[1]s),`
     property_value_setter:=`  %s: proc "c" (p_base: %s, p_value: ^GDW.%s),`
+    property_value_class:= `  %s_%s : struct {{
+  %s: proc "c" (p_base: %s, r_value: ^%[1]s),`
+    property_value_setter_class:=`  %s: proc "c" (p_base: %s, p_value: ^%s),`
     prop_closure:= `  },
 `
+    /*
+OpenXRActionMap_properties :: struct {
+  action_sets_OpenXRActionSet : struct {
+  get_action_sets: proc "c" (p_base: OpenXRActionMap, r_value: ^OpenXRActionSet),
+  set_action_sets: proc "c" (p_base: OpenXRActionMap, p_value: ^OpenXRActionSet),
+  },
+}*/
     property_init:= `%[0]s_init_props :: proc(%[0]s_prop: ^%[0]s_properties, loc:= #caller_location) {{`
     property_methodbind_getter_bltn:= `
   %s_prop.%s_%s.%s = cast(proc "c" (p_base: %[0]s, r_value: ^GDW.%[3]s))GDW.Get_Method_Getter(.%[4]s, "%[3]s")`
     property_methodbind_setter_bltn:= `  %s_prop.%s_%s.%s = cast(proc "c" (p_base: %[0]s, p_value: ^GDW.%[3]s))GDW.Get_Method_Setter(.%[4]s, "%[3]s")`
     property_methodbind_getter_class:= `
-  %s_prop.%[1]s_%[2]s.%[3]s = cast(proc "c" (p_base: %[0]s, r_value: ^%[2]s))GDW.Get_Method_Getter(.Object, "%[3]s")`
-    property_methodbind_setter_class:= `  %s_prop.%s_%s.%[3]s = cast(proc "c" (p_base: %[0]s, p_value: ^%[2]s))GDW.Get_Method_Setter(.Object, "%[3]s")`
+  %s_prop.%[1]s_%[2]s.%[3]s = cast(proc "c" (p_base: %[0]s, r_value: ^%[2]s))GDW.Get_Method_Getter(.OBJECT, "%[3]s")`
+    property_methodbind_setter_class:= `  %s_prop.%s_%s.%[3]s = cast(proc "c" (p_base: %[0]s, p_value: ^%[2]s))GDW.Get_Method_Setter(.OBJECT, "%[3]s")`
+/*
+OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_properties, loc:= #caller_location) {
+
+  OpenXRActionMap_prop.action_sets_OpenXRActionSet.get_action_sets = cast(proc "c" (p_base: OpenXRActionMap, r_value: ^OpenXRActionSet))GDW.Get_Method_Getter(.OBJECT, "get_action_sets")
+  OpenXRActionMap_prop.action_sets_OpenXRActionSet.set_action_sets = cast(proc "c" (p_base: OpenXRActionMap, p_value: ^OpenXRActionSet))GDW.Get_Method_Setter(.OBJECT, "set_action_sets")
+}
+*/
+
+
     if len(BUILT_FROM.properties) > 0 {
       
       strings.write_string(&props_builder, fmt.bprintf(buffer[:], propetry_header, BUILT_FROM.name, newline =true))
@@ -274,27 +294,26 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
           delete(temp)
           for options in options{
             strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter_class, BUILT_FROM.name, properties.name, options, properties.getter, newline =true))
-            strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value, properties.name, options, properties.getter, BUILT_FROM.name, newline =true))
+            strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_class, properties.name, options, properties.getter, BUILT_FROM.name, newline =true))
             if properties.setter != "" {
               strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_setter_class, BUILT_FROM.name, properties.name, options, properties.setter, newline =true))
-              strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_setter, properties.setter, BUILT_FROM.name, options, newline =true))
+              strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_setter_class, properties.setter, BUILT_FROM.name, options, newline =true))
             }
             strings.write_string(&props_builder, prop_closure)
           }
           continue
         } 
         if variant_type == .NIL {
+          fmt.println("type is nil", properties.name)
           variant_type = .OBJECT
           strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter_class, BUILT_FROM.name, properties.name, properties.type, properties.getter, newline =true))
-          strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value, properties.name, properties.type, properties.getter, BUILT_FROM.name, newline =true))
+          strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_class, properties.name, properties.type, properties.getter, BUILT_FROM.name, newline =true))
           if properties.setter != "" {
             strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_setter_class, BUILT_FROM.name, properties.name, properties.type, properties.setter, newline =true))
-            strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_setter, properties.setter, BUILT_FROM.name, properties.type, newline =true))
+            strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_setter_class, properties.setter, BUILT_FROM.name, properties.type, newline =true))
           }
           strings.write_string(&props_builder, prop_closure)
-        }
-        else
-        {
+        } else {
           strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter_bltn, BUILT_FROM.name, properties.name, properties.type, properties.getter, variant_type, newline =true))
           strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value, properties.name, properties.type, properties.getter, BUILT_FROM.name, newline =true))
           if properties.setter != "" {
@@ -307,8 +326,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
       }
       strings.write_string(&props_builder, fmt.bprintf(buffer[:], Closing, newline =true))
       strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
-      fmt.println(strings.to_string(props_builder))
-      fmt.println(strings.to_string(props_init_builder))
+      //fmt.println(strings.to_string(props_builder))
+      //fmt.println(strings.to_string(props_init_builder))
     }
 
     //fmt.println(strings.to_string(init_builder))
