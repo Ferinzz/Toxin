@@ -72,8 +72,8 @@ variant_union :: struct #raw_union {
     float: float,
     Vector2: Vector2,
     Vector2i: Vector2i,
-    Rec2: Rec2,
-    Rec2i: Rec2i,
+    Rect2: Rect2,
+    Rect2i: Rect2i,
     Vector3: Vector3,
     Vector3i: Vector3i,
     Vector4: Vector4,
@@ -116,7 +116,7 @@ copy_from_variant :: proc{
     Vec2fromVariant,
     Vec2ifromVariant,
     Recf32fromVariant,
-    Rec2ifromVariant,
+    Rect2ifromVariant,
     Vec3fromVariant,
     Vec3ifromVariant,
     Transform2DfromVariant,
@@ -158,7 +158,7 @@ copy_to_variant :: proc{
     Vec2toVariant,
     Vec2itoVariant,
     Recf32toVariant,
-    Rec2itoVariant,
+    Rect2itoVariant,
     Vec3toVariant,
     Vec3itoVariant,
     Transform2DtoVariant,
@@ -256,9 +256,9 @@ copy_from_variant_r :: proc(variant: ^Variant, $T: typeid) -> T {
         copy_from_variant(&ret, variant)
     } else when T == Vector2i{
         copy_from_variant(&ret, variant)
-    } else when T == Rec2{
+    } else when T == Rect2{
         copy_from_variant(&ret, variant)
-    } else when T == Rec2i{
+    } else when T == Rect2i{
         copy_from_variant(&ret, variant)
     } else when T == Vector3{
         copy_from_variant(&ret, variant)
@@ -370,15 +370,15 @@ Vec2ifromVariant :: proc(P_dest: ^Vector2i, p_source: ^Variant) -> type_from_var
         return {}
     } else do return {.WRONG_TYPE, .VECTOR2I, p_source.VType}
 }
-Recf32fromVariant :: proc(P_dest: ^Rec2, p_source: ^Variant) -> type_from_variant_error {
+Recf32fromVariant :: proc(P_dest: ^Rect2, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .RECT2 {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Rec2
+        P_dest^=(cast(^variant_union)(&p_source.data[0])).Rect2
         return {}
     } else do return {.WRONG_TYPE, .RECT2, p_source.VType}
 }
-Rec2ifromVariant :: proc(P_dest: ^Rec2i, p_source: ^Variant) -> type_from_variant_error {
+Rect2ifromVariant :: proc(P_dest: ^Rect2i, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .RECT2I {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Rec2i
+        P_dest^=(cast(^variant_union)(&p_source.data[0])).Rect2i
         return {}
     } else do return {.WRONG_TYPE, .RECT2I, p_source.VType}
 }
@@ -548,11 +548,11 @@ Vec2itoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^Vector2i, loc:=#caller_
     p_variant.VType = .VECTOR2I
     mem.copy(&p_variant.data, p_from, 8)
 }
-Recf32toVariant     :: proc(p_variant: ^GDE.Variant, p_from: ^Rec2, loc:=#caller_location) {
+Recf32toVariant     :: proc(p_variant: ^GDE.Variant, p_from: ^Rect2, loc:=#caller_location) {
     p_variant.VType = .RECT2
     mem.copy(&p_variant.data, p_from, 16)
 }    
-Rec2itoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^Rec2i, loc:=#caller_location) {
+Rect2itoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^Rect2i, loc:=#caller_location) {
     p_variant.VType = .RECT2I
     mem.copy(&p_variant.data, p_from, 16)
 }
@@ -719,9 +719,9 @@ fromvariant :: proc(variant: ^Variant, $T: typeid) -> T {
         copy_from_variant(&ret, variant)
     } else when T == Vector2i{
         copy_from_variant(&ret, variant)
-    } else when T == Rec2{
+    } else when T == Rect2{
         copy_from_variant(&ret, variant)
-    } else when T == Rec2i{
+    } else when T == Rect2i{
         copy_from_variant(&ret, variant)
     } else when T == Vector3{
         copy_from_variant(&ret, variant)

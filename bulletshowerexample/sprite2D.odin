@@ -254,7 +254,7 @@ initializeSprite :: proc "c" (self: ^mySprite) {
 
 
     //Acutal code starts here.
-    rect: GDE.Rec2
+    rect: GDE.Rect2
     
     GDW.getViewpRect(self.selfPtr, &rect)
     OFFSET.x = rect.width + 16

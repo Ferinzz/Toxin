@@ -780,7 +780,7 @@ getWorld2D :: proc(viewport: GDE.TypePtr, r_world: ^GDE.TypePtr) {
 //*******Canvas Group*******\\
 //**************************\\
 
-getViewpRect :: proc(object: GDE.ObjectPtr, r_rect: ^GDE.Rec2) {
+getViewpRect :: proc(object: GDE.ObjectPtr, r_rect: ^GDE.Rect2) {
     @(static)GetViewpRect: GDE.MethodBindPtr
     if GetViewpRect == nil do GetViewpRect = classDBGetMethodBind("CanvasGroup", "get_viewport_rect", 1639390495)
 
@@ -947,7 +947,7 @@ queueSort :: proc(container: GDE.ObjectPtr) {
     //args :=[?]rawptr {resourceId}
     gdAPI.objectMethodBindPtrCall(QueueSort, container, nil, nil)
 }
-fitChildInRect :: proc(container: GDE.ObjectPtr, child: ^GDE.ObjectPtr, rect: ^GDE.Rec2) {
+fitChildInRect :: proc(container: GDE.ObjectPtr, child: ^GDE.ObjectPtr, rect: ^GDE.Rect2) {
     context = runtime.default_context()
     @(static)FitChildInRect: GDE.MethodBindPtr
     if FitChildInRect ==nil do FitChildInRect = classDBGetMethodBind("Container", "fit_child_in_rect", 1993438598)

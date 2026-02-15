@@ -61,11 +61,11 @@ Vector2 :: GDW.Vector2
 Vector2i :: GDW.Vector2i
 
 //Original has 2 Vector2
-Rec2 :: GDW.Rec2
+Rect2 :: GDW.Rect2
     
 
 //Original has 2 Vector2i
-Rec2i :: GDW.Rec2i
+Rect2i :: GDW.Rect2i
 
 Vector3 :: GDW.Vector3
 

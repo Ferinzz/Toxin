@@ -469,14 +469,14 @@ get_screen_position :: proc(Control: ^Object, r_ret: ^Vector2) {
     gdAPI.Object_Utils.MethodBindPtrcall(GET_SCREEN_POSITION, Control, nil, r_ret)
 }
 
-get_rect :: proc(Control: ^Object, r_ret: ^Rec2) {
+get_rect :: proc(Control: ^Object, r_ret: ^Rect2) {
     @(static)GET_RECT: GDE.MethodBindPtr
     if GET_RECT == nil do GET_RECT = classDBGetMethodBind3(.Control, "get_rect", 1639390495)
     assert(Control != nil)
     gdAPI.Object_Utils.MethodBindPtrcall(GET_RECT, Control, nil, r_ret)
 }
 
-get_global_rect :: proc(Control: ^Object, r_ret: ^Rec2) {
+get_global_rect :: proc(Control: ^Object, r_ret: ^Rect2) {
     @(static)GET_GLOBAL_RECT: GDE.MethodBindPtr
     if GET_GLOBAL_RECT == nil do GET_GLOBAL_RECT = classDBGetMethodBind3(.Control, "get_global_rect", 1639390495)
     assert(Control != nil)

@@ -38,8 +38,8 @@ GDExample :: struct{
     vec3iType: GDE.Vector3i,
     vec4Type: GDE.Vector4,
     vec4iType: GDE.Vector4i,
-    rec2Type: GDE.Rec2,
-    rec2iType: GDE.Rec2i,
+    rec2Type: GDE.Rect2,
+    rec2iType: GDE.Rect2i,
     planeType: GDE.Plane,
     quaternType: GDE.Quaternion,
     colorType: GDE.Color,
@@ -133,7 +133,7 @@ initialize_gdexample_module :: proc "c" (p_userdata: rawptr, p_level:  GDE.Initi
     
     //Even if the source is longer than what it fits it will only take what fits.
     fmt.println("~~~~rec2 f32~~~~")
-    rec2:GDE.Rec2
+    rec2:GDE.Rect2
     rec2 = {1, 2,3,4}
     GDW.variant_from(&variant, &rec2)
     fmt.printfln("THEVARIANTrec2: %b", transmute([4]f32)variant.data)
@@ -195,13 +195,13 @@ initialize_gdexample_module :: proc "c" (p_userdata: rawptr, p_level:  GDE.Initi
     
     //variant3: GDE.Variant
 
-    fmt.println("~~~~Rec2i~~~~")
-    rec2i: GDE.Rec2i
+    fmt.println("~~~~Rect2i~~~~")
+    rec2i: GDE.Rect2i
     rec2i= {3, 4, 9, 10}
-    fmt.println("Original Rec2i", rec2i)
+    fmt.println("Original Rect2i", rec2i)
     GDW.variant_from(&variant, &rec2i)
     fmt.println("Value stored in reci Variant: ", transmute([4]i32)variant.data)
-    r_rec2i: GDE.Rec2i
+    r_rec2i: GDE.Rect2i
     GDW.variant_to(&variant, &r_rec2i)
     fmt.println("Value returned from reci Variant: ", r_rec2i)
 
@@ -722,7 +722,7 @@ gdexampleClassCreateInstance :: proc "c" (p_class_user_data: rawptr, p_notify_po
     
     //Even if the source is longer than what it fits it will only take what fits.
     fmt.println("~~~~rec2 f32~~~~")
-    rec2:GDE.Rec2
+    rec2:GDE.Rect2
     rec2 = {1, 2,3,4}
     GDW.variant_from(&variant, &rec2)
     fmt.printfln("THEVARIANTrec2: %b", transmute([4]f32)variant.data)
@@ -784,13 +784,13 @@ gdexampleClassCreateInstance :: proc "c" (p_class_user_data: rawptr, p_notify_po
     
     //variant3: GDE.Variant
 
-    fmt.println("~~~~Rec2i~~~~")
-    rec2i: GDE.Rec2i
+    fmt.println("~~~~Rect2i~~~~")
+    rec2i: GDE.Rect2i
     rec2i= {3, 4, 9, 10}
-    fmt.println("Original Rec2i", rec2i)
+    fmt.println("Original Rect2i", rec2i)
     GDW.variant_from(&variant, &rec2i)
     fmt.println("Value stored in reci Variant: ", transmute([4]i32)variant.data)
-    r_rec2i: GDE.Rec2i
+    r_rec2i: GDE.Rect2i
     GDW.variant_to(&variant, &r_rec2i)
     fmt.println("Value returned from reci Variant: ", r_rec2i)
 

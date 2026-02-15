@@ -466,7 +466,7 @@ getWorld2D :: proc(viewport: GDE.TypePtr, r_world: ^GDE.TypePtr) {
 //*******Canvas Group*******\\
 //**************************\\
 
-getViewpRect :: proc(object: GDE.ObjectPtr, r_rect: ^GDE.Rec2) {
+getViewpRect :: proc(object: GDE.ObjectPtr, r_rect: ^GDE.Rect2) {
     @(static)GetViewpRect: GDE.MethodBindPtr
     if GetViewpRect == nil do GetViewpRect = classDBGetMethodBind("CanvasGroup", "get_viewport_rect", 1639390495)
 

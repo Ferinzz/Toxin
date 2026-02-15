@@ -61,7 +61,7 @@ variant_from :: proc {
     Vec2toVariant,
     Vec2itoVariant,
     Recf32toVariant,
-    Rec2itoVariant,
+    Rect2itoVariant,
     Vec3toVariant,
     Vec3itoVariant,
     Transform2DtoVariant,
@@ -105,7 +105,7 @@ variant_to :: proc {
     Vec2FromVariant,
     Vec2iFromVariant,
     Recf32FromVariant,
-    Rec2iFromVariant,
+    Rect2iFromVariant,
     Vec3FromVariant,
     Vec3iFromVariant,
     Transform2DFromVariant,
@@ -178,12 +178,12 @@ variant_to :: proc {
         p_variant.VType = .VECTOR2I
         mem.copy(&p_variant.data, p_from, 8)
     }
-    Recf32toVariant     :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Rec2, loc:=#caller_location) {
+    Recf32toVariant     :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Rect2, loc:=#caller_location) {
         p_variant.VType = .RECT2
         mem.copy(&p_variant.data, p_from, 16)
     }
     
-    Rec2itoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Rec2i, loc:=#caller_location) {
+    Rect2itoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^GDE.Rect2i, loc:=#caller_location) {
         p_variant.VType = .RECT2I
         mem.copy(&p_variant.data, p_from, 16)
     }
@@ -368,12 +368,12 @@ variant_to :: proc {
         assert(p_variant.VType == .VECTOR2I, loc = loc)
         mem.copy(p_dest, &p_variant.data, 8)
     }
-    Recf32FromVariant     :: proc(p_variant: ^GDE.Variant, p_dest: ^GDE.Rec2, loc := #caller_location) {
+    Recf32FromVariant     :: proc(p_variant: ^GDE.Variant, p_dest: ^GDE.Rect2, loc := #caller_location) {
         assert(p_variant.VType == .RECT2, loc = loc)
         mem.copy(p_dest, &p_variant.data, 16)
     }
     
-    Rec2iFromVariant :: proc(p_variant: ^GDE.Variant, p_dest: ^GDE.Rec2i, loc := #caller_location) {
+    Rect2iFromVariant :: proc(p_variant: ^GDE.Variant, p_dest: ^GDE.Rect2i, loc := #caller_location) {
         assert(p_variant.VType == .RECT2I, loc = loc)
         mem.copy(p_dest, &p_variant.data, 16)
     }
@@ -688,12 +688,12 @@ fromvariant :: proc(variant: GDE.VariantPtr, $T: typeid) -> T {
         if construct == nil do construct = VariantGetters.getVariantToTypeConstuctor(.VECTOR2I)
         
         construct(&ret, variant)
-    } else when T == GDE.Rec2{
+    } else when T == GDE.Rect2{
         @(static)construct: GDE.TypeFromVariantConstructorFunc
         if construct == nil do construct = VariantGetters.getVariantToTypeConstuctor(.RECT2)
         
         construct(&ret, variant)
-    } else when T == GDE.Rec2i{
+    } else when T == GDE.Rect2i{
         @(static)construct: GDE.TypeFromVariantConstructorFunc
         if construct == nil do construct = VariantGetters.getVariantToTypeConstuctor(.RECT2I)
         
@@ -883,12 +883,12 @@ tovariant :: proc(variant: rawptr, $T: typeid) -> GDE.Variant {
         if construct == nil do construct = VariantGetters.getVariantFromTypeConstructor(.VECTOR2I)
         
         construct(&ret, variant)
-    } else when T == GDE.Rec2{
+    } else when T == GDE.Rect2{
         @(static)construct: GDE.VariantFromTypeConstructorFunc
         if construct == nil do construct = VariantGetters.getVariantFromTypeConstructor(.RECT2)
         
         construct(&ret, variant)
-    } else when T == GDE.Rec2i{
+    } else when T == GDE.Rect2i{
         @(static)construct: GDE.VariantFromTypeConstructorFunc
         if construct == nil do construct = VariantGetters.getVariantFromTypeConstructor(.RECT2I)
         

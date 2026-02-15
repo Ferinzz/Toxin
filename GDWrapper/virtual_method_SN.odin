@@ -54,7 +54,7 @@ Texture2D_v_table:: struct (T: typeid){
     _is_pixel_opaque: proc "c" (self: ^Class_Container(T), using args: ^struct {x: ^GDE.Int, y: ^GDE.Int}),
     _get_height: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
     _get_width: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^GDE.Int),
-    _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^GDE.RID, rect: ^GDE.Rec2, src_rect: ^GDE.Rec2, modulate: ^GDE.Color, transpose: ^GDE.Bool, clip_uv: ^GDE.Bool }),
+    _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^GDE.RID, rect: ^GDE.Rect2, src_rect: ^GDE.Rect2, modulate: ^GDE.Color, transpose: ^GDE.Bool, clip_uv: ^GDE.Bool }),
 }
 
 //"inherits": "Object",

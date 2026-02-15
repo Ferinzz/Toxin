@@ -13,7 +13,7 @@ Node2D_Get_Global_Position :: proc (self: GDE.ObjectPtr, r_Vector: ^GDE.Vector2)
 
 //CanvasItem Methods
 
-CanvasItem_draw_texture_rect :: proc(canvas_parent: GDE.ObjectPtr, texture: ^GDE.ObjectPtr, rect: ^GDE.Rec2,\
+CanvasItem_draw_texture_rect :: proc(canvas_parent: GDE.ObjectPtr, texture: ^GDE.ObjectPtr, rect: ^GDE.Rect2,\
     tile: ^GDE.Bool, modulate: ^GDE.Color, transpose: ^GDE.Bool) {
     @(static)drawtexturerect: GDE.MethodBindPtr
     if drawtexturerect == nil {

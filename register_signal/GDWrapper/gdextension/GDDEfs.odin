@@ -66,7 +66,7 @@ Vector2i :: distinct struct {
 }
 
 //Original has 2 Vector2
-Rec2 :: distinct struct {
+Rect2 :: distinct struct {
     x: f32,
     y: f32,
     width: f32,
@@ -75,7 +75,7 @@ Rec2 :: distinct struct {
     
 
 //Original has 2 Vector2i
-Rec2i :: distinct struct {
+Rect2i :: distinct struct {
     x: i32,
     y: i32,
     width:  i32,
@@ -592,8 +592,8 @@ GDTypes := [?]typeid {
   typeid_of(gdstring),
   typeid_of(Vector2),
   typeid_of(Vector2i),
-  typeid_of(Rec2),
-  typeid_of(Rec2i),
+  typeid_of(Rect2),
+  typeid_of(Rect2i),
   typeid_of(Vector3),
   typeid_of(Vector3i),
   typeid_of(Transform2D),
@@ -634,8 +634,8 @@ GDTypes_strings := [VariantType]string {
   .STRING = "String",
   .VECTOR2 = "Vector2",
   .VECTOR2I = "Vector2i",
-  .RECT2 = "Rec2",
-  .RECT2I = "Rec2i",
+  .RECT2 = "Rect2",
+  .RECT2I = "Rect2i",
   .VECTOR3 = "Vector3",
   .VECTOR3I = "Vector3i",
   .TRANSFORM2D = "Transform2D",

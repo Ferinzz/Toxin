@@ -475,9 +475,9 @@ replaceType :: proc (s: []u8) -> string {
 	    case "Vector2i": 
             return "GDE.Vector2i"
 	    case "Rect2": 
-            return "GDE.Rec2"
+            return "GDE.Rect2"
 	    case "Rect2i": 
-            return "GDE.Rec2i"
+            return "GDE.Rect2i"
 	    case "Vector3": 
             return "GDE.Vector4"
 	    case "Vector3i": 

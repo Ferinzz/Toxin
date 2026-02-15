@@ -56,7 +56,7 @@ new_type_from_methods :: proc {
     Vec2FromVariant,
     Vec2iFromVariant,
     Recf32FromVariant,
-    Rec2iFromVariant,
+    Rect2iFromVariant,
     Vec3FromVariant,
     Vec3iFromVariant,
     Transform2DFromVariant,
@@ -97,7 +97,7 @@ new_variant_from_methods :: proc {
     Vec2ToVariant,
     Vec2iToVariant,
     Recf32ToVariant,
-    Rec2iToVariant,
+    Rect2iToVariant,
     Vec3ToVariant,
     Vec3iToVariant,
     Transform2DToVariant,
@@ -136,8 +136,8 @@ new_variant_from_methods :: proc {
     StringFromVariant:      proc "c" (_: ^gdstring, _: ^Variant)
     Vec2FromVariant:        proc "c" (_: ^Vector2, _: ^Variant)
     Vec2iFromVariant:       proc "c" (_: ^Vector2i, _: ^Variant)
-    Recf32FromVariant:      proc "c" (_: ^Rec2, _: ^Variant)
-    Rec2iFromVariant:       proc "c" (_: ^Rec2i, _: ^Variant)
+    Recf32FromVariant:      proc "c" (_: ^Rect2, _: ^Variant)
+    Rect2iFromVariant:       proc "c" (_: ^Rect2i, _: ^Variant)
     Vec3FromVariant:        proc "c" (_: ^Vector3, _: ^Variant)
     Vec3iFromVariant:       proc "c" (_: ^Vector3i, _: ^Variant)
     Transform2DFromVariant: proc "c" (_: ^Transform2D, _: ^Variant)
@@ -176,8 +176,8 @@ new_variant_from_methods :: proc {
     StringToVariant:      proc "c" (_: ^Variant, _: ^gdstring)
     Vec2ToVariant:        proc "c" (_: ^Variant, _: ^Vector2)
     Vec2iToVariant:       proc "c" (_: ^Variant, _: ^Vector2i)
-    Recf32ToVariant:      proc "c" (_: ^Variant, _: ^Rec2)
-    Rec2iToVariant:       proc "c" (_: ^Variant, _: ^Rec2i)
+    Recf32ToVariant:      proc "c" (_: ^Variant, _: ^Rect2)
+    Rect2iToVariant:       proc "c" (_: ^Variant, _: ^Rect2i)
     Vec3ToVariant:        proc "c" (_: ^Variant, _: ^Vector3)
     Vec3iToVariant:       proc "c" (_: ^Variant, _: ^Vector3i)
     Transform2DToVariant: proc "c" (_: ^Variant, _: ^Transform2D)
@@ -220,8 +220,8 @@ Init_Variant_Converters :: proc() {
     StringFromVariant = cast(proc "c" (_: ^gdstring, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.STRING)
     Vec2FromVariant = cast(proc "c" (_: ^Vector2, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.VECTOR2)
     Vec2iFromVariant = cast(proc "c" (_: ^Vector2i, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.VECTOR2I)
-    Recf32FromVariant = cast(proc "c" (_: ^Rec2, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.RECT2)
-    Rec2iFromVariant = cast(proc "c" (_: ^Rec2i, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.RECT2I)
+    Recf32FromVariant = cast(proc "c" (_: ^Rect2, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.RECT2)
+    Rect2iFromVariant = cast(proc "c" (_: ^Rect2i, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.RECT2I)
     Vec3FromVariant = cast(proc "c" (_: ^Vector3, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.VECTOR3)
     Vec3iFromVariant = cast(proc "c" (_: ^Vector3i, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.VECTOR3I)
     Transform2DFromVariant = cast(proc "c" (_: ^Transform2D, _: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.TRANSFORM2D)
@@ -263,8 +263,8 @@ Init_Variant_Converters :: proc() {
     //StringwPlaceholderToVariant = StringToVariant
     Vec2ToVariant = cast(proc "c" (_: ^Variant, _: ^Vector2))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.VECTOR2)
     Vec2iToVariant = cast(proc "c" (_: ^Variant, _: ^Vector2i))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.VECTOR2I)
-    Recf32ToVariant = cast(proc "c" (_: ^Variant, _: ^Rec2))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.RECT2)
-    Rec2iToVariant = cast(proc "c" (_: ^Variant, _: ^Rec2i))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.RECT2I)
+    Recf32ToVariant = cast(proc "c" (_: ^Variant, _: ^Rect2))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.RECT2)
+    Rect2iToVariant = cast(proc "c" (_: ^Variant, _: ^Rect2i))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.RECT2I)
     Vec3ToVariant = cast(proc "c" (_: ^Variant, _: ^Vector3))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.VECTOR3)
     Vec3iToVariant = cast(proc "c" (_: ^Variant, _: ^Vector3i))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.VECTOR3I)
     Transform2DToVariant = cast(proc "c" (_: ^Variant, _: ^Transform2D))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.TRANSFORM2D)

@@ -70,7 +70,7 @@ Texture2D_v_table:: struct (T: typeid){
     _is_pixel_opaque: proc "c" (self: ^Class_Container(T), using args: ^struct {x: ^Int, y: ^Int}),
     _get_height: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^Int),
     _get_width: proc "c" (self: ^Class_Container(T), p_args: rawptr = nil, r_ret: ^Int),
-    _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^RID, rect: ^Rec2, src_rect: ^Rec2, modulate: ^Color, transpose: ^Bool, clip_uv: ^Bool }),
+    _draw_txt2D: proc "c" (self: ^Class_Container(T), p_args: ^struct { to_canvas_item: ^RID, rect: ^Rect2, src_rect: ^Rect2, modulate: ^Color, transpose: ^Bool, clip_uv: ^Bool }),
 }
 
 CanvasItem_v_table:: struct(T: typeid){
