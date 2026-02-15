@@ -8,7 +8,7 @@ import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
-import "../All_Godot_Classes"
+//import "../All_Godot_Classes"
 
 main :: proc() {
   root, error := os2.get_absolute_path("classes_parser\\example.json", context.allocator)
@@ -54,10 +54,10 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
                             ` :: ^GDW.Object
 
 `,
-                            classes.init_proc,
-                            classes.method_list,
-                            classes.constants,
                             classes.properties,
+                            classes.constants,
+                            classes.method_list,
+                            classes.init_proc,
                             classes.properties_init,)
       //fmt.println("wrote: ", count, write_err)
     } else {
@@ -65,6 +65,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     }
     delete(file_path)
   }
+  fmt.println("Write Comleted")
 }
 
 print_warning:: proc(message: string, error: os2.Error) {
@@ -290,21 +291,27 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
         if strings.contains( properties.type, ",") {
           //If there's multiple options it is for certain an object type
           temp:=properties.type
-          options:=strings.split(temp, ",", ctx)
-          delete(temp)
-          for options in options{
-            strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter_class, BUILT_FROM.name, properties.name, options, properties.getter, newline =true))
-            strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_class, properties.name, options, properties.getter, BUILT_FROM.name, newline =true))
+          options:=strings.split(temp, ",", context.temp_allocator)
+          //delete(temp)
+          for &option in options{
+            ok:bool
+            temp, ok = strings.remove(option, "-", -1, context.temp_allocator)
+            if ok {
+                fmt.println("'-' was removed", option)
+                option = temp
+            }
+            strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter_class, BUILT_FROM.name, properties.name, option, properties.getter, newline =true))
+            strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_class, properties.name, option, properties.getter, BUILT_FROM.name, newline =true))
             if properties.setter != "" {
-              strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_setter_class, BUILT_FROM.name, properties.name, options, properties.setter, newline =true))
-              strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_setter_class, properties.setter, BUILT_FROM.name, options, newline =true))
+              strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_setter_class, BUILT_FROM.name, properties.name, option, properties.setter, newline =true))
+              strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_setter_class, properties.setter, BUILT_FROM.name, option, newline =true))
             }
             strings.write_string(&props_builder, prop_closure)
           }
+          free_all(context.temp_allocator)
           continue
         } 
         if variant_type == .NIL {
-          fmt.println("type is nil", properties.name)
           variant_type = .OBJECT
           strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_methodbind_getter_class, BUILT_FROM.name, properties.name, properties.type, properties.getter, newline =true))
           strings.write_string(&props_builder, fmt.bprintf(buffer[:], property_value_class, properties.name, properties.type, properties.getter, BUILT_FROM.name, newline =true))
