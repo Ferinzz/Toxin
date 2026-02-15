@@ -216,8 +216,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
 `
         property_init:= `%[0]s_init_props :: proc(%[0]s_prop: ^%[0]s_properties, loc:= #caller_location) {{`
         property_methodbind_getter:= `
-  %s_prop.%[1]s_%[3]s.%[4]s = cast(proc "c" (p_base: %[0]s, r_value: ^GDW.%[3]s))GDW.Get_Method_Getter(.%[2]s, %[1]s)`
-        property_methodbind_setter:= `  %s_prop.%s_%s.%[1]s = cast(proc "c" (p_base: %[0]s, p_value: ^GDW.%[2]s))GDW.Get_Method_Setter(.%[3]s, %[1]s)`
+  %s_prop.%[1]s_%[3]s.%[4]s = cast(proc "c" (p_base: %[0]s, r_value: ^GDW.%[3]s))GDW.Get_Method_Getter(.%[2]s, "%[1]s")`
+        property_methodbind_setter:= `  %s_prop.%s_%s.%[1]s = cast(proc "c" (p_base: %[0]s, p_value: ^GDW.%[2]s))GDW.Get_Method_Setter(.%[3]s, "%[1]s")`
         if len(BUILT_FROM.properties) > 0 {
             strings.write_string(&props_builder, fmt.bprintf(buffer[:], propetry_header, BUILT_FROM.name, newline =true))
             strings.write_string(&props_init_builder, fmt.bprintf(buffer[:], property_init, BUILT_FROM.name, newline =true))
