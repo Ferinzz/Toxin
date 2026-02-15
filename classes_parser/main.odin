@@ -1,4 +1,4 @@
-package builtin_parser
+package classes_parser
 
 import "core:encoding/json"
 import "core:os/os2"
@@ -8,7 +8,7 @@ import "core:strings"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
-//import "../All_Godot_Classes"
+//import "../GD_Classes"
 
 main :: proc() {
   root, error := os2.get_absolute_path("classes_parser\\example.json", context.allocator)
@@ -32,7 +32,7 @@ main :: proc() {
   }
   final:=build_init_proc(built_different, context.allocator)
 
-  header:=`package classes
+  header:=`package GD_Classes
 
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
@@ -40,12 +40,36 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 
 
 `
+
+  file_path:= "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAUtils_GD_Class.odin"
+  file, open_err:= os2.create(file_path)
+  if open_err == nil {
+    os2.write_strings(file, header, Method_Callback_Compare_Info)
+    class_n:= `  %s,`
+    class_sn:= `  .%s = GDW.StringName({{nil}),`
+    closer:=`
+};`
+    buffer:[400]u8
+    class_list:=strings.builder_make(context.temp_allocator)
+    class_sn_list:=strings.builder_make(context.temp_allocator)
+    strings.write_string(&class_list, ClassName_Index)
+    strings.write_string(&class_sn_list, ClassName_StringNames)
+    for class in built_different.classes {
+      strings.write_string(&class_list, fmt.bprintf(buffer[:], class_n, class.name, newline =true))
+      strings.write_string(&class_sn_list, fmt.bprintf(buffer[:], class_sn, class.name, newline =true))
+    }
+    strings.write_string(&class_list, closer)
+    strings.write_string(&class_sn_list, closer)
+    os2.write_string(file, strings.to_string(class_list))
+    os2.write_string(file, strings.to_string(class_sn_list))
+    os2.close(file)
+  }
   for classes in final {
     //fmt.println(classes.method_list)
     //fmt.println(classes.init_proc)
     //fmt.println(classes.constants)
 
-    file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\All_Godot_Classes\\%s_GD_Class.odin", classes.name)
+    file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\%s_GD_Class.odin", classes.name)
     file, open_err:= os2.create(file_path)
     if open_err == nil {
       //count, write_err:= os2.write_strings(file, header, 
@@ -57,21 +81,44 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
                             classes.properties,
                             classes.constants,
                             classes.enums,
+                            classes.virtuals_list,
                             classes.method_list,
                             classes.init_proc,
+                            classes.virtuals_init,
                             classes.properties_init,)
       //fmt.println("wrote: ", count, write_err)
     } else {
       print_warning("could not open file_path", open_err)
     }
+    os2.close(file)
     delete(file_path)
   }
   fmt.println("Write Comleted")
-}
+};
 
 print_warning:: proc(message: string, error: os2.Error) {
   fmt.println(message, error)
-}
+};
+
+
+
+Method_Callback_Compare_Info :: `
+Method_Callback_Compare_Info :: struct {
+    name: GDW.StringName,
+    p_hash: u32,
+};`
+
+
+ClassName_Index :: `
+ClassName_Index :: enum {
+  nil,
+`
+
+ClassName_StringNames :: `
+@(private)
+ClassName_StringNames : [ClassName_Index]GDW.StringName = {
+  .nil = GDW.StringName({nil}),
+`
 
 builtin:: struct {
   classes: []struct {
@@ -96,14 +143,16 @@ builtin:: struct {
     methods: []methods,
     signals: []signal,
     properties:[]property,
-}};
+  }
+};
+
 signal:: struct {
   name:string,
   arguments:[]struct {
     name:string,
     type:string,
   }
-}
+};
 methods:: struct {
   name: string,
 	is_const: bool,
@@ -122,13 +171,13 @@ methods:: struct {
       meta: string,
 			default_value: string,
   }
-}
+};
 property::struct{
   type:string,
   name:string,
   setter:string,
   getter:string,
-}
+};
 
 builtin_set :: struct {
   name: string,
@@ -138,7 +187,9 @@ builtin_set :: struct {
   properties: string,
   properties_init: string,
   enums: string,
-}
+  virtuals_init: string,
+  virtuals_list: string,
+};
 
 
 build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic]builtin_set) {
@@ -153,7 +204,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   //name, name, name
   Meth_Getter:=`  %s_methods.%s = (cast(^GDW.MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
   //name, method.name, variant_type, method.name, hash
-  Closing:=`}`
+  Closing:=`};`
 
   /////////////////////////////
   // Structure of the builtin struct
@@ -161,6 +212,16 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   _MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
   class_name:= `  %s: ^GDW.MethodBind,` //method.name
 
+  Virtual_Proc_Sig:=`
+%s_Init_Virtuals_Info :: proc(using info: ^%[0]s_Virtual_Info) {{`
+//ClassName
+  Virtual_Listing:= `    %[0]s.p_hash = %v
+    %[0]s.name = GDW.StringConstruct("%[0]s")`
+    //VirtualName, virtualHash
+  Virtual_Struct_Sig:= `%s_Virtual_Info :: struct {{
+`//ClassName
+  Virtual_Struct_Field:= `    %s: Method_Callback_Compare_Info,`
+//MethodName
   ////////////////////////////
   // Convert the unmarshalled json to Odin procs and structs
   ////////////////////////////
@@ -171,16 +232,18 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     props_builder:=strings.builder_make(ctx)
     props_init_builder:=strings.builder_make(ctx)
     enum_builder:=strings.builder_make(ctx) //btw, several enums have the same name but different fields based on the class they're part of.
+    virtuals_builder:=strings.builder_make(ctx)
+    virtuals_list_builder:=strings.builder_make(ctx)
 
     buffer:[400]u8
     //signature and struct declaration
     strings.write_string(&init_builder, fmt.bprintf(buffer[:], init_proc_sig, BUILT_FROM.name, newline =true))
     strings.write_string(&struct_builder, fmt.bprintf(buffer[:], _MethodBind_List, BUILT_FROM.name, newline =true))
 
+    virtual_opened:=false
     //setup Methods
     if len(BUILT_FROM.methods) > 0 {
     for &method, idx in BUILT_FROM.methods {
-      if method.is_virtual do continue
       if method.name == "any" { 
         delete(method.name)
         method.name = "gdany"
@@ -189,8 +252,27 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         delete(method.name)
         method.name = "gdmap"
       }
-      strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
-      strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, newline =true))
+      if !method.is_virtual {
+        strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
+        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, newline =true))
+      } else {
+        if virtual_opened == false {
+          //open init proc
+          strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Virtual_Proc_Sig, BUILT_FROM.name, newline =true))
+          strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Sig, BUILT_FROM.name, newline =true))
+          virtual_opened = true
+        }
+        //write the name and hash
+        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Virtual_Listing, method.name, method.hash, newline =true))
+        strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Field, method.name, newline =true))
+      }
+      //All virtuals SHOULD come before any other methods.
+      if virtual_opened && (idx == len(BUILT_FROM.methods) - 1 || method.is_virtual == false) {
+        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+        strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+        virtual_opened = false
+        fmt.println(strings.to_string(virtuals_builder))
+      }
     }
     }
     //pinch it off
@@ -217,8 +299,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   %s: proc "c" (p_base: %s, r_value: ^GDW.%[1]s),`
     property_value_setter:=`  %s: proc "c" (p_base: %s, p_value: ^GDW.%s),`
     property_value_class:= `  %s_%s : struct {{
-  %s: proc "c" (p_base: %s, r_value: ^%[1]s),`
-    property_value_setter_class:=`  %s: proc "c" (p_base: %s, p_value: ^%s),`
+    %s: proc "c" (p_base: %s, r_value: ^%[1]s),`
+    property_value_setter_class:=`    %s: proc "c" (p_base: %s, p_value: ^%s),`
     prop_closure:= `  },
 `
     /*
@@ -360,11 +442,13 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
         }
         strings.write_string(&enum_builder, fmt.bprintf(buffer[:], Closing, newline =true))
       }
-      fmt.println(strings.to_string(enum_builder))
+      //fmt.println(strings.to_string(enum_builder))
     }
 
     //Append all the work we did to the array of classes.
-    append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), strings.to_string(props_builder), strings.to_string(props_init_builder), strings.to_string(enum_builder)})
+    append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), \
+      strings.to_string(props_builder), strings.to_string(props_init_builder), strings.to_string(enum_builder), strings.to_string(virtuals_builder),
+      strings.to_string(virtuals_list_builder)})
     //strings.builder_reset(&init_builder)
     //strings.builder_reset(&struct_builder)
     //fmt.println(builtin_map[idx].init_proc)

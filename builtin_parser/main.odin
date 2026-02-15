@@ -33,7 +33,7 @@ main :: proc() {
     }
     final:=build_init_proc(built_different, context.allocator)
     
-    header:=`package builtins
+    header:=`package GD_Builtins
         
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
@@ -46,7 +46,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
         //fmt.println(classes.init_proc)
         //fmt.println(classes.constants)
 
-        file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\builtins\\%s_GD_builtin.odin", classes.name)
+        file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\GD_Builtins\\%s_GD_builtin.odin", classes.name)
         file, open_err:= os2.create(file_path)
         if open_err == nil {
             count, write_err:= os2.write_strings(file, header, classes.method_list, classes.constants, classes.init_proc)
