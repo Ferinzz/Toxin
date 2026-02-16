@@ -837,41 +837,41 @@ ref_count_ARRAY :: proc(source: ^Array, copy: ^Array) {
 }
 ref_count_PACKED_BYTE_ARRAY :: proc(source: ^PackedByteArray, copy: ^PackedByteArray) {
     arg:=[1]rawptr {source}
-    PackedByteArray_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedByteArray_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_INT32_ARRAY :: proc(source: ^PackedInt32Array, copy: ^PackedInt32Array) {
     arg:=[1]rawptr {source}
-    PackedInt32Array_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedInt32Array_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_INT64_ARRAY :: proc(source: ^PackedInt64Array, copy: ^PackedInt64Array) {
     arg:=[1]rawptr {source}
-    PackedInt64Array_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedInt64Array_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_FLOAT32_ARRAY :: proc(source: ^PackedFloat32Array, copy: ^PackedFloat32Array) {
     arg:=[1]rawptr {source}
-    PackedInt64Array_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedInt64Array_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_FLOAT64_ARRAY :: proc(source: ^PackedFloat64Array, copy: ^PackedFloat64Array) {
     arg:=[1]rawptr {source}
-    PackedInt64Array_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedInt64Array_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_STRING_ARRAY :: proc(source: ^PackedStringArray, copy: ^PackedStringArray) {
     arg:=[1]rawptr {source}
-    PackedStringArray_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedStringArray_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_VECTOR2_ARRAY :: proc(source: ^PackedVector2Array, copy: ^PackedVector2Array) {
     arg:=[1]rawptr {source}
-    PackedVector2Array_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedVector2Array_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_VECTOR3_ARRAY :: proc(source: ^PackedVector3Array, copy: ^PackedVector3Array) {
     arg:=[1]rawptr {source}
-    PackedVector3Array_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedVector3Array_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_COLOR_ARRAY :: proc(source: ^PackedColorArray, copy: ^PackedColorArray) {
     arg:=[1]rawptr {source}
-    PackedColorArray_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedColorArray_M_List.Create1(copy, raw_data(arg[:]))
 }
 ref_count_PACKED_VECTOR4_ARRAY :: proc(source: ^PackedVector4Array, copy: ^PackedVector4Array) {
     arg:=[1]rawptr {source}
-    PackedVector4Array_M_List.Create1(copy, raw_data(arg[:]))
+    GDW.PackedVector4Array_M_List.Create1(copy, raw_data(arg[:]))
 }

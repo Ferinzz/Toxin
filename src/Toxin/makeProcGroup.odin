@@ -29,51 +29,51 @@ Destroy_Builtin :: proc {
 
 
 GDArray_Destroy :: proc(del: ^Array) {
-    Array_M_List.Destroy(del)
+    GDW.Array_M_List.Destroy(del)
 }
     
 PackedStringArray_Destroy :: proc(del: ^PackedStringArray) {
-    PackedStringArray_M_List.Destroy(del)
+    GDW.PackedStringArray_M_List.Destroy(del)
 }
     
 GDDictionary_Destroy :: proc(del: ^Dictionary) {
-    Dictionary_M_List.Destroy(del)
+    GDW.Dictionary_M_List.Destroy(del)
 }
     
 PackedByteArray_Destroy :: proc(del: ^PackedByteArray) {
-    PackedByteArray_M_List.Destroy(del)
+    GDW.PackedByteArray_M_List.Destroy(del)
 }
     
 PackedInt32Array_Destroy :: proc(del: ^PackedInt32Array) {
-    PackedInt32Array_M_List.Destroy(del)
+    GDW.PackedInt32Array_M_List.Destroy(del)
 }
     
 PackedInt64Array_Destroy :: proc(del: ^PackedInt64Array) {
-    PackedInt64Array_M_List.Destroy(del)
+    GDW.PackedInt64Array_M_List.Destroy(del)
 }
     
 PackedFloat32Array_Destroy :: proc(del: ^PackedFloat32Array) {
-    PackedFloat32Array_M_List.Destroy(del)
+    GDW.PackedFloat32Array_M_List.Destroy(del)
 }
     
 PackedFloat64Array_Destroy :: proc(del: ^PackedFloat64Array) {
-    PackedFloat64Array_M_List.Destroy(del)
+    GDW.PackedFloat64Array_M_List.Destroy(del)
 }
     
 PackedVector2Array_Destroy :: proc(del: ^PackedVector2Array) {
-    PackedVector2Array_M_List.Destroy(del)
+    GDW.PackedVector2Array_M_List.Destroy(del)
 }
     
 PackedVector3Array_Destroy :: proc(del: ^PackedVector3Array) {
-    PackedVector3Array_M_List.Destroy(del)
+    GDW.PackedVector3Array_M_List.Destroy(del)
 }
     
 PackedVector4Array_Destroy :: proc(del: ^PackedVector4Array) {
-    PackedVector4Array_M_List.Destroy(del)
+    GDW.PackedVector4Array_M_List.Destroy(del)
 }
     
 PackedColorArray_Destroy :: proc(del: ^PackedColorArray) {
-    PackedColorArray_M_List.Destroy(del)
+    GDW.PackedColorArray_M_List.Destroy(del)
 }
     
 StringName_Destroy :: proc(del: ^StringName) {
