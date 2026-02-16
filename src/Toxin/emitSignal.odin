@@ -53,8 +53,8 @@ registerSignal :: proc(className, signalName: cstring, arg_type: []GDE.VariantTy
 
     gdAPI.classBDRegistClassSignal(Library, &s_className, &s_signalName, raw_data(signalProp[:]), count)
 
-    StringName_M_List.Destroy(&s_className)
-    StringName_M_List.Destroy(&s_signalName)
+    GDW.StringName_M_List.Destroy(&s_className)
+    GDW.StringName_M_List.Destroy(&s_signalName)
 
     for &prop in signalProp {
         destructProperty(&prop)
@@ -100,8 +100,8 @@ register_Signal :: #force_inline proc(className: string, $arg_type: typeid, loc 
 
     gdAPI.classBDRegistClassSignal(Library, &className_SN, &signalName_SN, raw_data(signalProp[:]), sics.type_struct_field_count(arg_type))
 
-    StringName_M_List.Destroy(&className_SN)
-    //StringName_M_List.Destroy(&signalName_SN)
+    GDW.StringName_M_List.Destroy(&className_SN)
+    //GDW.StringName_M_List.Destroy(&signalName_SN)
 
     for &prop in signalProp {
         destructProperty(&prop)
