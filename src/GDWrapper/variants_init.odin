@@ -12,7 +12,6 @@ import sics "base:intrinsics"
 * These methods will provide the Constructors for Variants via type conversion.
 * As these are constructors, expect that they may allocate memory wherever possible.
 * If you want to completely avoid unnecessary allocations take the pointer to the Variant's data field rather than converting to/from a type.
-* except PACKEDARRAYS.
 * If you do want a deep copy or reference increment, use these constructors.
 * Types which allocate memory:
 * Transform2DFromVariant

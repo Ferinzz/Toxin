@@ -135,8 +135,8 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
     gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
     
     //Destructor things.
-    GDW.StringName_Methods.Destroy(&methodStringName)
-    //GDW.StringName_Methods.Destroy(&classNameString)
+    GDW.StringName_M_List.Destroy(&methodStringName)
+    //GDW.StringName_M_List.Destroy(&classNameString)
     destructProperty(&returnInfo)
 
 }

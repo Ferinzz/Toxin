@@ -1,3 +1,4 @@
+#+ignore
 package Toxin
 
 import GDE "shared:GDWrapper/gdAPI/gdextension"
@@ -11,7 +12,7 @@ getIndex_v:: proc {
 }
 
 GetArrayIndex:: proc(p_base: ^GDW.Class_Array, index: GDW.Int, r_ret: ^GDW.Variant) {
-    GDW.GDArray_Methods.GetIndex(p_base, index, r_ret)
+    //GDW.GDArray_Methods.GetIndex(p_base, index, r_ret)
 }
 GetPackStringIndex :: proc(p_base: ^GDW.PackedStringArray, index: GDW.Int, r_ret: ^GDW.Variant) {
     GDW.PackedStringArray_Methods.GetIndex(p_base, index, r_ret)
@@ -21,7 +22,7 @@ BuiltinMake:: proc{
     gdMakeArray,
 }
 
-Class_Array :: GDW.Class_Array
+//Class_Array :: GDW.Class_Array
 GDArray_Methods : GDW.GDArray_Methods_list
 
 gdMakeArray:: proc(p_array: ^Class_Array) {

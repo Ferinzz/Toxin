@@ -29,69 +29,69 @@ Destroy_Builtin :: proc {
 
 
 GDArray_Destroy :: proc(del: ^Array) {
-    GDArray_Methods.Destroy(del)
+    Array_M_List.Destroy(del)
 }
     
 PackedStringArray_Destroy :: proc(del: ^PackedStringArray) {
-    PackedStringArray_Methods.Destroy(del)
+    PackedStringArray_M_List.Destroy(del)
 }
     
 GDDictionary_Destroy :: proc(del: ^Dictionary) {
-    GDDictionary_Methods.Destroy(del)
+    Dictionary_M_List.Destroy(del)
 }
     
 PackedByteArray_Destroy :: proc(del: ^PackedByteArray) {
-    PackedByteArray_Methods.Destroy(del)
+    PackedByteArray_M_List.Destroy(del)
 }
     
 PackedInt32Array_Destroy :: proc(del: ^PackedInt32Array) {
-    PackedInt32Array_Methods.Destroy(del)
+    PackedInt32Array_M_List.Destroy(del)
 }
     
 PackedInt64Array_Destroy :: proc(del: ^PackedInt64Array) {
-    PackedInt64Array_Methods.Destroy(del)
+    PackedInt64Array_M_List.Destroy(del)
 }
     
 PackedFloat32Array_Destroy :: proc(del: ^PackedFloat32Array) {
-    PackedFloat32Array_Methods.Destroy(del)
+    PackedFloat32Array_M_List.Destroy(del)
 }
     
 PackedFloat64Array_Destroy :: proc(del: ^PackedFloat64Array) {
-    PackedFloat64Array_Methods.Destroy(del)
+    PackedFloat64Array_M_List.Destroy(del)
 }
     
 PackedVector2Array_Destroy :: proc(del: ^PackedVector2Array) {
-    PackedVector2Array_Methods.Destroy(del)
+    PackedVector2Array_M_List.Destroy(del)
 }
     
 PackedVector3Array_Destroy :: proc(del: ^PackedVector3Array) {
-    PackedVector3Array_Methods.Destroy(del)
+    PackedVector3Array_M_List.Destroy(del)
 }
     
 PackedVector4Array_Destroy :: proc(del: ^PackedVector4Array) {
-    PackedVector4Array_Methods.Destroy(del)
+    PackedVector4Array_M_List.Destroy(del)
 }
     
 PackedColorArray_Destroy :: proc(del: ^PackedColorArray) {
-    PackedColorArray_Methods.Destroy(del)
+    PackedColorArray_M_List.Destroy(del)
 }
     
 StringName_Destroy :: proc(del: ^StringName) {
-    GDW.StringName_Methods.Destroy(del)
+    GDW.StringName_M_List.Destroy(del)
 }
     
 String_Destroy :: proc(del: ^gdstring) {
-    GDW.String_Methods.Destroy(del)
+    GDW.gdstring_M_List.Destroy(del)
 }
     
 NodePath_Destroy :: proc(del: ^NodePath) {
-    GDW.NodePath_Methods.Destroy(del)
+    GDW.NodePath_M_List.Destroy(del)
 }
     
 Callable_Destroy :: proc(del: ^Callable) {
-    GDW.Callable_Methods.Destroy(del)
+    GDW.Callable_M_List.Destroy(del)
 }
     
 Signal_Destroy :: proc(del: ^Signal) {
-    GDW.Signal_Methods.Destroy(del)
+    GDW.Signal_M_List.Destroy(del)
 }

@@ -207,7 +207,7 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     defer delete(enumName)
     enumName_SN: StringName
     GDW.StringConstruct(&enumName_SN, enumName)
-    defer(GDW.StringName_Methods.Destroy(&enumName_SN))
+    defer(GDW.StringName_M_List.Destroy(&enumName_SN))
 
 
     info:=type_info_of(out_enum).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
@@ -217,7 +217,7 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
         field_SN: StringName
         GDW.StringConstruct(&field_SN, field)
         gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
-        GDW.StringName_Methods.Destroy(&field_SN)
+        GDW.StringName_M_List.Destroy(&field_SN)
     }
 }
 
@@ -730,7 +730,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
     defer delete(bsname)
     bsname_SN: StringName
     GDW.StringConstruct(&bsname_SN, bsname)
-    defer(GDW.StringName_Methods.Destroy(&bsname_SN))
+    defer(GDW.StringName_M_List.Destroy(&bsname_SN))
 
     //Need to handle the condition when the bit_set is backed by an enum and when it isn't.
     when sics.type_is_enum((sics.type_bit_set_elem_type(outbit_set))) {
@@ -745,7 +745,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
             //The index of an enum represents the index of the bool in a bit_set.
             //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
             gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
-            GDW.StringName_Methods.Destroy(&field_SN)
+            GDW.StringName_M_List.Destroy(&field_SN)
         }
 
     } else {
@@ -755,7 +755,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
             GDW.StringConstruct(&field_SN, field)
             gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
             delete(field)
-            GDW.StringName_Methods.Destroy(&field_SN)
+            GDW.StringName_M_List.Destroy(&field_SN)
         }
     }
 }
@@ -1575,7 +1575,7 @@ _Heap_Not_Init :: proc(classStruct: typeid, fieldName: string, var_type: string)
 
 Verify_Array_Init :: proc(p_classData: ^Array, classStruct: typeid, fieldName: string) {
 if nil == p_classData.id {
-    GDArray_Methods.Create0(p_classData, nil)
+    GDW.Array_M_List.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Array"))
     }
@@ -1585,7 +1585,7 @@ if nil == p_classData.id {
 //Verify_Heap_Init2 :: proc($classStruct: typeid, $fieldName: string,){
 Verify_PackedStringArray_Init :: proc(p_classData: ^PackedStringArray, classStruct: typeid, fieldName: string) {
 if nil == p_classData.data {
-    PackedStringArray_Methods.Create0(p_classData)
+    PackedStringArray_Methods.Create0(p_classData, nil)
     when ODIN_DEBUG {
         fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedStringArray"))
     }
@@ -1721,13 +1721,13 @@ bindProperty :: #force_inline proc(className: ^StringName, name: string, type: G
 destructProperty :: proc(info: ^GDE.PropertyInfo) {
     
     if info.name != nil{
-        GDW.StringName_Methods.Destroy(info.name)
+        GDW.StringName_M_List.Destroy(info.name)
     }
     if info.class_name != nil {
-        GDW.StringName_Methods.Destroy(info.class_name)
+        GDW.StringName_M_List.Destroy(info.class_name)
     }
     if info.hint_string != nil {
-        GDW.String_Methods.Destroy(info.hint_string)
+        GDW.gdstring_M_List.Destroy(info.hint_string)
     }
     
     //See above TODO. If malloc is not needed, wouldn't need to free.
@@ -1834,7 +1834,7 @@ Bind_Set :: #force_inline proc(className: ^StringName, methodName: string,
     gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
     
     //Destructor things.
-    GDW.StringName_Methods.Destroy(&methodStringName)
+    GDW.StringName_M_List.Destroy(&methodStringName)
 }
 
 Bind_Get :: #force_inline proc(className: ^StringName, methodName: string,
@@ -1874,7 +1874,7 @@ Bind_Get :: #force_inline proc(className: ^StringName, methodName: string,
     gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
     
     //Destructor things.
-    GDW.StringName_Methods.Destroy(&methodStringName)
+    GDW.StringName_M_List.Destroy(&methodStringName)
     destructProperty(&returnInfo)
 }
 

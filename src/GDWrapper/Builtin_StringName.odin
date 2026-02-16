@@ -1,3 +1,4 @@
+#+ignore
 package GDWrapper
 
 import GDE "gdAPI/gdextension"

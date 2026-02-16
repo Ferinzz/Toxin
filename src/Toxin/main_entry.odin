@@ -31,6 +31,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
 
     GDW.Library = p_library
     GDW.Init_Wrapper(p_get_proc_address)
+    //Init_Builtins()
     initialization.initialize = extensionInit
     initialization.deinitialize = extensionDeinit
     initialization.userdata     = nil
@@ -57,7 +58,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             * Register the different classes which should be considered Core to the rest of the system.
             */
             //Initialize the Methods of Array types for later use.
-            GDW.init_array_types(&GDArray_Methods,
+            /*GDW.init_array_types(&GDArray_Methods,
             &PackedByteArray_Methods,
             &PackedInt32Array_Methods,
             &PackedInt64Array_Methods,
@@ -68,10 +69,10 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             &PackedVector3Array_Methods,
             &PackedColorArray_Methods,
             &PackedVector4Array_Methods,
-            &GDDictionary_Methods,)
+            &GDDictionary_Methods,)*/
             GDW.Init_Variant_Converters()
             GDW.RefCounted_init(&RefCounted_Methods_list)
-            GDW.init_Small_Arrays()
+            //GDW.init_Small_Arrays()
             objectEmitSignal = GDW.classDBGetMethodBind3(.Object, "emit_signal", 4047867050)
             return
         case .INITIALIZATION_SERVERS:

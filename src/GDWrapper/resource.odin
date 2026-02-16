@@ -31,10 +31,10 @@ loadResource :: proc(path, hint: cstring, cacheMode: ^cache_mode) -> ^Object{
     pathS: gdstring
     hintS: gdstring
     gdAPI.Strings_Utils.NewWithLatin1Chars(&pathS, path)
-    defer(String_Methods.Destroy(&pathS))
+    defer(StringName_M_List.Destroy(&pathS))
 
     gdAPI.Strings_Utils.NewWithLatin1Chars(&hintS, hint)
-    defer(String_Methods.Destroy(&hintS))
+    defer(StringName_M_List.Destroy(&hintS))
 
     args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
     r_resource: ^Object

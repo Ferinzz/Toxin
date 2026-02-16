@@ -14,7 +14,7 @@ PackedVector2Array_Methods: GDW.PackedVector2Array_Methods_list
 PackedVector3Array_Methods: GDW.PackedVector3Array_Methods_list
 PackedColorArray_Methods: GDW.PackedColorArray_Methods_list
 PackedVector4Array_Methods: GDW.PackedVector4Array_Methods_list
-GDDictionary_Methods: GDW.GDDictionary_Methods_list
+GDDictionary_Methods: GDW.Dictionary_Methods_list
 
 
 RefCounted_Methods_list: GDW.RefCounted_Methods_list

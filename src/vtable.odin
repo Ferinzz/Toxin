@@ -6,6 +6,7 @@ import "base:runtime"
 import "core:fmt"
 import GDW "shared:GDWrapper"
 import sics "base:intrinsics"
+import "../GD_Classes"
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
@@ -80,17 +81,18 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
 
-    Toxin.GDArray_Methods.Create0(&class.class.rarray, nil)
-    Toxin.GDArray_Methods.Create0(&class.class.a_real_array, nil)
-    Toxin.PackedInt32Array_Methods.Create0(&class.class.an_array, nil)
+    GDW.Array_M_List.Create0(&class.class.rarray, nil)
+    GDW.Array_M_List.Create0(&class.class.a_real_array, nil)
+    GDW.PackedInt32Array_M_List.Create0(&class.class.an_array, nil)
     size:Toxin.Int=0
     args:=[1]rawptr{&size}
-    Toxin.PackedInt32Array_Methods.size(&class.class.an_array, nil, &size, 0)
+    //Toxin.PackedInt32Array_Methods.size(&class.class.an_array, nil, &size, 0)
     //resize(&class.class.an_array.proxy, raw_data(args[:]), nil, 1)
     //
-    Toxin.GDDictionary_Methods.Create0(&class.class.a_dictionary, nil)
-    Toxin.GDDictionary_Methods.Create0(&class.class.dictionary_type, nil)
-    Toxin.GDDictionary_Methods.Create0(&class.class.locale_dictionary, nil)
+    //TODO: Dictionary is broken again.
+    //Toxin.Dictionary_M_List.Create0(&class.class.a_dictionary, nil)
+    //Toxin.Dictionary_M_List.Create0(&class.class.dictionary_type, nil)
+    //Toxin.Dictionary_M_List.Create0(&class.class.locale_dictionary, nil)
     //GDW.PackedInt32Array_Methods.Create0(&class.class.an_array, nil)
     return class.self
 }

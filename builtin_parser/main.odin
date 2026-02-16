@@ -177,26 +177,6 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
             strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_method, method.name, newline =true))
         }
         
-        #partial switch variant_type {
-            case .STRING_NAME,
-            .INT,
-            .NODE_PATH,
-            .RID,
-            .CALLABLE,
-            .SIGNAL,
-            .DICTIONARY,
-            .ARRAY,
-            .PACKED_BYTE_ARRAY,
-            .PACKED_INT32_ARRAY,
-            .PACKED_INT64_ARRAY,
-            .PACKED_FLOAT32_ARRAY,
-            .PACKED_FLOAT64_ARRAY,
-            .PACKED_STRING_ARRAY,
-            .PACKED_VECTOR2_ARRAY,
-            .PACKED_VECTOR3_ARRAY,
-            .PACKED_COLOR_ARRAY,
-            .PACKED_VECTOR4_ARRAY,
-            .NIL :
                 for ops in BUILT_FROM.operators {
                     eval_enum:= Which_Ops(ops.name)
                     variant_type2:= Get_Variant_Type_From_String(ops.right_type)
@@ -206,7 +186,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
                         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], bltn_ops, eval_enum, ops.right_type, newline =true))
                     }
                 }
-        }
+        
         //pinch it off
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], Closing, newline =true))

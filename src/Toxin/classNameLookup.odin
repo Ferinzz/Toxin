@@ -29,7 +29,7 @@ ClassName_StringName_Del :: proc(classname_index: GDW.ClassName_Index) -> SN_Err
         }
     }
 
-    GDW.StringName_Methods.Destroy(&GDW.ClassName_StringNames[classname_index])
+    GDW.StringName_M_List.Destroy(&GDW.ClassName_StringNames[classname_index])
 
     return nil
 }

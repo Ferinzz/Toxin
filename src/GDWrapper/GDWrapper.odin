@@ -16,8 +16,7 @@ ClassTag:: rawptr
 Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
 
     gdAPI.loadAPI(p_get_proc_address)
-    init_StringName_Methods()
-    init_String_Methods()
+    Init_Builtins()
 
     init_Node_Virtuals_Info()
     init_CanvasItem_Virtuals_Info()
@@ -32,12 +31,6 @@ Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
 
 }
 
-//Use these to build a C++ String or StringName that Godot can use.
-// @(require_results)
-// StringConstruct : struct {
-    // stringNameNewString: stringNameNewString,
-    // stringNameNewString_r: stringNameNewString_r,
-// }
 
 StringConstruct :: proc {
     stringNameNewString,
@@ -54,7 +47,7 @@ stringNameNewString_r :: proc(name: string) -> (r_ret: StringName) {
 
 Get_Builtin_Method :: proc(variant_type: GDE.VariantType, method_name: string, hash: Int) -> GDE.PtrBuiltInMethod {
     method_name_SN: StringName
-    defer StringName_Methods.Destroy(&method_name_SN)
+    defer StringName_M_List.Destroy(&method_name_SN)
     stringNameNewString(&method_name_SN, method_name)
     return gdAPI.Variant_Utils.GetPtrBuiltinMethod(variant_type, &method_name_SN, hash)
 }
@@ -70,10 +63,10 @@ stringNameCompare :: proc {
 stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (ret: bool) {
     r_name: StringName
     gdAPI.StringName_Utils.Latin1Chars(&r_name, r_value, false)
-    defer(StringName_Methods.Destroy(&r_name))
+    defer(StringName_M_List.Destroy(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    StringName_Methods.Compare(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    StringName_M_List.VARIANT_OP_EQUAL_StringName(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
     return ret
 }
 
@@ -82,10 +75,10 @@ stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (re
 stringNameCompare_string :: proc(l_value: ^StringName, r_value: string) -> (ret: bool) {
     r_name: StringName
     StringConstruct(&r_name, r_value)
-    defer(StringName_Methods.Destroy(&r_name))
+    defer(StringName_M_List.Destroy(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    StringName_Methods.Compare(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    StringName_M_List.VARIANT_OP_EQUAL_StringName(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
     return ret
 }
 //TODO: make a proc group for stringName compare
@@ -93,7 +86,7 @@ stringNameCompare_string :: proc(l_value: ^StringName, r_value: string) -> (ret:
 stringNameCompare_StringName :: proc(l_value: ^StringName, r_value: ^StringName) -> (ret: bool) {
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    StringName_Methods.Compare(cast([^]rawptr)l_value, cast([^]rawptr)r_value, &ret)
+    StringName_M_List.VARIANT_OP_EQUAL_StringName(cast([^]rawptr)l_value, cast([^]rawptr)r_value, &ret)
     return ret
 }
 
@@ -111,7 +104,7 @@ StringNameGetBasename :: proc(StringNamePtr: ^StringName, r_String: ^gdstring) {
     if stringNameGetBasename == nil {
         ClassDB:StringName
         gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "get_basename", false)
-        defer(StringName_Methods.Destroy(&ClassDB))
+        defer(StringName_M_List.Destroy(&ClassDB))
         stringNameGetBasename = gdAPI.Variant_Utils.GetPtrBuiltinMethod(.STRING_NAME, &ClassDB, 3942272618)
     }
     stringNameGetBasename(StringNamePtr, nil, r_String, 0)
@@ -123,7 +116,7 @@ GDStringJoin :: proc(packedString: ^PackedStringArray, r_String: ^gdstring) {
     if gdStringJoin == nil {
         ClassDB:StringName
         gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "join", false)
-        defer(StringName_Methods.Destroy(&ClassDB))
+        defer(StringName_M_List.Destroy(&ClassDB))
         gdStringJoin = gdAPI.Variant_Utils.GetPtrBuiltinMethod(.STRING, &ClassDB, 3595973238)
     }
 
@@ -139,7 +132,7 @@ get_ClassTagName :: proc(classTagName: string) -> ClassTag {
     
     classTagName_SN: StringName
     StringConstruct(&classTagName_SN, classTagName)
-    defer(StringName_Methods.Destroy(&classTagName_SN))
+    defer(StringName_M_List.Destroy(&classTagName_SN))
     return gdAPI.ClassDB.GetClassTag(&classTagName_SN)
 }
 
@@ -200,7 +193,7 @@ getMainLoop :: proc() -> (gdLoop: ^Object) {
 
     ClassDB:StringName
     gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "Engine", false)
-    defer(StringName_Methods.Destroy(&ClassDB))
+    defer(StringName_M_List.Destroy(&ClassDB))
     myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
 
     if getMainLoop == nil {

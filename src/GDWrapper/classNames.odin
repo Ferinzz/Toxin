@@ -37,7 +37,7 @@ ClassName_StringName_Del :: proc(classname_index: ClassName_Index) -> SN_Error {
         }
     }
 
-    StringName_Methods.Destroy(&ClassName_StringNames[classname_index])
+    StringName_M_List.Destroy(&ClassName_StringNames[classname_index])
 
     return nil
 }
