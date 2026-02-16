@@ -159,17 +159,17 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
         //Will exit early if there is a match on the value.
         ok:bool=false
         virtual:rawptr=nil
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.Node_v_table) || 
+        when sics.type_is_subtype_of(sics.type_elem_type(T), Node_v_table) || 
         sics.type_has_field( sics.type_base_type(T), "vNode"){
-            virtual, ok = GDW.Return_Node_Virtuals(arg^, nil, p_name, p_hash)
+            virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.CanvasItem_v_table) || 
+        when sics.type_is_subtype_of(sics.type_elem_type(T), CanvasItem_v_table) || 
         sics.type_has_field( sics.type_base_type(T), "vCanvasItem"){
-            virtual, ok = GDW.Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
+            virtual, ok = Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), GDW.CollisionObject2D_v_table) || 
+        when sics.type_is_subtype_of(sics.type_elem_type(T), CollisionObject2D_v_table) || 
         sics.type_has_field( sics.type_base_type(T), "vCollisionObject2D"){
             virtual, ok = GDW.Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual

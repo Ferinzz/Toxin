@@ -7,6 +7,7 @@ Maker :: proc {
     make_Node
 }
 
+//If it isn't part of this list, it doesn't need to be destroyed.
 Destroy_Builtin :: proc {
     GDArray_Destroy,
     PackedStringArray_Destroy,

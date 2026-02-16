@@ -6,7 +6,8 @@ import "shared:GDWrapper/gdAPI"
 import GDW "shared:GDWrapper"
 import "base:runtime"
 import sics "base:intrinsics"
-
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import "Input"
 
 /*
 * A bit of a hack, but since the data passed in from Godot is known based on the method being called
@@ -27,16 +28,16 @@ Method_Callback_Compare_Info :: struct {
 Node_v_table:: struct ($T: typeid) {
     _physics_process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^float}),
     _process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^float}),
-    _input: proc "c" (self: ^Class_Container(T), input: ^struct{inp: ^^InputEvent}),
+    _input: proc "c" (self: ^Class_Container(T), input: ^struct{inp: ^^Input.InputEvent}),
     _ready: proc "c" (self: ^Class_Container(T)),
     _enter_tree: proc "c" (self: ^Class_Container(T)),
     _exit_tree: proc "c" (self: ^Class_Container(T)),
     _get_accessibility_configuration_warnings: proc "c" (self: ^Class_Container(T)) -> PackedStringArray,
     _get_configuration_warnings: proc "c" (self: ^Class_Container(T)),
     _get_focused_accessibility_element: proc "c" (self: ^Class_Container(T)),
-    _shortcut_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^InputEvent}),
-    _unhandled_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^InputEvent}),
-    _unhandled_key_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^InputEvent}),
+    _shortcut_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^Input.InputEvent}),
+    _unhandled_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^Input.InputEvent}),
+    _unhandled_key_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^Input.InputEvent}),
 }
 
 vCanvasItem:: struct($T: typeid){
@@ -91,7 +92,7 @@ Control_v_table:: struct($T: typeid) {
     _make_custom_tooltip: proc "c" (self: ^Class_Container(T), p_args: ^struct{for_text: ^gdstring}),
     _accessibility_get_contextual_info: proc "c" (self: ^Class_Container(T)),
     _get_accessibility_container_name: proc "c" (self: ^Class_Container(T),  p_args: ^struct{node: ^GDE.Node}),
-    _gui_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{event: ^^InputEvent}),
+    _gui_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{event: ^^Input.InputEvent}),
 };
 
 //"inherits": "Node",
@@ -189,7 +190,10 @@ AudioStreamPlayback_Virtual_Info: struct {
 };
 
 //"inherits": "Resource",
-AudioStream_Virtual_Info: struct {
+AudioStream_Virtual_Info: Classes.AudioStream_Virtual_Info
+
+//"inherits": "Resource",
+AudioStream_Virtual_Info2: struct {
     _instantiate_playback: Method_Callback_Compare_Info,
     _get_stream_name: Method_Callback_Compare_Info,
     _get_length: Method_Callback_Compare_Info,
@@ -213,7 +217,7 @@ CollisionObject2D_Virtual_Info: struct {
 
 //"inherits": "Node2D",
 CollisionObject2D_v_table:: struct (T: typeid){
-    _input_event: proc "c" (self: ^Class_Container(T), using args: ^struct {viewport: ^^Object, event: ^^InputEvent, shape_idx: ^Int}),
+    _input_event: proc "c" (self: ^Class_Container(T), using args: ^struct {viewport: ^^Object, event: ^^Input.InputEvent, shape_idx: ^Int}),
 }
 
 //"inherits": "Node3D",
@@ -228,40 +232,40 @@ Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
 
         using Node_Virtuals_Info
         
-        if (stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
             return cast(rawptr)class_v_table._ready, true
         }
-        if (stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_process.name) && p_hash == _process.p_hash) {
             return cast(rawptr)class_v_table._process, true
         }
-        if (stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_physics_process.name) && p_hash == _physics_process.p_hash) {
             return cast(rawptr)class_v_table._physics_process, true
         }
-        if (stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_input.name) && p_hash == _input.p_hash) {
             return cast(rawptr)class_v_table._input, true
         }
-        if (stringNameCompare(p_name, &_enter_tree.name) && p_hash == _enter_tree.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_enter_tree.name) && p_hash == _enter_tree.p_hash) {
             return cast(rawptr)class_v_table._enter_tree, true
         }
-        if (stringNameCompare(p_name, &_exit_tree.name) && p_hash == _exit_tree.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_exit_tree.name) && p_hash == _exit_tree.p_hash) {
             return cast(rawptr)class_v_table._exit_tree, true
         }
-        if (stringNameCompare(p_name, &_get_accessibility_configuration_warnings.name) && p_hash == _get_accessibility_configuration_warnings.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_get_accessibility_configuration_warnings.name) && p_hash == _get_accessibility_configuration_warnings.p_hash) {
             return cast(rawptr)class_v_table._get_accessibility_configuration_warnings, true
         }
-        if (stringNameCompare(p_name, &_get_configuration_warnings.name) && p_hash == _get_configuration_warnings.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_get_configuration_warnings.name) && p_hash == _get_configuration_warnings.p_hash) {
             return cast(rawptr)class_v_table._get_configuration_warnings, true
         }
-        if (stringNameCompare(p_name, &_get_focused_accessibility_element.name) && p_hash == _get_focused_accessibility_element.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_get_focused_accessibility_element.name) && p_hash == _get_focused_accessibility_element.p_hash) {
             return cast(rawptr)class_v_table._get_focused_accessibility_element, true
         }
-        if (stringNameCompare(p_name, &_shortcut_input.name) && p_hash == _shortcut_input.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_shortcut_input.name) && p_hash == _shortcut_input.p_hash) {
             return cast(rawptr)class_v_table._shortcut_input, true
         }
-        if (stringNameCompare(p_name, &_unhandled_input.name) && p_hash == _unhandled_input.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_unhandled_input.name) && p_hash == _unhandled_input.p_hash) {
             return cast(rawptr)class_v_table._unhandled_input, true
         }
-        if (stringNameCompare(p_name, &_unhandled_key_input.name) && p_hash == _unhandled_key_input.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_unhandled_key_input.name) && p_hash == _unhandled_key_input.p_hash) {
             return cast(rawptr)class_v_table._unhandled_key_input, true
         }
 
@@ -270,7 +274,7 @@ Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
 
 Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
-        if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw, true
         }
     return nil, false
@@ -279,7 +283,7 @@ Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name
 
 Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
-        if (stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw, true
         }
     return nil, false
@@ -287,7 +291,7 @@ Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
 
 Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CollisionObject2D_Virtual_Info
-        if (stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
             if class_v_table._input_event == nil do return nil
             return cast(rawptr)class_v_table._input_event, true
         }
@@ -296,23 +300,23 @@ Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr
 
 Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using Texture2D_Virtuals_Info
-        if (stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
             if class_v_table._is_pixel_opaque == nil do return nil
             return cast(rawptr)class_v_table._is_pixel_opaque, true
         }
-        if (stringNameCompare(p_name, &_get_height.name) && p_hash == _get_height.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_get_height.name) && p_hash == _get_height.p_hash) {
             if class_v_table._get_height == nil do return nil
             return cast(rawptr)class_v_table._get_height, true
         }
-        if (stringNameCompare(p_name, &_get_width.name) && p_hash == _get_width.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_get_width.name) && p_hash == _get_width.p_hash) {
             if class_v_table._get_width == nil do return nil
             return cast(rawptr)class_v_table._get_width, true
         }
-        if (stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
             if class_v_table._draw_txt2D == nil do return nil
             return cast(rawptr)class_v_table._draw_txt2D, true
         }
-        if (stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
+        if (GDW.stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
             if class_v_table._draw_txt2D == nil do return nil
             return cast(rawptr)class_v_table._draw_txt2D, true
         }

@@ -1788,7 +1788,6 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
         context = runtime.default_context()
 
         when  field_type == Array ||
-        sics.type_is_specialization_of(field_type, GDW.packedArray) ||
         field_type == Dictionary {
             Verify_Heap_Init(((^field_type)(cast(uintptr)p_classData+ObjSize+offset_of_by_string(classStruct, fieldName))),\
             classStruct, fieldName)
@@ -1828,7 +1827,6 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $field
     getterr :: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(classStruct), godotValue: rawptr, r_ret: ^field_Type){
         context = runtime.default_context()
         when field_type == Array ||
-        sics.type_is_specialization_of(field_type, GDW.packedArray) ||
         field_type == Signal ||
         field_type == Callable ||
         field_type == Dictionary {

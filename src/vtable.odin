@@ -56,7 +56,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     me:=(^Toxin.Class_Deets)(self)
     fmt.println(typeid_of(type_of(THIS_CLASS_NAME_VTable)))
     tabletype:: sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME))
-    tabletype2:: sics.type_is_subtype_of( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), GDW.Node_v_table)
+    tabletype2:: sics.type_is_subtype_of( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), Toxin.Node_v_table)
     tabletype3:: sics.type_has_field( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), "vNode")
     tabletype4:: sics.type_has_field( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), "vCanvasItem")
     fmt.println(tabletype2)
