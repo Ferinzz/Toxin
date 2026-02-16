@@ -1556,17 +1556,7 @@ makePropertyFull_string :: #force_inline proc(type: GDE.VariantType, name: strin
 //MUST have these types initialized before attempting to access them. Godot will panic otherwise (Yay RAII..)
 Verify_Heap_Init :: proc {
     Verify_Array_Init,
-    Verify_PackedColorArray_Init,
-    Verify_PackedVector4Array_Init,
-    Verify_PackedVector3Array_Init,
-    Verify_PackedVector2Array_Init,
-    Verify_PackedFloat64Array_Init,
-    Verify_PackedFloat32Array_Init,
-    Verify_PackedInt64Array_Init,
-    Verify_PackedInt32Array_Init,
-    Verify_PackedByteArray_Init,
     Verify_Dictionary_Init,
-    Verify_PackedStringArray_Init,
 }
 
 _Heap_Not_Init :: proc(classStruct: typeid, fieldName: string, var_type: string) -> string {
@@ -1582,102 +1572,11 @@ if nil == p_classData.id {
 }
 };
 
-//Verify_Heap_Init2 :: proc($classStruct: typeid, $fieldName: string,){
-Verify_PackedStringArray_Init :: proc(p_classData: ^PackedStringArray, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedStringArray_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedStringArray"))
-    }
-}
-};
-
 Verify_Dictionary_Init :: proc(p_classData: ^Dictionary, classStruct: typeid, fieldName: string) {
 if nil == p_classData.id {
-    GDDictionary_Methods.Create0(p_classData, nil)
+    GDW.Dictionary_M_List.Create0(p_classData, nil)
     when ODIN_DEBUG {
             fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "Dictionary"))
-    }
-}
-};
-
-Verify_PackedByteArray_Init :: proc(p_classData: ^PackedByteArray, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedByteArray_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedByteArray"))
-    }
-}
-};
-
-Verify_PackedInt32Array_Init :: proc(p_classData: ^PackedInt32Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    //PackedInt32Array_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        //fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt32Array"))
-    }
-}
-};
-
-Verify_PackedInt64Array_Init :: proc(p_classData: ^PackedInt64Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedInt64Array_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedInt64Array"))
-    }
-}
-};
-
-Verify_PackedFloat32Array_Init :: proc(p_classData: ^PackedFloat32Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedFloat32Array_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat32Array"))
-    }
-}
-};
-
-Verify_PackedFloat64Array_Init :: proc(p_classData: ^PackedFloat64Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedFloat64Array_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedFloat64Array"))
-    }
-}
-};
-
-Verify_PackedVector2Array_Init :: proc(p_classData: ^PackedVector2Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedVector2Array_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector2Array"))
-    }
-}
-};
-
-Verify_PackedVector3Array_Init :: proc(p_classData: ^PackedVector3Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedVector3Array_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector3Array"))
-    }
-}
-};
-
-Verify_PackedVector4Array_Init :: proc(p_classData: ^PackedVector4Array, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedVector4Array_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedVector4Array"))
-    }
-}
-};
-
-Verify_PackedColorArray_Init :: proc(p_classData: ^PackedColorArray, classStruct: typeid, fieldName: string) {
-if nil == p_classData.data {
-    PackedColorArray_Methods.Create0(p_classData, nil)
-    when ODIN_DEBUG {
-        fmt.panicf(_Heap_Not_Init(classStruct, fieldName, "PackedColorArray"))
     }
 }
 };

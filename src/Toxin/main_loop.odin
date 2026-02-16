@@ -45,16 +45,17 @@ MainLoopStartupCallback :: proc "c" () {
 
     //indx_ret: Variant
     //default_Array_class->GetIndex(0, &indx_ret)
-    GDW.getPhysServer2dObj()
-    GDW.getRenderServer2dObj()
+    //TODO: fix the singleton getters.
+    //GDW.getPhysServer2dObj()
+    //GDW.getRenderServer2dObj()
     //GDW.class_get_method_list()
-    GDW.getInputSingleton()
+    //GDW.getInputSingleton()
     //Setup an object to hold the MainLoop object.
-    scene_tree_obj = GDW.getMainLoop()
-    GDW.init_InputEvent()
+    //scene_tree_obj = GDW.getMainLoop()
+    //GDW.init_InputEvent()
     //Fetch the root of the current sceneTree
-    root:= GDW.getRoot()
-    scene:= GDW.get_current_scene()
+    //root:= GDW.getRoot()
+    //scene:= GDW.get_current_scene()
     //SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
     //rando: rawptr = new(rawptr)
     //minput: Node_C
@@ -68,7 +69,7 @@ MainLoopStartupCallback :: proc "c" () {
     //minput->get_name(&SN_p2)
     //minput->set_name({&SN})
     //minput->get_name(&SN_p2)
-
+    scene:rawptr
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.

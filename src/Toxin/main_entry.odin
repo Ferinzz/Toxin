@@ -5,6 +5,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "shared:GDWrapper/gdAPI"
 import "base:runtime"
 import "core:fmt"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 Scene_Init_Callback:: proc ();
 
@@ -71,7 +72,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             &PackedVector4Array_Methods,
             &GDDictionary_Methods,)*/
             GDW.Init_Variant_Converters()
-            GDW.RefCounted_init(&RefCounted_Methods_list)
+            Classes.RefCounted_Init_(&RefCounted_Methods_list)
             //GDW.init_Small_Arrays()
             objectEmitSignal = GDW.classDBGetMethodBind3(.Object, "emit_signal", 4047867050)
             return

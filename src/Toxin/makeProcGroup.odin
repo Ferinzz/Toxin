@@ -95,3 +95,16 @@ Callable_Destroy :: proc(del: ^Callable) {
 Signal_Destroy :: proc(del: ^Signal) {
     GDW.Signal_M_List.Destroy(del)
 }
+
+
+texture2D :: ^Object
+
+//TODO: fix texture destructor
+@(deprecated="Is borked. No fix yet.")
+destroy_texture :: proc(texture: texture2D) {
+    die:RID
+    if texture != nil && texture.proxy != nil {
+        GDW.getRid(texture, &die)
+        //GDW.freeRenderRID(&die)
+    }
+}

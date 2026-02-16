@@ -183,6 +183,9 @@ RID :: distinct struct{
 //extension_api says size is dependent on the build config, but callable uses u64 with no typedef.
 Object :: GDE.Object
 
+//a pointer uniquely identifying the given built-in class in the ClassDB.
+ClassTag:: rawptr
+
 /*Represents a function. It can either be a method within an Object instance,
 or a custom callable used for different purposes.
 object is a union of u64 (objectID) or ^custom callable.

@@ -3,6 +3,7 @@ package Toxin
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 Node :: ^GDW.Object
 make_Node :: proc(p_Node_C: ^Node_C) {
@@ -21,7 +22,7 @@ Node_C :: struct {
 
 Node_methods: Node_methods_list
 
-Node_mb: GDW.Node_MethodBind_List
+Node_mb: Classes.Node_MethodBind_List
 
 Node_methods_list:: struct {
     set_name: proc (self: ^Node_C, vals: struct{r_name: ^StringName}, loc := #caller_location),
@@ -31,7 +32,7 @@ Node_methods_list:: struct {
 
 Fill_Node_Methods :: proc() {
 
-    GDW.Node_Input_(&Node_mb)
+    Classes.Node_Init_(&Node_mb)
 
     Node_methods.get_child_count = proc (self: ^Node_C, check_inheritance: struct{^Bool}, r_count: ^Int, loc := #caller_location) {
         args:=check_inheritance
