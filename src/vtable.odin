@@ -86,13 +86,12 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     GDW.PackedInt32Array_M_List.Create0(&class.class.an_array, nil)
     size:Toxin.Int=0
     args:=[1]rawptr{&size}
-    //Toxin.PackedInt32Array_Methods.size(&class.class.an_array, nil, &size, 0)
+    //GDW.PackedInt32Array_M_List.size(&class.class.an_array, nil, &size, 0)
     //resize(&class.class.an_array.proxy, raw_data(args[:]), nil, 1)
     //
-    //TODO: Dictionary is broken again.
-    //Toxin.Dictionary_M_List.Create0(&class.class.a_dictionary, nil)
-    //Toxin.Dictionary_M_List.Create0(&class.class.dictionary_type, nil)
-    //Toxin.Dictionary_M_List.Create0(&class.class.locale_dictionary, nil)
+    GDW.Dictionary_M_List.Create0(&class.class.a_dictionary, nil)
+    GDW.Dictionary_M_List.Create0(&class.class.dictionary_type, nil)
+    GDW.Dictionary_M_List.Create0(&class.class.locale_dictionary, nil)
     //GDW.PackedInt32Array_Methods.Create0(&class.class.an_array, nil)
     return class.self
 }
