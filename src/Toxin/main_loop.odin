@@ -3,6 +3,7 @@ package Toxin
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "shared:GDWrapper/gdAPI"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 
 import "base:runtime"
@@ -36,6 +37,12 @@ root_node_instance: ^GDW.Object
 */
 MainLoopStartupCallback :: proc "c" () {
     context = runtime.default_context()
+    /////////////////////////////////////////////////
+    //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
+    /////////////////////////////////////////////////
+    //Classes.INIT_ALL_OF_THEM()
+
+
     //indx_ret: Variant
     //default_Array_class->GetIndex(0, &indx_ret)
     GDW.getPhysServer2dObj()

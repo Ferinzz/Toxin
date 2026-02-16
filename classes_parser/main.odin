@@ -1,24 +1,23 @@
 package classes_parser
 
 import "core:encoding/json"
-import "core:os/os2"
+import "core:os"
 import "core:fmt"
 import "base:runtime"
 import "core:strings"
-import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
-import "../GD_Classes"
+//import "../GD_Classes"
 
 main :: proc() {
-  root, error := os2.get_absolute_path("classes_parser\\example.json", context.allocator)
+  root, error := os.get_absolute_path("classes_parser\\example.json", context.allocator)
   if error != nil {
     print_warning("error getting root.", error)
     return
   }
   fmt.println(root)
-  //data, err := os2.read_entire_file(root, context.allocator)
-  data, err := os2.read_entire_file("C:\\Odin_programs\\toxin_new_pull\\extension_api.json", context.allocator)
+  //data, err := os.read_entire_file(root, context.allocator)
+  data, err := os.read_entire_file("C:\\Odin_programs\\toxin_new_pull\\extension_api.json", context.allocator)
   
   if err != nil {
     print_warning("file could not be read: ", err)
@@ -42,9 +41,9 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 `
 
   file_path:= "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAUtils_GD_Class.odin"
-  file, open_err:= os2.create(file_path)
+  file, open_err:= os.create(file_path)
   if open_err == nil {
-    os2.write_strings(file, header, Method_Callback_Compare_Info)
+    os.write_strings(file, header, Method_Callback_Compare_Info)
     class_n:= `  %s,`
     class_sn:= `  .%s = GDW.StringName({{nil}),`
     closer:=`
@@ -60,9 +59,9 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     }
     strings.write_string(&class_list, closer)
     strings.write_string(&class_sn_list, closer)
-    os2.write_string(file, strings.to_string(class_list))
-    os2.write_string(file, strings.to_string(class_sn_list))
-    os2.close(file)
+    os.write_string(file, strings.to_string(class_list))
+    os.write_string(file, strings.to_string(class_sn_list))
+    os.close(file)
   }
   for classes in final {
     //fmt.println(classes.method_list)
@@ -70,10 +69,10 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     //fmt.println(classes.constants)
 
     file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\%s_GD_Class.odin", classes.name)
-    file, open_err:= os2.create(file_path)
+    file, open_err:= os.create(file_path)
     if open_err == nil {
-      //count, write_err:= os2.write_strings(file, header, 
-      os2.write_strings(file, header, 
+      //count, write_err:= os.write_strings(file, header, 
+      os.write_strings(file, header, 
                             classes.name,
                             ` :: ^GDW.Object
 
@@ -90,13 +89,13 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     } else {
       print_warning("could not open file_path", open_err)
     }
-    os2.close(file)
+    os.close(file)
     delete(file_path)
   }
   fmt.println("Write Comleted")
 };
 
-print_warning:: proc(message: string, error: os2.Error) {
+print_warning:: proc(message: string, error: os.Error) {
   fmt.println(message, error)
 };
 
@@ -213,10 +212,10 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   class_name:= `  %s: ^GDW.MethodBind,` //method.name
 
   Virtual_Proc_Sig:=`
-%s_Init_Virtuals_Info :: proc(using info: ^%[0]s_Virtual_Info) {{`
+%s_Init_Virtuals_Info :: proc(info: ^%[0]s_Virtual_Info) {{`
 //ClassName
-  Virtual_Listing:= `    %[0]s.p_hash = %v
-    %[0]s.name = GDW.StringConstruct("%[0]s")`
+  Virtual_Listing:= `    info.%[0]s.p_hash = %v
+    info.%[0]s.name = GDW.StringConstruct("%[0]s")`
     //VirtualName, virtualHash
   Virtual_Struct_Sig:= `%s_Virtual_Info :: struct {{
 `//ClassName

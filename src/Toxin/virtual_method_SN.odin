@@ -1,3 +1,4 @@
+#+feature using-stmt
 package Toxin
 
 import GDE "shared:GDWrapper/gdAPI/gdextension"
@@ -25,7 +26,7 @@ Method_Callback_Compare_Info :: struct {
 //This is the base of everything else, don't need to pass it through its own special vtable group.
 Node_v_table:: struct ($T: typeid) {
     _physics_process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^float}),
-    _process: proc "c" (self: ^Class_Container(T), using p_args: ^struct{delta: ^float}),
+    _process: proc "c" (self: ^Class_Container(T), p_args: ^struct{delta: ^float}),
     _input: proc "c" (self: ^Class_Container(T), input: ^struct{inp: ^^InputEvent}),
     _ready: proc "c" (self: ^Class_Container(T)),
     _enter_tree: proc "c" (self: ^Class_Container(T)),
@@ -33,9 +34,9 @@ Node_v_table:: struct ($T: typeid) {
     _get_accessibility_configuration_warnings: proc "c" (self: ^Class_Container(T)) -> PackedStringArray,
     _get_configuration_warnings: proc "c" (self: ^Class_Container(T)),
     _get_focused_accessibility_element: proc "c" (self: ^Class_Container(T)),
-    _shortcut_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
-    _unhandled_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
-    _unhandled_key_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{input: ^^InputEvent}),
+    _shortcut_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^InputEvent}),
+    _unhandled_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^InputEvent}),
+    _unhandled_key_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{input: ^^InputEvent}),
 }
 
 vCanvasItem:: struct($T: typeid){
@@ -80,17 +81,17 @@ CanvasItem_v_table:: struct($T: typeid){
 
 //"inherits": "CanvasItem",
 Control_v_table:: struct($T: typeid) {
-    _has_point: proc "c" (self: ^Class_Container(T), using p_args: ^struct{point: ^Vector2}),
-    _structured_text_parser: proc "c" (self: ^Class_Container(T), using p_args: ^struct{args: ^Array, text: ^gdstring}),
+    _has_point: proc "c" (self: ^Class_Container(T), p_args: ^struct{point: ^Vector2}),
+    _structured_text_parser: proc "c" (self: ^Class_Container(T), p_args: ^struct{args: ^Array, text: ^gdstring}),
     _get_minimum_size: proc "c" (self: ^Class_Container(T)),
-    _get_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2}),
-    _get_drag_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2}),
-    _can_drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2, data: ^GDE.Variant}),
-    _drop_data: proc "c" (self: ^Class_Container(T), using p_args: ^struct{at_position: ^Vector2, data: ^GDE.Variant}),
-    _make_custom_tooltip: proc "c" (self: ^Class_Container(T), using p_args: ^struct{for_text: ^gdstring}),
+    _get_tooltip: proc "c" (self: ^Class_Container(T), p_args: ^struct{at_position: ^Vector2}),
+    _get_drag_data: proc "c" (self: ^Class_Container(T), p_args: ^struct{at_position: ^Vector2}),
+    _can_drop_data: proc "c" (self: ^Class_Container(T), p_args: ^struct{at_position: ^Vector2, data: ^GDE.Variant}),
+    _drop_data: proc "c" (self: ^Class_Container(T), p_args: ^struct{at_position: ^Vector2, data: ^GDE.Variant}),
+    _make_custom_tooltip: proc "c" (self: ^Class_Container(T), p_args: ^struct{for_text: ^gdstring}),
     _accessibility_get_contextual_info: proc "c" (self: ^Class_Container(T)),
-    _get_accessibility_container_name: proc "c" (self: ^Class_Container(T),  using p_args: ^struct{node: ^GDE.Node}),
-    _gui_input: proc "c" (self: ^Class_Container(T), using p_args: ^struct{event: ^^InputEvent}),
+    _get_accessibility_container_name: proc "c" (self: ^Class_Container(T),  p_args: ^struct{node: ^GDE.Node}),
+    _gui_input: proc "c" (self: ^Class_Container(T), p_args: ^struct{event: ^^InputEvent}),
 };
 
 //"inherits": "Node",
@@ -319,32 +320,32 @@ Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_
 }
 
 init_Node_Virtuals_Info :: proc () {
-    using Node_Virtuals_Info
-    _physics_process.p_hash = 373806689
-    _process.p_hash = 373806689
-    _input.p_hash = 3754044979
-    _ready.p_hash = 3218959716
-    _enter_tree.p_hash = 3218959716
-    _exit_tree.p_hash = 3218959716
-    _get_accessibility_configuration_warnings.p_hash = 3218959716
-    _get_configuration_warnings.p_hash = 1139954409
-    _get_focused_accessibility_element.p_hash = 3218959716
-    _shortcut_input.p_hash = 3754044979
-    _unhandled_input.p_hash = 3754044979
-    _unhandled_key_input.p_hash = 3754044979
+    
+    Node_Virtuals_Info._physics_process.p_hash = 373806689
+    Node_Virtuals_Info._process.p_hash = 373806689
+    Node_Virtuals_Info._input.p_hash = 3754044979
+    Node_Virtuals_Info._ready.p_hash = 3218959716
+    Node_Virtuals_Info._enter_tree.p_hash = 3218959716
+    Node_Virtuals_Info._exit_tree.p_hash = 3218959716
+    Node_Virtuals_Info._get_accessibility_configuration_warnings.p_hash = 3218959716
+    Node_Virtuals_Info._get_configuration_warnings.p_hash = 1139954409
+    Node_Virtuals_Info._get_focused_accessibility_element.p_hash = 3218959716
+    Node_Virtuals_Info._shortcut_input.p_hash = 3754044979
+    Node_Virtuals_Info._unhandled_input.p_hash = 3754044979
+    Node_Virtuals_Info._unhandled_key_input.p_hash = 3754044979
 
-    _physics_process.name = GDW.StringConstruct("_physics_process")
-    _process.name = GDW.StringConstruct("_process")
-    _input.name = GDW.StringConstruct("_input")
-    _ready.name = GDW.StringConstruct("_ready")
-    _enter_tree.name = GDW.StringConstruct("_enter_tree")
-    _exit_tree.name = GDW.StringConstruct("_exit_tree")
-    _get_accessibility_configuration_warnings.name = GDW.StringConstruct("_get_accessibility_configuration_warnings")
-    _get_configuration_warnings.name = GDW.StringConstruct("_get_configuration_warnings")
-    _get_focused_accessibility_element.name = GDW.StringConstruct("_get_focused_accessibility_element")
-    _shortcut_input.name = GDW.StringConstruct("_shortcut_input")
-    _unhandled_input.name = GDW.StringConstruct("_unhandled_input")
-    _unhandled_key_input.name = GDW.StringConstruct("_unhandled_key_input")
+    Node_Virtuals_Info._physics_process.name = GDW.StringConstruct("_physics_process")
+    Node_Virtuals_Info._process.name = GDW.StringConstruct("_process")
+    Node_Virtuals_Info._input.name = GDW.StringConstruct("_input")
+    Node_Virtuals_Info._ready.name = GDW.StringConstruct("_ready")
+    Node_Virtuals_Info._enter_tree.name = GDW.StringConstruct("_enter_tree")
+    Node_Virtuals_Info._exit_tree.name = GDW.StringConstruct("_exit_tree")
+    Node_Virtuals_Info._get_accessibility_configuration_warnings.name = GDW.StringConstruct("_get_accessibility_configuration_warnings")
+    Node_Virtuals_Info._get_configuration_warnings.name = GDW.StringConstruct("_get_configuration_warnings")
+    Node_Virtuals_Info._get_focused_accessibility_element.name = GDW.StringConstruct("_get_focused_accessibility_element")
+    Node_Virtuals_Info._shortcut_input.name = GDW.StringConstruct("_shortcut_input")
+    Node_Virtuals_Info._unhandled_input.name = GDW.StringConstruct("_unhandled_input")
+    Node_Virtuals_Info._unhandled_key_input.name = GDW.StringConstruct("_unhandled_key_input")
 }
 
 init_CanvasItem_Virtuals_Info :: proc () {

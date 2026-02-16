@@ -6,7 +6,7 @@ import "base:runtime"
 import "core:fmt"
 import GDW "shared:GDWrapper"
 import sics "base:intrinsics"
-import "../GD_Classes"
+//import "../GD_Classes"
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
@@ -159,7 +159,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         //myNode->call_deferred({nil}, &mbewl)
     },
     _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {},
-    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^Toxin.float}){},
+    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){},
     _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
         context = runtime.default_context()
         fmt.println("yarrr")
