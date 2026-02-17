@@ -23,6 +23,7 @@ THIS_CLASS_NAME :: struct {
     angle: Toxin.float,
     position: Toxin.Vector2,
     window: Toxin.Vector2,
+    size: Toxin.Vector2,
 }
 
 frame_count::20000
@@ -31,7 +32,7 @@ windowSize:Toxin.Vector2i
 frame_current:int=0
 Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
-window:Toxin.Vector2 = {1100, 750}
+window:Toxin.Vector2 = {1150, 750}
 
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
@@ -60,10 +61,10 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 
     class.class.angle=rand.float64_range(0, Math.PI*2)
     class.class.speed=rand.int64_range(100, 600)
-    class.class.position = {rand.float32_range(0,1100), rand.float32_range(0,750)}
-    class.class.window = {rand.float32_range(window.x-32, window.x), rand.float32_range(window.y-32, window.y)}
-    class.class.position.x = rand.float32_range(0,1100)
-    class.class.position.y = rand.float32_range(0,750)
+    //class.class.position = {rand.float32_range(100,1100), rand.float32_range(100,750)}
+    class.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
+    class.class.position = {rand.float32_range(64,window.x-64), rand.float32_range(64,window.y-64)}
+    class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
     //fmt.println("ïnit")
     return class.self
 }
@@ -97,8 +98,8 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         set:=[?]rawptr{&self.class.position}
         gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node2D_Class.set_position, self.self, raw_data(set[:]), nil)
         last_delta = p_args.delta^
-        if self.position.x > window.x do self.angle = Math.PI - self.angle
-        if self.position.y > window.y do self.angle = -self.angle
+        if self.position.x > self.window.x - self.size.x || self.position.x < self.size.x do self.angle = Math.PI - self.angle
+        if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
     },
     //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
     //    //context = runtime.default_context()
