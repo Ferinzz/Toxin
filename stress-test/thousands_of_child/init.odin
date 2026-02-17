@@ -44,7 +44,12 @@ MainLoopFrameCallback :: proc "c" () {
         frame_current+=1
     } else if printonce {
         printonce = false
+        total:f64
+        for t in frame_times[:] {
+            total+=t
+        }
         fmt.println(frame_times[:])
+        fmt.println(total/1000)
     }
 }
 root:^Toxin.Object

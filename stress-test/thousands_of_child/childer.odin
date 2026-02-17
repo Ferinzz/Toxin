@@ -64,6 +64,7 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     //class.class.position = {rand.float32_range(100,1100), rand.float32_range(100,750)}
     class.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
     class.class.position = {rand.float32_range(64,class.class.window.x-64), rand.float32_range(64,class.class.window.y-64)}
+    //class.class.position = {rand.float32_range(64,window.x-64), rand.float32_range(64,window.y-64)}
     class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
     //fmt.println("ïnit")
     return class.self
@@ -100,12 +101,17 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         last_delta = p_args.delta^
         if self.position.x > self.window.x - self.size.x || self.position.x < self.size.x do self.angle = Math.PI - self.angle
         if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
+    
+        //if self.position.x > window.x - size.x || self.position.x < size.x do self.angle = Math.PI - self.angle
+        //if self.position.y > window.y - size.y || self.position.y < size.y do self.angle = -self.angle
     },
     //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
     //    //context = runtime.default_context()
     //    //fmt.println("yarrr")
     //},
 }
+size:Toxin.Vector2={64,64}
+
 //******************************\\
 //***********Exports************\\
 //******************************\\
