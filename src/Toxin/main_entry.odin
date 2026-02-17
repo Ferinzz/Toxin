@@ -72,6 +72,10 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             &PackedVector4Array_Methods,
             &GDDictionary_Methods,)*/
             GDW.Init_Variant_Converters()
+            init_Node_Virtuals_Info()
+            init_CanvasItem_Virtuals_Info()
+            init_Texture2D_Virtuals_Info()
+            init_MainLoop_Virtual_Info()
             Classes.RefCounted_Init_(&RefCounted_Methods_list)
             //GDW.init_Small_Arrays()
             objectEmitSignal = GDW.classDBGetMethodBind3(.Object, "emit_signal", 4047867050)
@@ -102,7 +106,6 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             //THIS_CLASS_NAME_deets->self_register(init_Level)
             inits.scene()
             //Need to register our MainLoop callbacks at some point.
-            gdAPI.RegisterMainLoopCallbacks(GDW.Library, &myMainLoopCallbacks)
             return
         //INITIALIZATION_EDITOR should only happen if running from the editor.
         case .INITIALIZATION_EDITOR:

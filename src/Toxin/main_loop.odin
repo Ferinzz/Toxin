@@ -51,11 +51,11 @@ MainLoopStartupCallback :: proc "c" () {
     //GDW.class_get_method_list()
     //GDW.getInputSingleton()
     //Setup an object to hold the MainLoop object.
-    //scene_tree_obj = GDW.getMainLoop()
+    scene_tree_obj = GDW.getMainLoop()
     //GDW.init_InputEvent()
     //Fetch the root of the current sceneTree
-    //root:= GDW.getRoot()
-    //scene:= GDW.get_current_scene()
+    root:= GDW.getRoot()
+    scene:= GDW.get_current_scene()
     //SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
     //rando: rawptr = new(rawptr)
     //minput: Node_C
@@ -69,7 +69,6 @@ MainLoopStartupCallback :: proc "c" () {
     //minput->get_name(&SN_p2)
     //minput->set_name({&SN})
     //minput->get_name(&SN_p2)
-    scene:rawptr
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
@@ -82,6 +81,7 @@ MainLoopStartupCallback :: proc "c" () {
     if scene != nil {
         //You can add a node directly to the root.
         //Add the class to the root of the sceneTree
+
     };
 };;
 
@@ -98,16 +98,17 @@ callOnce:bool=false
 */
 MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
-    if !callOnce {
+    if callOnce {
         //These are good to set in a singleton at some point.
         //These are statically stored and thus only need to be called once when the game engine is fully initialize.
 
-        callOnce = true
+        callOnce = false
         myMainLoopCallbacks.frame_func = nil
     }
 
 };;
-
+myMainLoopCallbacks: GDE.MainLoopCallbacks
+/*
 //create a GDE.MainLoopCallbacks struct which will hold the pointers to the callbacks
 myMainLoopCallbacks: GDE.MainLoopCallbacks = {
 	/* Will be called after Godot is started and is fully initialized. */
@@ -118,7 +119,7 @@ myMainLoopCallbacks: GDE.MainLoopCallbacks = {
 	 * This is intended to be the equivalent of `ScriptLanguage::frame()` for GDExtension language bindings that don't use the script API.
 	 */
 	frame_func = MainLoopFrameCallback,
-};;
+};;*/
 
 
 //I register the GDE.MainLoopCallbacks struct in the init of the Extension.

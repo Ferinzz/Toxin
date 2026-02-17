@@ -17,7 +17,9 @@
 
 ::builds whatever odin main package there is in the folder you're in.
 ::Currently set to target a src folder, as that's what I currently work out of.
-odin build src -build-mode:dll -debug
+odin build src -build-mode:dll o:speed
+::--debug
+::
 
 ::rename src.dll to libgdexample.dll as this is what I specified in the .gdextension file.
 rename src.dll libgdexample.dll
