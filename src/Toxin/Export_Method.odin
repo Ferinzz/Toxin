@@ -47,6 +47,7 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
         
         index:int
         index, _ = slice.linear_search(GDW.GDTypes[:], sics.type_proc_parameter_type(T, 1))
+        if sics.type_proc_parameter_type(T, 1) == ^PackedInt64Array do index = int(GDE.VariantType.PACKED_INT64_ARRAY)
         argsInfo[0] = make_property(GDE.VariantType(index), argNames[0])
 
         when argcount > 1 
@@ -127,13 +128,13 @@ bindMethod :: #force_inline proc(className: ^StringName, methodName: string,
     when sics.type_proc_parameter_count(T) - 1 > 0{
     
         methodInfo.argument_count = u32(argcount)
-        methodInfo.arguments_info = &argsInfo[0]
+        methodInfo.arguments_info = raw_data(argsInfo[:])
         methodInfo.arguments_metadata = &args_metadata[0]
     }
     }
 
     gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
-    
+
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
     //GDW.StringName_M_List.Destroy(&classNameString)
@@ -232,9 +233,13 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, copy_from_variant_r(cast(GDE.VariantPtr)p_args[0], argT1))
                     copy_to_variant(cast(^GDE.Variant)r_return, &result)
             } else {
-                fmt.println(copy_from_variant_r(p_args[0], argT1))
-                fmt.println((p_args[0]).data)
-                func(cast(argT0)p_instance, copy_from_variant_r(p_args[0], argT1))
+                fmt.println("copy returned: ", copy_from_variant_r(p_args[0], argT1))
+                fmt.println("Variant's data: ", (p_args[0]).data)
+                val: argT1
+                if argT1 == PackedInt64Array {PackedArrayfromVariantTest(val, p_args[0])}
+                else
+                {val = copy_from_variant_r(p_args[0], argT1)}
+                func(cast(argT0)p_instance, val)
             }
         }
     return godotPtrCallback, godotVariantCallback

@@ -3,15 +3,14 @@ package Toxin
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
-import Classes "../../GD_Classes"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 resource_M: Classes.ResourceLoader_MethodBind_List
 //WARNING DO NOT USE WITH RANDOM PNG ETC.
 //The Resource only works with files that have already been imported into the engine.
 //If you just have a file sitting in the directory and haven't interacted with the editor to import it 
 //use Image->load() instead. Jesus fucking christ it took a while to find confirmation about this.
-loadResource :: proc(path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectPtr{
+loadResource :: proc(path, hint: cstring, cacheMode: ^Classes.ResourceLoader_CacheMode) -> GDE.ObjectPtr{
     @(static)load: GDE.MethodBindPtr
 
     
@@ -27,8 +26,8 @@ loadResource :: proc(path, hint: cstring, cacheMode: ^cache_mode) -> GDE.ObjectP
 
     args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
     r_resource: GDE.ObjectPtr
-
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)resource_M.load, GDW.getMainLoop(), raw_data(args_res[:]), &r_resource)
+    resource_M.load->m_call(GDW.getMainLoop(), {&pathS, &hintS, cacheMode}, &r_resource)
+    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)resource_M.load.m_call, GDW.getMainLoop(), raw_data(args_res[:]), &r_resource)
     return r_resource
 }
 

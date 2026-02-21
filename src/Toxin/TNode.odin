@@ -3,8 +3,7 @@ package Toxin
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
-import Classes "../../GD_Classes"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 Node :: ^GDW.Object
 make_Node :: proc(p_Node_C: ^Node_C) {
@@ -37,14 +36,14 @@ Fill_Node_Methods :: proc() {
 
     Node_methods.get_child_count = proc (self: ^Node_C, check_inheritance: struct{^Bool}, r_count: ^Int, loc := #caller_location) {
         args:=check_inheritance
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_mb.get_child_count, self.self, cast([^]rawptr)&args, r_count)
+        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_mb.get_child_count.m_call, self.self, cast([^]rawptr)&args, r_count)
     }
     Node_methods.set_name = proc (self: ^Node_C, vals: struct{r_name: ^StringName}, loc := #caller_location){
         args:=vals
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_mb.get_child_count, self.self, cast([^]rawptr)&args, nil)
+        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_mb.get_child_count.m_call, self.self, cast([^]rawptr)&args, nil)
     }
     Node_methods.get_name = proc (self: ^Node_C, r_ret: ^StringName, loc := #caller_location){
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_mb.get_child_count, self.self, nil, r_ret)
+        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_mb.get_child_count.m_call, self.self, nil, r_ret)
     }
 
 }

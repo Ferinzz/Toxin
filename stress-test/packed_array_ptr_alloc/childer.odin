@@ -4,8 +4,8 @@ package main
 import "shared:Toxin"
 import "base:runtime"
 import "core:fmt"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
-import Classes "../../GD_Classes"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
+//import Classes "../../GD_Classes"
 import "shared:GDWrapper/gdAPI"
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
@@ -35,7 +35,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
 
     Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
 
-        cache_mode:Toxin.cache_mode=.CACHE_MODE_REUSE
+        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
         texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
         fmt.println("!!special stress test!!")
 }

@@ -3,21 +3,20 @@ package Toxin
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "shared:GDWrapper/gdAPI"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
-import Classes "../../GD_Classes"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 
 RefCounted_Methods_list: Classes.RefCounted_MethodBind_List
 Reference :: proc(ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.reference, ref, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.reference.m_call, ref, nil, r_bool)
 }
 
 Unreference :: proc(ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.unreference, ref, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.unreference.m_call, ref, nil, r_bool)
 }
 
 Reference_init :: proc(ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.init_ref, ref, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.init_ref.m_call, ref, nil, r_bool)
 }
 
 Ref_Count :: proc {

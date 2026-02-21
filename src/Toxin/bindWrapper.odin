@@ -1506,7 +1506,7 @@ Make_Property_Full :: proc {
 
 //TODO : See if I really need to malloc these variables or if that's just something for C to do.
 //Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
-makePropertyFull_cstring :: #force_inline proc(type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+makePropertyFull_cstring :: proc(type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
     
 
     prop_name:= new(StringName)

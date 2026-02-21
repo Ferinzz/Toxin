@@ -399,15 +399,15 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
 
 Get_Variant_Type_From_String :: proc(className: string) -> GDE.VariantType {
     switch className {
-        case "Nil" :
+        case "Nil", "nil" :
             return .NIL
-        case "bool" :
+        case "bool", "Bool" :
             return .BOOL
-        case "int" :
+        case "int", "Int" :
 	        return .INT
         case "float" :
 	        return .FLOAT
-        case "String" :
+        case "String", "gdstring" :
 	        return .STRING
         case "Vector2" :
 	        return .VECTOR2

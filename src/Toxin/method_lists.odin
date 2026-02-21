@@ -2,8 +2,7 @@ package Toxin
 
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import GDW "shared:GDWrapper"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
-import Classes "../../GD_Classes"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 /*
 Hopefully will be fine with just the GDWrapper containers?
