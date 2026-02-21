@@ -77,10 +77,10 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
                             ` :: ^GDW.Object
 
 `,
-                            classes.properties,
-                            classes.constants,
-                            classes.enums,
                             classes.virtuals_list,
+                            classes.enums,
+                            classes.constants,
+                            classes.properties,
                             classes.method_list,
                             classes.init_proc,
                             classes.virtuals_init,
@@ -201,7 +201,9 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   class_decl:=`%s :: ^Object`
   init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{`
   //name, name, name
-  Meth_Getter:=`  %s_methods.%s = (cast(^GDW.MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
+  Meth_Getter:=`  %s_methods.%s._%[1]s = (cast(^GDW.MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
+  //name, method.name, variant_type, method.name, hash
+  ptrCall_getter:=`  %s_methods.%s.m_call = cast(type_of(%[0]s_methods.%[1]s.m_call))gdAPI.get_Interface_Address("object_method_bind_ptrcall")`
   //name, method.name, variant_type, method.name, hash
   Closing:=`};`
 
@@ -209,7 +211,19 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   // Structure of the builtin struct
   /////////////////////////////
   _MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
-  class_name:= `  %s: ^GDW.MethodBind,` //method.name
+  class_name:= `  %s: struct{{
+    using _%[0]s: ^GDW.MethodBind,
+    m_call: proc(_:^GDW.MethodBind, obj: %[1]s, #by_ptr args: `
+  class_args_maybe:= `%s`//`struct{` //methodName
+  class_args:=`%s: ^%s, `//argName, argType
+  class_args_close:=`}`
+  class_close:=`, r_ret: ^%s)
+  },` //method.name
+  /*
+  is_relative_: struct{
+    using _is_relative: ^GDW.MethodBind,
+    m_call: proc(_:^GDW.MethodBind, p_instance: GDE.ObjectPtr, #by_ptr p_args: struct{_:^Toxin.Vector2}, r_ret: GDE.TypePtr = nil),
+  },*/
 
   Virtual_Proc_Sig:=`
 %s_Init_Virtuals_Info :: proc(info: ^%[0]s_Virtual_Info) {{`
@@ -243,17 +257,88 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     //setup Methods
     if len(BUILT_FROM.methods) > 0 {
     for &method, idx in BUILT_FROM.methods {
-      if method.name == "any" { 
-        delete(method.name)
-        method.name = "gdany"
-      }
-      if method.name == "map" { 
-        delete(method.name)
-        method.name = "gdmap"
-      }
+      
       if !method.is_virtual {
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
-        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, newline =true))
+        strings.write_string(&init_builder, fmt.bprintf(buffer[:], ptrCall_getter, BUILT_FROM.name, method.name, newline =true))
+        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, BUILT_FROM.name, newline =false))
+
+        if len(method.arguments) == 0 {
+          strings.write_string(&struct_builder, `i64 = 0`)
+        }
+        else
+        {
+          strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_args_maybe, `struct{`, newline =false))
+          for &args in method.arguments{
+            Correct_Type_String(&args.type, ctx)
+
+            //Godot uses some param names which are reserved in Odin.
+            if args.name == "any" { 
+              delete(args.name)
+              args.name = "gdany"
+            }
+            else
+            if args.name == "map" { 
+              delete(args.name)
+              args.name = "gdmap"
+            }
+            else
+            if args.name == "enum" {
+              delete(args.name)
+              args.name = "p_enum"
+            }
+            else
+            if args.name == "context" {
+              delete(args.name)
+              args.name = "trans_context"
+            }
+            else
+            if args.name == "in" {
+              delete(args.name)
+              args.name = "point_in"
+            }
+            else
+            if args.name == "out" {
+              delete(args.name)
+              args.name = "point_out"
+            }
+            variant_type:GDE.VariantType= Get_Variant_Type_From_String(args.type)
+            if variant_type != .NIL{
+              temp:=args.type
+              concat_err: runtime.Allocator_Error
+              args.type, concat_err = strings.concatenate({"GDW.", args.type}, ctx)
+              //assert(concat_err==nil, args.type)
+              //delete(temp)
+              strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_args, args.name, args.type, newline =false))
+            } else
+            {
+              strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_args, args.name, args.type, newline =false))
+            }
+            //fmt.println(args.type, variant_type)
+          }
+          strings.write_string(&struct_builder, class_args_close)
+        }
+
+        if method.return_value.type == ""{
+          strings.write_string(&struct_builder, `, r_ret: rawptr = nil)
+  },
+  `)
+        }
+        else
+        {
+          //fmt.println(method.return_value.type)
+          Correct_Type_String(&method.return_value.type, ctx)
+          //fmt.println(method.return_value.type)
+          variant_type:GDE.VariantType= Get_Variant_Type_From_String(method.return_value.type)
+          if variant_type != .NIL {
+            temp:=method.return_value.type
+            concat_err: runtime.Allocator_Error
+            method.return_value.type, concat_err = strings.concatenate({"GDW.", method.return_value.type}, ctx)
+            //assert(concat_err==nil, method.return_value.type)
+            //delete(temp)
+          }
+          strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_close, method.return_value.type, newline =true))
+        }
       } else {
         if virtual_opened == false {
           //open init proc
@@ -270,7 +355,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Closing, newline =true))
         strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Closing, newline =true))
         virtual_opened = false
-        fmt.println(strings.to_string(virtuals_builder))
+        //fmt.println(strings.to_string(virtuals_builder))
       }
     }
     }
@@ -349,13 +434,12 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
             delete(properties.type)
             properties.type = "Array"
             variant_type = .ARRAY
-        }
+        } else
         if strings.contains( properties.type, "typeddictionary") {
             delete(properties.type)
             properties.type = "Dictionary"
             variant_type = .DICTIONARY
-        }
-
+        } else
         if strings.contains(properties.type, "enum") {
             temp:=properties.type
             ok:bool
@@ -439,9 +523,9 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
     if len(BUILT_FROM.enums) > 0 {
       for constants in BUILT_FROM.enums {
         if constants.is_bitfield == true {
-        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_flags,  constants.name, BUILT_FROM.name, newline =false))
+        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_flags, BUILT_FROM.name, constants.name, newline =false))
         }
-        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_name, constants.name, BUILT_FROM.name, newline =true))
+        strings.write_string(&enum_builder, fmt.bprintf(buffer[:], enum_name, BUILT_FROM.name, constants.name, newline =true))
         for val in constants.values {
           if constants.is_bitfield {
             strings.write_string(&enum_builder, fmt.bprintf(buffer[:], ebit_field, val.name, newline =true))
@@ -552,4 +636,169 @@ Get_Variant_Type_From_String :: proc(className: string) -> GDE.VariantType {
     case :
       return .NIL
   }
+}
+
+
+Correct_Type_String :: proc(muh_type: ^string, ctx: runtime.Allocator) {
+  ok:bool
+  if muh_type^ == string("Side") do fmt.println(muh_type^)
+  switch muh_type^ {
+    case "int":
+      delete(muh_type^)
+      muh_type^ = "Int"
+      return 
+    case "String":
+      delete(muh_type^)
+      muh_type^ = "gdstring"
+      return 
+    case "bool":
+      delete(muh_type^)
+      muh_type^ = "Bool"
+      return 
+    case "Nil":
+      delete(muh_type^)
+      muh_type^ = "nil"
+      return 
+    case "const GDExtensionInitializationFunction*" :{
+      delete(muh_type^)
+      muh_type^ = "GDE.InitializationFunction"
+      return
+    }
+  }
+  is_enum: bool
+  if strings.contains( muh_type^, "typedarray") {
+      delete(muh_type^)
+      muh_type^ = "Array"
+      return 
+  } else
+  if strings.contains( muh_type^, "typeddictionary") {
+      delete(muh_type^)
+      muh_type^ = "Dictionary"
+      return 
+  } else
+  if strings.contains(muh_type^, "enum") {
+      temp:=muh_type^
+      muh_type^, ok = strings.replace(muh_type^, "enum::", "", -1, ctx)
+      assert(ok, "could not allocate new string for type")
+      //delete(temp)
+      is_enum = true
+  } else
+  if strings.contains(muh_type^, "bitfield") {
+      temp:=muh_type^
+      muh_type^, ok = strings.replace(muh_type^, "bitfield::", "", -1, ctx)
+      assert(ok, muh_type^)
+      is_enum = true
+      //delete(temp)
+  }
+  if strings.contains(muh_type^, ".") {
+    temp:=muh_type^
+    muh_type^, ok = strings.replace(muh_type^, ".", "_", -1, ctx)
+    assert(ok, muh_type^)
+    //delete(temp)
+    //return muh_type
+  }
+  if is_enum{
+    if muh_type^ == "Side" {
+      delete(muh_type^)
+      muh_type^ = "GDW.Side"
+      fmt.println(muh_type^)
+    } else
+    if muh_type^ == "HorizontalAlignment" {
+      delete(muh_type^)
+      muh_type^ = "GDW.HorizontalAlignment"
+    } else
+    if muh_type^ == "Key" {
+      delete(muh_type^)
+      muh_type^ = "GDW.Key"
+    } else
+    if muh_type^ == "VerticalAlignment" {
+      delete(muh_type^)
+      muh_type^ = "GDW.VerticalAlignment"
+    } else
+    if muh_type^ == "MouseButtonMask" {
+      delete(muh_type^)
+      muh_type^ = "GDW.MouseButtonMask"
+    } else
+    if muh_type^ == "Vector3_Axis" {
+      delete(muh_type^)
+      muh_type^ = "GDW.Vector3_Axis"
+    } else
+    if muh_type^ == "Vector2_Axis" {
+      delete(muh_type^)
+      muh_type^ = "GDW.Vector2_Axis"
+    } else
+    if muh_type^ == "Vector4_Axis" {
+      delete(muh_type^)
+      muh_type^ = "GDW.Vector4_Axis"
+    } else
+    if muh_type^ == "Error" {
+        delete(muh_type^)
+        muh_type^ = "GDW.Error"
+    } else
+    if muh_type^ == "PropertyHint" {
+        delete(muh_type^)
+        muh_type^ = "GDW.PropertyHint"
+    } else
+    if muh_type^ == "Variant_Type" {
+        delete(muh_type^)
+        muh_type^ = "GDE.VariantType"
+    } else
+    if muh_type^ == "MouseButton" {
+        delete(muh_type^)
+        muh_type^ = "GDW.MouseButton"
+    } else
+    if muh_type^ == "JoyButton" {
+        delete(muh_type^)
+        muh_type^ = "GDW.JoyButton"
+    } else
+    if muh_type^ == "JoyAxis" {
+        delete(muh_type^)
+        muh_type^ = "GDW.JoyAxis"
+    } else
+    if muh_type^ == "KeyModifierMask" {
+        delete(muh_type^)
+        muh_type^ = "GDW.KeyModifierMask"
+    } else
+    if muh_type^ == "InlineAlignment" {
+        delete(muh_type^)
+        muh_type^ = "GDW.InlineAlignment"
+    } else
+    if muh_type^ == "EulerOrder" {
+        delete(muh_type^)
+        muh_type^ = "GDW.EulerOrder"
+    } else
+    if muh_type^ == "MIDIMessage" {
+        delete(muh_type^)
+        muh_type^ = "GDW.MIDIMessage"
+    } else
+    if muh_type^ == "Corner" {
+        delete(muh_type^)
+        muh_type^ = "GDW.Corner"
+    } else
+    if muh_type^ == "InlineAlignment" {
+        delete(muh_type^)
+        muh_type^ = "GDW.InlineAlignment"
+    } else
+    if muh_type^ == "ClockDirection" {
+        delete(muh_type^)
+        muh_type^ = "GDW.ClockDirection"
+    } else
+    if muh_type^ == "KeyLocation" {
+        delete(muh_type^)
+        muh_type^ = "GDW.KeyLocation"
+    }
+
+    return 
+  }
+  if strings.contains(muh_type^, "const void") {
+      delete(muh_type^)
+      muh_type^ = "GDW.void"
+      fmt.println(muh_type^)
+      return 
+  }
+  if muh_type^ == "Variant_Type" {
+      delete(muh_type^)
+      muh_type^ = "GDE.VariantType"
+  }
+  return
 }
