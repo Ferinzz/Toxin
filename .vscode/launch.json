@@ -18,7 +18,6 @@
 			"args": [ "--path ./TopDown --verbose"], //launch game
 			//Tell VSCode where to look for the binary when debugging.
 			"cwd": "${workspaceFolder}/TopDown",
-			
 		}
 	]
 }
