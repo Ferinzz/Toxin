@@ -502,6 +502,8 @@ ArrayfromVariant :: proc(P_dest: ^Array, p_source: ^Variant) -> type_from_varian
         return {}
     } else do return {.WRONG_TYPE, .ARRAY, p_source.VType}
 }
+
+//PackedArrays are wrapped in a refcount object when they are a variant but are passed around naked when they are a typePtr.
 PackedArrayfromVariant :: proc(P_dest: $T/^GDW.packedArray, p_source: ^Variant) -> type_from_variant_error {
     #partial switch p_source.VType {
         case .PACKED_BYTE_ARRAY, .PACKED_INT32_ARRAY, .PACKED_INT64_ARRAY, .PACKED_FLOAT32_ARRAY, .PACKED_FLOAT64_ARRAY, .PACKED_STRING_ARRAY, .PACKED_VECTOR2_ARRAY, .PACKED_VECTOR3_ARRAY, .PACKED_COLOR_ARRAY, .PACKED_VECTOR4_ARRAY :{

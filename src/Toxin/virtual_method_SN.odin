@@ -6,7 +6,8 @@ import "shared:GDWrapper/gdAPI"
 import GDW "shared:GDWrapper"
 import "base:runtime"
 import sics "base:intrinsics"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
+//import Classes "shared:Godot_Odin_Binds/GD_Classes"
 import "Input"
 
 /*

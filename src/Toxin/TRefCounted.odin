@@ -3,7 +3,8 @@ package Toxin
 import GDW "shared:GDWrapper"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "shared:GDWrapper/gdAPI"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+//import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
 
 
 RefCounted_Methods_list: Classes.RefCounted_MethodBind_List

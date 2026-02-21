@@ -46,28 +46,6 @@ getMainLoop :: proc() -> (gdLoop: ^Object) {
     return
 }
 
-getRoot :: proc() -> ^Object {
-    @(static)getRoot: GDE.MethodBindPtr
-    if getRoot == nil {
-        getRoot = classDBGetMethodBind3(.SceneTree, "get_root", 1757182445)
-    }
-    mySceneTree:= getMainLoop()
-    r_ret:^Object
-    gdAPI.Object_Utils.MethodBindPtrcall(getRoot, mySceneTree, nil, &r_ret)
-    return r_ret
-}
-
-get_current_scene :: proc() -> ^Object {
-    @(static)getCurrentScene: GDE.MethodBindPtr
-    if getCurrentScene == nil {
-        getCurrentScene = classDBGetMethodBind3(.SceneTree, "get_current_scene", 3160264692)
-    }
-    mySceneTree:= getMainLoop()
-    r_ret:^Object
-    gdAPI.Object_Utils.MethodBindPtrcall(getCurrentScene, mySceneTree, nil, &r_ret)
-    return r_ret
-}
-
 //********************\\
 //*******Object*******\\
 //********************\\

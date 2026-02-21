@@ -5,7 +5,8 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "shared:GDWrapper/gdAPI"
 import "base:runtime"
 import "core:fmt"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+//import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
 
 Scene_Init_Callback:: proc ();
 

@@ -79,7 +79,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
         set:=[?]rawptr{&texture}
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Texture_Class.set_texture, self.self, raw_data(set[:]), nil)
+        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Texture_Class.set_texture._set_texture, self.self, raw_data(set[:]), nil)
     },
     //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
     //    context = runtime.default_context()
@@ -171,9 +171,9 @@ somePublicFunction :: proc "c" (ethod_userdata: rawptr, classStruct: ^Toxin.Clas
     //GDW.PackedInt64_Array_M_List.get(actually, raw_data(args[:]), &r_ret, 1)
     //GDW.PackedInt64_Array_M_List.set(actually, raw_data(args[:]),&r_ret, 2)
     //GDW.PackedInt64_Array_M_List.get(actually, raw_data(args[:]),&r_ret, 1)
-    GDW.PackedVector4Array_M_List.get(actually, raw_data(arg[:]), &r_ret2, 1)
-    GDW.PackedVector4Array_M_List.set(actually, raw_data(vec4_args[:]),&r_ret2, 2)
-    GDW.PackedVector4Array_M_List.get(actually, raw_data(arg[:]),&r_ret2, 1)
+    GDW.PackedVector4Array_M_List.get(actually, {&indx}, &r_ret2)
+    GDW.PackedVector4Array_M_List.set(actually, {&indx, &vec4})
+    GDW.PackedVector4Array_M_List.get(actually, {&indx}, &r_ret2)
     //fmt.println("get, got after set: ", r_ret)
     //fmt.println("address holder: ", call.arg1)
     //fmt.println("address packed: ", call.arg1.ptr.array)

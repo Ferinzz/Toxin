@@ -229,6 +229,7 @@ PackedColorArray :: GDW.PackedColorArray
 
 PackedVector4Array :: GDW.PackedVector4Array
 
+//PackedArrays are wrapped in a refcount object when they are a variant but are passed around naked when they are a typePtr.
 PackedArrayContainer :: struct ($packed_type: typeid) {
     _: [16]u8,
     array: packed_type,

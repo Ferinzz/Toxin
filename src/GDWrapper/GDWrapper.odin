@@ -7,6 +7,7 @@ import sics "base:intrinsics"
 import "core:slice"
 import "core:reflect"
 import "core:fmt"
+//import Classes "shared:Godot_Odin_Binds/GD_Classes"
 
 Library : GDE.ClassDB = nil
 
@@ -14,6 +15,85 @@ Library : GDE.ClassDB = nil
 Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
     gdAPI.loadAPI(p_get_proc_address)
     Init_Builtins()
+}
+
+
+/*
+* MainLoop is a class that Godot uses to tick through the program logic.
+* This function returns a pointer to the object. If SceneTree is your mainLoop (or your own version of it) call
+* this to get the object instead of Node's get_tree which would provide a ref to SceneTree instead.
+*/
+getMainLoop :: proc() -> (gdLoop: ^Object) {
+    @(static)getMainLoop:GDE.MethodBindPtr
+
+    ClassDB:StringName
+    gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "Engine", false)
+    defer(StringName_M_List.Destroy(&ClassDB))
+    myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
+
+    if getMainLoop == nil {
+        getMainLoop = classDBGetMethodBind3(.Engine, "get_main_loop", 1016888095)
+    }
+
+    gdAPI.Object_Utils.MethodBindPtrcall(getMainLoop, myEngine, nil, &gdLoop)
+    return
+}
+get_current_scene :: proc() -> ^Object {
+    @(static)getCurrentScene: GDE.MethodBindPtr
+    if getCurrentScene == nil {
+        getCurrentScene = classDBGetMethodBind3(.SceneTree, "get_current_scene", 3160264692)
+    }
+    mySceneTree:= getMainLoop()
+    r_ret:^Object
+    gdAPI.Object_Utils.MethodBindPtrcall(getCurrentScene, mySceneTree, nil, &r_ret)
+    return r_ret
+}
+
+getPerformance :: proc() -> ^Object {
+    @(static)getMainLoop:GDE.MethodBindPtr
+
+    ClassDB:StringName
+    gdAPI.StringName_Utils.Latin1Chars(&ClassDB, "Performance", false)
+    defer(StringName_M_List.Destroy(&ClassDB))
+    return gdAPI.GlobalGetSingleton(&ClassDB)
+}
+
+/*
+* https://docs.godotengine.org/en/stable/classes/class_node.html#class-node-method-add-child
+* Force_readable_name default should be false if you care about performance. True if you really want a name to be visible to the user.
+* Use internalMode to hide children from the user. But make sure to set include_internal to true when calling get_children.
+*/
+addChild :: proc(parent: ^Object, child: ^^Object, force_readable_name: Bool = false, internalMode: InternalMode = .INTERNAL_MODE_DISABLED) {
+
+    force_readable_name:= force_readable_name
+    internalMode:= internalMode
+
+    @(static)addChild: GDE.MethodBindPtr
+    if addChild == nil {
+        addChild = classDBGetMethodBind3(.Node, "add_child", 3863233950)
+    }
+
+    args:= [?]rawptr {child, &force_readable_name, &internalMode}
+    
+    dummyReturn:rawptr
+    gdAPI.Object_Utils.MethodBindPtrcall(addChild, parent, raw_data(args[:]), dummyReturn)
+}
+
+InternalMode :: enum GDE.Int {
+    INTERNAL_MODE_DISABLED,
+    INTERNAL_MODE_FRONT,
+    INTERNAL_MODE_BACK,
+}
+
+getRoot :: proc() -> ^Object {
+    @(static)getRoot: GDE.MethodBindPtr
+    if getRoot == nil {
+        getRoot = classDBGetMethodBind3(.SceneTree, "get_root", 1757182445)
+    }
+    mySceneTree:= getMainLoop()
+    r_ret:^Object
+    gdAPI.Object_Utils.MethodBindPtrcall(getRoot, mySceneTree, nil, &r_ret)
+    return r_ret
 }
 
 
@@ -45,33 +125,33 @@ stringNameCompare :: proc {
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
 @(deprecated="use stringNameCompare_string")
-stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (ret: bool) {
+stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (ret: Bool) {
     r_name: StringName
     gdAPI.StringName_Utils.Latin1Chars(&r_name, r_value, false)
     defer(StringName_M_List.Destroy(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    StringName_M_List.VARIANT_OP_EQUAL_StringName(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    StringName_M_List.VARIANT_OP_EQUAL_StringName(l_value, &r_name, &ret)
     return ret
 }
 
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare_string :: proc(l_value: ^StringName, r_value: string) -> (ret: bool) {
+stringNameCompare_string :: proc(l_value: ^StringName, r_value: string) -> (ret: Bool) {
     r_name: StringName
     StringConstruct(&r_name, r_value)
     defer(StringName_M_List.Destroy(&r_name))
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    StringName_M_List.VARIANT_OP_EQUAL_StringName(cast([^]rawptr)l_value, cast([^]rawptr)(&r_name), &ret)
+    StringName_M_List.VARIANT_OP_EQUAL_StringName(l_value, &r_name, &ret)
     return ret
 }
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare_StringName :: proc(l_value: ^StringName, r_value: ^StringName) -> (ret: bool) {
+stringNameCompare_StringName :: proc(l_value: ^StringName, r_value: ^StringName) -> (ret: Bool) {
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
-    StringName_M_List.VARIANT_OP_EQUAL_StringName(cast([^]rawptr)l_value, cast([^]rawptr)r_value, &ret)
+    StringName_M_List.VARIANT_OP_EQUAL_StringName(l_value, r_value, &ret)
     return ret
 }
 

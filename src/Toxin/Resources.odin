@@ -3,7 +3,8 @@ package Toxin
 import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+//import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
 
 resource_M: Classes.ResourceLoader_MethodBind_List
 //WARNING DO NOT USE WITH RANDOM PNG ETC.

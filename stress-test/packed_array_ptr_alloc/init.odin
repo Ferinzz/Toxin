@@ -91,7 +91,7 @@ MainLoopFrameCallback :: proc "c" () {
     //fmt.println("murray: ", murray)
     //fmt.println("rptr: ", r_ret)
     perf:Toxin.float=0
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_Class.get_process_delta_time, root, nil, &perf)
+    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_Class.get_process_delta_time._get_process_delta_time, root, nil, &perf)
 
     if frame_current < frame_count_amout {
         frame_times[frame_current] = perf
