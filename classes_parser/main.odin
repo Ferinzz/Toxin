@@ -215,7 +215,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   _MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
   class_name:= `  %s: struct{{
     using _%[0]s: ^GDW.MethodBind,
-    m_call: proc(_:^GDW.MethodBind, obj: %[1]s, #by_ptr args: `
+    m_call: proc(_:^GDW.MethodBind, obj: %[1]s, `
   class_args_maybe:= `%s`//`struct{` //methodName
   class_args:=`%s: ^%s, `//argName, argType
   class_args_close:=`}`
@@ -264,13 +264,16 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], ptrCall_getter, BUILT_FROM.name, method.name, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, BUILT_FROM.name, newline =false))
-
-        if len(method.arguments) == 0 {
-          strings.write_string(&struct_builder, `i64 = 0`)
+        
+        if method.is_vararg {
+          strings.write_string(&struct_builder, `#by_ptr args: struct{ vararg: [^]^GDW.Variant, count: ^GDE.Int, call_err: ^GDE.CallError }`)  
+        }
+        else if len(method.arguments) == 0 {
+          strings.write_string(&struct_builder, `args: rawptr = nil`)
         }
         else
         {
-          strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_args_maybe, `struct{`, newline =false))
+          strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_args_maybe, `#by_ptr args: struct{`, newline =false))
           for &args in method.arguments{
             Correct_Type_String(&args.type, ctx)
 
