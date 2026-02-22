@@ -4,8 +4,8 @@ package main
 import "../../src/Toxin"
 import "base:runtime"
 import "core:fmt"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
-import Classes "../../GD_Classes"
+import Classes "shared:Godot_Odin_Binds/GD_Classes"
+//import Classes "../../GD_Classes"
 import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import Math "core:math"
@@ -38,7 +38,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
 
     Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
 
-        cache_mode:Toxin.cache_mode=.CACHE_MODE_REUSE
+        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
         texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
         fmt.println("!!special stress test!!")
         
@@ -83,10 +83,9 @@ class_list:[dynamic]^Toxin.Class_Container(THIS_CLASS_NAME)
 THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
-        set:=[?]rawptr{&texture}
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Texture_Class.set_texture, self.self, raw_data(set[:]), nil)
+        //Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
         set_pos:=[?]rawptr{&self.class.position}
-        set_position_->set_position(self.self, {&self.position})
+        Node2D_Class.set_position->m_call(self.self, {&self.position})
     },
     //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
     //    context = runtime.default_context()
@@ -99,23 +98,14 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     //},
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context()
-        self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        //#force_inline callit(cast(GDE.MethodBindPtr)Node2D_Class.set_position, self.self, {&self.class.position}, nil)
+        //self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
 
-        //passthrough2(self.self, &({&self.class.position}))
-        set_position_->set_position(self.self, {&self.position})
+        Node2D_Class.set_position->m_call(self.self, {&self.position})
         //is_centered:Toxin.Bool
-        //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Texture_Class.is_centered, self.self, nil, &is_centered)
-        //last_delta = p_args.delta^
-        //#force_inline is_center(cast(GDE.MethodBindPtr)Texture_Class.is_centered, self.self, nil, is_centered)
-        //callit(cast(GDE.MethodBindPtr)Node2D_Class.set_position, self.self, raw_data(([1]rawptr{&self.class.position})[:]), nil)
-        //callit(cast(GDE.MethodBindPtr)Node2D_Class.set_position, self.self, &((struct{_:^Toxin.Vector2}){&self.class.position}), nil)
-        if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
-        if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
-    
-        //if self.position.x > window.x - size.x || self.position.x < size.x do self.angle = Math.PI - self.angle
-        //if self.position.y > window.y - size.y || self.position.y < size.y do self.angle = -self.angle
+        //Texture_Class.is_centered->m_call(self.self, 0, &is_centered)
+        //if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
+        //if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
     },
     //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
     //    //context = runtime.default_context()
