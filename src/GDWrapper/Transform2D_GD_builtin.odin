@@ -60,7 +60,7 @@ init_Transform2D_Methods :: proc(Transform2D_method_store: ^Transform2D_Methods_
   Transform2D_method_store.Create2 = cast(type_of(Transform2D_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 2)
   Transform2D_method_store.Create3 = cast(type_of(Transform2D_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 3)
   Transform2D_method_store.Create4 = cast(type_of(Transform2D_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 4)
-  Transform2D_method_store.IndxGetter = cast(type_of(Transform2D_method_store.Transform2DIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.TRANSFORM2D)
+  Transform2D_method_store.IndxGetter = cast(type_of(Transform2D_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.TRANSFORM2D)
   Transform2D_method_store.IndxSetter = cast(type_of(Transform2D_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.TRANSFORM2D)
   Transform2D_method_store.inverse = cast(type_of(Transform2D_method_store.inverse))Get_Builtin_Method(.TRANSFORM2D, "inverse", 1420440541)
   Transform2D_method_store.affine_inverse = cast(type_of(Transform2D_method_store.affine_inverse))Get_Builtin_Method(.TRANSFORM2D, "affine_inverse", 1420440541)

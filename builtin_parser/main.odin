@@ -156,7 +156,7 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     op_eval:= `  %s_method_store.%s_%s = cast(type_of(%[0]s_method_store.%[1]s_%[2]s))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.%[1]v, .%v, .%v)`
     //name, eval_enum, variant_type
     Meth_Getter:=`  %s_method_store.%[2]s = cast(type_of(%[0]s_method_store.%[2]s))Get_Builtin_Method(.%[1]v, "%[2]s", %v)`
-    Index_Getter:=`  %s_method_store.IndxGetter = cast(type_of(%[0]s_method_store.%[0]sIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.%[1]v)
+    Index_Getter:=`  %s_method_store.IndxGetter = cast(type_of(%[0]s_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.%[1]v)
   %[0]s_method_store.IndxSetter = cast(type_of(%[0]s_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)`
     Keyed_Getter:=`  %s_method_store.KeyedSetter = cast(type_of(%[0]s_method_store.KeyedSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)
   %[0]s_method_store.KeyedGetter = cast(type_of(%[0]s_method_store.KeyedGetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)

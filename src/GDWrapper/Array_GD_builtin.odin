@@ -99,7 +99,7 @@ init_Array_Methods :: proc(Array_method_store: ^Array_Methods_list) {
   Array_method_store.Create11 = cast(type_of(Array_method_store.Create11))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 11)
   Array_method_store.Create12 = cast(type_of(Array_method_store.Create12))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 12)
   Array_method_store.Destroy = cast(type_of(Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.ARRAY)
-  Array_method_store.IndxGetter = cast(type_of(Array_method_store.ArrayIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.ARRAY)
+  Array_method_store.IndxGetter = cast(type_of(Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.ARRAY)
   Array_method_store.IndxSetter = cast(type_of(Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.ARRAY)
   Array_method_store.size = cast(type_of(Array_method_store.size))Get_Builtin_Method(.ARRAY, "size", 3173160232)
   Array_method_store.is_empty = cast(type_of(Array_method_store.is_empty))Get_Builtin_Method(.ARRAY, "is_empty", 3918633141)

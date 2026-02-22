@@ -56,7 +56,7 @@ init_Quaternion_Methods :: proc(Quaternion_method_store: ^Quaternion_Methods_lis
   Quaternion_method_store.Create3 = cast(type_of(Quaternion_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 3)
   Quaternion_method_store.Create4 = cast(type_of(Quaternion_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 4)
   Quaternion_method_store.Create5 = cast(type_of(Quaternion_method_store.Create5))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 5)
-  Quaternion_method_store.IndxGetter = cast(type_of(Quaternion_method_store.QuaternionIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.QUATERNION)
+  Quaternion_method_store.IndxGetter = cast(type_of(Quaternion_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.QUATERNION)
   Quaternion_method_store.IndxSetter = cast(type_of(Quaternion_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.QUATERNION)
   Quaternion_method_store.length = cast(type_of(Quaternion_method_store.length))Get_Builtin_Method(.QUATERNION, "length", 466405837)
   Quaternion_method_store.length_squared = cast(type_of(Quaternion_method_store.length_squared))Get_Builtin_Method(.QUATERNION, "length_squared", 466405837)

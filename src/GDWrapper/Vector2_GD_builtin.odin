@@ -106,7 +106,7 @@ init_Vector2_Methods :: proc(Vector2_method_store: ^Vector2_Methods_list) {
   Vector2_method_store.Create1 = cast(type_of(Vector2_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 1)
   Vector2_method_store.Create2 = cast(type_of(Vector2_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 2)
   Vector2_method_store.Create3 = cast(type_of(Vector2_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 3)
-  Vector2_method_store.IndxGetter = cast(type_of(Vector2_method_store.Vector2IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR2)
+  Vector2_method_store.IndxGetter = cast(type_of(Vector2_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR2)
   Vector2_method_store.IndxSetter = cast(type_of(Vector2_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR2)
   Vector2_method_store.angle = cast(type_of(Vector2_method_store.angle))Get_Builtin_Method(.VECTOR2, "angle", 466405837)
   Vector2_method_store.angle_to = cast(type_of(Vector2_method_store.angle_to))Get_Builtin_Method(.VECTOR2, "angle_to", 3819070308)

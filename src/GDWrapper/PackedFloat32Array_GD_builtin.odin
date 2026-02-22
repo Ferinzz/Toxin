@@ -47,7 +47,7 @@ init_PackedFloat32Array_Methods :: proc(PackedFloat32Array_method_store: ^Packed
   PackedFloat32Array_method_store.Create1 = cast(type_of(PackedFloat32Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 1)
   PackedFloat32Array_method_store.Create2 = cast(type_of(PackedFloat32Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 2)
   PackedFloat32Array_method_store.Destroy = cast(type_of(PackedFloat32Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_FLOAT32_ARRAY)
-  PackedFloat32Array_method_store.IndxGetter = cast(type_of(PackedFloat32Array_method_store.PackedFloat32ArrayIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_FLOAT32_ARRAY)
+  PackedFloat32Array_method_store.IndxGetter = cast(type_of(PackedFloat32Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_FLOAT32_ARRAY)
   PackedFloat32Array_method_store.IndxSetter = cast(type_of(PackedFloat32Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_FLOAT32_ARRAY)
   PackedFloat32Array_method_store.get = cast(type_of(PackedFloat32Array_method_store.get))Get_Builtin_Method(.PACKED_FLOAT32_ARRAY, "get", 1401583798)
   PackedFloat32Array_method_store.set = cast(type_of(PackedFloat32Array_method_store.set))Get_Builtin_Method(.PACKED_FLOAT32_ARRAY, "set", 1113000516)

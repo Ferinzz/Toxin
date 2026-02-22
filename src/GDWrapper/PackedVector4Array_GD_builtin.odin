@@ -47,7 +47,7 @@ init_PackedVector4Array_Methods :: proc(PackedVector4Array_method_store: ^Packed
   PackedVector4Array_method_store.Create1 = cast(type_of(PackedVector4Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR4_ARRAY, 1)
   PackedVector4Array_method_store.Create2 = cast(type_of(PackedVector4Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR4_ARRAY, 2)
   PackedVector4Array_method_store.Destroy = cast(type_of(PackedVector4Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_VECTOR4_ARRAY)
-  PackedVector4Array_method_store.IndxGetter = cast(type_of(PackedVector4Array_method_store.PackedVector4ArrayIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_VECTOR4_ARRAY)
+  PackedVector4Array_method_store.IndxGetter = cast(type_of(PackedVector4Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_VECTOR4_ARRAY)
   PackedVector4Array_method_store.IndxSetter = cast(type_of(PackedVector4Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_VECTOR4_ARRAY)
   PackedVector4Array_method_store.get = cast(type_of(PackedVector4Array_method_store.get))Get_Builtin_Method(.PACKED_VECTOR4_ARRAY, "get", 1227817084)
   PackedVector4Array_method_store.set = cast(type_of(PackedVector4Array_method_store.set))Get_Builtin_Method(.PACKED_VECTOR4_ARRAY, "set", 1350366223)

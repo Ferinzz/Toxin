@@ -125,7 +125,7 @@ init_Vector3_Methods :: proc(Vector3_method_store: ^Vector3_Methods_list) {
   Vector3_method_store.Create1 = cast(type_of(Vector3_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 1)
   Vector3_method_store.Create2 = cast(type_of(Vector3_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 2)
   Vector3_method_store.Create3 = cast(type_of(Vector3_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 3)
-  Vector3_method_store.IndxGetter = cast(type_of(Vector3_method_store.Vector3IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR3)
+  Vector3_method_store.IndxGetter = cast(type_of(Vector3_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR3)
   Vector3_method_store.IndxSetter = cast(type_of(Vector3_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR3)
   Vector3_method_store.min_axis_index = cast(type_of(Vector3_method_store.min_axis_index))Get_Builtin_Method(.VECTOR3, "min_axis_index", 3173160232)
   Vector3_method_store.max_axis_index = cast(type_of(Vector3_method_store.max_axis_index))Get_Builtin_Method(.VECTOR3, "max_axis_index", 3173160232)
