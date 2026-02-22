@@ -12,12 +12,14 @@
 ::Dump the details about Godot's API. This only needs to be done once.
 ::gdextension-interface is the C header file.
 ::extension-api is a massive json file with all the classes and method info.
-::C:\GodotSrc\godot\bin\godot.windows.editor.dev.x86_64.exe --headless --dump-gdextension-interface
-::C:\GodotSrc\godot\bin\godot.windows.editor.dev.x86_64.exe --headless --dump-extension-api
+::C:\Godot\godot\bin\godot.windows.editor.dev.x86_64.exe --headless --dump-gdextension-interface
+::C:\Godot\godot\bin\godot.windows.editor.dev.x86_64.exe --headless --dump-extension-api
 
 ::builds whatever odin main package there is in the folder you're in.
 ::Currently set to target a src folder, as that's what I currently work out of.
-odin build src -build-mode:dll -debug
+odin build src -build-mode:dll --debug
+::--o:speed
+::
 
 ::rename src.dll to libgdexample.dll as this is what I specified in the .gdextension file.
 rename src.dll libgdexample.dll

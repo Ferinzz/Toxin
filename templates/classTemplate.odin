@@ -35,6 +35,7 @@ THIS_CLASS_NAME_deets: GDW.GDW_class_deets = {
 /*
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
+* IF YOU ARE NOT USING _process DO NOT INCLUDE IT
 */
 THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME)) {
@@ -42,8 +43,8 @@ THIS_CLASS_NAME_VTable: GDW.vNode2D(THIS_CLASS_NAME) = {
         fmt.println("Hello mom!")
         fmt.println(self^)
     },
-    _enter_tree= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME)) {},
-    _process= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^GDE.float}){},
+    //_enter_tree= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME)) {},
+    //_process= proc "c" (self: ^GDW.Class_Container(THIS_CLASS_NAME), using p_args: ^struct{delta: ^GDE.float}){},
 }
 
 //******************************\\

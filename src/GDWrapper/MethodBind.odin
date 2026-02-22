@@ -1,0 +1,141 @@
+package GDWrapper
+
+import GDE "gdAPI/gdextension"
+import "gdAPI"
+import sics "base:intrinsics"
+import "base:runtime"
+
+/* Get a binding to a method from Godot's class DB.
+* Pass in the class and method name as strings. The function will convert Odin strings to Godot's StringName.
+* 
+* className : a string with the name of the Godot class
+* methodName : a string with the name of a method in the Godot class
+* hash : the hash of the method. find it in the json. Careful of buildmode it's under.
+*/
+@(deprecated="Use classDBGetMethodBind3")
+classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+
+    native_class_name: StringName;
+    method_name: StringName;
+    
+    gdAPI.StringName_Utils.Latin1Chars(&native_class_name, className, false)
+    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
+    
+    methodBind = gdAPI.ClassDB.GetMethodBind(&native_class_name, &method_name, hash)
+    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+    
+    StringName_M_List.Destroy(&native_class_name)
+    StringName_M_List.Destroy(&method_name)
+
+    return methodBind
+}
+
+@(deprecated="Use classDBGetMethodBind3")
+classDBGetMethodBind2 :: proc(className: ^StringName, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+    assert(className != nil, "ClassName is nil. Did you accidentally free this early?")
+    method_name: StringName;
+    
+    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
+    
+    methodBind = gdAPI.ClassDB.GetMethodBind(className, &method_name, hash)
+    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+    
+    
+    StringName_M_List.Destroy(&method_name)
+
+    return methodBind
+}
+
+classDBGetMethodBind3 :: proc(className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+    native_class_name: ^StringName;
+    method_name: StringName;
+
+    native_class_name = GDClass_StringName_get(className)
+    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
+
+    methodBind = gdAPI.ClassDB.GetMethodBind(native_class_name, &method_name, hash)
+    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+
+    StringName_M_List.Destroy(&method_name)
+
+    return methodBind
+}
+
+//Do not use. Used for padding where necessary. Container for Godot's Vector class.
+cowData :: struct {
+    _ptr: rawptr,
+    data: rawptr,
+}
+
+//Godot creates a class which has several utility methods and the below properties.
+//Of interest if you feel like being hacky would be the method value, which is a direct pointer to the method which you could call if you're brave enough.
+//(Don't call them directly. The setup needed to do so feels very hacky and property fields are verrrry inconsistent.)
+MethodBind :: struct #align(8) {
+    //vtable: rawptr,
+    vtable: Int,
+    method_id: i32,
+    hint_flags: i32,
+    name: StringName,
+    instance_class:  StringName,
+    default_args_size: cowData,
+    default_arg_count: i32,
+    argument_count: i32,
+    _static: Bool,
+    _const: Bool,
+    _returns: Bool,
+    _returns_raw_obj_ptr: Bool,
+    argument_types: ^GDE.VariantType,
+    argument_Names: cowData, //Only in debug builds.
+    method: rawptr, //The actual method we want to use!
+}
+
+/*
+* Based on above struct you can see that a MethodBind is not a direct route to a Godot class method.
+* A MethodBind is used by Godot to determine which function or method to call as well as how to cast the pointers it receives.
+* The below maker will return a proc which will make the call to gdAPI.Object_Utils.MethodBindPtrcall
+* Supports 3 types of procs
+* arg + return
+* arg
+* return
+*/
+@(require_results)
+make_generic_methodbind_call :: proc($procsig: typeid, mbb: ^MethodBind, loc := #caller_location) -> rawptr \
+    where ((sics.type_has_field(sics.type_proc_parameter_type(procsig, 0), "self") && sics.type_field_type(sics.type_proc_parameter_type(procsig, 0), "self") == ^Object)\
+    && sics.type_proc_parameter_count(procsig) < 5) {
+    @(static) mb:^MethodBind
+    mb= mbb
+
+    //Not sure why this is receiving the Node struct as if it's a pointer despite passing it as itself.
+    //Maybe implicitly converting it to a pointer due to size.
+    when (sics.type_proc_parameter_count(procsig) == 4 && sics.type_is_struct(sics.type_proc_parameter_type(procsig, 1))){
+        when (sics.type_is_pointer(sics.type_proc_parameter_type(procsig, 2)) && sics.type_proc_parameter_type(procsig, 3) == runtime.Source_Code_Location) {
+            //#type proc(self: ^Object, args: struct {_: rawptr}, r_ret: rawptr, loc:= #caller_location)
+            generic:: proc(self: ^Class_Container(CC_Dummy), args: sics.type_proc_parameter_type(procsig, 1), r_ret: rawptr, loc := #caller_location) {
+                args:=args
+                gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)mb, self.self, cast([^]rawptr)&args, r_ret)
+            }
+            return cast(rawptr)generic} else {
+                panic("incorrect MethodBind callback format for args+return", loc)
+            }
+    } else  when (sics.type_proc_parameter_count(procsig) == 3 && (sics.type_proc_parameter_type(procsig, 2) == runtime.Source_Code_Location)) {
+        when sics.type_is_struct(sics.type_proc_parameter_type(procsig, 1)) {
+            //#type proc(self: ^Object, args: struct {_: rawptr}, loc:= #caller_location)
+            generic:: proc(self: ^Class_Container(CC_Dummy), args: sics.type_proc_parameter_type(procsig, 1), loc := #caller_location){
+                args:=args
+                gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)mb, self.self, cast([^]rawptr)&args, nil)
+            }
+            return cast(rawptr)generic
+        } else when sics.type_is_pointer(sics.type_proc_parameter_type(procsig, 1)) {
+            //#type proc(self: ^Object, r_ret: rawptr, loc:= #caller_location)
+            generic:: proc(self: ^Class_Container(CC_Dummy), args: sics.type_proc_parameter_type(procsig, 1), loc := #caller_location){
+                gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)mb, self.self, nil, args)
+            }
+            return cast(rawptr)generic
+        } else {
+            panic("incorrect MethodBind callback format for only args or return", loc)
+        }
+    } else  {
+        panic("incorrect MethodBind callback format", loc)
+    }
+    return nil
+}

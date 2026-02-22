@@ -110,18 +110,18 @@ OdinVec2iArray_CString:: "OdinVec2iArray"
 OdinVec2iArrayprocs: ArrayProcs(OdinVec2iArray)
 
 
-OdinRec2Array :: OdinArrays(GDE.Rec2)
-OdinRec2Array_SN: GDE.StringName
-OdinRec2Array_CString:: "OdinRec2Array"
+OdinRect2Array :: OdinArrays(GDE.Rect2)
+OdinRect2Array_SN: GDE.StringName
+OdinRect2Array_CString:: "OdinRect2Array"
 @export
-OdinRec2Arrayprocs: ArrayProcs(OdinRec2Array)
+OdinRect2Arrayprocs: ArrayProcs(OdinRect2Array)
 
 
-OdinRec2iArray :: OdinArrays(GDE.Rec2i)
-OdinRec2iArray_SN: GDE.StringName
-OdinRec2iArray_CString:: "OdinRec2iArray"
+OdinRect2iArray :: OdinArrays(GDE.Rect2i)
+OdinRect2iArray_SN: GDE.StringName
+OdinRect2iArray_CString:: "OdinRect2iArray"
 @export
-OdinRec2iArrayprocs: ArrayProcs(OdinRec2iArray)
+OdinRect2iArrayprocs: ArrayProcs(OdinRect2iArray)
 
 
 OdinVec3Array :: OdinArrays(GDE.Vector3)
@@ -295,13 +295,13 @@ OdinVec2iSlice :: OdinSlice(GDE.Vector2i)
 OdinVec2iSlice_SN: GDE.StringName
 OdinVec2iSlice_CString:: "OdinVec2iSlice"
 
-OdinRec2Slice :: OdinSlice(GDE.Rec2)
-OdinRec2Slice_SN: GDE.StringName
-OdinRec2Slice_CString:: "OdinRec2Slice"
+OdinRect2Slice :: OdinSlice(GDE.Rect2)
+OdinRect2Slice_SN: GDE.StringName
+OdinRect2Slice_CString:: "OdinRect2Slice"
 
-OdinRec2iSlice :: OdinSlice(GDE.Rec2i)
-OdinRec2iSlice_SN: GDE.StringName
-OdinRec2iSlice_CString:: "OdinRec2iSlice"
+OdinRect2iSlice :: OdinSlice(GDE.Rect2i)
+OdinRect2iSlice_SN: GDE.StringName
+OdinRect2iSlice_CString:: "OdinRect2iSlice"
 
 OdinVec3Slice :: OdinSlice(GDE.Vector3)
 OdinVec3Slice_SN: GDE.StringName
@@ -473,17 +473,17 @@ OdinVec2iArrayNoRef_CString:: "OdinVec2iArrayNoRef"
 @export
 OdinVec2iArrayNoRefprocs: ArrayProcs(OdinVec2iArrayNoRef)
 
-OdinRec2ArrayNoRef :: OdinArrayNoRefs(GDE.Rec2)
-OdinRec2ArrayNoRef_SN: GDE.StringName
-OdinRec2ArrayNoRef_CString:: "OdinRec2ArrayNoRef"
+OdinRect2ArrayNoRef :: OdinArrayNoRefs(GDE.Rect2)
+OdinRect2ArrayNoRef_SN: GDE.StringName
+OdinRect2ArrayNoRef_CString:: "OdinRect2ArrayNoRef"
 @export
-OdinRec2ArrayNoRefprocs: ArrayProcs(OdinRec2ArrayNoRef)
+OdinRect2ArrayNoRefprocs: ArrayProcs(OdinRect2ArrayNoRef)
 
-OdinRec2iArrayNoRef :: OdinArrayNoRefs(GDE.Rec2i)
-OdinRec2iArrayNoRef_SN: GDE.StringName
-OdinRec2iArrayNoRef_CString:: "OdinRec2iArrayNoRef"
+OdinRect2iArrayNoRef :: OdinArrayNoRefs(GDE.Rect2i)
+OdinRect2iArrayNoRef_SN: GDE.StringName
+OdinRect2iArrayNoRef_CString:: "OdinRect2iArrayNoRef"
 @export
-OdinRec2iArrayNoRefprocs: ArrayProcs(OdinRec2iArrayNoRef)
+OdinRect2iArrayNoRefprocs: ArrayProcs(OdinRect2iArrayNoRef)
 
 OdinVec3ArrayNoRef :: OdinArrayNoRefs(GDE.Vector3)
 OdinVec3ArrayNoRef_SN: GDE.StringName

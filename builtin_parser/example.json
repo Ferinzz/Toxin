@@ -1,0 +1,272 @@
+
+{
+	"builtin_classes": [
+		{
+			"name": "String",
+			"indexing_return_type": "String",
+			"is_keyed": false,
+            "operators": [
+				{
+					"name": "==",
+					"right_type": "Variant",
+					"return_type": "bool"
+				},
+				{
+					"name": "!=",
+					"right_type": "Variant",
+					"return_type": "bool"
+				},
+				{
+					"name": "%",
+					"right_type": "Variant",
+					"return_type": "String"
+				}
+			],
+"methods": [
+{
+	"name": "nocasecmp_to",
+	"return_type": "int",
+	"is_vararg": false,
+	"is_const": true,
+	"is_static": false,
+	"hash": 2920860731,
+	"arguments": [
+		{
+			"name": "to",
+			"type": "String"
+		}
+	]
+},
+{
+	"name": "naturalcasecmp_to",
+	"return_type": "int",
+	"is_vararg": false,
+	"is_const": true,
+	"is_static": false,
+	"hash": 2920860731,
+	"arguments": [
+		{
+			"name": "to",
+			"type": "String"
+		}
+	]
+}],
+			"constructors": [
+				{
+					"index": 0
+				},
+				{
+					"index": 1,
+					"arguments": [
+						{
+							"name": "from",
+							"type": "String"
+						}
+					]
+				},
+				{
+					"index": 2,
+					"arguments": [
+						{
+							"name": "from",
+							"type": "StringName"
+						}
+					]
+				},
+				{
+					"index": 3,
+					"arguments": [
+						{
+							"name": "from",
+							"type": "NodePath"
+						}
+					]
+				},
+				{
+					"index": 3,
+					"arguments": [
+						{
+							"name": "x",
+							"type": "float"
+						},
+						{
+							"name": "y",
+							"type": "float"
+						}
+					]
+				}
+			],
+			"has_destructor": true
+		},
+		{
+			"name": "Vector3i",
+			"indexing_return_type": "int",
+			"is_keyed": false,
+			"members": [
+				{
+					"name": "x",
+					"type": "int"
+				},
+				{
+					"name": "y",
+					"type": "int"
+				},
+				{
+					"name": "z",
+					"type": "int"
+				}
+			],
+			"constants": [
+				{
+					"name": "ZERO",
+					"type": "Vector3i",
+					"value": "Vector3i(0, 0, 0)"
+				},
+				{
+					"name": "ONE",
+					"type": "Vector3i",
+					"value": "Vector3i(1, 1, 1)"
+				},
+				{
+					"name": "MIN",
+					"type": "Vector3i",
+					"value": "Vector3i(-2147483648, -2147483648, -2147483648)"
+				},
+				{
+					"name": "MAX",
+					"type": "Vector3i",
+					"value": "Vector3i(2147483647, 2147483647, 2147483647)"
+				},
+				{
+					"name": "LEFT",
+					"type": "Vector3i",
+					"value": "Vector3i(-1, 0, 0)"
+				},
+				{
+					"name": "RIGHT",
+					"type": "Vector3i",
+					"value": "Vector3i(1, 0, 0)"
+				},
+				{
+					"name": "UP",
+					"type": "Vector3i",
+					"value": "Vector3i(0, 1, 0)"
+				},
+				{
+					"name": "DOWN",
+					"type": "Vector3i",
+					"value": "Vector3i(0, -1, 0)"
+				},
+				{
+					"name": "FORWARD",
+					"type": "Vector3i",
+					"value": "Vector3i(0, 0, -1)"
+				},
+				{
+					"name": "BACK",
+					"type": "Vector3i",
+					"value": "Vector3i(0, 0, 1)"
+				}
+			],
+			"enums": [
+				{
+					"name": "Axis",
+					"values": [
+						{
+							"name": "AXIS_X",
+							"value": 0
+						},
+						{
+							"name": "AXIS_Y",
+							"value": 1
+						},
+						{
+							"name": "AXIS_Z",
+							"value": 2
+						}
+					]
+				}
+			],
+            "methods": [
+				{
+					"name": "min_axis_index",
+					"return_type": "int",
+					"is_vararg": false,
+					"is_const": true,
+					"is_static": false,
+					"hash": 3173160232
+				},
+				{
+					"name": "max_axis_index",
+					"return_type": "int",
+					"is_vararg": false,
+					"is_const": true,
+					"is_static": false,
+					"hash": 3173160232
+				},
+				{
+					"name": "distance_to",
+					"return_type": "float",
+					"is_vararg": false,
+					"is_const": true,
+					"is_static": false,
+					"hash": 1975170430,
+					"arguments": [
+						{
+							"name": "to",
+							"type": "Vector3i"
+						}
+					]
+				},
+				{
+					"name": "distance_squared_to",
+					"return_type": "int",
+					"is_vararg": false,
+					"is_const": true,
+					"is_static": false,
+					"hash": 2947717320,
+					"arguments": [
+						{
+							"name": "to",
+							"type": "Vector3i"
+						}
+					]
+				},
+				{
+					"name": "length",
+					"return_type": "float",
+					"is_vararg": false,
+					"is_const": true,
+					"is_static": false,
+					"hash": 466405837
+				}],
+			"constructors": [
+				{
+					"index": 0
+				},
+				{
+					"index": 1,
+					"arguments": [
+						{
+							"name": "from",
+							"type": "Vector3i"
+						}
+					]
+				},
+				{
+					"index": 3,
+					"arguments": [
+						{
+							"name": "x",
+							"type": "float"
+						},
+						{
+							"name": "y",
+							"type": "float"
+						}
+					]
+				}],
+			"has_destructor": false
+        }
+    ]
+}
