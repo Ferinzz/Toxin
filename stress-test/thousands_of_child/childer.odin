@@ -96,17 +96,17 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     //    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
     //    //fmt.println(window)
     //},
-    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
-        context = runtime.default_context()
-        //self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        //self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-
-        Node2D_Class.set_position->m_call(self.self, {&self.position})
-        //is_centered:Toxin.Bool
-        //Texture_Class.is_centered->m_call(self.self, 0, &is_centered)
-        //if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
-        //if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
-    },
+    //_process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+    //    context = runtime.default_context()
+    //    self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+    //    self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+//
+    //    Node2D_Class.set_position->m_call(self.self, {&self.position})
+    //    //is_centered:Toxin.Bool
+    //    //Texture_Class.is_centered->m_call(self.self, 0, &is_centered)
+    //    if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
+    //    if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
+    //},
     //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
     //    //context = runtime.default_context()
     //    //fmt.println("yarrr")

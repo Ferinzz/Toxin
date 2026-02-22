@@ -56,12 +56,11 @@ MainLoopFrameCallback :: proc "c" () {
         //fmt.println(class)
         class.class.position.x+=Math.cos_f32(f32(class.class.angle))*f32(perf)*f32(class.class.speed)
         class.class.position.y+=Math.sin_f32(f32(class.class.angle))*f32(perf)*f32(class.class.speed)
-
-        Node2D_Class.set_position->m_call(class.self, {&class.class.position}, nil)
-
+        //Node2D_Class.set_position->m_call(class.self, {&class.class.position})
+        //Node2D_Props.position_Vector2.set_position(class.self, &class.class.position)
         if class.class.position.x > class.class.window.x - class.class.size.x || class.class.position.x < class.class.size.x do class.class.angle = Math.PI - class.class.angle
         if class.position.y > class.window.y - class.size.y || class.position.y < class.size.y do class.angle = -class.angle
-        Texture_Class.is_centered->m_call(class.self, r_ret= &is_centered)
+        //Texture_Class.is_centered->m_call(class.self, r_ret= &is_centered)
     }
     //fmt.println(is_centered)
     if frame_current < 3000 {

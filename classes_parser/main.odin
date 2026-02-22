@@ -80,11 +80,12 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
                             classes.virtuals_list,
                             classes.enums,
                             classes.constants,
-                            classes.properties,
+                            //classes.properties,
                             classes.method_list,
                             classes.init_proc,
                             classes.virtuals_init,
-                            classes.properties_init,)
+                            //classes.properties_init,
+                            )
       //fmt.println("wrote: ", count, write_err)
     } else {
       print_warning("could not open file_path", open_err)
@@ -183,8 +184,8 @@ builtin_set :: struct {
   init_proc: string,
   method_list: string,
   constants: string,
-  properties: string,
-  properties_init: string,
+  //properties: string,
+  //properties_init: string,
   enums: string,
   virtuals_init: string,
   virtuals_list: string,
@@ -199,11 +200,12 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   // Structure of the init proc
   ///////////////////////////////
   class_decl:=`%s :: ^Object`
-  init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{`
+  init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{
+  MB_ptr_call:=gdAPI.get_Interface_Address("object_method_bind_ptrcall")`
   //name, name, name
   Meth_Getter:=`  %s_methods.%s._%[1]s = (cast(^GDW.MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
   //name, method.name, variant_type, method.name, hash
-  ptrCall_getter:=`  %s_methods.%s.m_call = cast(type_of(%[0]s_methods.%[1]s.m_call))gdAPI.get_Interface_Address("object_method_bind_ptrcall")`
+  ptrCall_getter:=`  %s_methods.%s.m_call = cast(type_of(%[0]s_methods.%[1]s.m_call))MB_ptr_call`
   //name, method.name, variant_type, method.name, hash
   Closing:=`};`
 
@@ -242,8 +244,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     init_builder:=strings.builder_make(ctx)
     struct_builder:=strings.builder_make(ctx)
     consts_builder:=strings.builder_make(ctx)
-    props_builder:=strings.builder_make(ctx)
-    props_init_builder:=strings.builder_make(ctx)
+    //props_builder:=strings.builder_make(ctx)
+    //props_init_builder:=strings.builder_make(ctx)
     enum_builder:=strings.builder_make(ctx) //btw, several enums have the same name but different fields based on the class they're part of.
     virtuals_builder:=strings.builder_make(ctx)
     virtuals_list_builder:=strings.builder_make(ctx)
@@ -409,7 +411,7 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
 }
 */
 
-
+/*
     if len(BUILT_FROM.properties) > 0 {
       
       strings.write_string(&props_builder, fmt.bprintf(buffer[:], propetry_header, BUILT_FROM.name, newline =true))
@@ -505,7 +507,7 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
       //fmt.println(strings.to_string(props_builder))
       //fmt.println(strings.to_string(props_init_builder))
     }
-
+*/
     //fmt.println(strings.to_string(init_builder))
     //fmt.println(strings.to_string(struct_builder))
     //fmt.println(BUILT_FROM.name)
@@ -541,8 +543,7 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
 
     //Append all the work we did to the array of classes.
     append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), \
-      strings.to_string(props_builder), strings.to_string(props_init_builder), strings.to_string(enum_builder), strings.to_string(virtuals_builder),
-      strings.to_string(virtuals_list_builder)})
+      strings.to_string(enum_builder), strings.to_string(virtuals_builder), strings.to_string(virtuals_list_builder)})
     //strings.builder_reset(&init_builder)
     //strings.builder_reset(&struct_builder)
     //fmt.println(builtin_map[idx].init_proc)
