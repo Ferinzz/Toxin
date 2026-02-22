@@ -164,7 +164,8 @@ getRid :: proc(ref: ^Object, r_ret: ^RID) {
 
 
 Get_Method_Getter :: proc(type: GDE.VariantType, name: string) -> GDE.PtrGetter {
-    name_SN:= StringConstruct(name)
+    name_SN:StringName
+    StringConstruct(&name_SN, name)
     return gdAPI.Variant_Utils.GetPtrGetter(type, &name_SN)
 }
 Get_Method_Setter :: proc(type: GDE.VariantType, name: string) -> GDE.PtrGetter {
