@@ -156,6 +156,11 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     op_eval:= `  %s_method_store.%s_%s = cast(type_of(%[0]s_method_store.%[1]s_%[2]s))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.%[1]v, .%v, .%v)`
     //name, eval_enum, variant_type
     Meth_Getter:=`  %s_method_store.%[2]s = cast(type_of(%[0]s_method_store.%[2]s))Get_Builtin_Method(.%[1]v, "%[2]s", %v)`
+    Index_Getter:=`  %s_method_store.IndxGetter = cast(type_of(%[0]s_method_store.%[0]sIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.%[1]v)
+  %[0]s_method_store.IndxSetter = cast(type_of(%[0]s_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)`
+    Keyed_Getter:=`  %s_method_store.KeyedSetter = cast(type_of(%[0]s_method_store.KeyedSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)
+  %[0]s_method_store.KeyedGetter = cast(type_of(%[0]s_method_store.KeyedGetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)
+  %[0]s_method_store.KeyedChecker = cast(type_of(%[0]s_method_store.KeyedChecker))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)`
     //name ,variant_type, methods[i].name, methods[i].hash
     Closing:=`}`
 
@@ -167,6 +172,11 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     bltn_creator_proc:= `    Create%v: proc "c" (p_base: ^%s, ` //#by_ptr p_args: struct{{%s: %s,}),` //index of Creator, builtin_type, arg_name from_type
     bltn_destructor:= `    Destroy: GDE.PtrDestructor,` //Include if Destructor true
     bltn_destructor_proc:= `    Destroy: proc "c" (p_base: ^%s),` //Include if Destructor true; builtin_type
+    keyed:= `    KeyedSetter : proc "c" (p_base: %[0]s, p_key: GDE.ConstTypePtr, p_value: GDE.ConstTypePtr),
+    KeyedGetter : proc "c" (p_base: %[0]s, p_key: GDE.TypePtr, r_value: GDE.TypePtr),
+    KeyedChecker : proc "c" (#by_ptr p_base: Variant, #by_ptr p_key: Variant) -> u32,` //if the type is keyed it will have these three methods
+    indexed:= `    IndxSetter : proc "c" (p_base: ^%[0]s, p_index: Int, p_value: ^%[1]s),
+    IndxGetter : proc "c" (p_base: ^%[0]s, p_index: Int, r_value: ^%[1]s),` //if the type has a index return, it will have these two methods
     bltn_method:= `    %s:  GDE.PtrBuiltInMethod,` //Name of method: methods.name
     bltn_method_proc:=`    %s:  proc "c" (p_base: ^%s,` // #by_ptr p_args: struct{{%s: %s,}, 
     bltn_method_return:= ` r_return: ^%s, p_argument_count: i64 = %v),`
@@ -233,7 +243,18 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
         //setup Destructors iff the builtin has one
         if BUILT_FROM.has_destructor {
             fmt.sbprintf(&init_builder, Destructors, BUILT_FROM.name, variant_type, newline =true)
-            fmt.sbprintf(&struct_builder, bltn_destructor, newline =true)
+            fmt.sbprintf(&struct_builder, bltn_destructor_proc, BUILT_FROM.name, newline =true)
+        }
+
+        if BUILT_FROM.is_keyed == true {
+            fmt.sbprintf(&struct_builder, keyed, BUILT_FROM.name, newline =true)
+            fmt.sbprintf(&init_builder, Keyed_Getter, BUILT_FROM.name, variant_type, newline =true)
+        }
+        if BUILT_FROM.indexing_return_type != "" {
+            Correct_Type_String(&BUILT_FROM.indexing_return_type, ctx)
+            fmt.sbprintf(&struct_builder, indexed, BUILT_FROM.name, BUILT_FROM.indexing_return_type, newline =true)
+            fmt.sbprintf(&init_builder, Index_Getter, BUILT_FROM.name, variant_type, newline =true)
+
         }
 
         //setup Methods

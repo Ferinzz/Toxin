@@ -19,7 +19,9 @@ Array_Methods_list :: struct {
     Create10: proc "c" (p_base: ^Array,  #by_ptr p_args: struct{ from: ^PackedVector3Array, }),
     Create11: proc "c" (p_base: ^Array,  #by_ptr p_args: struct{ from: ^PackedColorArray, }),
     Create12: proc "c" (p_base: ^Array,  #by_ptr p_args: struct{ from: ^PackedVector4Array, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^Array),
+    IndxSetter : proc "c" (p_base: ^Array, p_index: Int, p_value: ^Variant),
+    IndxGetter : proc "c" (p_base: ^Array, p_index: Int, r_value: ^Variant),
     size:  proc "c" (p_base: ^Array, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     is_empty:  proc "c" (p_base: ^Array, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
     clear:  proc "c" (p_base: ^Array, p_args: rawptr = nil, r_return: ^rawptr = nil, p_argument_count: i64 = 0),
@@ -97,6 +99,8 @@ init_Array_Methods :: proc(Array_method_store: ^Array_Methods_list) {
   Array_method_store.Create11 = cast(type_of(Array_method_store.Create11))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 11)
   Array_method_store.Create12 = cast(type_of(Array_method_store.Create12))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 12)
   Array_method_store.Destroy = cast(type_of(Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.ARRAY)
+  Array_method_store.IndxGetter = cast(type_of(Array_method_store.ArrayIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.ARRAY)
+  Array_method_store.IndxSetter = cast(type_of(Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.ARRAY)
   Array_method_store.size = cast(type_of(Array_method_store.size))Get_Builtin_Method(.ARRAY, "size", 3173160232)
   Array_method_store.is_empty = cast(type_of(Array_method_store.is_empty))Get_Builtin_Method(.ARRAY, "is_empty", 3918633141)
   Array_method_store.clear = cast(type_of(Array_method_store.clear))Get_Builtin_Method(.ARRAY, "clear", 3218959716)

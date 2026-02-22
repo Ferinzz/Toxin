@@ -9,7 +9,7 @@ NodePath_Methods_list :: struct {
     Create0: proc "c" (p_base: ^NodePath, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^NodePath,  #by_ptr p_args: struct{ from: ^NodePath, }),
     Create2: proc "c" (p_base: ^NodePath,  #by_ptr p_args: struct{ from: ^gdstring, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^NodePath),
     is_absolute:  proc "c" (p_base: ^NodePath, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
     get_name_count:  proc "c" (p_base: ^NodePath, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     get_name:  proc "c" (p_base: ^NodePath, #by_ptr p_args: struct{ idx: ^Int, }, r_return: ^StringName, p_argument_count: i64 = 1),

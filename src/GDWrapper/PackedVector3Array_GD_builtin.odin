@@ -9,7 +9,9 @@ PackedVector3Array_Methods_list :: struct {
     Create0: proc "c" (p_base: ^PackedVector3Array, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^PackedVector3Array,  #by_ptr p_args: struct{ from: ^PackedVector3Array, }),
     Create2: proc "c" (p_base: ^PackedVector3Array,  #by_ptr p_args: struct{ from: ^Array, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^PackedVector3Array),
+    IndxSetter : proc "c" (p_base: ^PackedVector3Array, p_index: Int, p_value: ^Vector3),
+    IndxGetter : proc "c" (p_base: ^PackedVector3Array, p_index: Int, r_value: ^Vector3),
     get:  proc "c" (p_base: ^PackedVector3Array, #by_ptr p_args: struct{ index: ^Int, }, r_return: ^Vector3, p_argument_count: i64 = 1),
     set:  proc "c" (p_base: ^PackedVector3Array, #by_ptr p_args: struct{ index: ^Int, value: ^Vector3, }, r_return: ^rawptr = nil, p_argument_count: i64 = 2),
     size:  proc "c" (p_base: ^PackedVector3Array, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
@@ -46,6 +48,8 @@ init_PackedVector3Array_Methods :: proc(PackedVector3Array_method_store: ^Packed
   PackedVector3Array_method_store.Create1 = cast(type_of(PackedVector3Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 1)
   PackedVector3Array_method_store.Create2 = cast(type_of(PackedVector3Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 2)
   PackedVector3Array_method_store.Destroy = cast(type_of(PackedVector3Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_VECTOR3_ARRAY)
+  PackedVector3Array_method_store.IndxGetter = cast(type_of(PackedVector3Array_method_store.PackedVector3ArrayIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_VECTOR3_ARRAY)
+  PackedVector3Array_method_store.IndxSetter = cast(type_of(PackedVector3Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_VECTOR3_ARRAY)
   PackedVector3Array_method_store.get = cast(type_of(PackedVector3Array_method_store.get))Get_Builtin_Method(.PACKED_VECTOR3_ARRAY, "get", 1394941017)
   PackedVector3Array_method_store.set = cast(type_of(PackedVector3Array_method_store.set))Get_Builtin_Method(.PACKED_VECTOR3_ARRAY, "set", 3975343409)
   PackedVector3Array_method_store.size = cast(type_of(PackedVector3Array_method_store.size))Get_Builtin_Method(.PACKED_VECTOR3_ARRAY, "size", 3173160232)

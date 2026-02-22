@@ -9,7 +9,7 @@ Callable_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Callable, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^Callable,  #by_ptr p_args: struct{ from: ^Callable, }),
     Create2: proc "c" (p_base: ^Callable,  #by_ptr p_args: struct{ object: ^Object, method: ^StringName, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^Callable),
     create:  proc "c" (p_base: ^Callable, #by_ptr p_args: struct{ variant: ^Variant, method: ^StringName, }, r_return: ^Callable, p_argument_count: i64 = 2),
     callv:  proc "c" (p_base: ^Callable, #by_ptr p_args: struct{ arguments: ^Array, }, r_return: ^Variant, p_argument_count: i64 = 1),
     is_null:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),

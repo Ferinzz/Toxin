@@ -17,6 +17,8 @@ Transform2D_Methods_list :: struct {
     Create2: proc "c" (p_base: ^Transform2D,  #by_ptr p_args: struct{ rotation: ^float, position: ^Vector2, }),
     Create3: proc "c" (p_base: ^Transform2D,  #by_ptr p_args: struct{ rotation: ^float, scale: ^Vector2, skew: ^float, position: ^Vector2, }),
     Create4: proc "c" (p_base: ^Transform2D,  #by_ptr p_args: struct{ x_axis: ^Vector2, y_axis: ^Vector2, origin: ^Vector2, }),
+    IndxSetter : proc "c" (p_base: ^Transform2D, p_index: Int, p_value: ^Vector2),
+    IndxGetter : proc "c" (p_base: ^Transform2D, p_index: Int, r_value: ^Vector2),
     inverse:  proc "c" (p_base: ^Transform2D, p_args: rawptr = nil, r_return: ^Transform2D, p_argument_count: i64 = 0),
     affine_inverse:  proc "c" (p_base: ^Transform2D, p_args: rawptr = nil, r_return: ^Transform2D, p_argument_count: i64 = 0),
     get_rotation:  proc "c" (p_base: ^Transform2D, p_args: rawptr = nil, r_return: ^float, p_argument_count: i64 = 0),
@@ -58,6 +60,8 @@ init_Transform2D_Methods :: proc(Transform2D_method_store: ^Transform2D_Methods_
   Transform2D_method_store.Create2 = cast(type_of(Transform2D_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 2)
   Transform2D_method_store.Create3 = cast(type_of(Transform2D_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 3)
   Transform2D_method_store.Create4 = cast(type_of(Transform2D_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 4)
+  Transform2D_method_store.IndxGetter = cast(type_of(Transform2D_method_store.Transform2DIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.TRANSFORM2D)
+  Transform2D_method_store.IndxSetter = cast(type_of(Transform2D_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.TRANSFORM2D)
   Transform2D_method_store.inverse = cast(type_of(Transform2D_method_store.inverse))Get_Builtin_Method(.TRANSFORM2D, "inverse", 1420440541)
   Transform2D_method_store.affine_inverse = cast(type_of(Transform2D_method_store.affine_inverse))Get_Builtin_Method(.TRANSFORM2D, "affine_inverse", 1420440541)
   Transform2D_method_store.get_rotation = cast(type_of(Transform2D_method_store.get_rotation))Get_Builtin_Method(.TRANSFORM2D, "get_rotation", 466405837)

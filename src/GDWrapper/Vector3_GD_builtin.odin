@@ -46,6 +46,8 @@ Vector3_Methods_list :: struct {
     Create1: proc "c" (p_base: ^Vector3,  #by_ptr p_args: struct{ from: ^Vector3, }),
     Create2: proc "c" (p_base: ^Vector3,  #by_ptr p_args: struct{ from: ^Vector3i, }),
     Create3: proc "c" (p_base: ^Vector3,  #by_ptr p_args: struct{ x: ^float, y: ^float, z: ^float, }),
+    IndxSetter : proc "c" (p_base: ^Vector3, p_index: Int, p_value: ^float),
+    IndxGetter : proc "c" (p_base: ^Vector3, p_index: Int, r_value: ^float),
     min_axis_index:  proc "c" (p_base: ^Vector3, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     max_axis_index:  proc "c" (p_base: ^Vector3, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     angle_to:  proc "c" (p_base: ^Vector3, #by_ptr p_args: struct{ to: ^Vector3, }, r_return: ^float, p_argument_count: i64 = 1),
@@ -123,6 +125,8 @@ init_Vector3_Methods :: proc(Vector3_method_store: ^Vector3_Methods_list) {
   Vector3_method_store.Create1 = cast(type_of(Vector3_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 1)
   Vector3_method_store.Create2 = cast(type_of(Vector3_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 2)
   Vector3_method_store.Create3 = cast(type_of(Vector3_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 3)
+  Vector3_method_store.IndxGetter = cast(type_of(Vector3_method_store.Vector3IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR3)
+  Vector3_method_store.IndxSetter = cast(type_of(Vector3_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR3)
   Vector3_method_store.min_axis_index = cast(type_of(Vector3_method_store.min_axis_index))Get_Builtin_Method(.VECTOR3, "min_axis_index", 3173160232)
   Vector3_method_store.max_axis_index = cast(type_of(Vector3_method_store.max_axis_index))Get_Builtin_Method(.VECTOR3, "max_axis_index", 3173160232)
   Vector3_method_store.angle_to = cast(type_of(Vector3_method_store.angle_to))Get_Builtin_Method(.VECTOR3, "angle_to", 1047977935)

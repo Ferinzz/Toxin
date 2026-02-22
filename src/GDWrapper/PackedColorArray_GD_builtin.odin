@@ -9,7 +9,9 @@ PackedColorArray_Methods_list :: struct {
     Create0: proc "c" (p_base: ^PackedColorArray, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^PackedColorArray,  #by_ptr p_args: struct{ from: ^PackedColorArray, }),
     Create2: proc "c" (p_base: ^PackedColorArray,  #by_ptr p_args: struct{ from: ^Array, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^PackedColorArray),
+    IndxSetter : proc "c" (p_base: ^PackedColorArray, p_index: Int, p_value: ^Color),
+    IndxGetter : proc "c" (p_base: ^PackedColorArray, p_index: Int, r_value: ^Color),
     get:  proc "c" (p_base: ^PackedColorArray, #by_ptr p_args: struct{ index: ^Int, }, r_return: ^Color, p_argument_count: i64 = 1),
     set:  proc "c" (p_base: ^PackedColorArray, #by_ptr p_args: struct{ index: ^Int, value: ^Color, }, r_return: ^rawptr = nil, p_argument_count: i64 = 2),
     size:  proc "c" (p_base: ^PackedColorArray, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
@@ -45,6 +47,8 @@ init_PackedColorArray_Methods :: proc(PackedColorArray_method_store: ^PackedColo
   PackedColorArray_method_store.Create1 = cast(type_of(PackedColorArray_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 1)
   PackedColorArray_method_store.Create2 = cast(type_of(PackedColorArray_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 2)
   PackedColorArray_method_store.Destroy = cast(type_of(PackedColorArray_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_COLOR_ARRAY)
+  PackedColorArray_method_store.IndxGetter = cast(type_of(PackedColorArray_method_store.PackedColorArrayIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_COLOR_ARRAY)
+  PackedColorArray_method_store.IndxSetter = cast(type_of(PackedColorArray_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_COLOR_ARRAY)
   PackedColorArray_method_store.get = cast(type_of(PackedColorArray_method_store.get))Get_Builtin_Method(.PACKED_COLOR_ARRAY, "get", 2972831132)
   PackedColorArray_method_store.set = cast(type_of(PackedColorArray_method_store.set))Get_Builtin_Method(.PACKED_COLOR_ARRAY, "set", 1444096570)
   PackedColorArray_method_store.size = cast(type_of(PackedColorArray_method_store.size))Get_Builtin_Method(.PACKED_COLOR_ARRAY, "size", 3173160232)

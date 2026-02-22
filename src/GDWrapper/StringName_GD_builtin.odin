@@ -9,7 +9,7 @@ StringName_Methods_list :: struct {
     Create0: proc "c" (p_base: ^StringName, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^StringName,  #by_ptr p_args: struct{ from: ^StringName, }),
     Create2: proc "c" (p_base: ^StringName,  #by_ptr p_args: struct{ from: ^gdstring, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^StringName),
     casecmp_to:  proc "c" (p_base: ^StringName, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
     nocasecmp_to:  proc "c" (p_base: ^StringName, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
     naturalcasecmp_to:  proc "c" (p_base: ^StringName, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),

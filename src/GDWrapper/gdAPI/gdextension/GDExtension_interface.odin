@@ -214,7 +214,7 @@ PtrDestructor 					:: proc "c" (p_base: TypePtr);
 PtrSetter 						:: proc "c" (p_base: TypePtr, 	 p_value: ConstTypePtr);
 PtrGetter 						:: proc "c" (p_base: ConstTypePtr, r_value:  TypePtr);
 PtrIndexedSetter 				:: proc "c" (p_base: TypePtr, 	 p_index: Int, 		  p_value: ConstTypePtr);
-PtrIndexedGetter 				:: proc "c" (p_base: ConstTypePtr, p_index:  Int, 		  r_value: VariantPtr);
+PtrIndexedGetter 				:: proc "c" (p_base: ConstTypePtr, p_index:  Int, 		  r_value: TypePtr);
 PtrKeyedSetter 					:: proc "c" (p_base: TypePtr, 	 p_key: ConstTypePtr,  p_value: ConstTypePtr);
 PtrKeyedGetter 					:: proc "c" (p_base: ConstTypePtr, p_key:  ConstTypePtr, r_value: TypePtr);
 PtrKeyedChecker 				:: proc "c" (p_base: ConstVariantPtr, p_key:  ConstVariantPtr) -> u32;

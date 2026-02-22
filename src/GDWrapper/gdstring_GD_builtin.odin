@@ -10,7 +10,9 @@ gdstring_Methods_list :: struct {
     Create1: proc "c" (p_base: ^gdstring,  #by_ptr p_args: struct{ from: ^gdstring, }),
     Create2: proc "c" (p_base: ^gdstring,  #by_ptr p_args: struct{ from: ^StringName, }),
     Create3: proc "c" (p_base: ^gdstring,  #by_ptr p_args: struct{ from: ^NodePath, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^gdstring),
+    IndxSetter : proc "c" (p_base: ^gdstring, p_index: Int, p_value: ^gdstring),
+    IndxGetter : proc "c" (p_base: ^gdstring, p_index: Int, r_value: ^gdstring),
     casecmp_to:  proc "c" (p_base: ^gdstring, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
     nocasecmp_to:  proc "c" (p_base: ^gdstring, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
     naturalcasecmp_to:  proc "c" (p_base: ^gdstring, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
@@ -189,6 +191,8 @@ init_gdstring_Methods :: proc(gdstring_method_store: ^gdstring_Methods_list) {
   gdstring_method_store.Create2 = cast(type_of(gdstring_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 2)
   gdstring_method_store.Create3 = cast(type_of(gdstring_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 3)
   gdstring_method_store.Destroy = cast(type_of(gdstring_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.STRING)
+  gdstring_method_store.IndxGetter = cast(type_of(gdstring_method_store.gdstringIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.STRING)
+  gdstring_method_store.IndxSetter = cast(type_of(gdstring_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.STRING)
   gdstring_method_store.casecmp_to = cast(type_of(gdstring_method_store.casecmp_to))Get_Builtin_Method(.STRING, "casecmp_to", 2920860731)
   gdstring_method_store.nocasecmp_to = cast(type_of(gdstring_method_store.nocasecmp_to))Get_Builtin_Method(.STRING, "nocasecmp_to", 2920860731)
   gdstring_method_store.naturalcasecmp_to = cast(type_of(gdstring_method_store.naturalcasecmp_to))Get_Builtin_Method(.STRING, "naturalcasecmp_to", 2920860731)

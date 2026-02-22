@@ -9,7 +9,9 @@ PackedStringArray_Methods_list :: struct {
     Create0: proc "c" (p_base: ^PackedStringArray, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^PackedStringArray,  #by_ptr p_args: struct{ from: ^PackedStringArray, }),
     Create2: proc "c" (p_base: ^PackedStringArray,  #by_ptr p_args: struct{ from: ^Array, }),
-    Destroy: GDE.PtrDestructor,
+    Destroy: proc "c" (p_base: ^PackedStringArray),
+    IndxSetter : proc "c" (p_base: ^PackedStringArray, p_index: Int, p_value: ^gdstring),
+    IndxGetter : proc "c" (p_base: ^PackedStringArray, p_index: Int, r_value: ^gdstring),
     get:  proc "c" (p_base: ^PackedStringArray, #by_ptr p_args: struct{ index: ^Int, }, r_return: ^gdstring, p_argument_count: i64 = 1),
     set:  proc "c" (p_base: ^PackedStringArray, #by_ptr p_args: struct{ index: ^Int, value: ^gdstring, }, r_return: ^rawptr = nil, p_argument_count: i64 = 2),
     size:  proc "c" (p_base: ^PackedStringArray, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
@@ -45,6 +47,8 @@ init_PackedStringArray_Methods :: proc(PackedStringArray_method_store: ^PackedSt
   PackedStringArray_method_store.Create1 = cast(type_of(PackedStringArray_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 1)
   PackedStringArray_method_store.Create2 = cast(type_of(PackedStringArray_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 2)
   PackedStringArray_method_store.Destroy = cast(type_of(PackedStringArray_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_STRING_ARRAY)
+  PackedStringArray_method_store.IndxGetter = cast(type_of(PackedStringArray_method_store.PackedStringArrayIndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_STRING_ARRAY)
+  PackedStringArray_method_store.IndxSetter = cast(type_of(PackedStringArray_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_STRING_ARRAY)
   PackedStringArray_method_store.get = cast(type_of(PackedStringArray_method_store.get))Get_Builtin_Method(.PACKED_STRING_ARRAY, "get", 2162347432)
   PackedStringArray_method_store.set = cast(type_of(PackedStringArray_method_store.set))Get_Builtin_Method(.PACKED_STRING_ARRAY, "set", 725585539)
   PackedStringArray_method_store.size = cast(type_of(PackedStringArray_method_store.size))Get_Builtin_Method(.PACKED_STRING_ARRAY, "size", 3173160232)
