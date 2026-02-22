@@ -60,10 +60,8 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 
     class.class.angle=rand.float64_range(0, Math.PI*2)
     class.class.speed=rand.int64_range(100, 600)
-    //class.class.position = {rand.float32_range(100,1100), rand.float32_range(100,750)}
     class.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
     class.class.position = {rand.float32_range(64,class.class.window.x-64), rand.float32_range(64,class.class.window.y-64)}
-    //class.class.position = {rand.float32_range(64,window.x-64), rand.float32_range(64,window.y-64)}
     class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
     append_elem(&class_list, class)
     //fmt.println("ïnit")
@@ -84,7 +82,6 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
         //Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
-        set_pos:=[?]rawptr{&self.class.position}
         Node2D_Class.set_position->m_call(self.self, {&self.position})
     },
     //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {

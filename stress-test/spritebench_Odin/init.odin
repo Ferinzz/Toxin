@@ -6,6 +6,7 @@ import GDW "shared:GDWrapper"
 import "shared:GDWrapper/gdAPI"
 import "core:fmt"
 import "base:runtime"
+import "core:math"
 
 init:: proc ()  {
     Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
@@ -34,13 +35,19 @@ Texture_Class: Classes.Sprite2D_MethodBind_List
 Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
 
-
-last_delta:Toxin.float
+class_list:[dynamic]^Toxin.Class_Container(THIS_CLASS_NAME)
 printonce:bool=true
+sprite_count::20000
+frame_count_amout::3000
+frame_times:[frame_count_amout]f64
+frame_current:int=0
+
 MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
-    if frame_current < 1000 {
-        frame_times[frame_current] = last_delta
+    perf:Toxin.float=0
+    Node_Class.get_process_delta_time->m_call(root, r_ret = &perf)
+    if frame_current < frame_count_amout {
+        frame_times[frame_current] = perf
         frame_current+=1
     } else if printonce {
         printonce = false
@@ -49,7 +56,18 @@ MainLoopFrameCallback :: proc "c" () {
             total+=t
         }
         fmt.println(frame_times[:])
-        fmt.println(total/1000)
+        fmt.println(total/frame_count_amout)
+    }
+    
+    is_centered:Toxin.Bool=true
+    for class in class_list {
+        //fmt.println(class)
+        class.class.position.x+=math.cos_f32(f32(class.class.angle))*f32(perf)*f32(class.class.speed)
+        class.class.position.y+=math.sin_f32(f32(class.class.angle))*f32(perf)*f32(class.class.speed)
+        Node2D_Class.set_position->m_call(class.self, {&class.class.position})
+        if class.class.position.x > class.class.window.x - class.class.size.x || class.class.position.x < class.class.size.x do class.class.angle = math.PI - class.class.angle
+        if class.position.y > class.window.y - class.size.y || class.position.y < class.size.y do class.angle = -class.angle
+        //Texture_Class.is_centered->m_call(class.self, r_ret= &is_centered)
     }
 }
 root:^Toxin.Object
@@ -88,7 +106,7 @@ MainLoopStartupCallback :: proc "c" () {
     if scene != nil {
         //You can add a node directly to the root.
         //Add the class to the root of the sceneTree
-        for i in 0..<frame_count {
+        for i in 0..<sprite_count {
             root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
             GDW.addChild(root, &root_node_instance)
         }

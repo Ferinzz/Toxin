@@ -1,8 +1,7 @@
 package GDWrapper
 
 import "base:runtime"
-import GDE "gdAPI/gdextension"
-import "gdAPI"
+import GDE "gdextension"
 import "core:strings"
 import "base:intrinsics"
 import "core:time"
@@ -16,6 +15,7 @@ godotContext: runtime.Context
 initGodotContext :: proc "contextless" () {
     godotContext = runtime.default_context()
     godotContext.assertion_failure_proc = failureProc
+    
 }
 
 failureProc :: proc(prefix, message: string, loc: runtime.Source_Code_Location) -> ! {
@@ -26,6 +26,6 @@ failureProc :: proc(prefix, message: string, loc: runtime.Source_Code_Location) 
     cprocedure, _ := strings.clone_to_cstring(loc.procedure)
     cfilePath, _:= strings.clone_to_cstring(loc.file_path)
 
-    gdAPI.Logging.PrintErrorWithMessage(cprefix, cmessage, cprocedure, cfilePath, loc.line, true)
+    Print.ErrorWithMessage(cprefix, cmessage, cprocedure, cfilePath, loc.line, true)
 	intrinsics.trap()
 }
