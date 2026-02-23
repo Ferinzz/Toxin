@@ -60,7 +60,6 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     class.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
     class.class.position = {rand.float32_range(64,class.class.window.x-64), rand.float32_range(64,class.class.window.y-64)}
     class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
-    append_elem(&class_list, class)
     //fmt.println("ïnit")
     return class.self
 }

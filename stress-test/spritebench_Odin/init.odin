@@ -35,10 +35,9 @@ Texture_Class: Classes.Sprite2D_MethodBind_List
 Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
 
-class_list:[dynamic]^Toxin.Class_Container(THIS_CLASS_NAME)
 printonce:bool=true
 sprite_count::20000
-frame_count_amout::3000
+frame_count_amout::1000
 frame_times:[frame_count_amout]f64
 frame_current:int=0
 
@@ -57,17 +56,6 @@ MainLoopFrameCallback :: proc "c" () {
         }
         fmt.println(frame_times[:])
         fmt.println(total/frame_count_amout)
-    }
-    
-    is_centered:Toxin.Bool=true
-    for class in class_list {
-        //fmt.println(class)
-        class.class.position.x+=math.cos_f32(f32(class.class.angle))*f32(perf)*f32(class.class.speed)
-        class.class.position.y+=math.sin_f32(f32(class.class.angle))*f32(perf)*f32(class.class.speed)
-        Node2D_Class.set_position->m_call(class.self, {&class.class.position})
-        if class.class.position.x > class.class.window.x - class.class.size.x || class.class.position.x < class.class.size.x do class.class.angle = math.PI - class.class.angle
-        if class.position.y > class.window.y - class.size.y || class.position.y < class.size.y do class.angle = -class.angle
-        //Texture_Class.is_centered->m_call(class.self, r_ret= &is_centered)
     }
 }
 root:^Toxin.Object
