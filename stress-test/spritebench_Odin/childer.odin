@@ -11,10 +11,8 @@ import Math "core:math"
 import rand "core:math/rand"
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
-//Find and Replace Godot_Class_Name with the name of the class from Godot.
 
 //Godot will be passing us a pointer to this struct during callbacks.
-//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
     speed: Toxin.Int,
     angle: Toxin.float,
@@ -34,7 +32,7 @@ size:Toxin.Vector2={64,64}
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
     me:=(^Toxin.Class_Deets)(self)
 
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
+    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)
 
         cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
         texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
@@ -50,7 +48,6 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     vtable = &THIS_CLASS_NAME_VTable,
 }
 
-//If there's nothing that is heap allocated, you can use Toxin.Class_Init instead.
 THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
@@ -78,15 +75,6 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
         Node2D_Class.set_position->m_call(self.self, {&self.position})
     },
-    //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
-    //    context = runtime.default_context()
-    //    
-    //    //wind_obj:^Toxin.Object
-    //    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_Class.get_window, self.self, nil, &wind_obj)
-    //    //window:Toxin.Vector2
-    //    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
-    //    //fmt.println(window)
-    //},
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context();
         self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
@@ -95,17 +83,12 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         if self.position.x > self.window.x - self.size.x || self.position.x < self.size.x do self.angle = Math.PI - self.angle
         if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
     },
-    //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
-    //    //context = runtime.default_context()
-    //    //fmt.println("yarrr")
-    //},
 }
 
 //******************************\\
 //***********Exports************\\
 //******************************\\
 //make some function public to Godot's scripts.
-//Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
 }

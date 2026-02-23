@@ -17,7 +17,7 @@ Entry, Class Exporter, etc
 import "shared:Toxin"
 [Toxin](https://github.com/Ferinzz/Toxin/Toxin)
 
-Package imports are expected to be in Odin's shared folder.
+Package imports are expected to be in Odin's shared folder. Import headers are already setup in this package's headers.
 
 Github Commit
 Toxin/GDWrapper: 9b4652e
