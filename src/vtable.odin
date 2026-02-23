@@ -83,7 +83,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
-    cache_mode:Toxin.cache_mode=.CACHE_MODE_REUSE
+    cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
     texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
 }
 
@@ -261,17 +261,18 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         //Toxin.GDArray_Methods.Create0(cast(rawptr)(&self.rarray),nil)
         //myNode->call_deferred({nil}, &mbewl)
         set:=[?]rawptr{&texture}
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Texture_Class.set_texture, self.self, raw_data(set[:]), nil)
+        Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
     },
     _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context()
         
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_Class.get_window, self.self, nil, &wind_obj)
-        window:Toxin.Vector2
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
+        Node_Class.get_window->m_call(self.self, nil, &wind_obj)
+        window:Toxin.Vector2i
+        Window_MethodBind_List.get_size->m_call(wind_obj, nil, &window)
         //fmt.println(window)
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+        context = runtime.default_context()
         speed:=Toxin.Vector2{f32(self.class.speed),f32(self.class.speed)}
         //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
         delta:=Toxin.Vector2{f32(p_args.delta^),f32(p_args.delta^)}
@@ -279,7 +280,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
         self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
         set:=[?]rawptr{&self.class.position}
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node2D_Class.set_position, self.self, raw_data(set[:]), nil)
+        Node2D_Class.set_position->m_call(self.self, {&self.class.position}, nil)
         last_delta = p_args.delta^
         if self.position.x > window.x do self.angle = Math.PI - self.angle
         if self.position.y > window.y do self.angle = -self.angle
