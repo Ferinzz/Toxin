@@ -1,7 +1,7 @@
-## PhysicsServer2D Stress Test
+## RenderServer2D Stress Test
 
 # Goal
-Test the performance of the physics engine with a basic shape moving across the scene.
+Test the performance of the Render2DServer with a basic Texture2D moving across the scene.
 
 # Dependencies
 Godot Class details.
@@ -15,7 +15,7 @@ import "shared:GDWrapper/gdAPI"
 
 Entry, Class Exporter, etc
 import "shared:Toxin"
-[tToxint](https://github.com/Ferinzz/Toxin/Toxin)
+[Toxin](https://github.com/Ferinzz/Toxin/Toxin)
 
 Package imports are expected to be in Odin's shared folder.
 
@@ -25,13 +25,14 @@ Update value BULLET_COUNT in order to adjust the amount of objects rendered.
 
 Benchmarks were performed by running the following commands to export to a project called TopDown and run from Godot's exectuable.
 ```
-odin build stress-test/BulletShower -build-mode:dll -o:speed  -out:TopDown/bin/libgdexample.dll
+odin build stress-test/Render2D_Server -build-mode:dll -o:speed  -out:TopDown/bin/libgdexample.dll
 
 C:\\Godot\\Godot_v4.6-release.exe --path ./TopDown
 ```
 (Or whatever your Path call to Godot is)
 
-# Observations
-On a Intel a770 Intel 13700k BULLET_COUNT set to 17500 seems to be the limit for physics objects single threaded. Beyond this the diminishing returns are massive as going from 17500 to 18000 drops frames from 58 to 43; at 18500 the frame rate was 28.
+Frame times and average frame time will be output to terminal.
 
-Draw time is nearly negligible in comparison to the physics limit.
+# Observations
+100k textures at 150fps
+Using a single CanvasItem to draw and using the RenderServer2D directly has greater performance than individual Sprite2D by a significant margin. Although Sprite2D is convenient for prototyping in the Editor, avoid using it wherever possible.
