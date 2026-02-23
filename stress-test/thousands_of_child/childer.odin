@@ -24,13 +24,11 @@ THIS_CLASS_NAME :: struct {
     size: Toxin.Vector2,
 }
 
-frame_count::50000
-frame_times:[3000]f64
 windowSize:Toxin.Vector2i
-frame_current:int=0
 Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1150, 750}
+size:Toxin.Vector2={64,64}
 
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
@@ -86,30 +84,23 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     },
     //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
     //    context = runtime.default_context()
-    //    
-    //    //wind_obj:^Toxin.Object
-    //    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_Class.get_window, self.self, nil, &wind_obj)
-    //    //window:Toxin.Vector2
-    //    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
-    //    //fmt.println(window)
     //},
-    //_process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
-    //    context = runtime.default_context()
-    //    self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-    //    self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-//
-    //    Node2D_Class.set_position->m_call(self.self, {&self.position})
-    //    //is_centered:Toxin.Bool
-    //    //Texture_Class.is_centered->m_call(self.self, 0, &is_centered)
-    //    if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
-    //    if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
-    //},
+    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+        context = runtime.default_context()
+        self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+
+        Node2D_Class.set_position->m_call(self.self, {&self.position})
+        //is_centered:Toxin.Bool
+        //Texture_Class.is_centered->m_call(self.self, 0, &is_centered)
+        if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
+        if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
+    },
     //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
     //    //context = runtime.default_context()
     //    //fmt.println("yarrr")
     //},
 }
-size:Toxin.Vector2={64,64}
 
 
 //******************************\\

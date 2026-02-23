@@ -30,16 +30,16 @@ root_node_instance: ^GDW.Object
 root:^Toxin.Object
 
 //Using these class methods.
-texture: Classes.Texture2D
 Texture_Class: Classes.Sprite2D_MethodBind_List
-Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
-Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
+Node2D_Class: Classes.Node2D_MethodBind_List
 Viewport_Class: Classes.Viewport_MethodBind_List
-World2D_Class: Classes.World2D_MethodBind_List
 CanvasItem_Class: Classes.CanvasItem_MethodBind_List
-Texture2D_Class: Classes.Texture2D_MethodBind_List
 CanvasGroup_Class: Classes.CanvasGroup_MethodBind_List
+
+Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
+World2D_Class: Classes.World2D_MethodBind_List
+Texture2D_Class: Classes.Texture2D_MethodBind_List
 
 printonce:bool=true
 frame_count_amout::2000

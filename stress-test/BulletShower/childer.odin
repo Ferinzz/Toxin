@@ -21,10 +21,10 @@ OFFSET:         Toxin.Vector2 = {0,0}
 THIS_CLASS_NAME :: struct {
     shape: Toxin.RID,
     bullet_image: Classes.Texture2D, //cannot preload from Extension. Will need to use load to get the texture.
-    bullets: [BULLET_COUNT]bullet, //Max bullet count is known, so we can create a fixed array. Otherwise would be dynamic.
     space: Toxin.RID,
     area: Toxin.RID,
     window: Toxin.Vector2,
+    bullets: [BULLET_COUNT]bullet, //Max bullet count is known, so we can create a fixed array. Otherwise would be dynamic.
 }
 
 bullet:: struct {
@@ -39,6 +39,7 @@ Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1150, 750}
 size:Toxin.Vector2={64,64}
+texture: Classes.Texture2D
 
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
@@ -47,14 +48,14 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
 
         cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-        texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
+        //texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
         fmt.println("!!special stress test!!")
 }
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     self_register = self_reggy,
     init_level = .INITIALIZATION_SCENE,
-    GDClass_Index = .Sprite2D,
+    GDClass_Index = .Node2D,
     class_struct = THIS_CLASS_NAME,
     binder = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
@@ -67,8 +68,6 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 
     cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
     class.bullet_image = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
-
-    //class.bullets = make([dynamic]bullet, BULLET_COUNT)
 
     //fmt.println("ïnit")
     return class.self
@@ -113,7 +112,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 
             //In the example they had to use .new() to create a bullet variable because they made it as a class.
             //In our case it's just a struct. In both cases the data is stored in the array at the end.
-            //NO REASON to make it heap allocated. In fact I will write to the array position immediately since the memory is already allocated.
+            //NO REASON to make it heap allocated.
             //same with body.
             //:tableflip:
             //var bullet := Bullet.new()
@@ -160,8 +159,6 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     //},
     _physics_process = proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context()
-        //Acutal code starts here.
-        
         for &abullet in self.bullets {
             if abullet.position[2,0] < -16 {abullet.position[2,0] = OFFSET.x}
             else {abullet.position[2,0] -= f32(abullet.speed*p_args.delta^)}
@@ -178,12 +175,12 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     },
     _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
         context = runtime.default_context()
-        color: Toxin.Color = {1,1,1,1}
-        
+        color:= Toxin.Color{1,1,1,1}
         for &abullet in self.bullets{
             offset: Toxin.Vector2
             Texture2D_Class.get_size->m_call(self.bullet_image, r_ret = &offset)
-            CanvasItem_Class.draw_texture->m_call(self.self, {&self.bullet_image, &(Toxin.Vector2{abullet.position[2,0] - offset.x/2, abullet.position[2,1] - offset.y/2}), &color})
+            CanvasItem_Class.draw_texture->m_call(self.self, {&self.bullet_image, &(Toxin.Vector2{abullet.position[2,0] - offset.x/2,
+                                                                                                  abullet.position[2,1] - offset.y/2}), &color})
         }
     },
 }

@@ -41,16 +41,17 @@ Node_Class: Classes.Node_MethodBind_List
 Performance: ^Toxin.Object
 Performance_Class: Classes.Performance_MethodBind_List
 
-last_delta:Toxin.float
 printonce:bool=true
-time_desired:Classes.Performance_Monitor=.TIME_PROCESS
-
+sprite_count::20000
+frame_count_amout::1000
+frame_times:[frame_count_amout]f64
+frame_current:int=0
 
 MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
     perf:Toxin.float=0
     Node_Class.get_process_delta_time->m_call(root, r_ret = &perf)
-
+/*
     is_centered:Toxin.Bool=true
     for class in class_list {
         //fmt.println(class)
@@ -61,8 +62,9 @@ MainLoopFrameCallback :: proc "c" () {
         if class.position.y > class.window.y - class.size.y || class.position.y < class.size.y do class.angle = -class.angle
         //Texture_Class.is_centered->m_call(class.self, r_ret= &is_centered)
     }
+*/
     //fmt.println(is_centered)
-    if frame_current < 3000 {
+    if frame_current < frame_count_amout {
         frame_times[frame_current] = perf
         frame_current+=1
     } else if printonce {
@@ -72,7 +74,7 @@ MainLoopFrameCallback :: proc "c" () {
             total+=t
         }
         fmt.println(frame_times[:])
-        fmt.println(total/3000)
+        fmt.println(total/frame_count_amout)
     }
 }
 
@@ -115,7 +117,7 @@ MainLoopStartupCallback :: proc "c" () {
     if scene != nil {
         //You can add a node directly to the root.
         //Add the class to the root of the sceneTree
-        for i in 0..<frame_count {
+        for i in 0..<sprite_count {
             root_node_instance := gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
             GDW.addChild(root, &root_node_instance)
         }
