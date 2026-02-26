@@ -15,7 +15,10 @@ import "core:reflect"
 * Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
-Class_Container :: GDW.Class_Container
+Class_Container :: struct ($Class_Structure: typeid) {
+    self: ^Object, //Keep as first so it can be trivially cast.
+    using class: Class_Structure,
+}
 CC_Dummy:: struct{}
 
 
@@ -205,8 +208,8 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
     
     class_info: GDE.ClassCreationInfo4 = class_info
         class_info.icon_path = &stringraw
-        class_info.create_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDW.Bool) -> ^GDW.Object)create
-        class_info.free_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr))destroy
+        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
+        class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
         class_info.class_userdata = self
         class_info.get_virtual_func = get_v_table
 
