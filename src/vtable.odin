@@ -1,5 +1,7 @@
 package main
 
+import "core:flags"
+import "core:reflect"
 //import GDW "shared:GDWrapper"
 import "Toxin"
 import "base:runtime"
@@ -12,21 +14,25 @@ import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import Math "core:math"
 import rand "core:math/rand"
-
+import "base:builtin"
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
 //Godot will be passing us a pointer to this struct during callbacks.
 //Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
-    someProperty: Toxin.Int,
     speed: Toxin.Int,
     angle: Toxin.float,
     receive: Toxin.AABB,
     rarray: Toxin.Array,
     stringname: Toxin.StringName,
     godotstring: Toxin.gdstring,
+    someProperty: Toxin.Int,
     exampleInt: Toxin.Int,
+    nest: struct {
+        nested: Toxin.Int,
+        nested2: Toxin.Int,
+    },
     my_range_num: Toxin.Int,
     easing_float: Toxin.float,
     pos_float: Toxin.float,
@@ -59,6 +65,10 @@ munum::enum{
     a1,a2,a3,
     a7=7
 }
+nest :: struct {
+        nested: Toxin.Int,
+        nested2: Toxin.Int,
+    }
 
 frame_count::4000
 frame_times:[1000]f64
@@ -68,6 +78,7 @@ Window_MethodBind_List: Classes.Window_MethodBind_List
 
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
+    context = runtime.default_context()
     me:=(^Toxin.Class_Deets)(self)
     //fmt.println(typeid_of(type_of(THIS_CLASS_NAME_VTable)))
     //tabletype:: sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME))
@@ -78,7 +89,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     //fmt.println(tabletype3)
     //fmt.println(tabletype4)
     //fmt.println(typeid_of(tabletype))
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
+    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)
 
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
@@ -91,7 +102,6 @@ texture: Classes.Texture2D
 Texture_Class: Classes.Sprite2D_MethodBind_List
 Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
-//fdasfd: Classes.Texture2D
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     self_register = self_reggy,
@@ -113,9 +123,7 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     GDW.PackedInt32Array_M_List.Create0(&class.class.an_array, nil)
     size:Toxin.Int=0
     args:=[1]rawptr{&size}
-    //GDW.PackedInt32Array_M_List.size(&class.class.an_array, nil, &size, 0)
-    //resize(&class.class.an_array.proxy, raw_data(args[:]), nil, 1)
-    //
+
     GDW.Dictionary_M_List.Create0(&class.class.a_dictionary, nil)
     GDW.Dictionary_M_List.Create0(&class.class.dictionary_type, nil)
     GDW.Dictionary_M_List.Create0(&class.class.locale_dictionary, nil)
@@ -130,6 +138,7 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     
     return class.self
 }
+
 scene_tree_obj: ^GDW.Object
 root_node_instance: ^GDW.Object
 
@@ -292,6 +301,13 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 }
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1100, 750}
+
+field_vals:: proc(field: $T) -> (uintptr, typeid) {
+    offset:: offset_of(field)
+    field_type:: T
+    return offset, field_type
+}
+
 //******************************\\
 //***********Exports************\\
 //******************************\\
@@ -299,39 +315,42 @@ window:Toxin.Vector2 = {1100, 750}
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
+    //field_vals(THIS_CLASS_NAME{}.someProperty)
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     //Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, "arg1")
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
-    //as normal and call bindMethod and then bindProperty.
+    //as normal and call bindMethod and then bindProperty.+ offset_of(THIS_CLASS_NAME{}.nest.nested)
+
+    //Toxin.Export2(className, THIS_CLASS_NAME, offset_of(THIS_CLASS_NAME{}.someProperty), THIS_CLASS_NAME{}.someProperty)
     Toxin.Export(className, THIS_CLASS_NAME, "someProperty")
+    //Toxin.Export(className, THIS_CLASS_NAME, "receive")
     //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
-    Toxin.Export(className, THIS_CLASS_NAME, "receive")
-    Toxin.Export(className, THIS_CLASS_NAME, "rarray")
-    Toxin.Export(className, THIS_CLASS_NAME, "stringname")
-    Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
+    //Toxin.Export(className, THIS_CLASS_NAME, "rarray")
+    //Toxin.Export(className, THIS_CLASS_NAME, "stringname")
+    //Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
     
-    Toxin.Export(className, THIS_CLASS_NAME, "my_range_num")
-    Toxin.Export_Range(className, THIS_CLASS_NAME, "exampleInt", Toxin.Ranged_Num(Toxin.Int){0, 45, 1, {}})
+    //Toxin.Export(className, THIS_CLASS_NAME, "my_range_num")
+    //Toxin.Export_Range(className, THIS_CLASS_NAME, "exampleInt", Toxin.Ranged_Num(Toxin.Int){0, 45, 1, {}})
     //TODO: still kinda weird
-    Toxin.Export_Easing(className, THIS_CLASS_NAME, "easing_float", .attenuation)
-    Toxin.Export_Easing(className, THIS_CLASS_NAME, "pos_float", .positive_only)
-    Toxin.Export_Easing(className, THIS_CLASS_NAME, "exp_float", .none)
+    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "easing_float", .attenuation)
+    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "pos_float", .positive_only)
+    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "exp_float", .none)
     //GDW.Export_Array_Type(game, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
     //TODO: not working
-    Toxin.Export(className, THIS_CLASS_NAME, "an_array")
+    //Toxin.Export(className, THIS_CLASS_NAME, "an_array")
     //GDW.Export(game, "a_real_array")
-    Toxin.Export_Pointer(className, THIS_CLASS_NAME, "is_Pointer")
-    Toxin.Export_Color_No_Alpha(className, THIS_CLASS_NAME, "color_no_alpha")
+    //Toxin.Export_Pointer(className, THIS_CLASS_NAME, "is_Pointer")
+    //Toxin.Export_Color_No_Alpha(className, THIS_CLASS_NAME, "color_no_alpha")
     //Toxin.Export(className, THIS_CLASS_NAME, "color_no_alpha")
-    Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags")
-    Toxin.Export_Layers(className, THIS_CLASS_NAME, "layers", .LAYERS_2D_RENDER)
-    Toxin.Export_Path(className, THIS_CLASS_NAME, "path", .DIR)
-    Toxin.Export_Locale(className, THIS_CLASS_NAME, "locale")
-    Toxin.Export_Password(className, THIS_CLASS_NAME, "my_password", {.STORAGE, .EDITOR, .SECRET})
-    default_text: Toxin.Placeholder_Text = "This is my default text."
-    Toxin.Export_With_Placeholder_Text(className, THIS_CLASS_NAME, "string_with_default", default_text)
+    //Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags")
+    //Toxin.Export_Layers(className, THIS_CLASS_NAME, "layers", .LAYERS_2D_RENDER)
+    //Toxin.Export_Path(className, THIS_CLASS_NAME, "path", .DIR)
+    //Toxin.Export_Locale(className, THIS_CLASS_NAME, "locale")
+    //Toxin.Export_Password(className, THIS_CLASS_NAME, "my_password", {.STORAGE, .EDITOR, .SECRET})
+    //default_text: Toxin.Placeholder_Text = "This is my default text."
+    //Toxin.Export_With_Placeholder_Text(className, THIS_CLASS_NAME, "string_with_default", default_text)
 //
     //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.layers_2d_navigation)
     //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.PropertyUsageFlagsbits)
@@ -344,8 +363,10 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     //Toxin.Export_Dictionary_type(className, THIS_CLASS_NAME, "dictionary_type", {.INT, .STRING})
     //Toxin.Export(className, THIS_CLASS_NAME, "a_dictionary")
     //Toxin.Export_Dictionary_Localizable_String(className, THIS_CLASS_NAME, "locale_dictionary")
+    //Export_List:: sics.procedure_of(Toxin.Export2((^Toxin.StringName)(nil), (THIS_CLASS_NAME)(THIS_CLASS_NAME), offset_of(THIS_CLASS_NAME{}.someProperty), (THIS_CLASS_NAME{}.someProperty)))
 
 }
+
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
 somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: Toxin.Int) {
@@ -354,7 +375,6 @@ somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_N
     //node_sn:= GDW.StringConstruct("a_random_node")
     Toxin.Connect_to("a_random_signal", classStruct.self, classStruct.self, create_a_method)
 }
-
 
 /*
 * Proc called by Godot when a signal this class is connected to emits.
