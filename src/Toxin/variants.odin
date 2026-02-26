@@ -107,6 +107,60 @@ variant_union :: struct #raw_union {
     PackedVector4Array: PackedVector4Array, //Godot: create
 }
 
+
+/*
+* To use sics.type_variant_index_of
+*/
+variant_union_lookup :: union {
+    rawptr,
+
+	/*  atomic types */
+	Bool,
+	Int,
+	float,
+	gdstring,
+
+	/* math types */
+	Vector2,
+	Vector2i,
+	Rect2,
+	Rect2i,
+	Vector3,
+	Vector3i,
+	Transform2D,
+	Vector4,
+	Vector4i,
+	Plane,
+	Quaternion,
+	AABB,
+	Basis,
+	Transform3D,
+	Projection,
+
+	/* misc types */
+	Color,
+	StringName,
+	NodePath,
+	RID,
+	Object,
+	Callable,
+	Signal,
+	Dictionary,
+	Array,
+
+	/* typed arrays */
+	PackedByteArray,
+	PackedInt32Array,
+	PackedInt64Array,
+	PackedFloat32Array,
+	PackedFloat64Array,
+	PackedStringArray,
+	PackedVector2Array,
+	PackedVector3Array,
+    PackedColorArray,
+	PackedVector4Array,
+}
+
 copy_from_variant :: proc{
     BoolfromVariant,
     IntfromVariant,
