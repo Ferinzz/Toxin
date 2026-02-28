@@ -182,7 +182,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
     } else {
         argT1 :: sics.type_proc_parameter_type(P, 1)
         when argcount == 1 {
-        
+
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, #by_ptr p_args: struct{a: ^argT1}, r_ret: GDE.TypePtr){
             context = runtime.default_context()
 
@@ -210,7 +210,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 fmt.println("error big")
                 return
             }
-            
+
             gdTypeList:= [argcount]GDE.VariantType {typetoenum(argT1)}
             variantTypeCheck(gdTypeList[:], p_args, r_error)
 
@@ -231,7 +231,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
     }else {
         argT2 :: sics.type_proc_parameter_type(P, 2)
         when argcount == 2 {
-        
+
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, #by_ptr p_args: struct{a: argT1, b: argT2}, r_ret: GDE.TypePtr){
             context = runtime.default_context()
 
@@ -244,7 +244,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
         }
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    
+
             context = runtime.default_context()
             if p_argument_count < argcount {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
@@ -278,7 +278,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
     }else {
         argT3 :: sics.type_proc_parameter_type(P, 3)
         when argcount == 3 {
-        
+
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
             context = runtime.default_context()
 
@@ -292,7 +292,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
         }
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    
+
             context = runtime.default_context()
             if p_argument_count < argcount {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
@@ -324,7 +324,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
     }else {
         argT4 :: sics.type_proc_parameter_type(P, 4)
         when argcount == 4 {
-        
+
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
             context = runtime.default_context()
 
@@ -352,7 +352,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 fmt.println("error big")
                 return
             }
-            
+
             gdTypeList:= [argcount]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4)}
             variantTypeCheck(gdTypeList[:], p_args[:], r_error)
 
@@ -372,7 +372,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
     }else {
         argT5 :: sics.type_proc_parameter_type(P, 5)
         when argcount == 5 {
-        
+
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
             context = runtime.default_context()
 
@@ -387,7 +387,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
         }
         godotVariantCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
             p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-                
+
             context = runtime.default_context()
             if p_argument_count < argcount {
                 r_error.error = .CALL_ERROR_TOO_FEW_ARGUMENTS
@@ -401,7 +401,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 fmt.println("error big")
                 return
             }
-            
+
             gdTypeList:= [argcount]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4), typetoenum(argT5)}
             variantTypeCheck(gdTypeList[:], p_args[:], r_error)
 
@@ -421,7 +421,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
     }else {
         argT6 :: sics.type_proc_parameter_type(P, 6)
         when argcount == 6 {
-        
+
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
             context = runtime.default_context()
 
@@ -450,7 +450,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 fmt.println("error big")
                 return
             }
-            
+
             gdTypeList:= [argcount]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4), typetoenum(argT5),
                     typetoenum(argT6)}
             
@@ -473,7 +473,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
     }else {
         argT7 :: sics.type_proc_parameter_type(P, 7)
         when argcount == 7 {
-        
+
         godotPtrCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
             context = runtime.default_context()
 
@@ -502,7 +502,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 fmt.println("error big")
                 return
             }
-            
+
             gdTypeList:= [argcount]GDE.VariantType {typetoenum(argT1), typetoenum(argT2), typetoenum(argT3), typetoenum(argT4), typetoenum(argT5),
                     typetoenum(argT6), typetoenum(argT7)}
             variantTypeCheck(gdTypeList[:], p_args[:], r_error)
