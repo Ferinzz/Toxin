@@ -107,7 +107,10 @@ variant_union :: struct #raw_union {
     PackedVector4Array: PackedVector4Array, //Godot: create
 }
 
-
+variant_index :: proc($field: typeid) -> GDE.VariantType {
+    index :: GDE.VariantType(sics.type_variant_index_of(variant_union_lookup, sics.type_elem_type(field)))
+    return index
+}
 /*
 * To use sics.type_variant_index_of
 */
