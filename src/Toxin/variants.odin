@@ -107,7 +107,7 @@ variant_union :: struct #raw_union {
     PackedVector4Array: PackedVector4Array, //Godot: create
 }
 
-variant_index :: proc($field: typeid) -> GDE.VariantType {
+variant_index :: proc($field: typeid, loc:=#caller_location) -> GDE.VariantType {
     index :: GDE.VariantType(sics.type_variant_index_of(variant_union_lookup, sics.type_elem_type(field)))
     return index
 }
@@ -196,7 +196,14 @@ copy_from_variant :: proc{
     DictionaryfromVariant,
 
     ArrayfromVariant,
-    PackedArrayfromVariant,
+    Packedi32ArrayfromVariant,
+    Packedi64ArrayfromVariant,
+    Packedf32ArrayfromVariant,
+    Packedf64ArrayfromVariant,
+    PackedVec2ArrayfromVariant,
+    PackedVec3ArrayfromVariant,
+    PackedVec4ArrayfromVariant,
+    PackedColorArrayfromVariant,
 }
 
 //Use this if you need a quick return based on the typeID instead of passing it to a pointer.
@@ -559,19 +566,61 @@ ArrayfromVariant :: proc(P_dest: ^Array, p_source: ^Variant) -> type_from_varian
         return {}
     } else do return {.WRONG_TYPE, .ARRAY, p_source.VType}
 }
-PackedArrayfromVariant :: proc(P_dest: $T/^GDW.packedArray, p_source: ^Variant) -> type_from_variant_error {
-    #partial switch p_source.VType {
-        case .PACKED_BYTE_ARRAY, .PACKED_INT32_ARRAY, .PACKED_INT64_ARRAY, .PACKED_FLOAT32_ARRAY, .PACKED_FLOAT64_ARRAY, .PACKED_STRING_ARRAY, .PACKED_VECTOR2_ARRAY, .PACKED_VECTOR3_ARRAY, .PACKED_COLOR_ARRAY, .PACKED_VECTOR4_ARRAY :{
-            P_dest^ = (cast(^PackedArrayContainer(sics.type_elem_type(T)))(uintptr(p_source.data[0]))).array^
-            return {}
-        }
+Packedi32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i32), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_INT32_ARRAY {
+        P_dest^ = GDW.PackedInt32Array_M_List.get_ptr(p_source)^
+        return {}
     }
-    return {.WRONG_TYPE, .PACKED_BYTE_ARRAY, p_source.VType}
+    return {.WRONG_TYPE, .PACKED_INT32_ARRAY, p_source.VType}
 }
-PackedArrayfromVariantTest :: proc(P_dest: $T, p_source: ^Variant) -> type_from_variant_error {
-    ///^GDW.packedArray
-    P_dest.ptr = (cast(^PackedArrayContainer(PackedInt64Array))(uintptr(p_source.data[0]))).array
-    return {}
+Packedi64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i64), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_INT64_ARRAY {
+        P_dest^ = GDW.PackedInt64Array_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_INT64_ARRAY, p_source.VType}
+}
+Packedf32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(f32), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_FLOAT32_ARRAY {
+        P_dest^ = GDW.PackedFloat32Array_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_FLOAT32_ARRAY, p_source.VType}
+}
+Packedf64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(f64), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_FLOAT64_ARRAY {
+        P_dest^ = GDW.PackedFloat64Array_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_FLOAT64_ARRAY, p_source.VType}
+}
+PackedVec2ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector2), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_VECTOR2_ARRAY {
+        P_dest^ = GDW.PackedVector2Array_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_VECTOR2_ARRAY, p_source.VType}
+}
+PackedVec3ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector3), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_VECTOR3_ARRAY {
+        P_dest^ = GDW.PackedVector3Array_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_VECTOR3_ARRAY, p_source.VType}
+}
+PackedVec4ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector4), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_VECTOR4_ARRAY {
+        P_dest^ = GDW.PackedVector4Array_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_VECTOR4_ARRAY, p_source.VType}
+}
+PackedColorArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Color), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_COLOR_ARRAY {
+        P_dest^ = GDW.PackedColorArray_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_COLOR_ARRAY, p_source.VType}
 }
 
 packedHolder:: struct ($packed_type: typeid) {
