@@ -23,6 +23,7 @@ Vector4_Methods_list :: struct {
     Create1: proc "c" (p_base: ^Vector4,  #by_ptr p_args: struct{ from: ^Vector4, }),
     Create2: proc "c" (p_base: ^Vector4,  #by_ptr p_args: struct{ from: ^Vector4i, }),
     Create3: proc "c" (p_base: ^Vector4,  #by_ptr p_args: struct{ x: ^float, y: ^float, z: ^float, w: ^float, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Vector4,
     IndxSetter : proc "c" (p_base: ^Vector4, p_index: Int, p_value: ^float),
     IndxGetter : proc "c" (p_base: ^Vector4, p_index: Int, r_value: ^float),
     min_axis_index:  proc "c" (p_base: ^Vector4, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
@@ -84,6 +85,7 @@ init_Vector4_Methods :: proc(Vector4_method_store: ^Vector4_Methods_list) {
   Vector4_method_store.Create1 = cast(type_of(Vector4_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 1)
   Vector4_method_store.Create2 = cast(type_of(Vector4_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 2)
   Vector4_method_store.Create3 = cast(type_of(Vector4_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 3)
+    Vector4_method_store.get_ptr = cast(type_of(Vector4_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.VECTOR4)
   Vector4_method_store.IndxGetter = cast(type_of(Vector4_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR4)
   Vector4_method_store.IndxSetter = cast(type_of(Vector4_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR4)
   Vector4_method_store.min_axis_index = cast(type_of(Vector4_method_store.min_axis_index))Get_Builtin_Method(.VECTOR4, "min_axis_index", 3173160232)

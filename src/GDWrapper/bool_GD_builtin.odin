@@ -10,6 +10,7 @@ Bool_Methods_list :: struct {
     Create1: proc "c" (p_base: ^Bool,  #by_ptr p_args: struct{ from: ^Bool, }),
     Create2: proc "c" (p_base: ^Bool,  #by_ptr p_args: struct{ from: ^Int, }),
     Create3: proc "c" (p_base: ^Bool,  #by_ptr p_args: struct{ from: ^float, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Bool,
     VARIANT_OP_NOT_: proc "c" (p_left: ^Bool, p_right: rawptr = nil,  r_result: ^Bool),
     VARIANT_OP_EQUAL_Bool: proc "c" (p_left: ^Bool, p_right: ^Bool, r_result: ^Bool),
     VARIANT_OP_NOT_EQUAL_Bool: proc "c" (p_left: ^Bool, p_right: ^Bool, r_result: ^Bool),
@@ -35,6 +36,7 @@ init_Bool_Methods :: proc(Bool_method_store: ^Bool_Methods_list) {
   Bool_method_store.Create1 = cast(type_of(Bool_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.BOOL, 1)
   Bool_method_store.Create2 = cast(type_of(Bool_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.BOOL, 2)
   Bool_method_store.Create3 = cast(type_of(Bool_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.BOOL, 3)
+    Bool_method_store.get_ptr = cast(type_of(Bool_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.BOOL)
   Bool_method_store.VARIANT_OP_NOT_ = cast(type_of(Bool_method_store.VARIANT_OP_NOT_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NOT, .BOOL, .NIL)
   Bool_method_store.VARIANT_OP_EQUAL_Bool = cast(type_of(Bool_method_store.VARIANT_OP_EQUAL_Bool))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_EQUAL, .BOOL, .BOOL)
   Bool_method_store.VARIANT_OP_NOT_EQUAL_Bool = cast(type_of(Bool_method_store.VARIANT_OP_NOT_EQUAL_Bool))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NOT_EQUAL, .BOOL, .BOOL)

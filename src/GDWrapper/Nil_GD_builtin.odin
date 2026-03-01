@@ -8,6 +8,7 @@ import "core:math"
 Nil_Methods_list :: struct {
     Create0: proc "c" (p_base: ^rawptr = nil, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^rawptr = nil,  #by_ptr p_args: struct{ from: ^Variant, }),
+    get_ptr: proc "c" (base: ^Variant) -> rawptr,
     VARIANT_OP_NOT_: proc "c" (p_left: rawptr = nil, p_right: rawptr = nil,  r_result: ^Bool),
     VARIANT_OP_EQUAL_Bool: proc "c" (p_left: rawptr = nil, p_right: ^Bool, r_result: ^Bool),
     VARIANT_OP_NOT_EQUAL_Bool: proc "c" (p_left: rawptr = nil, p_right: ^Bool, r_result: ^Bool),
@@ -103,6 +104,7 @@ Nil_Methods_list :: struct {
 init_Nil_Methods :: proc(Nil_method_store: ^Nil_Methods_list) {
   Nil_method_store.Create0 = cast(type_of(Nil_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.NIL, 0)
   Nil_method_store.Create1 = cast(type_of(Nil_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.NIL, 1)
+    Nil_method_store.get_ptr = cast(type_of(Nil_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.NIL)
   Nil_method_store.VARIANT_OP_NOT_ = cast(type_of(Nil_method_store.VARIANT_OP_NOT_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NOT, .NIL, .NIL)
   Nil_method_store.VARIANT_OP_EQUAL_Bool = cast(type_of(Nil_method_store.VARIANT_OP_EQUAL_Bool))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_EQUAL, .NIL, .BOOL)
   Nil_method_store.VARIANT_OP_NOT_EQUAL_Bool = cast(type_of(Nil_method_store.VARIANT_OP_NOT_EQUAL_Bool))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NOT_EQUAL, .NIL, .BOOL)

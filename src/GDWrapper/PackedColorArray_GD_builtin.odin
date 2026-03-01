@@ -10,6 +10,7 @@ PackedColorArray_Methods_list :: struct {
     Create1: proc "c" (p_base: ^PackedColorArray,  #by_ptr p_args: struct{ from: ^PackedColorArray, }),
     Create2: proc "c" (p_base: ^PackedColorArray,  #by_ptr p_args: struct{ from: ^Array, }),
     Destroy: proc "c" (p_base: ^PackedColorArray),
+    get_ptr: proc "c" (base: ^Variant) -> ^PackedColorArray,
     IndxSetter : proc "c" (p_base: ^PackedColorArray, p_index: Int, p_value: ^Color),
     IndxGetter : proc "c" (p_base: ^PackedColorArray, p_index: Int, r_value: ^Color),
     get:  proc "c" (p_base: ^PackedColorArray, #by_ptr p_args: struct{ index: ^Int, }, r_return: ^Color, p_argument_count: i64 = 1),
@@ -47,6 +48,7 @@ init_PackedColorArray_Methods :: proc(PackedColorArray_method_store: ^PackedColo
   PackedColorArray_method_store.Create1 = cast(type_of(PackedColorArray_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 1)
   PackedColorArray_method_store.Create2 = cast(type_of(PackedColorArray_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 2)
   PackedColorArray_method_store.Destroy = cast(type_of(PackedColorArray_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_COLOR_ARRAY)
+    PackedColorArray_method_store.get_ptr = cast(type_of(PackedColorArray_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_COLOR_ARRAY)
   PackedColorArray_method_store.IndxGetter = cast(type_of(PackedColorArray_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_COLOR_ARRAY)
   PackedColorArray_method_store.IndxSetter = cast(type_of(PackedColorArray_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_COLOR_ARRAY)
   PackedColorArray_method_store.get = cast(type_of(PackedColorArray_method_store.get))Get_Builtin_Method(.PACKED_COLOR_ARRAY, "get", 2972831132)

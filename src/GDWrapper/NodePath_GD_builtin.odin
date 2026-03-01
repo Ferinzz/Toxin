@@ -10,6 +10,7 @@ NodePath_Methods_list :: struct {
     Create1: proc "c" (p_base: ^NodePath,  #by_ptr p_args: struct{ from: ^NodePath, }),
     Create2: proc "c" (p_base: ^NodePath,  #by_ptr p_args: struct{ from: ^gdstring, }),
     Destroy: proc "c" (p_base: ^NodePath),
+    get_ptr: proc "c" (base: ^Variant) -> ^NodePath,
     is_absolute:  proc "c" (p_base: ^NodePath, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
     get_name_count:  proc "c" (p_base: ^NodePath, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     get_name:  proc "c" (p_base: ^NodePath, #by_ptr p_args: struct{ idx: ^Int, }, r_return: ^StringName, p_argument_count: i64 = 1),
@@ -32,6 +33,7 @@ init_NodePath_Methods :: proc(NodePath_method_store: ^NodePath_Methods_list) {
   NodePath_method_store.Create1 = cast(type_of(NodePath_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.NODE_PATH, 1)
   NodePath_method_store.Create2 = cast(type_of(NodePath_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.NODE_PATH, 2)
   NodePath_method_store.Destroy = cast(type_of(NodePath_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.NODE_PATH)
+    NodePath_method_store.get_ptr = cast(type_of(NodePath_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.NODE_PATH)
   NodePath_method_store.is_absolute = cast(type_of(NodePath_method_store.is_absolute))Get_Builtin_Method(.NODE_PATH, "is_absolute", 3918633141)
   NodePath_method_store.get_name_count = cast(type_of(NodePath_method_store.get_name_count))Get_Builtin_Method(.NODE_PATH, "get_name_count", 3173160232)
   NodePath_method_store.get_name = cast(type_of(NodePath_method_store.get_name))Get_Builtin_Method(.NODE_PATH, "get_name", 2948586938)

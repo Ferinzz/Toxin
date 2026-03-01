@@ -19,6 +19,7 @@ Plane_Methods_list :: struct {
     Create4: proc "c" (p_base: ^Plane,  #by_ptr p_args: struct{ normal: ^Vector3, point: ^Vector3, }),
     Create5: proc "c" (p_base: ^Plane,  #by_ptr p_args: struct{ point1: ^Vector3, point2: ^Vector3, point3: ^Vector3, }),
     Create6: proc "c" (p_base: ^Plane,  #by_ptr p_args: struct{ a: ^float, b: ^float, c: ^float, d: ^float, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Plane,
     normalized:  proc "c" (p_base: ^Plane, p_args: rawptr = nil, r_return: ^Plane, p_argument_count: i64 = 0),
     get_center:  proc "c" (p_base: ^Plane, p_args: rawptr = nil, r_return: ^Vector3, p_argument_count: i64 = 0),
     is_equal_approx:  proc "c" (p_base: ^Plane, #by_ptr p_args: struct{ to_plane: ^Plane, }, r_return: ^Bool, p_argument_count: i64 = 1),
@@ -47,6 +48,7 @@ init_Plane_Methods :: proc(Plane_method_store: ^Plane_Methods_list) {
   Plane_method_store.Create4 = cast(type_of(Plane_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 4)
   Plane_method_store.Create5 = cast(type_of(Plane_method_store.Create5))gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 5)
   Plane_method_store.Create6 = cast(type_of(Plane_method_store.Create6))gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 6)
+    Plane_method_store.get_ptr = cast(type_of(Plane_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PLANE)
   Plane_method_store.normalized = cast(type_of(Plane_method_store.normalized))Get_Builtin_Method(.PLANE, "normalized", 1051796340)
   Plane_method_store.get_center = cast(type_of(Plane_method_store.get_center))Get_Builtin_Method(.PLANE, "get_center", 1776574132)
   Plane_method_store.is_equal_approx = cast(type_of(Plane_method_store.is_equal_approx))Get_Builtin_Method(.PLANE, "is_equal_approx", 1150170233)
