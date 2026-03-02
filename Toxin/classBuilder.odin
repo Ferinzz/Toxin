@@ -15,8 +15,12 @@ import "core:reflect"
 * Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
-Class_Container :: GDW.Class_Container
+
 CC_Dummy:: struct{}
+Class_Container :: struct ($Class_Structure: typeid) {
+    self: ^Object, //Keep as first so it can be trivially cast.
+    using class: Class_Structure,
+}
 
 
 /*
@@ -94,15 +98,15 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 //construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
 //This is different from Godot's ready, which is called sometime after this.
 //Returns a pointer to Class_Container(your_class_struct)
-Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Class_Container(GDW.CC_Dummy)) {
+Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^Class_Container(CC_Dummy)) {
     //context = runtime.default_context()
 
-    object: ^GDW.Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
+    object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast(^GDW.Class_Container(GDW.CC_Dummy))gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^GDW.Object))
-    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^GDW.Object))
+    self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^Object))
+    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^Object))
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
     self.self= object
 
@@ -112,7 +116,7 @@ Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Boo
 
     return self
 }
-Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Object) {
+Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
     class:= Create(p_class_user_data, p_notify_postinitialize)
     return class.self
@@ -205,8 +209,8 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
     
     class_info: GDE.ClassCreationInfo4 = class_info
         class_info.icon_path = &stringraw
-        class_info.create_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: GDW.Bool) -> ^GDW.Object)create
-        class_info.free_instance_func = cast(proc "c" (p_class_userdata: rawptr, p_instance: GDE.ClassInstancePtr))destroy
+        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
+        class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
         class_info.class_userdata = self
         class_info.get_virtual_func = get_v_table
 

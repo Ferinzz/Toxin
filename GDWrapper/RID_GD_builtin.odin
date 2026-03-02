@@ -8,6 +8,7 @@ import "core:math"
 RID_Methods_list :: struct {
     Create0: proc "c" (p_base: ^RID, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^RID,  #by_ptr p_args: struct{ from: ^RID, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^RID,
     is_valid:  proc "c" (p_base: ^RID, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
     get_id:  proc "c" (p_base: ^RID, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     VARIANT_OP_NOT_: proc "c" (p_left: ^RID, p_right: rawptr = nil,  r_result: ^Bool),
@@ -23,6 +24,7 @@ RID_Methods_list :: struct {
 init_RID_Methods :: proc(RID_method_store: ^RID_Methods_list) {
   RID_method_store.Create0 = cast(type_of(RID_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.RID, 0)
   RID_method_store.Create1 = cast(type_of(RID_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.RID, 1)
+    RID_method_store.get_ptr = cast(type_of(RID_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.RID)
   RID_method_store.is_valid = cast(type_of(RID_method_store.is_valid))Get_Builtin_Method(.RID, "is_valid", 3918633141)
   RID_method_store.get_id = cast(type_of(RID_method_store.get_id))Get_Builtin_Method(.RID, "get_id", 3173160232)
   RID_method_store.VARIANT_OP_NOT_ = cast(type_of(RID_method_store.VARIANT_OP_NOT_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NOT, .RID, .NIL)

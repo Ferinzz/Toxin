@@ -305,6 +305,7 @@ Color_Methods_list :: struct {
     Create4: proc "c" (p_base: ^Color,  #by_ptr p_args: struct{ r: ^float, g: ^float, b: ^float, a: ^float, }),
     Create5: proc "c" (p_base: ^Color,  #by_ptr p_args: struct{ code: ^gdstring, }),
     Create6: proc "c" (p_base: ^Color,  #by_ptr p_args: struct{ code: ^gdstring, alpha: ^float, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Color,
     IndxSetter : proc "c" (p_base: ^Color, p_index: Int, p_value: ^float),
     IndxGetter : proc "c" (p_base: ^Color, p_index: Int, r_value: ^float),
     to_argb32:  proc "c" (p_base: ^Color, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
@@ -358,6 +359,7 @@ init_Color_Methods :: proc(Color_method_store: ^Color_Methods_list) {
   Color_method_store.Create4 = cast(type_of(Color_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.COLOR, 4)
   Color_method_store.Create5 = cast(type_of(Color_method_store.Create5))gdAPI.Variant_Utils.GetPtrConstructor(.COLOR, 5)
   Color_method_store.Create6 = cast(type_of(Color_method_store.Create6))gdAPI.Variant_Utils.GetPtrConstructor(.COLOR, 6)
+    Color_method_store.get_ptr = cast(type_of(Color_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.COLOR)
   Color_method_store.IndxGetter = cast(type_of(Color_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.COLOR)
   Color_method_store.IndxSetter = cast(type_of(Color_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.COLOR)
   Color_method_store.to_argb32 = cast(type_of(Color_method_store.to_argb32))Get_Builtin_Method(.COLOR, "to_argb32", 3173160232)

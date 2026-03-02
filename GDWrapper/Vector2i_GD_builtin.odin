@@ -31,6 +31,7 @@ Vector2i_Methods_list :: struct {
     Create1: proc "c" (p_base: ^Vector2i,  #by_ptr p_args: struct{ from: ^Vector2i, }),
     Create2: proc "c" (p_base: ^Vector2i,  #by_ptr p_args: struct{ from: ^Vector2, }),
     Create3: proc "c" (p_base: ^Vector2i,  #by_ptr p_args: struct{ x: ^Int, y: ^Int, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Vector2i,
     IndxSetter : proc "c" (p_base: ^Vector2i, p_index: Int, p_value: ^Int),
     IndxGetter : proc "c" (p_base: ^Vector2i, p_index: Int, r_value: ^Int),
     aspect:  proc "c" (p_base: ^Vector2i, p_args: rawptr = nil, r_return: ^float, p_argument_count: i64 = 0),
@@ -77,6 +78,7 @@ init_Vector2i_Methods :: proc(Vector2i_method_store: ^Vector2i_Methods_list) {
   Vector2i_method_store.Create1 = cast(type_of(Vector2i_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 1)
   Vector2i_method_store.Create2 = cast(type_of(Vector2i_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 2)
   Vector2i_method_store.Create3 = cast(type_of(Vector2i_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 3)
+    Vector2i_method_store.get_ptr = cast(type_of(Vector2i_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.VECTOR2I)
   Vector2i_method_store.IndxGetter = cast(type_of(Vector2i_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR2I)
   Vector2i_method_store.IndxSetter = cast(type_of(Vector2i_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR2I)
   Vector2i_method_store.aspect = cast(type_of(Vector2i_method_store.aspect))Get_Builtin_Method(.VECTOR2I, "aspect", 466405837)

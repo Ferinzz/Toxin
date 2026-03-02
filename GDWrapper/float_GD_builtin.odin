@@ -11,6 +11,7 @@ float_Methods_list :: struct {
     Create2: proc "c" (p_base: ^float,  #by_ptr p_args: struct{ from: ^Int, }),
     Create3: proc "c" (p_base: ^float,  #by_ptr p_args: struct{ from: ^Bool, }),
     Create4: proc "c" (p_base: ^float,  #by_ptr p_args: struct{ from: ^gdstring, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^float,
     VARIANT_OP_NEGATE_: proc "c" (p_left: ^float, p_right: rawptr = nil,  r_result: ^float),
     VARIANT_OP_POSITIVE_: proc "c" (p_left: ^float, p_right: rawptr = nil,  r_result: ^float),
     VARIANT_OP_NOT_: proc "c" (p_left: ^float, p_right: rawptr = nil,  r_result: ^Bool),
@@ -70,6 +71,7 @@ init_float_Methods :: proc(float_method_store: ^float_Methods_list) {
   float_method_store.Create2 = cast(type_of(float_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.FLOAT, 2)
   float_method_store.Create3 = cast(type_of(float_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.FLOAT, 3)
   float_method_store.Create4 = cast(type_of(float_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.FLOAT, 4)
+    float_method_store.get_ptr = cast(type_of(float_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.FLOAT)
   float_method_store.VARIANT_OP_NEGATE_ = cast(type_of(float_method_store.VARIANT_OP_NEGATE_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NEGATE, .FLOAT, .NIL)
   float_method_store.VARIANT_OP_POSITIVE_ = cast(type_of(float_method_store.VARIANT_OP_POSITIVE_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_POSITIVE, .FLOAT, .NIL)
   float_method_store.VARIANT_OP_NOT_ = cast(type_of(float_method_store.VARIANT_OP_NOT_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NOT, .FLOAT, .NIL)

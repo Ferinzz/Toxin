@@ -10,13 +10,6 @@ import GDE "gdAPI/gdextension"
 /******************/
 /******************/
 
-CC_Dummy:: struct{}
-
-Class_Container :: struct ($Class_Structure: typeid) {
-    self: ^Object, //Keep as first so it can be trivially cast.
-    using class: Class_Structure,
-}
-
 //Check Godot's docs for more info about each variant type: https://docs.godotengine.org/en/stable/classes/index.html#variant-types
 //Set to 40Bytes if double is double precision
 //Data itself is in the _data union : https://github.com/godotengine/godot/blob/45fc515ae3574e9c1f9deacaa6960dec68a7d38b/core/variant/variant.h#L263

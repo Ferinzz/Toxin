@@ -10,6 +10,7 @@ StringName_Methods_list :: struct {
     Create1: proc "c" (p_base: ^StringName,  #by_ptr p_args: struct{ from: ^StringName, }),
     Create2: proc "c" (p_base: ^StringName,  #by_ptr p_args: struct{ from: ^gdstring, }),
     Destroy: proc "c" (p_base: ^StringName),
+    get_ptr: proc "c" (base: ^Variant) -> ^StringName,
     casecmp_to:  proc "c" (p_base: ^StringName, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
     nocasecmp_to:  proc "c" (p_base: ^StringName, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
     naturalcasecmp_to:  proc "c" (p_base: ^StringName, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
@@ -181,6 +182,7 @@ init_StringName_Methods :: proc(StringName_method_store: ^StringName_Methods_lis
   StringName_method_store.Create1 = cast(type_of(StringName_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.STRING_NAME, 1)
   StringName_method_store.Create2 = cast(type_of(StringName_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.STRING_NAME, 2)
   StringName_method_store.Destroy = cast(type_of(StringName_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.STRING_NAME)
+    StringName_method_store.get_ptr = cast(type_of(StringName_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.STRING_NAME)
   StringName_method_store.casecmp_to = cast(type_of(StringName_method_store.casecmp_to))Get_Builtin_Method(.STRING_NAME, "casecmp_to", 2920860731)
   StringName_method_store.nocasecmp_to = cast(type_of(StringName_method_store.nocasecmp_to))Get_Builtin_Method(.STRING_NAME, "nocasecmp_to", 2920860731)
   StringName_method_store.naturalcasecmp_to = cast(type_of(StringName_method_store.naturalcasecmp_to))Get_Builtin_Method(.STRING_NAME, "naturalcasecmp_to", 2920860731)
