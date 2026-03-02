@@ -10,6 +10,7 @@ Signal_Methods_list :: struct {
     Create1: proc "c" (p_base: ^Signal,  #by_ptr p_args: struct{ from: ^Signal, }),
     Create2: proc "c" (p_base: ^Signal,  #by_ptr p_args: struct{ object: ^Object, signal: ^StringName, }),
     Destroy: proc "c" (p_base: ^Signal),
+    get_ptr: proc "c" (base: ^Variant) -> ^Signal,
     is_null:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
     get_object:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ^Object, p_argument_count: i64 = 0),
     get_object_id:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
@@ -31,6 +32,7 @@ init_Signal_Methods :: proc(Signal_method_store: ^Signal_Methods_list) {
   Signal_method_store.Create1 = cast(type_of(Signal_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.SIGNAL, 1)
   Signal_method_store.Create2 = cast(type_of(Signal_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.SIGNAL, 2)
   Signal_method_store.Destroy = cast(type_of(Signal_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.SIGNAL)
+    Signal_method_store.get_ptr = cast(type_of(Signal_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.SIGNAL)
   Signal_method_store.is_null = cast(type_of(Signal_method_store.is_null))Get_Builtin_Method(.SIGNAL, "is_null", 3918633141)
   Signal_method_store.get_object = cast(type_of(Signal_method_store.get_object))Get_Builtin_Method(.SIGNAL, "get_object", 4008621732)
   Signal_method_store.get_object_id = cast(type_of(Signal_method_store.get_object_id))Get_Builtin_Method(.SIGNAL, "get_object_id", 3173160232)

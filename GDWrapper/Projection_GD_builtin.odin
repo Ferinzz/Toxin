@@ -23,6 +23,7 @@ Projection_Methods_list :: struct {
     Create1: proc "c" (p_base: ^Projection,  #by_ptr p_args: struct{ from: ^Projection, }),
     Create2: proc "c" (p_base: ^Projection,  #by_ptr p_args: struct{ from: ^Transform3D, }),
     Create3: proc "c" (p_base: ^Projection,  #by_ptr p_args: struct{ x_axis: ^Vector4, y_axis: ^Vector4, z_axis: ^Vector4, w_axis: ^Vector4, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Projection,
     IndxSetter : proc "c" (p_base: ^Projection, p_index: Int, p_value: ^Vector4),
     IndxGetter : proc "c" (p_base: ^Projection, p_index: Int, r_value: ^Vector4),
     create_depth_correction:  proc "c" (p_base: ^Projection, #by_ptr p_args: struct{ flip_y: ^Bool, }, r_return: ^Projection, p_argument_count: i64 = 1),
@@ -64,6 +65,7 @@ init_Projection_Methods :: proc(Projection_method_store: ^Projection_Methods_lis
   Projection_method_store.Create1 = cast(type_of(Projection_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 1)
   Projection_method_store.Create2 = cast(type_of(Projection_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 2)
   Projection_method_store.Create3 = cast(type_of(Projection_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 3)
+    Projection_method_store.get_ptr = cast(type_of(Projection_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PROJECTION)
   Projection_method_store.IndxGetter = cast(type_of(Projection_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PROJECTION)
   Projection_method_store.IndxSetter = cast(type_of(Projection_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PROJECTION)
   Projection_method_store.create_depth_correction = cast(type_of(Projection_method_store.create_depth_correction))Get_Builtin_Method(.PROJECTION, "create_depth_correction", 1228516048)

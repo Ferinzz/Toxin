@@ -10,6 +10,7 @@ PackedVector3Array_Methods_list :: struct {
     Create1: proc "c" (p_base: ^PackedVector3Array,  #by_ptr p_args: struct{ from: ^PackedVector3Array, }),
     Create2: proc "c" (p_base: ^PackedVector3Array,  #by_ptr p_args: struct{ from: ^Array, }),
     Destroy: proc "c" (p_base: ^PackedVector3Array),
+    get_ptr: proc "c" (base: ^Variant) -> ^PackedVector3Array,
     IndxSetter : proc "c" (p_base: ^PackedVector3Array, p_index: Int, p_value: ^Vector3),
     IndxGetter : proc "c" (p_base: ^PackedVector3Array, p_index: Int, r_value: ^Vector3),
     get:  proc "c" (p_base: ^PackedVector3Array, #by_ptr p_args: struct{ index: ^Int, }, r_return: ^Vector3, p_argument_count: i64 = 1),
@@ -48,6 +49,7 @@ init_PackedVector3Array_Methods :: proc(PackedVector3Array_method_store: ^Packed
   PackedVector3Array_method_store.Create1 = cast(type_of(PackedVector3Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 1)
   PackedVector3Array_method_store.Create2 = cast(type_of(PackedVector3Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 2)
   PackedVector3Array_method_store.Destroy = cast(type_of(PackedVector3Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_VECTOR3_ARRAY)
+    PackedVector3Array_method_store.get_ptr = cast(type_of(PackedVector3Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_VECTOR3_ARRAY)
   PackedVector3Array_method_store.IndxGetter = cast(type_of(PackedVector3Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_VECTOR3_ARRAY)
   PackedVector3Array_method_store.IndxSetter = cast(type_of(PackedVector3Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_VECTOR3_ARRAY)
   PackedVector3Array_method_store.get = cast(type_of(PackedVector3Array_method_store.get))Get_Builtin_Method(.PACKED_VECTOR3_ARRAY, "get", 1394941017)

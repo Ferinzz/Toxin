@@ -20,6 +20,7 @@ Array_Methods_list :: struct {
     Create11: proc "c" (p_base: ^Array,  #by_ptr p_args: struct{ from: ^PackedColorArray, }),
     Create12: proc "c" (p_base: ^Array,  #by_ptr p_args: struct{ from: ^PackedVector4Array, }),
     Destroy: proc "c" (p_base: ^Array),
+    get_ptr: proc "c" (base: ^Variant) -> ^Array,
     IndxSetter : proc "c" (p_base: ^Array, p_index: Int, p_value: ^Variant),
     IndxGetter : proc "c" (p_base: ^Array, p_index: Int, r_value: ^Variant),
     size:  proc "c" (p_base: ^Array, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
@@ -99,6 +100,7 @@ init_Array_Methods :: proc(Array_method_store: ^Array_Methods_list) {
   Array_method_store.Create11 = cast(type_of(Array_method_store.Create11))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 11)
   Array_method_store.Create12 = cast(type_of(Array_method_store.Create12))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 12)
   Array_method_store.Destroy = cast(type_of(Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.ARRAY)
+    Array_method_store.get_ptr = cast(type_of(Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.ARRAY)
   Array_method_store.IndxGetter = cast(type_of(Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.ARRAY)
   Array_method_store.IndxSetter = cast(type_of(Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.ARRAY)
   Array_method_store.size = cast(type_of(Array_method_store.size))Get_Builtin_Method(.ARRAY, "size", 3173160232)

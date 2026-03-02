@@ -11,6 +11,7 @@ gdstring_Methods_list :: struct {
     Create2: proc "c" (p_base: ^gdstring,  #by_ptr p_args: struct{ from: ^StringName, }),
     Create3: proc "c" (p_base: ^gdstring,  #by_ptr p_args: struct{ from: ^NodePath, }),
     Destroy: proc "c" (p_base: ^gdstring),
+    get_ptr: proc "c" (base: ^Variant) -> ^gdstring,
     IndxSetter : proc "c" (p_base: ^gdstring, p_index: Int, p_value: ^gdstring),
     IndxGetter : proc "c" (p_base: ^gdstring, p_index: Int, r_value: ^gdstring),
     casecmp_to:  proc "c" (p_base: ^gdstring, #by_ptr p_args: struct{ to: ^gdstring, }, r_return: ^Int, p_argument_count: i64 = 1),
@@ -191,6 +192,7 @@ init_gdstring_Methods :: proc(gdstring_method_store: ^gdstring_Methods_list) {
   gdstring_method_store.Create2 = cast(type_of(gdstring_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 2)
   gdstring_method_store.Create3 = cast(type_of(gdstring_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 3)
   gdstring_method_store.Destroy = cast(type_of(gdstring_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.STRING)
+    gdstring_method_store.get_ptr = cast(type_of(gdstring_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.STRING)
   gdstring_method_store.IndxGetter = cast(type_of(gdstring_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.STRING)
   gdstring_method_store.IndxSetter = cast(type_of(gdstring_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.STRING)
   gdstring_method_store.casecmp_to = cast(type_of(gdstring_method_store.casecmp_to))Get_Builtin_Method(.STRING, "casecmp_to", 2920860731)

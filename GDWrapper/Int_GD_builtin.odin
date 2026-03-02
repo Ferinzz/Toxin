@@ -11,6 +11,7 @@ Int_Methods_list :: struct {
     Create2: proc "c" (p_base: ^Int,  #by_ptr p_args: struct{ from: ^float, }),
     Create3: proc "c" (p_base: ^Int,  #by_ptr p_args: struct{ from: ^Bool, }),
     Create4: proc "c" (p_base: ^Int,  #by_ptr p_args: struct{ from: ^gdstring, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Int,
     VARIANT_OP_NEGATE_: proc "c" (p_left: ^Int, p_right: rawptr = nil,  r_result: ^Int),
     VARIANT_OP_POSITIVE_: proc "c" (p_left: ^Int, p_right: rawptr = nil,  r_result: ^Int),
     VARIANT_OP_BIT_NEGATE_: proc "c" (p_left: ^Int, p_right: rawptr = nil,  r_result: ^Int),
@@ -77,6 +78,7 @@ init_Int_Methods :: proc(Int_method_store: ^Int_Methods_list) {
   Int_method_store.Create2 = cast(type_of(Int_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.INT, 2)
   Int_method_store.Create3 = cast(type_of(Int_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.INT, 3)
   Int_method_store.Create4 = cast(type_of(Int_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.INT, 4)
+    Int_method_store.get_ptr = cast(type_of(Int_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.INT)
   Int_method_store.VARIANT_OP_NEGATE_ = cast(type_of(Int_method_store.VARIANT_OP_NEGATE_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_NEGATE, .INT, .NIL)
   Int_method_store.VARIANT_OP_POSITIVE_ = cast(type_of(Int_method_store.VARIANT_OP_POSITIVE_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_POSITIVE, .INT, .NIL)
   Int_method_store.VARIANT_OP_BIT_NEGATE_ = cast(type_of(Int_method_store.VARIANT_OP_BIT_NEGATE_))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.VARIANT_OP_BIT_NEGATE, .INT, .NIL)

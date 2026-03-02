@@ -153,6 +153,7 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     //name, index, variant_type
     Destructors:=`  %s_method_store.Destroy = cast(type_of(%[0]s_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.%v)`
     //name, variant_type
+    Ptr_Getter:= `    %s_method_store.get_ptr = cast(type_of(%[0]s_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.%v)`
     op_eval:= `  %s_method_store.%s_%s = cast(type_of(%[0]s_method_store.%[1]s_%[2]s))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.%[1]v, .%v, .%v)`
     //name, eval_enum, variant_type
     Meth_Getter:=`  %s_method_store.%[2]s = cast(type_of(%[0]s_method_store.%[2]s))Get_Builtin_Method(.%[1]v, "%[2]s", %v)`
@@ -172,6 +173,7 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     bltn_creator_proc:= `    Create%v: proc "c" (p_base: ^%s, ` //#by_ptr p_args: struct{{%s: %s,}),` //index of Creator, builtin_type, arg_name from_type
     bltn_destructor:= `    Destroy: GDE.PtrDestructor,` //Include if Destructor true
     bltn_destructor_proc:= `    Destroy: proc "c" (p_base: ^%s),` //Include if Destructor true; builtin_type
+    bltn_ptr_getter:= `    get_ptr: proc "c" (base: ^Variant) -> ^%s,` //returns the typePtr from the Variant. Mainly useful for Packed*Arrays because of how nasty their class is.
     keyed:= `    KeyedSetter : proc "c" (p_base: %[0]s, p_key: GDE.ConstTypePtr, p_value: GDE.ConstTypePtr),
     KeyedGetter : proc "c" (p_base: %[0]s, p_key: GDE.TypePtr, r_value: GDE.TypePtr),
     KeyedChecker : proc "c" (#by_ptr p_base: Variant, #by_ptr p_key: Variant) -> u32,` //if the type is keyed it will have these three methods
@@ -244,6 +246,15 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
         if BUILT_FROM.has_destructor {
             fmt.sbprintf(&init_builder, Destructors, BUILT_FROM.name, variant_type, newline =true)
             fmt.sbprintf(&struct_builder, bltn_destructor_proc, BUILT_FROM.name, newline =true)
+        }
+
+        fmt.sbprintf(&init_builder, Ptr_Getter, BUILT_FROM.name, variant_type, newline =true)
+        
+        if BUILT_FROM.name == "Nil" {
+            fmt.sbprintf(&struct_builder, bltn_ptr_getter, "rawptr", newline =true)
+        }
+        else {
+            fmt.sbprintf(&struct_builder, bltn_ptr_getter, BUILT_FROM.name, newline =true)
         }
 
         if BUILT_FROM.is_keyed == true {

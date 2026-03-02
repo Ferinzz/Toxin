@@ -19,6 +19,7 @@ Transform3D_Methods_list :: struct {
     Create2: proc "c" (p_base: ^Transform3D,  #by_ptr p_args: struct{ basis: ^Basis, origin: ^Vector3, }),
     Create3: proc "c" (p_base: ^Transform3D,  #by_ptr p_args: struct{ x_axis: ^Vector3, y_axis: ^Vector3, z_axis: ^Vector3, origin: ^Vector3, }),
     Create4: proc "c" (p_base: ^Transform3D,  #by_ptr p_args: struct{ from: ^Projection, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Transform3D,
     inverse:  proc "c" (p_base: ^Transform3D, p_args: rawptr = nil, r_return: ^Transform3D, p_argument_count: i64 = 0),
     affine_inverse:  proc "c" (p_base: ^Transform3D, p_args: rawptr = nil, r_return: ^Transform3D, p_argument_count: i64 = 0),
     orthonormalized:  proc "c" (p_base: ^Transform3D, p_args: rawptr = nil, r_return: ^Transform3D, p_argument_count: i64 = 0),
@@ -53,6 +54,7 @@ init_Transform3D_Methods :: proc(Transform3D_method_store: ^Transform3D_Methods_
   Transform3D_method_store.Create2 = cast(type_of(Transform3D_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 2)
   Transform3D_method_store.Create3 = cast(type_of(Transform3D_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 3)
   Transform3D_method_store.Create4 = cast(type_of(Transform3D_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 4)
+    Transform3D_method_store.get_ptr = cast(type_of(Transform3D_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.TRANSFORM3D)
   Transform3D_method_store.inverse = cast(type_of(Transform3D_method_store.inverse))Get_Builtin_Method(.TRANSFORM3D, "inverse", 3816817146)
   Transform3D_method_store.affine_inverse = cast(type_of(Transform3D_method_store.affine_inverse))Get_Builtin_Method(.TRANSFORM3D, "affine_inverse", 3816817146)
   Transform3D_method_store.orthonormalized = cast(type_of(Transform3D_method_store.orthonormalized))Get_Builtin_Method(.TRANSFORM3D, "orthonormalized", 3816817146)

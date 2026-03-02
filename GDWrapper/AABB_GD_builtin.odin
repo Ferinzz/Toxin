@@ -9,6 +9,7 @@ AABB_Methods_list :: struct {
     Create0: proc "c" (p_base: ^AABB, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^AABB,  #by_ptr p_args: struct{ from: ^AABB, }),
     Create2: proc "c" (p_base: ^AABB,  #by_ptr p_args: struct{ position: ^Vector3, size: ^Vector3, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^AABB,
     abs:  proc "c" (p_base: ^AABB, p_args: rawptr = nil, r_return: ^AABB, p_argument_count: i64 = 0),
     get_center:  proc "c" (p_base: ^AABB, p_args: rawptr = nil, r_return: ^Vector3, p_argument_count: i64 = 0),
     get_volume:  proc "c" (p_base: ^AABB, p_args: rawptr = nil, r_return: ^float, p_argument_count: i64 = 0),
@@ -45,6 +46,7 @@ init_AABB_Methods :: proc(AABB_method_store: ^AABB_Methods_list) {
   AABB_method_store.Create0 = cast(type_of(AABB_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.AABB, 0)
   AABB_method_store.Create1 = cast(type_of(AABB_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.AABB, 1)
   AABB_method_store.Create2 = cast(type_of(AABB_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.AABB, 2)
+    AABB_method_store.get_ptr = cast(type_of(AABB_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.AABB)
   AABB_method_store.abs = cast(type_of(AABB_method_store.abs))Get_Builtin_Method(.AABB, "abs", 1576868580)
   AABB_method_store.get_center = cast(type_of(AABB_method_store.get_center))Get_Builtin_Method(.AABB, "get_center", 1776574132)
   AABB_method_store.get_volume = cast(type_of(AABB_method_store.get_volume))Get_Builtin_Method(.AABB, "get_volume", 466405837)

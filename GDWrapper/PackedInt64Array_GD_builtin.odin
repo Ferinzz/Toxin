@@ -10,6 +10,7 @@ PackedInt64Array_Methods_list :: struct {
     Create1: proc "c" (p_base: ^PackedInt64Array,  #by_ptr p_args: struct{ from: ^PackedInt64Array, }),
     Create2: proc "c" (p_base: ^PackedInt64Array,  #by_ptr p_args: struct{ from: ^Array, }),
     Destroy: proc "c" (p_base: ^PackedInt64Array),
+    get_ptr: proc "c" (base: ^Variant) -> ^PackedInt64Array,
     IndxSetter : proc "c" (p_base: ^PackedInt64Array, p_index: Int, p_value: ^Int),
     IndxGetter : proc "c" (p_base: ^PackedInt64Array, p_index: Int, r_value: ^Int),
     get:  proc "c" (p_base: ^PackedInt64Array, #by_ptr p_args: struct{ index: ^Int, }, r_return: ^Int, p_argument_count: i64 = 1),
@@ -47,6 +48,7 @@ init_PackedInt64Array_Methods :: proc(PackedInt64Array_method_store: ^PackedInt6
   PackedInt64Array_method_store.Create1 = cast(type_of(PackedInt64Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 1)
   PackedInt64Array_method_store.Create2 = cast(type_of(PackedInt64Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 2)
   PackedInt64Array_method_store.Destroy = cast(type_of(PackedInt64Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_INT64_ARRAY)
+    PackedInt64Array_method_store.get_ptr = cast(type_of(PackedInt64Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_INT64_ARRAY)
   PackedInt64Array_method_store.IndxGetter = cast(type_of(PackedInt64Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_INT64_ARRAY)
   PackedInt64Array_method_store.IndxSetter = cast(type_of(PackedInt64Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_INT64_ARRAY)
   PackedInt64Array_method_store.get = cast(type_of(PackedInt64Array_method_store.get))Get_Builtin_Method(.PACKED_INT64_ARRAY, "get", 4103005248)

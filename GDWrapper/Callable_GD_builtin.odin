@@ -10,6 +10,7 @@ Callable_Methods_list :: struct {
     Create1: proc "c" (p_base: ^Callable,  #by_ptr p_args: struct{ from: ^Callable, }),
     Create2: proc "c" (p_base: ^Callable,  #by_ptr p_args: struct{ object: ^Object, method: ^StringName, }),
     Destroy: proc "c" (p_base: ^Callable),
+    get_ptr: proc "c" (base: ^Variant) -> ^Callable,
     create:  proc "c" (p_base: ^Callable, #by_ptr p_args: struct{ variant: ^Variant, method: ^StringName, }, r_return: ^Callable, p_argument_count: i64 = 2),
     callv:  proc "c" (p_base: ^Callable, #by_ptr p_args: struct{ arguments: ^Array, }, r_return: ^Variant, p_argument_count: i64 = 1),
     is_null:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
@@ -42,6 +43,7 @@ init_Callable_Methods :: proc(Callable_method_store: ^Callable_Methods_list) {
   Callable_method_store.Create1 = cast(type_of(Callable_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 1)
   Callable_method_store.Create2 = cast(type_of(Callable_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 2)
   Callable_method_store.Destroy = cast(type_of(Callable_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.CALLABLE)
+    Callable_method_store.get_ptr = cast(type_of(Callable_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.CALLABLE)
   Callable_method_store.create = cast(type_of(Callable_method_store.create))Get_Builtin_Method(.CALLABLE, "create", 1709381114)
   Callable_method_store.callv = cast(type_of(Callable_method_store.callv))Get_Builtin_Method(.CALLABLE, "callv", 413578926)
   Callable_method_store.is_null = cast(type_of(Callable_method_store.is_null))Get_Builtin_Method(.CALLABLE, "is_null", 3918633141)

@@ -230,9 +230,7 @@ PackedColorArray :: GDW.PackedColorArray
 PackedVector4Array :: GDW.PackedVector4Array
 
 PackedArrayContainer :: struct ($packed_type: typeid) {
-    //_: [2]u64,
-	ptr1: ^packed_type,
-	ptr2: ^packed_type,
+    _: [3]u64,
     array: ^packed_type,
 }
 

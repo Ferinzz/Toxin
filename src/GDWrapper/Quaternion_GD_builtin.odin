@@ -12,6 +12,7 @@ Quaternion_Methods_list :: struct {
     Create3: proc "c" (p_base: ^Quaternion,  #by_ptr p_args: struct{ axis: ^Vector3, angle: ^float, }),
     Create4: proc "c" (p_base: ^Quaternion,  #by_ptr p_args: struct{ arc_from: ^Vector3, arc_to: ^Vector3, }),
     Create5: proc "c" (p_base: ^Quaternion,  #by_ptr p_args: struct{ x: ^float, y: ^float, z: ^float, w: ^float, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Quaternion,
     IndxSetter : proc "c" (p_base: ^Quaternion, p_index: Int, p_value: ^float),
     IndxGetter : proc "c" (p_base: ^Quaternion, p_index: Int, r_value: ^float),
     length:  proc "c" (p_base: ^Quaternion, p_args: rawptr = nil, r_return: ^float, p_argument_count: i64 = 0),
@@ -56,6 +57,7 @@ init_Quaternion_Methods :: proc(Quaternion_method_store: ^Quaternion_Methods_lis
   Quaternion_method_store.Create3 = cast(type_of(Quaternion_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 3)
   Quaternion_method_store.Create4 = cast(type_of(Quaternion_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 4)
   Quaternion_method_store.Create5 = cast(type_of(Quaternion_method_store.Create5))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 5)
+    Quaternion_method_store.get_ptr = cast(type_of(Quaternion_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.QUATERNION)
   Quaternion_method_store.IndxGetter = cast(type_of(Quaternion_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.QUATERNION)
   Quaternion_method_store.IndxSetter = cast(type_of(Quaternion_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.QUATERNION)
   Quaternion_method_store.length = cast(type_of(Quaternion_method_store.length))Get_Builtin_Method(.QUATERNION, "length", 466405837)

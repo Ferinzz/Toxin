@@ -10,6 +10,7 @@ PackedFloat64Array_Methods_list :: struct {
     Create1: proc "c" (p_base: ^PackedFloat64Array,  #by_ptr p_args: struct{ from: ^PackedFloat64Array, }),
     Create2: proc "c" (p_base: ^PackedFloat64Array,  #by_ptr p_args: struct{ from: ^Array, }),
     Destroy: proc "c" (p_base: ^PackedFloat64Array),
+    get_ptr: proc "c" (base: ^Variant) -> ^PackedFloat64Array,
     IndxSetter : proc "c" (p_base: ^PackedFloat64Array, p_index: Int, p_value: ^float),
     IndxGetter : proc "c" (p_base: ^PackedFloat64Array, p_index: Int, r_value: ^float),
     get:  proc "c" (p_base: ^PackedFloat64Array, #by_ptr p_args: struct{ index: ^Int, }, r_return: ^float, p_argument_count: i64 = 1),
@@ -47,6 +48,7 @@ init_PackedFloat64Array_Methods :: proc(PackedFloat64Array_method_store: ^Packed
   PackedFloat64Array_method_store.Create1 = cast(type_of(PackedFloat64Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT64_ARRAY, 1)
   PackedFloat64Array_method_store.Create2 = cast(type_of(PackedFloat64Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT64_ARRAY, 2)
   PackedFloat64Array_method_store.Destroy = cast(type_of(PackedFloat64Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_FLOAT64_ARRAY)
+    PackedFloat64Array_method_store.get_ptr = cast(type_of(PackedFloat64Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_FLOAT64_ARRAY)
   PackedFloat64Array_method_store.IndxGetter = cast(type_of(PackedFloat64Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_FLOAT64_ARRAY)
   PackedFloat64Array_method_store.IndxSetter = cast(type_of(PackedFloat64Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_FLOAT64_ARRAY)
   PackedFloat64Array_method_store.get = cast(type_of(PackedFloat64Array_method_store.get))Get_Builtin_Method(.PACKED_FLOAT64_ARRAY, "get", 1401583798)

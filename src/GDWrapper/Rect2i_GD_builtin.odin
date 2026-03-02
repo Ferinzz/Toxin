@@ -11,6 +11,7 @@ Rect2i_Methods_list :: struct {
     Create2: proc "c" (p_base: ^Rect2i,  #by_ptr p_args: struct{ from: ^Rect2, }),
     Create3: proc "c" (p_base: ^Rect2i,  #by_ptr p_args: struct{ position: ^Vector2i, size: ^Vector2i, }),
     Create4: proc "c" (p_base: ^Rect2i,  #by_ptr p_args: struct{ x: ^Int, y: ^Int, width: ^Int, height: ^Int, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Rect2i,
     get_center:  proc "c" (p_base: ^Rect2i, p_args: rawptr = nil, r_return: ^Vector2i, p_argument_count: i64 = 0),
     get_area:  proc "c" (p_base: ^Rect2i, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     has_area:  proc "c" (p_base: ^Rect2i, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
@@ -36,6 +37,7 @@ init_Rect2i_Methods :: proc(Rect2i_method_store: ^Rect2i_Methods_list) {
   Rect2i_method_store.Create2 = cast(type_of(Rect2i_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.RECT2I, 2)
   Rect2i_method_store.Create3 = cast(type_of(Rect2i_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.RECT2I, 3)
   Rect2i_method_store.Create4 = cast(type_of(Rect2i_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.RECT2I, 4)
+    Rect2i_method_store.get_ptr = cast(type_of(Rect2i_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.RECT2I)
   Rect2i_method_store.get_center = cast(type_of(Rect2i_method_store.get_center))Get_Builtin_Method(.RECT2I, "get_center", 3444277866)
   Rect2i_method_store.get_area = cast(type_of(Rect2i_method_store.get_area))Get_Builtin_Method(.RECT2I, "get_area", 3173160232)
   Rect2i_method_store.has_area = cast(type_of(Rect2i_method_store.has_area))Get_Builtin_Method(.RECT2I, "has_area", 3918633141)

@@ -19,6 +19,7 @@ Basis_Methods_list :: struct {
     Create2: proc "c" (p_base: ^Basis,  #by_ptr p_args: struct{ from: ^Quaternion, }),
     Create3: proc "c" (p_base: ^Basis,  #by_ptr p_args: struct{ axis: ^Vector3, angle: ^float, }),
     Create4: proc "c" (p_base: ^Basis,  #by_ptr p_args: struct{ x_axis: ^Vector3, y_axis: ^Vector3, z_axis: ^Vector3, }),
+    get_ptr: proc "c" (base: ^Variant) -> ^Basis,
     IndxSetter : proc "c" (p_base: ^Basis, p_index: Int, p_value: ^Vector3),
     IndxGetter : proc "c" (p_base: ^Basis, p_index: Int, r_value: ^Vector3),
     inverse:  proc "c" (p_base: ^Basis, p_args: rawptr = nil, r_return: ^Basis, p_argument_count: i64 = 0),
@@ -59,6 +60,7 @@ init_Basis_Methods :: proc(Basis_method_store: ^Basis_Methods_list) {
   Basis_method_store.Create2 = cast(type_of(Basis_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 2)
   Basis_method_store.Create3 = cast(type_of(Basis_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 3)
   Basis_method_store.Create4 = cast(type_of(Basis_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 4)
+    Basis_method_store.get_ptr = cast(type_of(Basis_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.BASIS)
   Basis_method_store.IndxGetter = cast(type_of(Basis_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.BASIS)
   Basis_method_store.IndxSetter = cast(type_of(Basis_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.BASIS)
   Basis_method_store.inverse = cast(type_of(Basis_method_store.inverse))Get_Builtin_Method(.BASIS, "inverse", 594669093)
