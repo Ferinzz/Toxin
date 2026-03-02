@@ -42,8 +42,8 @@ THIS_CLASS_NAME :: struct {
     a_real_array: Toxin.Array,
     is_Pointer: rawptr,
     color_no_alpha: Toxin.Color,
-    //flags: GDE.PropertyUsageFlagsbits
-    //flags: GDE.layers_3d_physics,
+    //flags: GDE.PropertyUsageFlagsbits,
+    flags3d: Toxin.layers_3d_physics,
     flags: bit_set[0..=7; u8],
     layers: Toxin.layers_2d_render,
     path: Toxin.Path,
@@ -59,6 +59,7 @@ THIS_CLASS_NAME :: struct {
     dictionary_type: Toxin.Dictionary,
     a_dictionary: Toxin.Dictionary,
     locale_dictionary: Toxin.Dictionary,
+    int_as_enum: munum,
 }
 
 munum::enum{
@@ -131,8 +132,8 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 
     class.class.angle=rand.float64_range(0, Math.PI*2)
     class.class.speed=rand.int64_range(100, 600)
-    class.class.position.x = rand.float32_range(0,1100)
-    class.class.position.y = rand.float32_range(0,750)
+    //class.class.position.x = rand.float32_range(0,1100)
+    //class.class.position.y = rand.float32_range(0,750)
     window:Toxin.Vector2
     
     
@@ -286,13 +287,13 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
         delta:=Toxin.Vector2{f32(p_args.delta^),f32(p_args.delta^)}
         //self.class.position={Math.cos_f32(f32(self.class.angle)), Math.sin_f32(f32(self.class.angle))}
-        self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        set:=[?]rawptr{&self.class.position}
-        Node2D_Class.set_position->m_call(self.self, {&self.class.position}, nil)
-        last_delta = p_args.delta^
-        if self.position.x > window.x do self.angle = Math.PI - self.angle
-        if self.position.y > window.y do self.angle = -self.angle
+        //self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //set:=[?]rawptr{&self.class.position}
+        //Node2D_Class.set_position->m_call(self.self, {&self.class.position}, nil)
+        //last_delta = p_args.delta^
+        //if self.position.x > window.x do self.angle = Math.PI - self.angle
+        //if self.position.y > window.y do self.angle = -self.angle
     },
     //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
     //    //context = runtime.default_context()
@@ -317,63 +318,61 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
     //field_vals(THIS_CLASS_NAME{}.someProperty)
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    //Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, "arg1")
+    Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, somePublicFunction)
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.+ offset_of(THIS_CLASS_NAME{}.nest.nested)
-
-    //Toxin.Export2(className, THIS_CLASS_NAME, offset_of(THIS_CLASS_NAME{}.someProperty), THIS_CLASS_NAME{}.someProperty)
     Toxin.Export(className, THIS_CLASS_NAME, "someProperty")
     //Toxin.Export(className, THIS_CLASS_NAME, "receive")
-    //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
-    //Toxin.Export(className, THIS_CLASS_NAME, "rarray")
-    //Toxin.Export(className, THIS_CLASS_NAME, "stringname")
-    //Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
+    Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
+    Toxin.Export(className, THIS_CLASS_NAME, "rarray")
+    Toxin.Export(className, THIS_CLASS_NAME, "stringname")
+    Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
     
-    //Toxin.Export(className, THIS_CLASS_NAME, "my_range_num")
-    //Toxin.Export_Range(className, THIS_CLASS_NAME, "exampleInt", Toxin.Ranged_Num(Toxin.Int){0, 45, 1, {}})
+    Toxin.Export(className, THIS_CLASS_NAME, "my_range_num")
+    Toxin.Export_Range(className, THIS_CLASS_NAME, "exampleInt", Toxin.Ranged_Num(Toxin.Int){0, 45, 1, {}})
     //TODO: still kinda weird
-    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "easing_float", .attenuation)
-    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "pos_float", .positive_only)
-    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "exp_float", .none)
-    //GDW.Export_Array_Type(game, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
-    //TODO: not working
-    //Toxin.Export(className, THIS_CLASS_NAME, "an_array")
-    //GDW.Export(game, "a_real_array")
-    //Toxin.Export_Pointer(className, THIS_CLASS_NAME, "is_Pointer")
-    //Toxin.Export_Color_No_Alpha(className, THIS_CLASS_NAME, "color_no_alpha")
-    //Toxin.Export(className, THIS_CLASS_NAME, "color_no_alpha")
-    //Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags")
-    //Toxin.Export_Layers(className, THIS_CLASS_NAME, "layers", .LAYERS_2D_RENDER)
-    //Toxin.Export_Path(className, THIS_CLASS_NAME, "path", .DIR)
-    //Toxin.Export_Locale(className, THIS_CLASS_NAME, "locale")
-    //Toxin.Export_Password(className, THIS_CLASS_NAME, "my_password", {.STORAGE, .EDITOR, .SECRET})
-    //default_text: Toxin.Placeholder_Text = "This is my default text."
-    //Toxin.Export_With_Placeholder_Text(className, THIS_CLASS_NAME, "string_with_default", default_text)
+    Toxin.Export_Easing(className, THIS_CLASS_NAME, "easing_float", .attenuation)
+    Toxin.Export_Easing(className, THIS_CLASS_NAME, "pos_float", .positive_only)
+    Toxin.Export_Easing(className, THIS_CLASS_NAME, "exp_float", .none)
+    Toxin.Export_Array_Type(className, THIS_CLASS_NAME, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
+    Toxin.Export(className, THIS_CLASS_NAME, "an_array")
+    //Toxin.Export(className, THIS_CLASS_NAME, "a_real_array")
+    Toxin.Export_Pointer(className, THIS_CLASS_NAME, "is_Pointer")
+    Toxin.Export_Color_No_Alpha(className, THIS_CLASS_NAME, "color_no_alpha")
+    Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags")
+    Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags3d")
+    Toxin.Export_Int_As_Enum(className, THIS_CLASS_NAME, "int_as_enum")
+    Toxin.Export_Layers(className, THIS_CLASS_NAME, "layers", .LAYERS_2D_RENDER)
+    Toxin.Export_Path(className, THIS_CLASS_NAME, "path", .DIR)
+    Toxin.Export_Locale(className, THIS_CLASS_NAME, "locale")
+    Toxin.Export_Password(className, THIS_CLASS_NAME, "my_password", {.STORAGE, .EDITOR, .SECRET})
+    default_text: Toxin.Placeholder_Text = "This is my default text."
+    Toxin.Export_With_Placeholder_Text(className, THIS_CLASS_NAME, "string_with_default", default_text)
 //
-    //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.layers_2d_navigation)
-    //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.PropertyUsageFlagsbits)
-    //Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum", {"one", "two", "fdkasljw"})
-    //Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum2", {"one", "two", "fdkasljw"})
-    //Toxin.Export_Input_Name(className, THIS_CLASS_NAME, "input", {.show_builtin})
-    //Toxin.Export_Multiline(className, THIS_CLASS_NAME, "multiline")
-    //Toxin.Export_Node_Path_Types(className, THIS_CLASS_NAME,"valid_nodes", "Sprite2D")
-    //Toxin.Export_Object_ID(className, THIS_CLASS_NAME, "valid_objects", "")//, string(GDW.ClassName_Strings[.ButtonGroup]))
-    //Toxin.Export_Dictionary_type(className, THIS_CLASS_NAME, "dictionary_type", {.INT, .STRING})
-    //Toxin.Export(className, THIS_CLASS_NAME, "a_dictionary")
-    //Toxin.Export_Dictionary_Localizable_String(className, THIS_CLASS_NAME, "locale_dictionary")
-    //Export_List:: sics.procedure_of(Toxin.Export2((^Toxin.StringName)(nil), (THIS_CLASS_NAME)(THIS_CLASS_NAME), offset_of(THIS_CLASS_NAME{}.someProperty), (THIS_CLASS_NAME{}.someProperty)))
+    Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.layers_2d_navigation)
+    Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.PropertyUsageFlagsbits)
+    Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum", {"one", "two", "fdkasljw"})
+    Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum2", {"one", "two", "fdkasljw"})
+    Toxin.Export_Input_Name(className, THIS_CLASS_NAME, "input", {.show_builtin})
+    Toxin.Export_Multiline(className, THIS_CLASS_NAME, "multiline")
+    Toxin.Export_Node_Path_Types(className, THIS_CLASS_NAME,"valid_nodes", "Sprite2D")
+    Toxin.Export_Object_ID(className, THIS_CLASS_NAME, "valid_objects", "")//, string(GDW.ClassName_Strings[.ButtonGroup]))
+    Toxin.Export_Dictionary_type(className, THIS_CLASS_NAME, "dictionary_type", {.INT, .STRING})
+    Toxin.Export(className, THIS_CLASS_NAME, "a_dictionary")
+    Toxin.Export_Dictionary_Localizable_String(className, THIS_CLASS_NAME, "locale_dictionary")
 
 }
 
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
-somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: Toxin.Int) {
+somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int, arg2: ^Toxin.float) {
     context = runtime.default_context()
     //do stuff
-    //node_sn:= GDW.StringConstruct("a_random_node")
-    Toxin.Connect_to("a_random_signal", classStruct.self, classStruct.self, create_a_method)
+    fmt.println("I am called by Godot")
+    fmt.println("arg1: ", arg1^)
+    fmt.println("arg2: ", arg2^)
 }
 
 /*
