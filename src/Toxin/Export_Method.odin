@@ -36,7 +36,7 @@ bindMethod :: #force_inline proc(className: ^StringName, function: $T,
                         where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 8)
     {
     methodStringName: StringName
-    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), i64(len(call_info)))
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
     argcount:: sics.type_proc_parameter_count(T) - 1
 
     argNames:= Get_Proc_Names(function)
@@ -227,16 +227,17 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
         argT2 :: sics.type_proc_parameter_type(P, 2)
         when argcount == 2 {
 
-        godotPtrCallback :: proc "c" (method_userdata: P, p_instance: GDE.ClassInstancePtr, #by_ptr p_args: struct{a: argT1, b: argT2}, r_ret: GDE.TypePtr){
+        godotPtrCallback :: proc "c" (method_userdata: P, p_instance: GDE.ClassInstancePtr, #by_ptr p_args: struct{a: ^argT1, b: ^argT2}, r_ret: GDE.TypePtr){
             context = runtime.default_context()
+            a, b:= expand_values(p_args)
             when sics.type_proc_return_count(P) > 0 {
-                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, expand_values(p_args))
+                (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(argT0)p_instance, a^, b^)
             } else {
-                method_userdata(cast(argT0)p_instance, expand_values(p_args))
+                method_userdata(cast(argT0)p_instance, a^, b^)
             }
         }
         godotVariantCallback :: proc "c" (method_userdata: P, p_instance: GDE.ClassInstancePtr,
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+            #by_ptr p_args: struct{a: ^argT1, b: ^argT2}, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
 
             context = runtime.default_context()
             if p_argument_count < argcount {
@@ -256,13 +257,11 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
             variantTypeCheck(gdTypeList[:], p_args[:], r_error)
 
             when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, copy_from_variant_r(p_args[0], argT1),
-                            copy_from_variant_r(p_args[1], argT2))
+                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, copy_from_variant_r(p_args.a, argT1),
+                            copy_from_variant_r(p_args.b, argT2))
                 copy_to_variant(r_return, &result)
             } else {
-                a:=copy_from_variant_r(p_args[0], sics.type_elem_type(argT1))
-                b:=copy_from_variant_r(p_args[1], sics.type_elem_type(argT2))
-                method_userdata(cast(argT0)p_instance, &a, &b)
+                method_userdata(cast(argT0)p_instance, copy_from_variant_r(p_args.a, argT1), copy_from_variant_r(p_args.b, argT2))
             }
         }
     return cast(GDE.ClassMethodPtrCall)godotPtrCallback, cast(GDE.ClassMethodCall)godotVariantCallback
