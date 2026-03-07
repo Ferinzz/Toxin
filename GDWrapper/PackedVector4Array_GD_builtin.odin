@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -49,8 +49,8 @@ init_PackedVector4Array_Methods :: proc(PackedVector4Array_method_store: ^Packed
   PackedVector4Array_method_store.Create2 = cast(type_of(PackedVector4Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR4_ARRAY, 2)
   PackedVector4Array_method_store.Destroy = cast(type_of(PackedVector4Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_VECTOR4_ARRAY)
     PackedVector4Array_method_store.get_ptr = cast(type_of(PackedVector4Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_VECTOR4_ARRAY)
-  PackedVector4Array_method_store.IndxGetter = cast(type_of(PackedVector4Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_VECTOR4_ARRAY)
-  PackedVector4Array_method_store.IndxSetter = cast(type_of(PackedVector4Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_VECTOR4_ARRAY)
+  PackedVector4Array_method_store.IndxGetter = cast(type_of(PackedVector4Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_VECTOR4_ARRAY)
+  PackedVector4Array_method_store.IndxSetter = cast(type_of(PackedVector4Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_VECTOR4_ARRAY)
   PackedVector4Array_method_store.get = cast(type_of(PackedVector4Array_method_store.get))Get_Builtin_Method(.PACKED_VECTOR4_ARRAY, "get", 1227817084)
   PackedVector4Array_method_store.set = cast(type_of(PackedVector4Array_method_store.set))Get_Builtin_Method(.PACKED_VECTOR4_ARRAY, "set", 1350366223)
   PackedVector4Array_method_store.size = cast(type_of(PackedVector4Array_method_store.size))Get_Builtin_Method(.PACKED_VECTOR4_ARRAY, "size", 3173160232)

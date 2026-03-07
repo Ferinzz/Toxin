@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -193,8 +193,8 @@ init_gdstring_Methods :: proc(gdstring_method_store: ^gdstring_Methods_list) {
   gdstring_method_store.Create3 = cast(type_of(gdstring_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 3)
   gdstring_method_store.Destroy = cast(type_of(gdstring_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.STRING)
     gdstring_method_store.get_ptr = cast(type_of(gdstring_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.STRING)
-  gdstring_method_store.IndxGetter = cast(type_of(gdstring_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.STRING)
-  gdstring_method_store.IndxSetter = cast(type_of(gdstring_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.STRING)
+  gdstring_method_store.IndxGetter = cast(type_of(gdstring_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.STRING)
+  gdstring_method_store.IndxSetter = cast(type_of(gdstring_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.STRING)
   gdstring_method_store.casecmp_to = cast(type_of(gdstring_method_store.casecmp_to))Get_Builtin_Method(.STRING, "casecmp_to", 2920860731)
   gdstring_method_store.nocasecmp_to = cast(type_of(gdstring_method_store.nocasecmp_to))Get_Builtin_Method(.STRING, "nocasecmp_to", 2920860731)
   gdstring_method_store.naturalcasecmp_to = cast(type_of(gdstring_method_store.naturalcasecmp_to))Get_Builtin_Method(.STRING, "naturalcasecmp_to", 2920860731)

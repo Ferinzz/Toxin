@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -62,8 +62,8 @@ init_Transform2D_Methods :: proc(Transform2D_method_store: ^Transform2D_Methods_
   Transform2D_method_store.Create3 = cast(type_of(Transform2D_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 3)
   Transform2D_method_store.Create4 = cast(type_of(Transform2D_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 4)
     Transform2D_method_store.get_ptr = cast(type_of(Transform2D_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.TRANSFORM2D)
-  Transform2D_method_store.IndxGetter = cast(type_of(Transform2D_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.TRANSFORM2D)
-  Transform2D_method_store.IndxSetter = cast(type_of(Transform2D_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.TRANSFORM2D)
+  Transform2D_method_store.IndxGetter = cast(type_of(Transform2D_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.TRANSFORM2D)
+  Transform2D_method_store.IndxSetter = cast(type_of(Transform2D_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.TRANSFORM2D)
   Transform2D_method_store.inverse = cast(type_of(Transform2D_method_store.inverse))Get_Builtin_Method(.TRANSFORM2D, "inverse", 1420440541)
   Transform2D_method_store.affine_inverse = cast(type_of(Transform2D_method_store.affine_inverse))Get_Builtin_Method(.TRANSFORM2D, "affine_inverse", 1420440541)
   Transform2D_method_store.get_rotation = cast(type_of(Transform2D_method_store.get_rotation))Get_Builtin_Method(.TRANSFORM2D, "get_rotation", 466405837)

@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -61,8 +61,8 @@ init_Basis_Methods :: proc(Basis_method_store: ^Basis_Methods_list) {
   Basis_method_store.Create3 = cast(type_of(Basis_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 3)
   Basis_method_store.Create4 = cast(type_of(Basis_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 4)
     Basis_method_store.get_ptr = cast(type_of(Basis_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.BASIS)
-  Basis_method_store.IndxGetter = cast(type_of(Basis_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.BASIS)
-  Basis_method_store.IndxSetter = cast(type_of(Basis_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.BASIS)
+  Basis_method_store.IndxGetter = cast(type_of(Basis_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.BASIS)
+  Basis_method_store.IndxSetter = cast(type_of(Basis_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.BASIS)
   Basis_method_store.inverse = cast(type_of(Basis_method_store.inverse))Get_Builtin_Method(.BASIS, "inverse", 594669093)
   Basis_method_store.transposed = cast(type_of(Basis_method_store.transposed))Get_Builtin_Method(.BASIS, "transposed", 594669093)
   Basis_method_store.orthonormalized = cast(type_of(Basis_method_store.orthonormalized))Get_Builtin_Method(.BASIS, "orthonormalized", 594669093)

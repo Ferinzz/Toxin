@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -65,8 +65,8 @@ init_Dictionary_Methods :: proc(Dictionary_method_store: ^Dictionary_Methods_lis
   Dictionary_method_store.KeyedSetter = cast(type_of(Dictionary_method_store.KeyedSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
   Dictionary_method_store.KeyedGetter = cast(type_of(Dictionary_method_store.KeyedGetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
   Dictionary_method_store.KeyedChecker = cast(type_of(Dictionary_method_store.KeyedChecker))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
-  Dictionary_method_store.IndxGetter = cast(type_of(Dictionary_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.DICTIONARY)
-  Dictionary_method_store.IndxSetter = cast(type_of(Dictionary_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
+  Dictionary_method_store.IndxGetter = cast(type_of(Dictionary_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.DICTIONARY)
+  Dictionary_method_store.IndxSetter = cast(type_of(Dictionary_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.DICTIONARY)
   Dictionary_method_store.size = cast(type_of(Dictionary_method_store.size))Get_Builtin_Method(.DICTIONARY, "size", 3173160232)
   Dictionary_method_store.is_empty = cast(type_of(Dictionary_method_store.is_empty))Get_Builtin_Method(.DICTIONARY, "is_empty", 3918633141)
   Dictionary_method_store.clear = cast(type_of(Dictionary_method_store.clear))Get_Builtin_Method(.DICTIONARY, "clear", 3218959716)

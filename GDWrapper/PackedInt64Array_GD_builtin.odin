@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -49,8 +49,8 @@ init_PackedInt64Array_Methods :: proc(PackedInt64Array_method_store: ^PackedInt6
   PackedInt64Array_method_store.Create2 = cast(type_of(PackedInt64Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 2)
   PackedInt64Array_method_store.Destroy = cast(type_of(PackedInt64Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_INT64_ARRAY)
     PackedInt64Array_method_store.get_ptr = cast(type_of(PackedInt64Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_INT64_ARRAY)
-  PackedInt64Array_method_store.IndxGetter = cast(type_of(PackedInt64Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_INT64_ARRAY)
-  PackedInt64Array_method_store.IndxSetter = cast(type_of(PackedInt64Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_INT64_ARRAY)
+  PackedInt64Array_method_store.IndxGetter = cast(type_of(PackedInt64Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_INT64_ARRAY)
+  PackedInt64Array_method_store.IndxSetter = cast(type_of(PackedInt64Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_INT64_ARRAY)
   PackedInt64Array_method_store.get = cast(type_of(PackedInt64Array_method_store.get))Get_Builtin_Method(.PACKED_INT64_ARRAY, "get", 4103005248)
   PackedInt64Array_method_store.set = cast(type_of(PackedInt64Array_method_store.set))Get_Builtin_Method(.PACKED_INT64_ARRAY, "set", 3638975848)
   PackedInt64Array_method_store.size = cast(type_of(PackedInt64Array_method_store.size))Get_Builtin_Method(.PACKED_INT64_ARRAY, "size", 3173160232)
