@@ -367,12 +367,12 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
-somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int, arg2: ^Toxin.float) {
+somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: Toxin.Int, arg2: Toxin.float) {
     context = runtime.default_context()
     //do stuff
     fmt.println("I am called by Godot")
-    fmt.println("arg1: ", arg1^)
-    fmt.println("arg2: ", arg2^)
+    fmt.println("arg1: ", arg1)
+    fmt.println("arg2: ", arg2)
 }
 
 /*
