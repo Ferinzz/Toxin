@@ -19,8 +19,6 @@ loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
 //*************\\
 //**Threading**\\
 //*************\\
-    //Threading.WorkerThreadPoolGroupTask = cast(GDE.WorkerThreadPoolGroupTask)get_Interface_Address("")
-    //Threading.WorkerThreadPoolTask = cast(GDE.WorkerThreadPoolTask)get_Interface_Address("")
     /* GDE.Interface: WorkerThreadPool Utilities */
     Threading.WorkerThreadPoolAddNativeGroupTask = cast(GDE.InterfaceWorkerThreadPoolAddNativeGroupTask)get_Interface_Address("worker_thread_pool_add_native_group_task")
     Threading.WorkerThreadPoolAddNativeTask = cast(GDE.InterfaceWorkerThreadPoolAddNativeTask)get_Interface_Address("worker_thread_pool_add_native_task")

@@ -1008,8 +1008,13 @@ ScriptInstanceInfo3 :: struct {
 //**Threading**\\
 //*************\\
 
-WorkerThreadPoolGroupTask :: proc "c" (unspecified: rawptr, unspecified2: u32);
-WorkerThreadPoolTask :: proc "c" (unspecified: rawptr);
+/*
+* passed into the InterfaceWorkerThreadPoolAddNativeGroupTask and InterfaceWorkerThreadPoolAddNativeTask methods respectively.
+* p_usedata will be whatever you pass into the Interface methods.
+* index would be the index of whatever you're working on. Expecting that this is an array of values.
+*/
+WorkerThreadPoolGroupTask :: proc "c" (p_userdata: rawptr, index: u32);
+WorkerThreadPoolTask :: proc "c" (p_userdata: rawptr);
 
 
 InitializeCallback :: proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
@@ -2475,12 +2480,17 @@ InterfaceImagePtr :: proc "c" (p_instance: ObjectPtr) -> ^u8;
  * @param p_tasks The number of tasks needed in the group.
  * @param p_high_priority Whether or not this is a high priority task.
  * @param p_description A pointer to a String with the task description.
+ * from comment section. :facepalm:
+ * Anyway, in the minimal examples I saw, tasks are submitted with p_high_priority = false. At first I assumed this meant there was some kind of internal priority system or something like that…
+ * 
+ * However! What it really means is that with p_high_priority = false, my task could only run on 0.3 * hardware_cpus(8) = 2 threads! Honestly, it took me a while to figure this out.
+ * With p_high_priority = true, the CPU load spreads across all threads
  *
  * @return The task group ID.
  *
  * @see WorkerThreadPool::add_group_task()
  */
-InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, p_func : proc "c" (rawptr, u32), p_userdata: rawptr, p_elements: Int, p_tasks: int, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
+InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, p_func : WorkerThreadPoolGroupTask, p_userdata: rawptr, p_elements: Int, p_tasks: int, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
 
 /**
  * @name worker_thread_pool_add_native_task
@@ -2493,10 +2503,15 @@ InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, 
  * @param p_userdata A pointer to arbitrary data which will be passed to p_func.
  * @param p_high_priority Whether or not this is a high priority task.
  * @param p_description A pointer to a String with the task description.
+ * from comment section. :facepalm:
+ * Anyway, in the minimal examples I saw, tasks are submitted with p_high_priority = false. At first I assumed this meant there was some kind of internal priority system or something like that…
+ * 
+ * However! What it really means is that with p_high_priority = false, my task could only run on 0.3 * hardware_cpus(8) = 2 threads! Honestly, it took me a while to figure this out.
+ * With p_high_priority = true, the CPU load spreads across all threads
  *
  * @return The task ID.
  */
-InterfaceWorkerThreadPoolAddNativeTask :: proc "c" (p_instance: ObjectPtr, p_func : proc "c" (rawptr), p_userdata: rawptr, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
+InterfaceWorkerThreadPoolAddNativeTask :: proc "c" (p_instance: ObjectPtr, p_func : WorkerThreadPoolTask, p_userdata: rawptr, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
 
 /* INTERFACE: Packed Array */
 

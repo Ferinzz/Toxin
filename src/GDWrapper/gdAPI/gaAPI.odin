@@ -26,9 +26,6 @@ RegisterMainLoopCallbacks: GDE.InterfaceRegisterMainLoopCallbacks
 //*************\\
 
 Threading : struct {
-    WorkerThreadPoolGroupTask: GDE.WorkerThreadPoolGroupTask,
-    WorkerThreadPoolTask: GDE.WorkerThreadPoolTask,
-
     /* GDE.Interface: WorkerThreadPool Utilities */
     WorkerThreadPoolAddNativeGroupTask: GDE.InterfaceWorkerThreadPoolAddNativeGroupTask,
     WorkerThreadPoolAddNativeTask: GDE.InterfaceWorkerThreadPoolAddNativeTask,
@@ -260,6 +257,7 @@ ClassDB : struct {
     GetLibraryPath: GDE.InterfaceGetLibraryPath,
 }
 
+/* GDE.Interface: Plugin */
 Plugin : struct {
     EditorAddPlugin: GDE.InterfaceEditorAddPlugin,
     EditorRemovePlugin: GDE.InterfaceEditorRemovePlugin,

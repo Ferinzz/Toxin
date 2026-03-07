@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 

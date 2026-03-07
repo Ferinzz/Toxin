@@ -15,6 +15,7 @@ Library : GDE.ClassDB = nil
 Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
     gdAPI.loadAPI(p_get_proc_address)
     Init_Builtins()
+    Init_Variant_Converters()
 }
 
 

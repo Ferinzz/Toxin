@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -101,8 +101,8 @@ init_Array_Methods :: proc(Array_method_store: ^Array_Methods_list) {
   Array_method_store.Create12 = cast(type_of(Array_method_store.Create12))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 12)
   Array_method_store.Destroy = cast(type_of(Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.ARRAY)
     Array_method_store.get_ptr = cast(type_of(Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.ARRAY)
-  Array_method_store.IndxGetter = cast(type_of(Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.ARRAY)
-  Array_method_store.IndxSetter = cast(type_of(Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.ARRAY)
+  Array_method_store.IndxGetter = cast(type_of(Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.ARRAY)
+  Array_method_store.IndxSetter = cast(type_of(Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.ARRAY)
   Array_method_store.size = cast(type_of(Array_method_store.size))Get_Builtin_Method(.ARRAY, "size", 3173160232)
   Array_method_store.is_empty = cast(type_of(Array_method_store.is_empty))Get_Builtin_Method(.ARRAY, "is_empty", 3918633141)
   Array_method_store.clear = cast(type_of(Array_method_store.clear))Get_Builtin_Method(.ARRAY, "clear", 3218959716)
@@ -141,9 +141,9 @@ init_Array_Methods :: proc(Array_method_store: ^Array_Methods_list) {
   Array_method_store.duplicate_deep = cast(type_of(Array_method_store.duplicate_deep))Get_Builtin_Method(.ARRAY, "duplicate_deep", 1949240801)
   Array_method_store.slice = cast(type_of(Array_method_store.slice))Get_Builtin_Method(.ARRAY, "slice", 1393718243)
   Array_method_store.filter = cast(type_of(Array_method_store.filter))Get_Builtin_Method(.ARRAY, "filter", 4075186556)
-  Array_method_store.gdmap = cast(type_of(Array_method_store.gdmap))Get_Builtin_Method(.ARRAY, "gdmap", 4075186556)
+  Array_method_store.gdmap = cast(type_of(Array_method_store.gdmap))Get_Builtin_Method(.ARRAY, "map", 4075186556)
   Array_method_store.reduce = cast(type_of(Array_method_store.reduce))Get_Builtin_Method(.ARRAY, "reduce", 4272450342)
-  Array_method_store.gdany = cast(type_of(Array_method_store.gdany))Get_Builtin_Method(.ARRAY, "gdany", 4129521963)
+  Array_method_store.gdany = cast(type_of(Array_method_store.gdany))Get_Builtin_Method(.ARRAY, "any", 4129521963)
   Array_method_store.all = cast(type_of(Array_method_store.all))Get_Builtin_Method(.ARRAY, "all", 4129521963)
   Array_method_store.max = cast(type_of(Array_method_store.max))Get_Builtin_Method(.ARRAY, "max", 1460142086)
   Array_method_store.min = cast(type_of(Array_method_store.min))Get_Builtin_Method(.ARRAY, "min", 1460142086)

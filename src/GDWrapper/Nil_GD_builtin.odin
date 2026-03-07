@@ -1,14 +1,14 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
 Nil_Methods_list :: struct {
     Create0: proc "c" (p_base: ^rawptr = nil, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^rawptr = nil,  #by_ptr p_args: struct{ from: ^Variant, }),
-    get_ptr: proc "c" (base: ^Variant) -> rawptr,
+    get_ptr: proc "c" (base: ^Variant) -> ^rawptr,
     VARIANT_OP_NOT_: proc "c" (p_left: rawptr = nil, p_right: rawptr = nil,  r_result: ^Bool),
     VARIANT_OP_EQUAL_Bool: proc "c" (p_left: rawptr = nil, p_right: ^Bool, r_result: ^Bool),
     VARIANT_OP_NOT_EQUAL_Bool: proc "c" (p_left: rawptr = nil, p_right: ^Bool, r_result: ^Bool),

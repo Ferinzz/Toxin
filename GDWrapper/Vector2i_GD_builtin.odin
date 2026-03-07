@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -79,8 +79,8 @@ init_Vector2i_Methods :: proc(Vector2i_method_store: ^Vector2i_Methods_list) {
   Vector2i_method_store.Create2 = cast(type_of(Vector2i_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 2)
   Vector2i_method_store.Create3 = cast(type_of(Vector2i_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 3)
     Vector2i_method_store.get_ptr = cast(type_of(Vector2i_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.VECTOR2I)
-  Vector2i_method_store.IndxGetter = cast(type_of(Vector2i_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR2I)
-  Vector2i_method_store.IndxSetter = cast(type_of(Vector2i_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR2I)
+  Vector2i_method_store.IndxGetter = cast(type_of(Vector2i_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.VECTOR2I)
+  Vector2i_method_store.IndxSetter = cast(type_of(Vector2i_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.VECTOR2I)
   Vector2i_method_store.aspect = cast(type_of(Vector2i_method_store.aspect))Get_Builtin_Method(.VECTOR2I, "aspect", 466405837)
   Vector2i_method_store.max_axis_index = cast(type_of(Vector2i_method_store.max_axis_index))Get_Builtin_Method(.VECTOR2I, "max_axis_index", 3173160232)
   Vector2i_method_store.min_axis_index = cast(type_of(Vector2i_method_store.min_axis_index))Get_Builtin_Method(.VECTOR2I, "min_axis_index", 3173160232)

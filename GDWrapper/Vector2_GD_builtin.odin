@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -108,8 +108,8 @@ init_Vector2_Methods :: proc(Vector2_method_store: ^Vector2_Methods_list) {
   Vector2_method_store.Create2 = cast(type_of(Vector2_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 2)
   Vector2_method_store.Create3 = cast(type_of(Vector2_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 3)
     Vector2_method_store.get_ptr = cast(type_of(Vector2_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.VECTOR2)
-  Vector2_method_store.IndxGetter = cast(type_of(Vector2_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR2)
-  Vector2_method_store.IndxSetter = cast(type_of(Vector2_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR2)
+  Vector2_method_store.IndxGetter = cast(type_of(Vector2_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.VECTOR2)
+  Vector2_method_store.IndxSetter = cast(type_of(Vector2_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.VECTOR2)
   Vector2_method_store.angle = cast(type_of(Vector2_method_store.angle))Get_Builtin_Method(.VECTOR2, "angle", 466405837)
   Vector2_method_store.angle_to = cast(type_of(Vector2_method_store.angle_to))Get_Builtin_Method(.VECTOR2, "angle_to", 3819070308)
   Vector2_method_store.angle_to_point = cast(type_of(Vector2_method_store.angle_to_point))Get_Builtin_Method(.VECTOR2, "angle_to_point", 3819070308)

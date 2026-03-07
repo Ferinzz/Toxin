@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -360,8 +360,8 @@ init_Color_Methods :: proc(Color_method_store: ^Color_Methods_list) {
   Color_method_store.Create5 = cast(type_of(Color_method_store.Create5))gdAPI.Variant_Utils.GetPtrConstructor(.COLOR, 5)
   Color_method_store.Create6 = cast(type_of(Color_method_store.Create6))gdAPI.Variant_Utils.GetPtrConstructor(.COLOR, 6)
     Color_method_store.get_ptr = cast(type_of(Color_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.COLOR)
-  Color_method_store.IndxGetter = cast(type_of(Color_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.COLOR)
-  Color_method_store.IndxSetter = cast(type_of(Color_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.COLOR)
+  Color_method_store.IndxGetter = cast(type_of(Color_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.COLOR)
+  Color_method_store.IndxSetter = cast(type_of(Color_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.COLOR)
   Color_method_store.to_argb32 = cast(type_of(Color_method_store.to_argb32))Get_Builtin_Method(.COLOR, "to_argb32", 3173160232)
   Color_method_store.to_abgr32 = cast(type_of(Color_method_store.to_abgr32))Get_Builtin_Method(.COLOR, "to_abgr32", 3173160232)
   Color_method_store.to_rgba32 = cast(type_of(Color_method_store.to_rgba32))Get_Builtin_Method(.COLOR, "to_rgba32", 3173160232)
