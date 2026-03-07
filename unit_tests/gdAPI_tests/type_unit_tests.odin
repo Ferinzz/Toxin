@@ -107,7 +107,6 @@ verify_builtin_procs :: proc() {
     val_check(GDW.PackedVector3Array_M_List, expand_values(GDW.PackedVector3Array_M_List))
     val_check(GDW.PackedColorArray_M_List, expand_values(GDW.PackedColorArray_M_List))
     val_check(GDW.PackedVector4Array_M_List, expand_values(GDW.PackedVector4Array_M_List))
-    fmt.println(GDW.Dictionary_M_List)
 }
 
 val_check :: proc(source: any, values: ..any, loc:= #caller_location, struct_name:= #caller_expression(source)) {
