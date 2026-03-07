@@ -37,8 +37,8 @@ main :: proc() {
     
     header:=`package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -156,9 +156,9 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     Ptr_Getter:= `    %s_method_store.get_ptr = cast(type_of(%[0]s_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.%v)`
     op_eval:= `  %s_method_store.%s_%s = cast(type_of(%[0]s_method_store.%[1]s_%[2]s))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.%[1]v, .%v, .%v)`
     //name, eval_enum, variant_type
-    Meth_Getter:=`  %s_method_store.%[2]s = cast(type_of(%[0]s_method_store.%[2]s))Get_Builtin_Method(.%[1]v, "%[2]s", %v)`
-    Index_Getter:=`  %s_method_store.IndxGetter = cast(type_of(%[0]s_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.%[1]v)
-  %[0]s_method_store.IndxSetter = cast(type_of(%[0]s_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)`
+    Meth_Getter:=`  %s_method_store.%[2]s = cast(type_of(%[0]s_method_store.%[2]s))Get_Builtin_Method(.%[1]v, "%[3]s", %v)`
+    Index_Getter:=`  %s_method_store.IndxGetter = cast(type_of(%[0]s_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.%[1]v)
+  %[0]s_method_store.IndxSetter = cast(type_of(%[0]s_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.%[1]v)`
     Keyed_Getter:=`  %s_method_store.KeyedSetter = cast(type_of(%[0]s_method_store.KeyedSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)
   %[0]s_method_store.KeyedGetter = cast(type_of(%[0]s_method_store.KeyedGetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)
   %[0]s_method_store.KeyedChecker = cast(type_of(%[0]s_method_store.KeyedChecker))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)`
@@ -270,6 +270,7 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
 
         //setup Methods
         for &method, idx in BUILT_FROM.methods {
+            method_gdstring:= strings.clone(method.name, ctx)
             if method.name == "any" { 
                 delete(method.name)
                 method.name = "gdany"
@@ -279,8 +280,9 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
                 method.name = "gdmap"
             }
 
-            fmt.sbprintf(&init_builder, Meth_Getter, BUILT_FROM.name, variant_type, method.name, method.hash, newline =true)
+            fmt.sbprintf(&init_builder, Meth_Getter, BUILT_FROM.name, variant_type, method.name, method_gdstring, method.hash, newline =true)
             fmt.sbprintf(&struct_builder, bltn_method_proc, method.name, BUILT_FROM.name)
+            delete(method_gdstring)
             if len(method.arguments) == 0 {
                 fmt.sbprintf(&struct_builder, " p_args: rawptr = nil,", newline = false)
             }
