@@ -117,7 +117,9 @@ val_check :: proc(source: any, values: ..any, loc:= #caller_location, struct_nam
     gdAPI.Logging.PrintWarning(struct_name_c, procedure, file_path, int(loc.line), true)
     for val, idx in values {
         if (^rawptr)(val.data)^ == nil {
-            gdAPI.Logging.PrintError(fmt.caprint(val), procedure, file_path, loc.line, true)
+            value:=fmt.caprint(val)
+            gdAPI.Logging.PrintError(value, procedure, file_path, loc.line, true)
+            delete(value)
         }
     }
     delete(procedure)
@@ -134,7 +136,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
     GDW.Init_Wrapper(p_get_proc_address)
     verify_gdAPI()
     verify_builtin_procs()
-    //Init_Builtins()
+
     initialization.initialize = extensionInit
     initialization.deinitialize = extensionDeinit
     initialization.userdata     = nil
@@ -160,20 +162,6 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which should be considered Core to the rest of the system.
             */
-            //Initialize the Methods of Array types for later use.
-            /*GDW.init_array_types(&GDArray_Methods,
-            &PackedByteArray_Methods,
-            &PackedInt32Array_Methods,
-            &PackedInt64Array_Methods,
-            &PackedFloat32Array_Methods,
-            &PackedFloat64Array_Methods,
-            &PackedStringArray_Methods,
-            &PackedVector2Array_Methods,
-            &PackedVector3Array_Methods,
-            &PackedColorArray_Methods,
-            &PackedVector4Array_Methods,
-            &GDDictionary_Methods,)*/
-            
             return
         case .INITIALIZATION_SERVERS:
             /*
