@@ -93,6 +93,293 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     os.close(file)
     delete(file_path)
   }
+  //Create the init-all test file.
+  //@user: yes this could be better to loop through it only once. I just wrote it straight through.. Deal.
+  test_builder:strings.Builder
+  strings.builder_init(&test_builder)
+
+  File_Opening_Move:= `package GD_Classes_test_init
+
+import Classes "../GD_Classes"
+import "shared:GDWrapper/gdAPI"
+import GDE "shared:GDWrapper/gdAPI/gdextension"
+import GDW "shared:GDWrapper"
+import "base:runtime"
+import "core:fmt"
+import "core:strings"`
+
+  extension_entry:= `@export
+godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassDB, initialization: ^GDE.Initialization) {
+    //GDW.initGodotContext()
+    context = runtime.default_context()
+    fmt.println("running Classes init tests")
+    GDW.Library = p_library
+    GDW.Init_Wrapper(p_get_proc_address)
+    INIT_ALL_OF_THEM()
+    test_classes()
+
+    initialization.initialize = extensionInit
+    initialization.deinitialize = extensionDeinit
+    initialization.userdata     = nil
+    initialization.minimum_initialization_level = .INITIALIZATION_SCENE
+};`
+  val_checker:= `val_check :: proc(source: any, values: ..any, loc:= #caller_location, struct_name:= #caller_expression(source)) {
+    procedure := fmt.caprint(struct_name)
+    file_path:= strings.clone_to_cstring(loc.file_path)
+    //gdAPI.Logging.PrintWarning(struct_name_c, procedure, file_path, int(loc.line), true)
+    for val, idx in values {
+        MB_ptr, m_call:= expand_values((^struct{MB_ptr: rawptr, m_call: proc()})(val.data)^)
+        if MB_ptr == nil {
+          value:=fmt.caprint(val, "MethodBind failed")
+          gdAPI.Logging.PrintError(value, procedure, file_path, loc.line, true)
+          delete(value)
+        }
+
+        if m_call == nil {
+          value:=fmt.caprint(val, "m_call failed")
+          gdAPI.Logging.PrintError(value, procedure, file_path, loc.line, true)
+          delete(value)
+        }
+    }
+    delete(procedure)
+    delete(file_path)
+}`
+
+  fmt.sbprint(&test_builder, File_Opening_Move, "\n",extension_entry, "\n", val_checker)
+
+
+  classes_init_proc:= `//DO NOT DO THIS!!!!! iT TAKES 5 MINUTES TO COMPILE IN -O:SPEED
+//speed in debug mode is still pretty fast though.
+INIT_ALL_OF_THEM :: proc() {`
+fmt.sbprint(&test_builder, classes_init_proc)
+  MB_Holder_Init:= `  Classes.%s_Init_(&%[0]s_M_Holder)` //className
+  for classes in final {
+    fmt.sbprintf(&test_builder, MB_Holder_Init, classes.name, newline = true)
+  }
+  fmt.sbprint(&test_builder, `
+}
+`)
+  MB_List_Holder:= `  %s_M_Holder: Classes.%[0]s_MethodBind_List` //className
+  for classes in final {
+    fmt.sbprintf(&test_builder, MB_List_Holder, classes.name, newline = true)
+  }
+  test_proc_name:: `test_classes :: proc() {`
+  fmt.sbprint(&test_builder, test_proc_name)
+  check_call:= `  val_check(%s_M_Holder, expand_values(%[0]s_M_Holder))`
+  for classes in final {
+    fmt.sbprintf(&test_builder, check_call, classes.name, newline = true)
+  }
+  fmt.sbprint(&test_builder, `
+}
+`)
+  extension_init:= `extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel) {
+    context = runtime.default_context()
+    //fmt.println(Toxin.reg_list)
+    //There are multiple steps to the init process which Godot goes through.
+    //You may want to register or intitialize certain aspects of your extension at different times.
+    switch init_Level{
+        case .INITIALIZATION_CORE:
+            /*
+            * Register the different classes which should be considered Core to the rest of the system.
+            */
+            
+            return
+        case .INITIALIZATION_SERVERS:
+            /*
+            * Register the different classes which depend on core classes.
+            */
+            return
+        case .INITIALIZATION_SCENE:
+            /*
+            * Register the different classes which depend on servers classes.
+            */
+            //Need to register our MainLoop callbacks at some point.
+            return
+        //INITIALIZATION_EDITOR should only happen if running from the editor.
+        case .INITIALIZATION_EDITOR:
+            /*
+            * Register the different classes which should be used with the Editor.
+            */
+            return
+        //Prettys 
+        case .MAX_INITIALIZATION_LEVEL:
+            /*
+            * This should be impossible unless they add a new level of initialization at some point.
+            */
+            gdAPI.Logging.PrintWarningWithMessage("I am MAX level.", "Maximum leve", "", "", 123, true)
+            assert(true, "This should be impossible!!")
+        case :
+            assert(true, "This should be impossible!!")
+    };
+
+    return
+};;
+
+
+//This function will be called when the Godot program is closing.
+//It will be called once at each level of the deinit process.
+//deinit is in reverse order with INITIALIZATION_EDITOR first and INITIALIZATION_CORE last.
+extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLevel) {
+    context = runtime.default_context()
+
+    switch deinitLevel{
+        case .INITIALIZATION_CORE:
+            /*
+            * Free the different classes which should be considered Core to the rest of the system.
+            */
+            return
+        case .INITIALIZATION_SERVERS:
+            /*
+            * Free the different classes which depend on core classes.
+            */
+            return
+        case .INITIALIZATION_SCENE:
+            /*
+            * Free the different classes which depend on servers classes.
+            */
+            return
+        //INITIALIZATION_EDITOR should only happen if running from the editor.
+        case .INITIALIZATION_EDITOR:
+            /*
+            * Free the different classes which should be used with the Editor.
+            */
+            return
+        case .MAX_INITIALIZATION_LEVEL:
+            /*
+            * This should be impossible unless they add a new level of initialization at some point.
+            */
+            gdAPI.Logging.PrintWarningWithMessage("I am MAX level.", "Maximum leve", "", "", 123, true)
+            assert(true, "This should be impossible!!")
+            return
+        case :
+            assert(true, "This should not be impossible!!")
+    };
+};;`
+  fmt.sbprint(&test_builder, extension_init)
+
+  is_Classes_init_open:bool
+  gdextension_open: bool
+  project_open: bool
+  GDScript_open: bool
+  Classes_init_test: ^os.File
+  gdextension: ^os.File
+  project_file: ^os.File
+  GDScript_file: ^os.File
+  classes_create_err: os.Error
+
+  test_dir_err:= os.make_directory("Classes_init_test")
+  if test_dir_err != nil && test_dir_err != .Exist{
+    print_warning("could not create classes test folder.", test_dir_err)
+  } else {
+    Classes_init_test, classes_create_err = os.create("Classes_init_test/Classes_init_test.odin")
+    if classes_create_err == .Exist{
+      Classes_init_test, classes_create_err= os.open("Classes_init_test/Classes_init_test.odin",{.Write})
+      if classes_create_err == nil {
+        is_Classes_init_open = true
+      } else {print_warning("could not open or create classes test file. ", classes_create_err)}
+    }
+    else if classes_create_err != nil {
+      print_warning("could not create classes test file. ", classes_create_err)
+    } else {
+      is_Classes_init_open = true}
+    
+    gdextension, classes_create_err = os.create("Classes_init_test/Classes_test.gdextension")
+    if classes_create_err == .Exist{
+      gdextension, classes_create_err= os.open("Classes_init_test/Classes_test.gdextension",{.Write})
+      if classes_create_err == nil {
+        gdextension_open = true
+      } else {print_warning("could not open or create Classes_test.gdextension test file. ", classes_create_err)}
+    }
+    else if classes_create_err != nil {
+      print_warning("could not create Classes_test.gdextension test file. ", classes_create_err)
+    } else {
+      gdextension_open = true
+    }
+    
+    project_file, classes_create_err = os.create("Classes_init_test/project.godot")
+    if classes_create_err == .Exist{
+      project_file, classes_create_err= os.open("Classes_init_test/project.godot",{.Write})
+      if classes_create_err == nil {
+        project_open = true
+      } else {print_warning("could not open or create project.godot test file. ", classes_create_err)}
+    }
+    else if classes_create_err != nil {
+      print_warning("could not create project.godot test file. ", classes_create_err)
+    } else {
+      project_open = true}
+    
+    GDScript_file, classes_create_err = os.create("Classes_init_test/Classes_test.gd")
+    if classes_create_err == .Exist{
+      GDScript_file, classes_create_err= os.open("Classes_init_test/Classes_test.gd",{.Write})
+      if classes_create_err == nil {
+        GDScript_open = true
+      } else {print_warning("could not open or create project.godot test file. ", classes_create_err)}
+    }
+    else if classes_create_err != nil {
+      print_warning("could not create project.godot test file. ", classes_create_err)
+    } else {
+      GDScript_open = true}
+  }
+
+
+  if is_Classes_init_open == true {
+    wrote_count, classes_write_err:= os.write_string(Classes_init_test, strings.to_string(test_builder))
+    if classes_write_err != nil {
+      print_warning("could not save Classes_init_test.odin", classes_write_err)
+    }
+  }
+
+  gdextension_file:: `[configuration]
+
+entry_symbol = "godot_entry_init"
+compatibility_minimum = "4.5"
+
+[libraries]
+linux.debug = "Classes_init_test.so"
+windows.debug = "Classes_init_test.dll"
+windows.release = "Classes_init_test.dll" : "Content/Frameworks"
+macos.release = "Classes_init_test.dylib" : "Contents/Frameworks"
+macos.debug = "Classes_init_test.dylib" : "Contents/Frameworks"`
+  if gdextension_open == true {
+    wrote_count, gdextension_err:= os.write_string(gdextension, gdextension_file)
+    if gdextension_err != nil {
+      print_warning("could not save Classes_test.gdextension", gdextension_err)
+    }
+  }
+
+  godot_project_file:: `config_version=5`
+  if is_Classes_init_open == true {
+    wrote_count, project_err:= os.write_string(project_file, godot_project_file)
+    if project_err != nil {
+      print_warning("could not save project.godot", project_err)
+    }
+  }
+
+  GDScript_file_txt:: `extends SceneTree
+
+func _init():
+    var manager = Engine.get_singleton("GDExtensionManager")
+    if manager == null:
+        print("GDExtensionManager not available")
+        quit()
+        return
+
+    var path = "Classes_test.gdextension"
+
+    var err = manager.load_extension(path)
+    if err == OK:
+        print("Extension loaded")
+    else:
+        print("Failed to load extension: ", err)
+    
+    quit(0)`
+  if GDScript_open == true {
+    wrote_count, project_err:= os.write_string(GDScript_file, GDScript_file_txt)
+    if project_err != nil {
+      print_warning("could not save project.godot", project_err)
+    }
+  }
+
   fmt.println("Write Comleted")
 };
 
