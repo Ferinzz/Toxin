@@ -115,7 +115,33 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
     fmt.println("running Classes init tests")
     GDW.Library = p_library
     GDW.Init_Wrapper(p_get_proc_address)
+    MB_Struct :: struct {
+    Proc_Struct: struct{
+      using MB_ptr: ^GDW.MethodBind,
+      m_call: proc(),
+    },}
+
+    baseline_fail:= MB_Struct {
+        Proc_Struct= {
+            MB_ptr = nil,
+            m_call = nil
+        }
+    }
+    MB_ptr_succeed:GDW.MethodBind
+    m_call_succeed::proc(){}
+    baseline_succeed:= MB_Struct {
+        Proc_Struct= {
+            MB_ptr = &MB_ptr_succeed,
+            m_call = m_call_succeed,
+        }
+    }
+    gdAPI.Logging.PrintWarning("Testing Baseline which should fail. There should be 2 errors.", "","",37,true)
+    val_check(baseline_fail, expand_values(baseline_fail))
+    gdAPI.Logging.PrintWarning("Testing Baseline which should succeed", "","",39,true)
+    val_check(baseline_succeed, expand_values(baseline_succeed))
+    gdAPI.Logging.PrintWarning("Initializing all Class Methods", "","",41,true)
     INIT_ALL_OF_THEM()
+    gdAPI.Logging.PrintWarning("Testing all Class Methods", "","",43,true)
     test_classes()
 
     initialization.initialize = extensionInit
