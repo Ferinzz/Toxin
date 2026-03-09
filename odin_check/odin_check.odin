@@ -5,17 +5,11 @@ import "core:fmt"
 import "base:runtime"
 
 main :: proc() {
-    //curr_work_dir:: #directory
     curr_work_dir, err:= os.get_working_directory(context.allocator)
     unit_test_dir_s:= fmt.aprint(curr_work_dir, "\\unit_tests", sep="")
     stress_test_dir_s:= fmt.aprint(curr_work_dir, "\\stress-test", sep="")
-    //unit_test_dir_s:= "..\\unit_tests"
-    fmt.println(unit_test_dir_s)
-    //stress_test_dir_s:= curr_work_dir + "\\stress-test"
-    //stress_test_dir_s:= "..\\stress-test"
     odin_check_directory(unit_test_dir_s)
     odin_check_directory(stress_test_dir_s)
-    //os.close(curr_work_dir)
 }
 
 odin_check_directory:: proc(dir_s: string) {
