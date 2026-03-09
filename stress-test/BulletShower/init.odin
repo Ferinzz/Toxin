@@ -36,6 +36,7 @@ Node2D_Class: Classes.Node2D_MethodBind_List
 Viewport_Class: Classes.Viewport_MethodBind_List
 CanvasItem_Class: Classes.CanvasItem_MethodBind_List
 CanvasGroup_Class: Classes.CanvasGroup_MethodBind_List
+SceneTree_Class: Classes.SceneTree_MethodBind_List
 
 Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
 World2D_Class: Classes.World2D_MethodBind_List
@@ -61,6 +62,8 @@ MainLoopFrameCallback :: proc "c" () {
         }
         fmt.println(frame_times[:])
         fmt.println(total/frame_count_amout)
+        exit_code:Toxin.Int=0
+        SceneTree_Class.quit->m_call(scene_tree_obj, {&exit_code})
     }
 }
 
@@ -80,6 +83,7 @@ MainLoopStartupCallback :: proc "c" () {
     Classes.CanvasItem_Init_(&CanvasItem_Class)
     Classes.Texture2D_Init_(&Texture2D_Class)
     Classes.CanvasGroup_Init_(&CanvasGroup_Class)
+    Classes.SceneTree_Init_(&SceneTree_Class)
 
     //indx_ret: Variant
     //default_Array_class->GetIndex(0, &indx_ret)
