@@ -237,7 +237,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
             }
         }
         godotVariantCallback :: proc "c" (method_userdata: P, p_instance: GDE.ClassInstancePtr,
-            #by_ptr p_args: struct{a: ^argT1, b: ^argT2}, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+            p_args: [^]^Variant, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
 
             context = runtime.default_context()
             if p_argument_count < argcount {
@@ -257,11 +257,11 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
             variantTypeCheck(gdTypeList[:], p_args[:], r_error)
 
             when sics.type_proc_return_count(P) > 0 {
-                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, copy_from_variant_r(p_args.a, argT1),
-                            copy_from_variant_r(p_args.b, argT2))
+                result:sics.type_proc_return_type(P, 0)= func(cast(argT0)p_instance, copy_from_variant_r(p_args[0], argT1),
+                            copy_from_variant_r(p_args[1], argT2))
                 copy_to_variant(r_return, &result)
             } else {
-                method_userdata(cast(argT0)p_instance, copy_from_variant_r(p_args.a, argT1), copy_from_variant_r(p_args.b, argT2))
+                method_userdata(cast(argT0)p_instance, copy_from_variant_r(p_args[0], argT1), copy_from_variant_r(p_args[1], argT2))
             }
         }
     return cast(GDE.ClassMethodPtrCall)godotPtrCallback, cast(GDE.ClassMethodCall)godotVariantCallback
