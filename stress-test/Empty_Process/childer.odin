@@ -77,7 +77,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
         //Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
-        Node2D_Class.set_position->m_call(self.self, {&self.position})
+        Node2D_Class.set_position->m_call(self.self, {&self.class.position})
     },
     //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
     //    context = runtime.default_context()

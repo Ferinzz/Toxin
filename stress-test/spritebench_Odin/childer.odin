@@ -73,15 +73,15 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
         Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
-        Node2D_Class.set_position->m_call(self.self, {&self.position})
+        Node2D_Class.set_position->m_call(self.self, {&self.class.position})
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context();
         self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
         self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        Node2D_Class.set_position->m_call(self.self, {&self.position})
-        if self.position.x > self.window.x - self.size.x || self.position.x < self.size.x do self.angle = Math.PI - self.angle
-        if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
+        Node2D_Class.set_position->m_call(self.self, {&self.class.position})
+        if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
+        if self.class.position.y > self.class.window.y - self.class.size.y || self.class.position.y < self.class.size.y do self.class.angle = -self.class.angle
     },
 }
 
