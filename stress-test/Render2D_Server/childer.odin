@@ -66,7 +66,7 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
 
     cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-    class.bullet_image = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
+    class.class.bullet_image = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
 
     //class.bullets = make([dynamic]bullet, BULLET_COUNT)
 
@@ -86,7 +86,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
         CanvasItem_Class.queue_redraw->m_call(self.self)
-        Phys2D_Server.circle_shape_create->m_call(Toxin.PhysServer2dObj, r_ret = &self.shape)
+        Phys2D_Server.circle_shape_create->m_call(Toxin.PhysServer2dObj, r_ret = &self.class.shape)
         //shape = PhysicsServer2D.circle_shape_create()
 
         /*
@@ -96,7 +96,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         Node_Class.get_viewport->m_call(self.self, r_ret = &viewport)
 
         //Acutal code starts here.
-        for &abullet in self.bullets {
+        for &abullet in self.class.bullets {
 
             //In the example they had to use .new() to create a bullet variable because they made it as a class.
             //In our case it's just a struct. In both cases the data is stored in the array at the end.
@@ -124,7 +124,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         context = runtime.default_context()
         //Acutal code starts here.
         
-        for &abullet in self.bullets {
+        for &abullet in self.class.bullets {
             if abullet.position[2,0] < -16 {abullet.position[2,0] = OFFSET.x}
             else {abullet.position[2,0] -= f32(abullet.speed*p_args.delta^)}
         }
@@ -137,10 +137,10 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         context = runtime.default_context()
         color: Toxin.Color = {1,1,1,1}
         
-        for &abullet in self.bullets{
+        for &abullet in self.class.bullets{
             offset: Toxin.Vector2
-            Texture2D_Class.get_size->m_call(self.bullet_image, r_ret = &offset)
-            CanvasItem_Class.draw_texture->m_call(self.self, {&self.bullet_image, &(Toxin.Vector2{abullet.position[2,0] - offset.x/2, abullet.position[2,1] - offset.y/2}), &color})
+            Texture2D_Class.get_size->m_call(self.class.bullet_image, r_ret = &offset)
+            CanvasItem_Class.draw_texture->m_call(self.self, {&self.class.bullet_image, &(Toxin.Vector2{abullet.position[2,0] - offset.x/2, abullet.position[2,1] - offset.y/2}), &color})
         }
     },
 }
