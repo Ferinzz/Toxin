@@ -17,7 +17,7 @@ import "core:reflect"
 */
 Class_Container :: struct ($Class_Structure: typeid) {
     self: ^Object, //Keep as first so it can be trivially cast.
-    class: Class_Structure,
+    using class: Class_Structure,
 }
 CC_Dummy:: struct{}
 
