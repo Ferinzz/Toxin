@@ -100,7 +100,7 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 
   File_Opening_Move:= `package GD_Classes_test_init
 
-import Classes "../GD_Classes"
+import Classes "shared:GD_Classes"
 import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 import GDW "shared:GDWrapper"
