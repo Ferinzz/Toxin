@@ -10,6 +10,8 @@ main :: proc() {
     stress_test_dir_s:= fmt.aprint(curr_work_dir, "\\stress-test", sep="")
     odin_check_directory(unit_test_dir_s)
     odin_check_directory(stress_test_dir_s)
+    delete(unit_test_dir_s)
+    delete(stress_test_dir_s)
 }
 
 odin_check_directory:: proc(dir_s: string) {
@@ -32,6 +34,9 @@ odin_check_directory:: proc(dir_s: string) {
         descriptor:= info.name
         run_proc(process_desc, descriptor)}
     }
+	if path, err := os.read_directory_iterator_error(&test_dir); err != nil {
+		fmt.eprintfln("read directory failed at %s: %s", path, err)
+	}
     os.read_directory_iterator_destroy(&test_dir)
     os.close(unit_test_dir)
 }
@@ -45,9 +50,9 @@ run_proc:: proc(process_desc: os.Process_Desc, desc: string) {
     fmt.println("state:", state)
     fmt.println("stdout", string(stdout))
     if len(stderr) == 0 {
-        fmt.println("no errors on file:", desc)
+        fmt.println("no errors on build:", desc)
     } else {
-        fmt.println("errors on file: ", desc, "\n", string(stderr))
+        fmt.println("errors on build: ", desc, "\n", string(stderr))
     }
     delete(stderr)
     delete(stdout)
