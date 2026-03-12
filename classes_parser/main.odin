@@ -624,7 +624,11 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
             if variant_type != .NIL{
               temp:=args.type
               concat_err: runtime.Allocator_Error
-              args.type, concat_err = strings.concatenate({"GDW.", args.type}, ctx)
+              if variant_type == .OBJECT {
+                args.type, concat_err = strings.concatenate({"^GDW.", args.type}, ctx)
+              } else {
+                args.type, concat_err = strings.concatenate({"GDW.", args.type}, ctx)
+              }
               //assert(concat_err==nil, args.type)
               //delete(temp)
               strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_args, args.name, args.type, newline =false))
