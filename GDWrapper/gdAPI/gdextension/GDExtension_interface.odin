@@ -384,7 +384,7 @@ ClassPropertyGetRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: Cons
 ClassValidateProperty 		:: proc "c" (p_instance: ClassInstancePtr, p_property: ^PropertyInfo) -> b8
 ClassNotification 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32); // Deprecated. Use ClassNotification2 instead.
 ClassNotification2 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32,  p_reversed: b8);
-ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: b8, p_out: StringPtr);
+ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: ^b8, p_out: StringPtr);
 ClassReference 				:: proc "c" (p_instance: ClassInstancePtr);
 ClassUnreference 			:: proc "c" (p_instance: ClassInstancePtr);
 ClassCallVirtual 			:: proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtr ,  r_ret: TypePtr);
