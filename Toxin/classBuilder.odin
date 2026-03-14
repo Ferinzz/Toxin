@@ -40,13 +40,17 @@ Class_Deets :: struct {
     using registerer: Registerer, //Keep as first value in order to trivially cast it.
     create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object), //Cast to the Object class that your class extends.
     destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr),
-    class_struct: typeid,
-    init_level: InitializationLevel,
-    GDClass_Index: GDW.ClassName_Index,
+    using required: required_deets,
     vtable: rawptr,
     GDClass_StringName: ^StringName,
     SN : StringName,
     binder: proc(className: ^StringName),
+}
+
+required_deets:: struct #all_or_none{
+    class_struct: typeid,
+    init_level: InitializationLevel,
+    GDClass_Index: GDW.ClassName_Index,
 }
 
 InitializationLevel :: enum {
@@ -207,12 +211,12 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
     
     class_info: GDE.ClassCreationInfo4 = class_info
-        class_info.icon_path = &stringraw
-        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
-        class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
-        class_info.class_userdata = self
-        class_info.get_virtual_func = get_v_table
-
+    class_info.icon_path = &stringraw
+    class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
+    class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
+    class_info.class_userdata = self
+    class_info.get_virtual_func = get_v_table
+    //class_info.to_string_func(nil, &r_bool, &pout)
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct(&self.SN, type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name)
 
