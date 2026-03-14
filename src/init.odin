@@ -41,8 +41,6 @@ SceneTree_Class: Classes.SceneTree_MethodBind_List
 Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
 World2D_Class: Classes.World2D_MethodBind_List
 Texture2D_Class: Classes.Texture2D_MethodBind_List
-image_Class: Classes.Image_MethodBind_List
-texture_Class: Classes.ImageTexture_MethodBind_List
 
 printonce:bool=true
 frame_count_amout::2000
@@ -86,13 +84,6 @@ MainLoopStartupCallback :: proc "c" () {
     Classes.Texture2D_Init_(&Texture2D_Class)
     Classes.CanvasGroup_Init_(&CanvasGroup_Class)
     Classes.SceneTree_Init_(&SceneTree_Class)
-    Classes.ImageTexture_Init_(&texture_Class)
-    Classes.Image_Init_(&image_Class)
-    
-    path:Toxin.gdstring
-    gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(&path, raw_data(string("./icon.svg")), len("./icon.svg"))
-    image_Class.load_from_file->m_call(nil, {&path}, &image)
-    GDW.gdstring_M_List.Destroy(&path)
 
     //indx_ret: Variant
     //default_Array_class->GetIndex(0, &indx_ret)
@@ -115,8 +106,3 @@ MainLoopStartupCallback :: proc "c" () {
 
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
 };;
-
-MainLoopShutdownCallback :: proc "c" () {
-    context = runtime.default_context()
-    gdAPI.Object_Utils.Destroy(image)
-}

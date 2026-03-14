@@ -108,4 +108,35 @@ GDScript. Godot's own scripting language. These are not compiled unless you turn
 StringName. A specially hashed string which is refCounted and stored in a its own bucket of memory. Often used as an identifier for unique entities such as classes or constants. Often abreviated to SN in this package.\
 
 # Tests
-There are a few stress tests in the stress-test folder. I will try and keep these up-to-date. Try running them to see if your setup is done correctly.
+``odin run odin_check``
+This will go through all the stress-test and unit_test files and do a compilation check. If this is successful, all the packages necessary to compile those projects are present in the expected path.
+This does not run the actual tests.
+
+# Useful CLI Arguments
+
+run a project:
+``C:\Godot\Godot_v4.6-release.exe --path .\stress-test\spritebench_Odin``
+a project.godot file should be present in the specified folder.
+
+open a project into the editor:
+``C:\Godot\Godot_v4.6-release.exe --path .\stress-test\spritebench_Odin --editor``
+a project.godot file should be present in the specified folder.
+
+
+run a specific script:
+C:\Godot\Godot_v4.6-release.exe --path .\stress-test\spritebench_Odin -s .\node.gd
+will require that the script load the extension by referencing the .gdextension file
+relative path starts relative to the folder from --path
+
+export example command:
+C:\Godot\Godot_v4.6-release.exe --path .\TopDown --export-release "Windows Desktop"  C:\Godot\testExport\sprite_bench.exe --headless
+Godot will move the shared lib into the root of the export folder.
+If Godot is able to access your shared lib based on the filepath of the project you're building, it will move it to the export root along with the exe. Otherwise there will be an error stating that it could not find the file.
+It does not seem to create any sort of folders for you, but if you create the folder structure specified in the .gdextention file and move the shared file into the new folder this will still work. 
+* If you move the file to an unexpected location Godot will not be able to find it.
+* if you move the shared lib to a /bin folder Godot will find it even if this wasn't where you specified
+* if you move the shared lib to a folder that matches the relative path described in gdextension Godot will find it.
+* If you did a res:/../ you just went up a folder and now need to put your dll in the folder above your exe. If your path was res://../bin you need to create a bin folder in the folder above the folder containing your exe.. Just don't do this. >.>
+* with the .dll in the same folder as your .exe Godot finds and loads it.
+
+Best practice is to put your GDE binaries in a bin folder in your project's root folder. Target that folder with -out: during your build.

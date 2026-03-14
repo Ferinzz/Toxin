@@ -40,6 +40,7 @@ wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1150, 750}
 size:Toxin.Vector2={64,64}
 texture: Classes.Texture2D
+image: Classes.Image
 
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
@@ -66,8 +67,10 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
 
-    cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-    class.class.bullet_image = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
+
+    texture_Class.create_from_image->m_call(nil, {&image}, &class.class.bullet_image )
+    //cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
+    //class.class.bullet_image = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
 
     //fmt.println("ïnit")
     return class.self

@@ -34,11 +34,8 @@ size:Toxin.Vector2={64,64}
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
     me:=(^Toxin.Class_Deets)(self)
 
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
-
-        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-        texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
-        fmt.println("!!special stress test!!")
+    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)
+    fmt.println("!!special stress test!!")
 }
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
@@ -54,12 +51,6 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
-
-    class.class.angle=rand.float64_range(0, Math.PI*2)
-    class.class.speed=rand.int64_range(100, 600)
-    class.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
-    class.class.position = {rand.float32_range(64,class.class.window.x-64), rand.float32_range(64,class.class.window.y-64)}
-    class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
     //fmt.println("ïnit")
     return class.self
 }
@@ -74,23 +65,9 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 */
 @(require)
 THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
-    _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
-        context = runtime.default_context();
-        //Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
-        Node2D_Class.set_position->m_call(self.self, {&self.class.position})
-    },
-    //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
-    //    context = runtime.default_context()
-    //},
-
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context();
     },
-
-    //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
-    //    //context = runtime.default_context()
-    //    //fmt.println("yarrr")
-    //},
 }
 
 //******************************\\
