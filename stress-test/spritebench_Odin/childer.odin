@@ -34,9 +34,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
 
     Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)
 
-        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-        texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
-        fmt.println("!!special stress test!!")
+    fmt.println("!!special stress test!!")
 }
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {

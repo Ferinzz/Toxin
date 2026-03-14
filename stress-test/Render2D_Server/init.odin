@@ -22,7 +22,6 @@ init:: proc ()  {
 @(init)
 asdf :: proc "contextless" () {
     Toxin.inits.scene = init
-    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
 }
 
 scene_tree_obj: ^GDW.Object
