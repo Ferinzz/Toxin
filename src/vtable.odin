@@ -47,6 +47,7 @@ THIS_CLASS_NAME :: struct {
     flags: bit_set[0..=7; u8],
     layers: Toxin.layers_2d_render,
     path: Toxin.Path,
+    Plane: Toxin.Plane,
     locale: Toxin.Locale_ID,
     my_password: Toxin.Password,
     string_with_default: Toxin.gdstring,
@@ -344,6 +345,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags")
     Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags3d")
     Toxin.Export_Int_As_Enum(className, THIS_CLASS_NAME, "int_as_enum")
+    Toxin.Export(className, THIS_CLASS_NAME, "Plane")
     Toxin.Export_Layers(className, THIS_CLASS_NAME, "layers", .LAYERS_2D_RENDER)
     Toxin.Export_Path(className, THIS_CLASS_NAME, "path", .DIR)
     Toxin.Export_Locale(className, THIS_CLASS_NAME, "locale")

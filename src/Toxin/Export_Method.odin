@@ -120,9 +120,10 @@ bindMethod :: #force_inline proc(className: ^StringName, function: $T,
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
     destructProperty(&returnInfo)
+    when sics.type_proc_parameter_count(T) - 1 > 0 {
     for &props in argsInfo {
         destructProperty(&props)
-    }
+    }}
 
 }
 
@@ -172,7 +173,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 func(cast(argT0)p_instance)
             }
         }
-    return godotPtrCallback, godotVariantCallback
+    return cast(GDE.ClassMethodPtrCall)godotPtrCallback, cast(GDE.ClassMethodCall)godotVariantCallback
 
     } else {
         argT1 :: sics.type_proc_parameter_type(P, 1)
@@ -222,7 +223,7 @@ bindNoReturn2 :: #force_inline proc(function: $P, loc:=#caller_location) -> (GDE
                 func(cast(argT0)p_instance, val)
             }
         }
-    return cast(GDE.ClassMethodPtrCall)godotPtrCallback, godotVariantCallback
+    return cast(GDE.ClassMethodPtrCall)godotPtrCallback, cast(GDE.ClassMethodCall)godotVariantCallback
     }else {
         argT2 :: sics.type_proc_parameter_type(P, 2)
         when argcount == 2 {
