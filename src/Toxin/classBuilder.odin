@@ -15,12 +15,11 @@ import "core:reflect"
 * Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
-
-CC_Dummy:: struct{}
 Class_Container :: struct ($Class_Structure: typeid) {
     self: ^Object, //Keep as first so it can be trivially cast.
     using class: Class_Structure,
 }
+CC_Dummy:: struct{}
 
 
 /*
@@ -39,15 +38,19 @@ Class_Container :: struct ($Class_Structure: typeid) {
 */
 Class_Deets :: struct {
     using registerer: Registerer, //Keep as first value in order to trivially cast it.
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Object), //Cast to the Object class that your class extends.
+    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object), //Cast to the Object class that your class extends.
     destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr),
-    class_struct: typeid,
-    init_level: InitializationLevel,
-    GDClass_Index: GDW.ClassName_Index,
+    using required: required_deets,
     vtable: rawptr,
     GDClass_StringName: ^StringName,
     SN : StringName,
     binder: proc(className: ^StringName),
+}
+
+required_deets:: struct #all_or_none{
+    class_struct: typeid,
+    init_level: InitializationLevel,
+    GDClass_Index: GDW.ClassName_Index,
 }
 
 InitializationLevel :: enum {
@@ -98,7 +101,7 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 //construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
 //This is different from Godot's ready, which is called sometime after this.
 //Returns a pointer to Class_Container(your_class_struct)
-Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^Class_Container(CC_Dummy)) {
+Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Class_Container(CC_Dummy)) {
     //context = runtime.default_context()
 
     object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
@@ -110,7 +113,7 @@ Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Boo
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
     self.self= object
 
-    gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^GDW.Object)self)
+    gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
 
 
@@ -189,7 +192,7 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
 }
 
 Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_table: GDE.ClassGetVirtual2 = nil, \
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: GDW.Bool) -> (^GDW.Object) = Class_Init, \
+    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) = Class_Init, \
     destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) = Destroy, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
@@ -202,18 +205,18 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
 
     //string to a svg which will be used as an icon for your Nodes.
     //Must be NewLatin. UTF8 does not work :/
-    stringraw:GDW.gdstring
+    stringraw:gdstring
     gdAPI.Strings_Utils.NewWithLatin1Chars(&stringraw, "res://icon.svg")
 
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
     
     class_info: GDE.ClassCreationInfo4 = class_info
-        class_info.icon_path = &stringraw
-        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
-        class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
-        class_info.class_userdata = self
-        class_info.get_virtual_func = get_v_table
-
+    class_info.icon_path = &stringraw
+    class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
+    class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
+    class_info.class_userdata = self
+    class_info.get_virtual_func = get_v_table
+    //class_info.to_string_func(nil, &r_bool, &pout)
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct(&self.SN, type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name)
 

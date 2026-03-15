@@ -1,3 +1,4 @@
+#+ignore
 package main
 
 import "shared:Toxin"
