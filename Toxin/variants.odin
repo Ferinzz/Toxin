@@ -108,7 +108,7 @@ variant_union :: struct #raw_union {
 }
 
 variant_index :: proc($field: typeid, loc:=#caller_location) -> GDE.VariantType {
-    index :: GDE.VariantType(sics.type_variant_index_of(variant_union_lookup, sics.type_elem_type(field)))
+    index :: GDE.VariantType(sics.type_variant_index_of(variant_union_lookup, field))
     return index
 }
 /*
