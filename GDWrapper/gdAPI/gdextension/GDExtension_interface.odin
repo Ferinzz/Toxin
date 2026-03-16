@@ -893,7 +893,7 @@ ScriptInstanceGetPropertyState	:: proc "c" (p_instance: ScriptInstanceDataPtr, p
 
 ScriptInstanceGetMethodList		:: proc "c" (p_instance: ScriptInstanceDataPtr, r_count: ^u32) -> ^MethodInfo;
 ScriptInstanceFreeMethodList	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: [^]MethodInfo); // Deprecated. Use ScriptInstanceFreeMethodList2 instead.
-ScriptInstanceFreeMethodList2	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^MethodInfo, p_count: u32);
+ScriptInstanceFreeMethodList2	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: [^]MethodInfo, p_count: u32);
 
 ScriptInstanceHasMethod			:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> b8;
 
