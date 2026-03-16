@@ -37,17 +37,18 @@ CC_Dummy:: struct{}
 * binder: procedure to call in order to export the values you would like to expose to Godot. Variables, procedures, etc via Export; Export_Range
 */
 Class_Deets :: struct {
-    using registerer: Registerer, //Keep as first value in order to trivially cast it.
+    required: required_deets,
+    //using registerer: Registerer, //Keep as first value in order to trivially cast it.
     create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object), //Cast to the Object class that your class extends.
     destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr),
-    using required: required_deets,
     vtable: rawptr,
     GDClass_StringName: ^StringName,
     SN : StringName,
-    binder: proc(className: ^StringName),
+    Exporter: proc(className: ^StringName),
 }
 
 required_deets:: struct #all_or_none{
+    using registerer: Registerer, //Keep as first value in order to trivially cast it.
     class_struct: typeid,
     init_level: InitializationLevel,
     GDClass_Index: GDW.ClassName_Index,
@@ -66,7 +67,7 @@ InitializationLevel :: enum {
 * see example_self_reggy.
 * This implementation of registerer allows for the shorthand class_deets->self_register(init_level)
 */
-Registerer:: struct{
+Registerer:: struct #all_or_none{
     self_register: proc(self: ^Registerer, init_level: InitializationLevel),
 }
 
@@ -108,8 +109,8 @@ Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^Object))
-    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^Object))
+    self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
+    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
     self.self= object
 
@@ -197,7 +198,7 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
     // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
-    assert(self.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name))
+    assert(self.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name))
 
     //Set the create and destroy procs in the class's deets struct for easy reference in Odin-land.
     self.create = create
@@ -218,14 +219,14 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
     class_info.get_virtual_func = get_v_table
     //class_info.to_string_func(nil, &r_bool, &pout)
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct(&self.SN, type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name)
+    GDW.StringConstruct(&self.SN, type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name)
 
-    self.GDClass_StringName = GDW.GDClass_StringName_get(self.GDClass_Index)
+    self.GDClass_StringName = GDW.GDClass_StringName_get(self.required.GDClass_Index)
 
     gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &self.SN, self.GDClass_StringName, &class_info)
     
-    if self.binder != nil {
-        self.binder(&self.SN)
+    if self.Exporter != nil {
+        self.Exporter(&self.SN)
     }
 }
 

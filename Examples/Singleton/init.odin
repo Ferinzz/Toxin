@@ -24,7 +24,7 @@ init:: proc ()  {
     Classes.Engine_Init_(&Engine_Class)
 
     //Register custom class.
-    THIS_CLASS_NAME_deets.registerer->self_register(.INITIALIZATION_SCENE)
+    THIS_CLASS_NAME_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
     THIS_CLASS_NAME_deets2.registerer->self_register(.INITIALIZATION_SCENE)
 
 

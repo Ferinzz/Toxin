@@ -3,6 +3,7 @@ package type_tests
 import "shared:Toxin"
 import "base:runtime"
 import sics "base:intrinsics"
+import GDW "shared:GDWrapper"
 
 type_test_class :: struct {
     Bool: Toxin.Bool,
@@ -45,12 +46,15 @@ type_test_class :: struct {
     PackedVector4Array: Toxin.PackedVector4Array, //Godot: create
 }
 
-type_test_deets:= Toxin.Class_Deets {
-    class_struct = type_test_class,
-    init_level = .INITIALIZATION_SCENE,
-    GDClass_Index = .Node,
+type_test_deets: Toxin.Class_Deets = {
+    required = {
+        class_struct = type_test_class,
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = .Node,
+        registerer = {self_register = type_test_registration,},
+    },
     vtable = &type_test_vtable,
-    binder = type_test_Export,
+    Exporter = type_test_Export,
 }
 
 type_test_registration :: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
@@ -61,7 +65,9 @@ type_test_registration :: proc(self: ^Toxin.Registerer, init_level: Toxin.Initia
 type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(type_test_class))Toxin.Create(p_class_user_data, p_notify_postinitialize)
-    return cast(^Toxin.Object)class
+    //GDW.Array_M_List.Create0(&class.class.Array)
+    //GDW.Dictionary_M_List.Create0(&class.class.Dictionary)
+    return class.self
 }
 
 type_test_vtable:= Toxin.Node_v_table(type_test_class) {

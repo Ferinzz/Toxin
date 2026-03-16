@@ -196,7 +196,9 @@ copy_from_variant :: proc{
     DictionaryfromVariant,
 
     ArrayfromVariant,
+    PackedByteArrayfromVariant,
     Packedi32ArrayfromVariant,
+    PackedStringArrayfromVariant,
     Packedi64ArrayfromVariant,
     Packedf32ArrayfromVariant,
     Packedf64ArrayfromVariant,
@@ -566,12 +568,26 @@ ArrayfromVariant :: proc(P_dest: ^Array, p_source: ^Variant) -> type_from_varian
         return {}
     } else do return {.WRONG_TYPE, .ARRAY, p_source.VType}
 }
+PackedByteArrayfromVariant :: proc(P_dest: ^GDW.packedArray(u8), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_BYTE_ARRAY {
+        P_dest^ = GDW.PackedByteArray_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_BYTE_ARRAY, p_source.VType}
+}
 Packedi32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i32), p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .PACKED_INT32_ARRAY {
         P_dest^ = GDW.PackedInt32Array_M_List.get_ptr(p_source)^
         return {}
     }
     return {.WRONG_TYPE, .PACKED_INT32_ARRAY, p_source.VType}
+}
+PackedStringArrayfromVariant :: proc(P_dest: ^GDE.PackedStringArray, p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_STRING_ARRAY {
+        P_dest^ = GDW.PackedStringArray_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_STRING_ARRAY, p_source.VType}
 }
 Packedi64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i64), p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .PACKED_INT64_ARRAY {
@@ -777,18 +793,18 @@ Packedf32ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedFloat32A
         panic("PackedFloat32Array was not initialized before using with Godot method.", loc)
     }
 }
+PackedStringArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedStringArray, loc:=#caller_location) {
+    GDW.new_variant_from_methods(p_variant, p_from)
+    //Godot doesn't seem to handle receiving nil very well for this particular type.
+    if p_from.data == nil {
+        panic("PackedFloat32Array was not initialized before using with Godot method.", loc)
+    }
+}
 Packedf64ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedFloat64Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
     //Godot doesn't seem to handle receiving nil very well for this particular type.
     if p_from.data == nil {
         panic("PackedFloat64Array was not initialized before using with Godot method.", loc)
-    }
-}
-PackedStringArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedStringArray, loc:=#caller_location) {
-    GDW.new_variant_from_methods(p_variant, p_from)
-    //Godot doesn't seem to handle receiving nil very well for this particular type.
-    if p_from.data == nil {
-        panic("PackedStringArray was not initialized before using with Godot method.", loc)
     }
 }
 PackedVec2ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedVector2Array, loc:=#caller_location) {
