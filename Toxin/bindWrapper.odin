@@ -1851,8 +1851,6 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $FIELD
         //~fmt.println(FIELD_OFFSET)
         //~fmt.println(fieldName)
         when FIELD_TYPE == Array ||
-        FIELD_TYPE == Signal ||
-        FIELD_TYPE == Callable ||
         FIELD_TYPE == Dictionary {
             Verify_Heap_Init((cast(^FIELD_TYPE)(rawptr(uintptr(p_classData)+FIELD_OFFSET))),\
             classStruct, fieldName)
@@ -1870,7 +1868,6 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $FIELD
             r_ret^ = (cast(^FIELD_TYPE)(uintptr(p_classData) + FIELD_OFFSET))^
         }
     }
-    fmt.println(sics.type_proc_parameter_count(type_of(getterr)))
     /*
     The above creates a proc that does the following - replace Int with whatever the field's type is.
     get :: proc "c" (yourclassstruct: ^Class_Container(classStruct)) -> Int {
