@@ -65,8 +65,8 @@ type_test_registration :: proc(self: ^Toxin.Registerer, init_level: Toxin.Initia
 type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(type_test_class))Toxin.Create(p_class_user_data, p_notify_postinitialize)
-    //GDW.Array_M_List.Create0(&class.class.Array)
-    //GDW.Dictionary_M_List.Create0(&class.class.Dictionary)
+    GDW.Array_M_List.Create0(&class.class.Array)
+    GDW.Dictionary_M_List.Create0(&class.class.Dictionary)
     return class.self
 }
 
@@ -89,6 +89,13 @@ type_test_Export :: proc(className: ^Toxin.StringName) {
     Toxin.Export(className, type_test_class, "Vector4")
     Toxin.Export(className, type_test_class, "Vector4i")
     Toxin.Export(className, type_test_class, "Color")
+    Toxin.Export(className, type_test_class, "Plane")
+    Toxin.Export(className, type_test_class, "Quaternion")
+    Toxin.Export(className, type_test_class, "Transform2D")
+    Toxin.Export(className, type_test_class, "AABB")
+    Toxin.Export(className, type_test_class, "Basis")
+    Toxin.Export(className, type_test_class, "Transform3D")
+    Toxin.Export(className, type_test_class, "Projection")
     Toxin.Export(className, type_test_class, "gdstring")
     Toxin.Export(className, type_test_class, "StringName")
     Toxin.Export(className, type_test_class, "NodePath")
@@ -96,12 +103,6 @@ type_test_Export :: proc(className: ^Toxin.StringName) {
     Toxin.Export(className, type_test_class, "Object")
     Toxin.Export(className, type_test_class, "Callable")
     Toxin.Export(className, type_test_class, "Signal")
-    Toxin.Export(className, type_test_class, "Dictionary")
-    Toxin.Export(className, type_test_class, "Transform2D")
-    Toxin.Export(className, type_test_class, "Basis")
-    Toxin.Export(className, type_test_class, "Transform3D")
-    Toxin.Export(className, type_test_class, "Projection")
-    Toxin.Export(className, type_test_class, "Array")
     Toxin.Export(className, type_test_class, "PackedByteArray")
     Toxin.Export(className, type_test_class, "PackedInt32Array")
     Toxin.Export(className, type_test_class, "PackedInt64Array")
@@ -112,7 +113,6 @@ type_test_Export :: proc(className: ^Toxin.StringName) {
     Toxin.Export(className, type_test_class, "PackedVector3Array")
     Toxin.Export(className, type_test_class, "PackedColorArray")
     Toxin.Export(className, type_test_class, "PackedVector4Array")
-    Toxin.Export(className, type_test_class, "Plane")
-    Toxin.Export(className, type_test_class, "Quaternion")
-    Toxin.Export(className, type_test_class, "AABB")
+    Toxin.Export(className, type_test_class, "Dictionary")
+    Toxin.Export(className, type_test_class, "Array")
 }
