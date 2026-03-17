@@ -193,6 +193,7 @@ Callable contains a union on Godot's side. We should only be making CustomCallab
 //https://github.com/godotengine/godot/blob/c6d130abd9188f313e6701d01a0ddd6ea32166a0/core/variant/callable.h#L47
 Callable :: struct {
   call_p: ^Callable_Class,
+  ref: CustomCallable,
 }
 
 Callable_Class :: distinct struct{
