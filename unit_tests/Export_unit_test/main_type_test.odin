@@ -1,11 +1,12 @@
 package type_tests
 
+import "shared:GDWrapper/gdAPI"
 import "shared:Toxin"
 import "base:runtime"
 import sics "base:intrinsics"
 import GDW "shared:GDWrapper"
 
-type_test_class :: struct {
+type_test :: struct {
     Bool: Toxin.Bool,
     Int: Toxin.Int,
     float: Toxin.float,
@@ -48,7 +49,7 @@ type_test_class :: struct {
 
 type_test_deets: Toxin.Class_Deets = {
     required = {
-        class_struct = type_test_class,
+        class_struct = type_test,
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Node,
         registerer = {self_register = type_test_registration,},
@@ -64,55 +65,57 @@ type_test_registration :: proc(self: ^Toxin.Registerer, init_level: Toxin.Initia
 
 type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
-    class:= cast(^Toxin.Class_Container(type_test_class))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    class:= cast(^Toxin.Class_Container(type_test))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    //If these are not 'created' before Godot attempts to use them the engine will panic.
     GDW.Array_M_List.Create0(&class.class.Array)
     GDW.Dictionary_M_List.Create0(&class.class.Dictionary)
+    gdAPI.Callable_Utils.CustomCreate(&class.class.Callable, {})
     return class.self
 }
 
-type_test_vtable:= Toxin.Node_v_table(type_test_class) {
-    _process = proc "c" (self: ^Toxin.Class_Container(type_test_class), p_args: ^struct{delta: ^Toxin.float}) {
+type_test_vtable:= Toxin.Node_v_table(type_test) {
+    _process = proc "c" (self: ^Toxin.Class_Container(type_test), p_args: ^struct{delta: ^Toxin.float}) {
 
     }
 }
 
 type_test_Export :: proc(className: ^Toxin.StringName) {
-    Toxin.Export(className, type_test_class, "Bool")
-    Toxin.Export(className, type_test_class, "Int")
-    Toxin.Export(className, type_test_class, "float")
-    Toxin.Export(className, type_test_class, "Vector2")
-    Toxin.Export(className, type_test_class, "Vector2i")
-    Toxin.Export(className, type_test_class, "Rect2")
-    Toxin.Export(className, type_test_class, "Rect2i")
-    Toxin.Export(className, type_test_class, "Vector3")
-    Toxin.Export(className, type_test_class, "Vector3i")
-    Toxin.Export(className, type_test_class, "Vector4")
-    Toxin.Export(className, type_test_class, "Vector4i")
-    Toxin.Export(className, type_test_class, "Color")
-    Toxin.Export(className, type_test_class, "Plane")
-    Toxin.Export(className, type_test_class, "Quaternion")
-    Toxin.Export(className, type_test_class, "Transform2D")
-    Toxin.Export(className, type_test_class, "AABB")
-    Toxin.Export(className, type_test_class, "Basis")
-    Toxin.Export(className, type_test_class, "Transform3D")
-    Toxin.Export(className, type_test_class, "Projection")
-    Toxin.Export(className, type_test_class, "gdstring")
-    Toxin.Export(className, type_test_class, "StringName")
-    Toxin.Export(className, type_test_class, "NodePath")
-    Toxin.Export(className, type_test_class, "RID")
-    Toxin.Export(className, type_test_class, "Object")
-    Toxin.Export(className, type_test_class, "Callable")
-    Toxin.Export(className, type_test_class, "Signal")
-    Toxin.Export(className, type_test_class, "PackedByteArray")
-    Toxin.Export(className, type_test_class, "PackedInt32Array")
-    Toxin.Export(className, type_test_class, "PackedInt64Array")
-    Toxin.Export(className, type_test_class, "PackedFloat32Array")
-    Toxin.Export(className, type_test_class, "PackedFloat64Array")
-    Toxin.Export(className, type_test_class, "PackedStringArray")
-    Toxin.Export(className, type_test_class, "PackedVector2Array")
-    Toxin.Export(className, type_test_class, "PackedVector3Array")
-    Toxin.Export(className, type_test_class, "PackedColorArray")
-    Toxin.Export(className, type_test_class, "PackedVector4Array")
-    Toxin.Export(className, type_test_class, "Dictionary")
-    Toxin.Export(className, type_test_class, "Array")
+    Toxin.Export(className, type_test, "RID")
+    Toxin.Export(className, type_test, "Object")
+    Toxin.Export(className, type_test, "Callable")
+    Toxin.Export(className, type_test, "Signal")
+    Toxin.Export(className, type_test, "PackedByteArray")
+    Toxin.Export(className, type_test, "PackedInt32Array")
+    Toxin.Export(className, type_test, "PackedInt64Array")
+    Toxin.Export(className, type_test, "PackedFloat32Array")
+    Toxin.Export(className, type_test, "PackedFloat64Array")
+    Toxin.Export(className, type_test, "PackedStringArray")
+    Toxin.Export(className, type_test, "PackedVector2Array")
+    Toxin.Export(className, type_test, "PackedVector3Array")
+    Toxin.Export(className, type_test, "PackedColorArray")
+    Toxin.Export(className, type_test, "PackedVector4Array")
+    Toxin.Export(className, type_test, "Dictionary")
+    Toxin.Export(className, type_test, "Array")
+    Toxin.Export(className, type_test, "Bool")
+    Toxin.Export(className, type_test, "Int")
+    Toxin.Export(className, type_test, "float")
+    Toxin.Export(className, type_test, "Vector2")
+    Toxin.Export(className, type_test, "Vector2i")
+    Toxin.Export(className, type_test, "Rect2")
+    Toxin.Export(className, type_test, "Rect2i")
+    Toxin.Export(className, type_test, "Vector3")
+    Toxin.Export(className, type_test, "Vector3i")
+    Toxin.Export(className, type_test, "Vector4")
+    Toxin.Export(className, type_test, "Vector4i")
+    Toxin.Export(className, type_test, "Color")
+    Toxin.Export(className, type_test, "Plane")
+    Toxin.Export(className, type_test, "Quaternion")
+    Toxin.Export(className, type_test, "Transform2D")
+    Toxin.Export(className, type_test, "AABB")
+    Toxin.Export(className, type_test, "Basis")
+    Toxin.Export(className, type_test, "Transform3D")
+    Toxin.Export(className, type_test, "Projection")
+    Toxin.Export(className, type_test, "gdstring")
+    Toxin.Export(className, type_test, "StringName")
+    Toxin.Export(className, type_test, "NodePath")
 }
