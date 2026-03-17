@@ -15,7 +15,7 @@ import "core:reflect"
 * Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
-Class_Container :: struct ($Class_Structure: typeid) {
+Class_Container :: struct ($Class_Structure: typeid) #packed {
     self: ^Object, //Keep as first so it can be trivially cast.
     using class: Class_Structure,
 }
