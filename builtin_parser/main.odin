@@ -10,7 +10,17 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
 //import "../builtins"
 
-//TODO!! keyed getter/setter
+/*
+TODO!
+Projection_Constants :: [Projection_Const_names]Projection {
+  .IDENTITY = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+  .ZERO = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+}
+Projection_Const_names :: enum {
+  Projection_ZERO,
+  Projection_IDENTITY,
+}
+*/
 
 main :: proc() {
     root, error := os.get_absolute_path("builtin_parser\\example.json", context.allocator)
