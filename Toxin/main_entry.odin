@@ -26,7 +26,7 @@ inits: struct {
 ** minimum_initialization_level: At what point in engine init should Godot start calling the procedure specified in initialize.
 */
 @export
-godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassDB, initialization: ^GDE.Initialization) {
+godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassDB, initialization: ^GDE.Initialization) -> b8 {
     //GDW.initGodotContext()
     context = runtime.default_context()
 
@@ -37,7 +37,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
     initialization.deinitialize = extensionDeinit
     initialization.userdata     = nil
     initialization.minimum_initialization_level = .INITIALIZATION_SCENE
-
+    return true
 };
 
 /*
@@ -58,45 +58,17 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which should be considered Core to the rest of the system.
             */
-            //Initialize the Methods of Array types for later use.
-            /*GDW.init_array_types(&GDArray_Methods,
-            &PackedByteArray_Methods,
-            &PackedInt32Array_Methods,
-            &PackedInt64Array_Methods,
-            &PackedFloat32Array_Methods,
-            &PackedFloat64Array_Methods,
-            &PackedStringArray_Methods,
-            &PackedVector2Array_Methods,
-            &PackedVector3Array_Methods,
-            &PackedColorArray_Methods,
-            &PackedVector4Array_Methods,
-            &GDDictionary_Methods,)*/
-            GDW.Init_Variant_Converters()
             init_Node_Virtuals_Info()
             init_CanvasItem_Virtuals_Info()
             init_Texture2D_Virtuals_Info()
             init_MainLoop_Virtual_Info()
             Classes.RefCounted_Init_(&RefCounted_Methods_list)
-            //GDW.init_Small_Arrays()
             objectEmitSignal = GDW.classDBGetMethodBind3(.Object, "emit_signal", 4047867050)
             return
         case .INITIALIZATION_SERVERS:
             /*
             * Register the different classes which depend on core classes.
             */
-            // ClassDB.self.obj = GDW.Library
-            // init_classDB(&ClassDB)
-            // 
-            // SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-            // SN_p: ^StringName = &SN
-            // ret: Class_Array
-            // gdMakeArray(&ret)
-            // ret2: Class_Array
-            // gdMakeArray(&ret2)
-            // rando: rawptr = new(rawptr)
-            // ret2.self^ = ClassDB -> class_get_method_list(rando, SN_p, false)
-            // dict: GDW.Dictionary
-            // ret2.self^ = ClassDB -> class_get_signal(rando, SN_p, SN_p)
 
             return
         case .INITIALIZATION_SCENE:
@@ -104,7 +76,11 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             * Register the different classes which depend on servers classes.
             */
             //THIS_CLASS_NAME_deets->self_register(init_Level)
-            inits.scene()
+            if inits.scene != nil {
+                inits.scene()
+            } else {
+                fmt.println("WARNING! scene init proc was not setup.")
+            }
             //Need to register our MainLoop callbacks at some point.
             return
         //INITIALIZATION_EDITOR should only happen if running from the editor.
