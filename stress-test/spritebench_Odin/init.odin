@@ -94,20 +94,24 @@ MainLoopFrameCallback2 :: proc "c" () {
     context = runtime.default_context()
     perf:Toxin.float=0
     Node_Class.get_process_delta_time->m_call(root, r_ret = &perf)
-    if frame_current < frame_count_amout {
-        frame_times[frame_current] = perf
-        frame_current+=1
-    } else if printonce {
-        printonce = false
-        total:f64
-        for t in frame_times[:] {
-            total+=t
+    if frame_current > 1000 {
+        if frame_current < frame_count_amout+1000 {
+            Node_Class.get_process_delta_time->m_call(root, r_ret = &frame_times[frame_current-1000])
+            frame_current+=1
+        } else if printonce {
+            printonce = false
+            total:f64
+            for t in frame_times[:] {
+                total+=t
+            }
+            fmt.println(frame_times[:])
+            fmt.println(total/frame_count_amout)
+            exit_code:Toxin.Int=0
+            SceneTree_Class.quit->m_call(scene_tree_obj, {&exit_code})
         }
-        fmt.println(frame_times[:])
-        fmt.println(total/frame_count_amout)
-        exit_code:Toxin.Int=0
-        SceneTree_Class.quit->m_call(scene_tree_obj, {&exit_code})
     }
+    if frame_current <= 1000{
+    frame_current+=1}
 }
 
 //If running directly from the script this does not run.

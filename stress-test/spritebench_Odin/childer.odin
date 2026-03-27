@@ -14,11 +14,11 @@ import rand "core:math/rand"
 
 //Godot will be passing us a pointer to this struct during callbacks.
 THIS_CLASS_NAME :: struct {
-    speed: Toxin.Int,
+    speed: f32,
     angle: Toxin.float,
     position: Toxin.Vector2,
     window: Toxin.Vector2i,
-    size: Toxin.Vector2,
+    size: Toxin.Vector2i,
 }
 
 
@@ -26,6 +26,7 @@ windowSize:Toxin.Vector2i
 Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
 size:Toxin.Vector2={64,64}
+size_half:Toxin.Vector2={32,32}
 
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
@@ -52,12 +53,15 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
 
     class.class.angle=rand.float64_range(0, Math.PI*2)
-    class.class.speed=rand.int64_range(100, 600)
-    size: Toxin.Vector2i
-    Window_MethodBind_List.get_size->m_call(root, r_ret=&size)
-    class.class.window = {rand.int32_range(size.x-64, size.x), rand.int32_range(size.y-64, size.y)}
-    class.class.position = {rand.float32_range(64,f32(class.class.window.x-64)), rand.float32_range(64,f32(class.class.window.y-64))}
-    class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
+    class.class.speed=rand.float32_range(100, 600)
+    win_size: Toxin.Vector2i
+    Window_MethodBind_List.get_size->m_call(root, r_ret=&win_size)
+    tex_size:Toxin.Vector2i
+    image_Class.get_size->m_call(texture, r_ret=&tex_size)
+    class.class.window = win_size
+    class.class.position = {f32(win_size.x)/2, f32(win_size.y)/2}
+    class.class.size = tex_size
+    size_half = {f32(tex_size.x)/2, f32(tex_size.y)/2}
     //fmt.println("ïnit")
     return class.self
 }
@@ -65,7 +69,7 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
-
+//@(require)
 /*
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
@@ -80,11 +84,16 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context();
-        self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //Node2D_Class.get_position->m_call(self.self, r_ret=&self.class.position)
+        if self.class.position.y < size_half.y || self.position.y > (f32(self.window.y) - size_half.y) do self.angle = -self.class.angle
+        if self.class.position.x < size_half.x || self.position.x > (f32(self.window.x) - size_half.x) do self.angle = Math.PI - self.class.angle
+        offset:Toxin.Vector2
+        offset={Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed), Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)}
+        self.class.position.x += offset.x
+        self.class.position.y += offset.y
         Node2D_Class.set_position->m_call(self.self, {&self.class.position})
-        if self.class.position.x > f32(self.class.window.x) - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
-        if self.class.position.y > f32(self.class.window.y) - self.class.size.y || self.class.position.y < self.class.size.y do self.class.angle = -self.class.angle
     },
 }
 
