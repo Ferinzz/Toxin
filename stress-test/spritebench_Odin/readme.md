@@ -19,10 +19,6 @@ import "shared:Toxin"
 
 Package imports are expected to be in Odin's shared folder. Import headers are already setup in this package's headers.
 
-Github Commit
-Toxin/GDWrapper: 9b4652e
-GD_Classes: 958d411
-
 ## Run
 Benchmarks were performed by running the following commands to export to a project called TopDown and run from Godot's exectuable. Adjust as needed.
 Build time should be no more than 5 seconds.
