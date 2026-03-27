@@ -28,8 +28,12 @@ Benchmarks were performed by running the following commands to export to a proje
 Build time should be no more than 5 seconds.
 
 ```
-odin build stress-test/spritebench_Odin -build-mode:dll -o:speed  -out:TopDown/bin/libgdexample.dll
-
-C:\\Godot\\Godot_v4.6-release.exe --path ./TopDown
+#cd into the spritebench_Odin director
+odin build . -build-mode:dll -out:libgdexample.dll -o:speed
+C:\\Godot\\Godot_v4.6-release.exe --path . -s node.gd
 ```
+node.gd will import the gdextension which will add all the children to the root.
 (Or whatever your Path call to Godot is)
+
+# Observation
+On a Intel a770 Intel 13700k the benchmark runs at an average of 0.0058 to 0.0061 which is ~172 fps.

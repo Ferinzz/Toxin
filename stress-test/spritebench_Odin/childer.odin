@@ -17,7 +17,7 @@ THIS_CLASS_NAME :: struct {
     speed: Toxin.Int,
     angle: Toxin.float,
     position: Toxin.Vector2,
-    window: Toxin.Vector2,
+    window: Toxin.Vector2i,
     size: Toxin.Vector2,
 }
 
@@ -25,7 +25,6 @@ THIS_CLASS_NAME :: struct {
 windowSize:Toxin.Vector2i
 Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
-window:Toxin.Vector2 = {1150, 750}
 size:Toxin.Vector2={64,64}
 
 
@@ -54,8 +53,10 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 
     class.class.angle=rand.float64_range(0, Math.PI*2)
     class.class.speed=rand.int64_range(100, 600)
-    class.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
-    class.class.position = {rand.float32_range(64,class.class.window.x-64), rand.float32_range(64,class.class.window.y-64)}
+    size: Toxin.Vector2i
+    Window_MethodBind_List.get_size->m_call(root, r_ret=&size)
+    class.class.window = {rand.int32_range(size.x-64, size.x), rand.int32_range(size.y-64, size.y)}
+    class.class.position = {rand.float32_range(64,f32(class.class.window.x-64)), rand.float32_range(64,f32(class.class.window.y-64))}
     class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
     //fmt.println("ïnit")
     return class.self
@@ -74,14 +75,16 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         context = runtime.default_context();
         Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
         Node2D_Class.set_position->m_call(self.self, {&self.class.position})
+        //size: Toxin.Vector2i
+        //Window_MethodBind_List.get_size->m_call(root, r_ret=&self.class.window)
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context();
         self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
         self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
         Node2D_Class.set_position->m_call(self.self, {&self.class.position})
-        if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
-        if self.class.position.y > self.class.window.y - self.class.size.y || self.class.position.y < self.class.size.y do self.class.angle = -self.class.angle
+        if self.class.position.x > f32(self.class.window.x) - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
+        if self.class.position.y > f32(self.class.window.y) - self.class.size.y || self.class.position.y < self.class.size.y do self.class.angle = -self.class.angle
     },
 }
 

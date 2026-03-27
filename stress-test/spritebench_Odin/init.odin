@@ -70,6 +70,8 @@ MainLoopFrameCallback :: proc "c" () {
     root= GDW.getRoot()
     scene:= GDW.get_current_scene()
     Classes.Window_Init_(&Window_MethodBind_List)
+    size: Toxin.Vector2i
+    Window_MethodBind_List.get_size->m_call(root, r_ret=&size)
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //A scene is not added when running editor mode unless there is already a default scene. Check for the scene before trying to add the child to it.
