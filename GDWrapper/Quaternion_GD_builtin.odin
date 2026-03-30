@@ -4,6 +4,7 @@ import "gdAPI"
 import GDE "gdAPI/gdextension"
 import "core:math"
 
+Quaternion_Default:Quaternion:1
 
 Quaternion_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Quaternion, p_args: rawptr = nil),
@@ -51,6 +52,7 @@ Quaternion_Methods_list :: struct {
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Quaternion, p_right: ^Array, r_result: ^Bool),
 }
 init_Quaternion_Methods :: proc(Quaternion_method_store: ^Quaternion_Methods_list) {
+
   Quaternion_method_store.Create0 = cast(type_of(Quaternion_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 0)
   Quaternion_method_store.Create1 = cast(type_of(Quaternion_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 1)
   Quaternion_method_store.Create2 = cast(type_of(Quaternion_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 2)
