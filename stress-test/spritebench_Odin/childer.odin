@@ -54,12 +54,12 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 
     class.class.angle=rand.float64_range(0, Math.PI*2)
     class.class.speed=rand.float32_range(100, 600)
-    win_size: Toxin.Vector2i
-    Window_MethodBind_List.get_size->m_call(root, r_ret=&win_size)
-    tex_size:Toxin.Vector2i
-    image_Class.get_size->m_call(texture, r_ret=&tex_size)
-    class.class.window = win_size
-    class.class.position = {f32(win_size.x)/2, f32(win_size.y)/2}
+    //win_size: Toxin.Vector2i
+    //window_Class.get_size->m_call(root, r_ret=&win_size)
+    //tex_size:Toxin.Vector2i
+    //image_Class.get_size->m_call(texture, r_ret=&tex_size)
+    class.class.window = w_size
+    class.class.position = {f32(w_size.x)/2, f32(w_size.y)/2}
     class.class.size = tex_size
     size_half = {f32(tex_size.x)/2, f32(tex_size.y)/2}
     //fmt.println("ïnit")

@@ -29,6 +29,8 @@ asdf :: proc "contextless" () {
 scene_tree_obj: ^GDW.Object
 root_node_instance: ^GDW.Object
 root:^Toxin.Object
+w_size: Toxin.Vector2i
+tex_size: Toxin.Vector2i
 
 //Using these class methods.
 texture: Classes.Texture2D
@@ -38,6 +40,7 @@ Node_Class: Classes.Node_MethodBind_List
 SceneTree_Class: Classes.SceneTree_MethodBind_List
 image_Class: Classes.Image_MethodBind_List
 texture_Class: Classes.ImageTexture_MethodBind_List
+window_Class: Classes.Window_MethodBind_List
 
 printonce:bool=true
 sprite_count::20000
@@ -48,12 +51,6 @@ frame_current:int=0
 MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
 
-    Classes.Sprite2D_Init_(&Texture_Class)
-    Classes.Node2D_Init_(&Node2D_Class)
-    Classes.Node_Init_(&Node_Class)
-    Classes.SceneTree_Init_(&SceneTree_Class)
-    Classes.ImageTexture_Init_(&texture_Class)
-    Classes.Image_Init_(&image_Class)
     
     //Doing it this way otherwise need to run an import from the editor in order to get the icon file.
     image: Classes.Image
@@ -69,13 +66,13 @@ MainLoopFrameCallback :: proc "c" () {
     //Fetch the root of the current sceneTree
     root= GDW.getRoot()
     scene:= GDW.get_current_scene()
-    Classes.Window_Init_(&Window_MethodBind_List)
-    size: Toxin.Vector2i
-    Window_MethodBind_List.get_size->m_call(root, r_ret=&size)
+    fmt.println("11!!special stress test!!")
+    window_Class.get_size->m_call(root, r_ret=&w_size)
+    image_Class.get_size->m_call(texture, r_ret=&tex_size)
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //A scene is not added when running editor mode unless there is already a default scene. Check for the scene before trying to add the child to it.
-    if root != nil {
+    if scene != nil {
         //You can add a node directly to the root.
         //Add the class to the root of the sceneTree
         for i in 0..<sprite_count {
@@ -117,6 +114,17 @@ MainLoopFrameCallback2 :: proc "c" () {
 //If running directly from the script this does not run.
 MainLoopStartupCallback :: proc "c" () {
     context = runtime.default_context()
+    Classes.Window_Init_(&window_Class)
+    Classes.Sprite2D_Init_(&Texture_Class)
+    Classes.Node2D_Init_(&Node2D_Class)
+    Classes.Node_Init_(&Node_Class)
+    Classes.SceneTree_Init_(&SceneTree_Class)
+    Classes.ImageTexture_Init_(&texture_Class)
+    Classes.Image_Init_(&image_Class)
+    fmt.println("22!!special stress test!!")
+    size:Toxin.Vector2i
+    //window_Class.get_size->m_call(root, r_ret=&size)
+    fmt.println("22!!special stress test!!")
 };;
 
 MainLoopShutdownCallback :: proc "c" () {
