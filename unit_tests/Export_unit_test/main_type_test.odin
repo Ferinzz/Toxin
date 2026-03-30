@@ -70,6 +70,8 @@ type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_post
     GDW.Array_M_List.Create0(&class.class.Array)
     GDW.Dictionary_M_List.Create0(&class.class.Dictionary)
     gdAPI.Callable_Utils.CustomCreate(&class.class.Callable, {})
+    //Enginer will print an error if Quaternion is not normalized. Does not prevent functionality.
+    class.class.Quaternion = 1
     return class.self
 }
 
