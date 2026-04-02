@@ -58,7 +58,7 @@ type_test_defaults_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_no
     //Enginer will print an error if Quaternion is not normalized. Does not prevent functionality.
     class.class.Quaternion = 1
         if class.class.Bool == false {
-            fmt.println("error")
+            fmt.println("initialized")
         }
     return class.self
 }
@@ -68,139 +68,139 @@ type_test_defaults_vtable:= Toxin.Node_v_table(type_test_defaults) {
         context = runtime.default_context()
         fmt.println("I'm ready!!")
         if self.class.Bool != false {
-            fmt.println("error")
+            fmt.println("Bool error")
         }
         if self.class.Int != 0 {
-            fmt.println("error")
+            fmt.println("Int error")
         }
         if self.class.float != 0 {
-            fmt.println("error")
+            fmt.println("float error")
         }
         if self.class.Vector2.y != 0 && self.class.Vector2.x != 0 {
-            fmt.println("error")
+            fmt.println("Vector2 error")
         }
         if self.class.Vector2i.y != 0 && self.class.Vector2i.x != 0 {
-            fmt.println("error")
+            fmt.println("Vector2i error")
         }
         if self.class.Rect2.x != 0 &&
             self.class.Rect2.y != 0 &&
             self.class.Rect2.width != 0 &&
             self.class.Rect2.height != 0 {
-            fmt.println("error")
+            fmt.println("Rect2 error")
         }
         if self.class.Rect2i.x != 0 &&
            self.class.Rect2i.y != 0 &&
            self.class.Rect2i.width != 0 &&
            self.class.Rect2i.height != 0 {
-            fmt.println("error")
+            fmt.println("Rect2i error")
         }
         if self.class.Vector3.x != 0 &&
            self.class.Vector3.y != 0 &&
            self.class.Vector3.z != 0 {
-            fmt.println("error")
+            fmt.println("Vector3 error")
         }
         if self.class.Vector3i.x != 0 &&
            self.class.Vector3i.y != 0 &&
            self.class.Vector3i.z != 0 {
-            fmt.println("error")
+            fmt.println("Vector3i error")
         }
         if self.class.Vector4.x != 0 &&
            self.class.Vector4.y != 0 &&
            self.class.Vector4.z != 0 &&
            self.class.Vector4.w != 0 {
-            fmt.println("error")
+            fmt.println("Vector4 error")
         }
         if self.class.Vector4i.x != 0 &&
            self.class.Vector4i.y != 0 &&
            self.class.Vector4i.z != 0 &&
            self.class.Vector4i.w != 0 {
-            fmt.println("error")
+            fmt.println("Vector4i error")
         }
         if self.class.Plane != {} {
-            fmt.println("error")
+            fmt.println("Plane error")
         }
         if self.class.Color != {} {
-            fmt.println("error")
+            fmt.println("Color error")
         }
         if self.class.Quaternion  != 1 {
-            fmt.println("error")
+            fmt.println("Quaternion error")
         }
         if self.class.gdstring.ptr != nil {
-            fmt.println("error")
+            fmt.println("gdstring error")
         }
         if self.class.StringName.ptr != nil {
-            fmt.println("error")
+            fmt.println("StringName error")
         }
         if self.class.NodePath.ptr != nil {
-            fmt.println("error")
+            fmt.println("NodePath error")
         }
         if self.class.RID.ptr != 0 {
-            fmt.println("error")
+            fmt.println("RID error")
         }
         if self.class.Object.proxy != nil {
-            fmt.println("error")
+            fmt.println("Object error")
         }
-        if self.class.Callable != {} {
-            fmt.println("error")
+        if self.class.Callable == {} {
+            fmt.println("Callable error")
         }
         if self.class.Signal != {} {
-            fmt.println("error")
+            fmt.println("Signal error")
         }
         if self.class.Dictionary.id == nil {
-            fmt.println("error")
+            fmt.println("Dictionary error")
         }
         if self.class.Transform2D != {} {
-            fmt.println("error")
+            fmt.println("Transform2D error")
         }
         if self.class.AABB != {} {
-            fmt.println("error")
+            fmt.println("AABB error")
         }
-        if self.class.Basis == {} {
-            fmt.println("error")
+        if self.class.Basis != {} {
+            fmt.println("Basis error:", self.class.Basis)
         }
         if self.class.Transform3D != {} {
-            fmt.println("error")
+            fmt.println("Transform3D error")
         }
         if self.class.Projection != {} {
-            fmt.println("error")
+            fmt.println("Projection error")
         }
         if self.class.Array == {} {
-            fmt.println("error")
+            fmt.println("Array error")
         }
         if self.class.PackedByteArray != {} {
-            fmt.println("error")
+            fmt.println("PackedByteArray error")
         }
         if self.class.PackedInt32Array != {} {
-            fmt.println("error")
+            fmt.println("PackedInt32Array error")
         }
         if self.class.PackedInt64Array != {} {
-            fmt.println("error")
+            fmt.println("PackedInt64Array error")
         }
         if self.class.PackedFloat32Array != {} {
-            fmt.println("error")
+            fmt.println("PackedFloat32Array error")
         }
         if self.class.PackedFloat64Array != {} {
-            fmt.println("error")
+            fmt.println("PackedFloat64Array error")
         }
         if self.class.PackedStringArray != {} {
-            fmt.println("error")
+            fmt.println("PackedStringArray error")
         }
         if self.class.PackedVector2Array != {} {
-            fmt.println("error")
+            fmt.println("PackedVector2Array error")
         }
         if self.class.PackedVector3Array != {} {
-            fmt.println("error")
+            fmt.println("PackedVector3Array error")
         }
         if self.class.PackedColorArray != {} {
-            fmt.println("error")
+            fmt.println("PackedColorArray error")
         }
         if self.class.PackedVector4Array != {} {
-            fmt.println("error")
+            fmt.println("PackedVector4Array error")
         }
     },
     _process = proc "c" (self: ^Toxin.Class_Container(type_test_defaults), p_args: ^struct{delta: ^Toxin.float}) {
         context = runtime.default_context()
-        fmt.println("error")
+        //fmt.println("error")
 
     }
 }
