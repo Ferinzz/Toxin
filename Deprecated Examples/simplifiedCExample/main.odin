@@ -60,80 +60,46 @@ initialize_gdexample_module :: proc "c" (p_userdata: rawptr, p_level:  GDE.Initi
     if p_level != .INITIALIZATION_SCENE{
         return
     }
-    
     context = runtime.default_context()
-
-    fmt.println("AAAAAAAAAaaaaaaahhhh")
-
     
     // Get ClassDB Methods here because the classes we need are all properly registered now.
     // See extension_api.json for hashes.
     native_class_name: GDE.StringName;
     method_name: GDE.StringName;
 
-    GDW.Methods.node2dGetPos = GDW.classDBGetMethodBind("Node2D", "get_position", 3341600327)
-    GDW.Methods.node2dSetPosition = GDW.classDBGetMethodBind("Node2D", "set_position", 743155724)
+    GDW.Methods.node2dGetPos = GDW.classDBGetMethodBind("Node2D", "get_position", 3341600327) //not needed for class creation
+    GDW.Methods.node2dSetPosition = GDW.classDBGetMethodBind("Node2D", "set_position", 743155724) //not needed for class creation
 
     class_name: GDE.StringName
     parent_class_name: GDE.StringName
     //Name for my own class.
-    //fmt.println("AAAAAAAAAaaaaaaahhhh")
     GDW.StringConstruct.stringNameNewLatin(&class_name, "GDExample", false)
-    //fmt.println("AAAAAAAAAaaaaaaahhhh")
     //Name of the class that I'm inheritting from.
     GDW.StringConstruct.stringNameNewLatin(&parent_class_name, "Sprite2D", false)
 
     stringptr:GDE.gdstring
-    //fmt.println("AAAAAAAAAfter methodBind")
-
-    
-
     
     iconString: GDE.gdstring
     icon:= "res://icon.svg"
     mystring:=str.clone_to_cstring(icon)
     defer(delete(mystring))
     //^^^^^There is a string maker that takes length, so might not need to be cloning these.
-    
-    //Does indeed create a string in some kind of memory.
     GDW.StringConstruct.stringNewLatin(&iconString, mystring)
 
     //Will need to get more info about how these settings affect classes. Ex runtime?
     class_info: GDE.ClassCreationInfo4 = {
-        is_virtual = false,
-        is_abstract = false,
         is_exposed = true,
-        is_runtime = false,
         icon_path = &iconString, //For some reason does not work with UTF8 strings??
-        set_func = nil,
-        get_func = nil,
-        get_property_list_func = nil,
-        free_property_list_func = nil,
-        property_can_revert_func = nil,
-        property_get_revert_func = nil,
-        validate_property_func = nil,
-        notification_func = nil,
-        to_string_func = nil,
-        reference_func = nil,
-        unreference_func = nil,
         create_instance_func = gdexampleClassCreateInstance,
         free_instance_func = gdexampleClassFreeInstance,
-        recreate_instance_func = nil,
-        get_virtual_func = nil,
-        get_virtual_call_data_func = getVirtualWithData,
-        call_virtual_with_data_func = callVirtualFunctionWithData,
-        class_userdata = nil, 
+        get_virtual_call_data_func = getVirtualWithData, //only needed if exporting methods
+        call_virtual_with_data_func = callVirtualFunctionWithData, //only needed if you have virtuals callbacks
     }
-    //fmt.println("AAAAAAAAAaafter struct")
-
 
     //Register Class
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &class_name, &parent_class_name, &class_info)
-    //fmt.println("AAAAAAAAAaaaaaaahhhh", &GDW.Library, &class_name, &parent_class_name, &class_info)
     
     gdexample_class_bind_method()
-    //fmt.println("binding completed")
-
 
     GDW.Destructors.stringNameDestructor(&class_name)
     GDW.Destructors.stringNameDestructor(&parent_class_name)
