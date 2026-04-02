@@ -7,7 +7,7 @@ func _init():
         quit()
         return
 
-    var path = "res://gdexample.gdextension"
+    var path = "./gdexample.gdextension"
 
     var err = manager.load_extension(path)
     if err == OK:

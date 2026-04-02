@@ -10,5 +10,4 @@ config_version=5
 
 [application]
 
-run/main_scene="uid://bamx8gv7ycx3l"
 config/features=PackedStringArray("4.6")

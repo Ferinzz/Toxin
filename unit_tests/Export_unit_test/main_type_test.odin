@@ -5,6 +5,7 @@ import "shared:Toxin"
 import "base:runtime"
 import sics "base:intrinsics"
 import GDW "shared:GDWrapper"
+import "core:fmt"
 
 type_test :: struct {
     Bool: Toxin.Bool,
@@ -76,6 +77,10 @@ type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_post
 }
 
 type_test_vtable:= Toxin.Node_v_table(type_test) {
+    _ready = proc "c" (self: ^Toxin.Class_Container(type_test)) {
+        context = runtime.default_context()
+        fmt.println("I'm ready!!")
+    },
     _process = proc "c" (self: ^Toxin.Class_Container(type_test), p_args: ^struct{delta: ^Toxin.float}) {
 
     }

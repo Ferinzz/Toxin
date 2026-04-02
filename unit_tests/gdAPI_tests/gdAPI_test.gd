@@ -7,7 +7,7 @@ func _init():
         quit()
         return
 
-    var path = "C:/Odin_programs/Toxin_new_pull/unit_tests/gdAPI_tests/gdexample.gdextension"
+    var path = "./gdexample.gdextension"
 
     var err = manager.load_extension(path)
     if err == OK:

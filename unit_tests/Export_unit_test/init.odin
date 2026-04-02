@@ -10,6 +10,7 @@ import "core:math"
 
 init:: proc ()  {
     //Register custom class.
+        fmt.println("I'm loading!!")
     type_test_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
 }
 
