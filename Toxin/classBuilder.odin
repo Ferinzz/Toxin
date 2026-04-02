@@ -102,17 +102,17 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 //construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
 //This is different from Godot's ready, which is called sometime after this.
 //Returns a pointer to Class_Container(your_class_struct)
-Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Class_Container(CC_Dummy)) {
+Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> ([^]^Object) {
     //context = runtime.default_context()
 
     object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
+    self: = cast([^]^Object)gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
     mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
-    self.self= object
+    self[0]= object
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
@@ -123,7 +123,7 @@ Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -
 Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
     class:= Create(p_class_user_data, p_notify_postinitialize)
-    return class.self
+    return (cast(^Class_Container(CC_Dummy))class).self
 }
 
 /*
@@ -167,23 +167,23 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
         //Will exit early if there is a match on the value.
         ok:bool=false
         virtual:rawptr=nil
-        when sics.type_is_subtype_of(sics.type_elem_type(T), Node_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vNode"){
+        when sics.type_is_specialization_of(T, Node_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vNode") {
             virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), CanvasItem_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vCanvasItem"){
+        when sics.type_is_specialization_of(T, CanvasItem_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vCanvasItem") {
             virtual, ok = Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), CollisionObject2D_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vCollisionObject2D"){
+        when sics.type_is_specialization_of(T, CollisionObject2D_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vCollisionObject2D") {
             virtual, ok = GDW.Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), Texture2D_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vTexture"){
+        when sics.type_is_specialization_of(T, Texture2D_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vTexture") {
             virtual, ok = GDW.Return_texture_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
@@ -224,7 +224,7 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
     self.GDClass_StringName = GDW.GDClass_StringName_get(self.required.GDClass_Index)
 
     gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &self.SN, self.GDClass_StringName, &class_info)
-    
+
     if self.Exporter != nil {
         self.Exporter(&self.SN)
     }
