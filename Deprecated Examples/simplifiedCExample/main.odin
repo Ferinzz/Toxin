@@ -46,7 +46,7 @@ GDExample :: struct {
 }
 
 //****************************\\
-//******Functions/Methods*****\\
+//******Register functions*****\\
 //****************************\\
 
 //required fields. 
@@ -99,8 +99,9 @@ initialize_gdexample_module :: proc "c" (p_userdata: rawptr, p_level:  GDE.Initi
     //Register Class
     GDW.gdAPI.classDBRegisterExtClass(GDW.Library, &class_name, &parent_class_name, &class_info)
     
-    gdexample_class_bind_method()
+    gdexample_class_bind_method() //Only needed if exporting parameters or functions
 
+    //cleanup
     GDW.Destructors.stringNameDestructor(&class_name)
     GDW.Destructors.stringNameDestructor(&parent_class_name)
     GDW.Destructors.stringDestruction(&iconString)
@@ -180,6 +181,10 @@ gdexampleClassFreeInstance :: proc "c" (p_class_userdata: rawptr, p_instance: GD
     GDW.gdAPI.mem_free(self)
 }
 
+
+//****************************\\
+//******Functions/Methods*****\\
+//****************************\\
 
 //This is where you would set your defaults.
 class_constructor :: proc "c" (self: ^GDExample) {
