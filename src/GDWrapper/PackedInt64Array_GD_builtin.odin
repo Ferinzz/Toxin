@@ -43,7 +43,7 @@ PackedInt64Array_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedInt64Array: proc "c" (p_left: ^PackedInt64Array, p_right: ^PackedInt64Array, r_result: ^Bool),
     VARIANT_OP_ADD_PackedInt64Array: proc "c" (p_left: ^PackedInt64Array, p_right: ^PackedInt64Array, r_result: ^PackedInt64Array),
 }
-init_PackedInt64Array_Methods :: proc(PackedInt64Array_method_store: ^PackedInt64Array_Methods_list) {
+init_PackedInt64Array_Methods :: proc "c" (PackedInt64Array_method_store: ^PackedInt64Array_Methods_list) {
   PackedInt64Array_method_store.Create0 = cast(type_of(PackedInt64Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 0)
   PackedInt64Array_method_store.Create1 = cast(type_of(PackedInt64Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 1)
   PackedInt64Array_method_store.Create2 = cast(type_of(PackedInt64Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT64_ARRAY, 2)

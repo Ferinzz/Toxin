@@ -43,7 +43,7 @@ PackedColorArray_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedColorArray: proc "c" (p_left: ^PackedColorArray, p_right: ^PackedColorArray, r_result: ^Bool),
     VARIANT_OP_ADD_PackedColorArray: proc "c" (p_left: ^PackedColorArray, p_right: ^PackedColorArray, r_result: ^PackedColorArray),
 }
-init_PackedColorArray_Methods :: proc(PackedColorArray_method_store: ^PackedColorArray_Methods_list) {
+init_PackedColorArray_Methods :: proc "c" (PackedColorArray_method_store: ^PackedColorArray_Methods_list) {
   PackedColorArray_method_store.Create0 = cast(type_of(PackedColorArray_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 0)
   PackedColorArray_method_store.Create1 = cast(type_of(PackedColorArray_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 1)
   PackedColorArray_method_store.Create2 = cast(type_of(PackedColorArray_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_COLOR_ARRAY, 2)

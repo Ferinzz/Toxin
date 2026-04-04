@@ -6,24 +6,34 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Vector3i_ZERO : Vector3i= {0, 0, 0}
 @(rodata)
+@(export)
 Vector3i_ONE : Vector3i= {1, 1, 1}
 @(rodata)
+@(export)
 Vector3i_MIN : Vector3i= {-2147483648, -2147483648, -2147483648}
 @(rodata)
+@(export)
 Vector3i_MAX : Vector3i= {2147483647, 2147483647, 2147483647}
 @(rodata)
+@(export)
 Vector3i_LEFT : Vector3i= {-1, 0, 0}
 @(rodata)
+@(export)
 Vector3i_RIGHT : Vector3i= {1, 0, 0}
 @(rodata)
+@(export)
 Vector3i_UP : Vector3i= {0, 1, 0}
 @(rodata)
+@(export)
 Vector3i_DOWN : Vector3i= {0, -1, 0}
 @(rodata)
+@(export)
 Vector3i_FORWARD : Vector3i= {0, 0, -1}
 @(rodata)
+@(export)
 Vector3i_BACK : Vector3i= {0, 0, 1}
 
 Vector3i_Axis :: enum i64 {
@@ -77,7 +87,7 @@ Vector3i_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Vector3i, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Vector3i, p_right: ^Array, r_result: ^Bool),
 }
-init_Vector3i_Methods :: proc(Vector3i_method_store: ^Vector3i_Methods_list) {
+init_Vector3i_Methods :: proc "c" (Vector3i_method_store: ^Vector3i_Methods_list) {
   Vector3i_method_store.Create0 = cast(type_of(Vector3i_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3I, 0)
   Vector3i_method_store.Create1 = cast(type_of(Vector3i_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3I, 1)
   Vector3i_method_store.Create2 = cast(type_of(Vector3i_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3I, 2)

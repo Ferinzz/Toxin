@@ -1,7 +1,7 @@
 package Toxin
 
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 
 Maker :: proc {
     make_Node

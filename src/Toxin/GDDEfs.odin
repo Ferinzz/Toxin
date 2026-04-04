@@ -1,6 +1,6 @@
 package Toxin
 
-import GDW "shared:GDWrapper"
+import GDW "../GDWrapper"
 
 //Will likely need to make some build specific definitions since the size of things changes based on the Godot build used.
 
@@ -229,10 +229,6 @@ PackedColorArray :: GDW.PackedColorArray
 
 PackedVector4Array :: GDW.PackedVector4Array
 
-PackedArrayContainer :: struct ($packed_type: typeid) {
-    _: [3]u64,
-    array: ^packed_type,
-}
 
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyhint

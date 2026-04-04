@@ -6,20 +6,28 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Vector2i_ZERO : Vector2i= {0, 0}
 @(rodata)
+@(export)
 Vector2i_ONE : Vector2i= {1, 1}
 @(rodata)
+@(export)
 Vector2i_MIN : Vector2i= {-2147483648, -2147483648}
 @(rodata)
+@(export)
 Vector2i_MAX : Vector2i= {2147483647, 2147483647}
 @(rodata)
+@(export)
 Vector2i_LEFT : Vector2i= {-1, 0}
 @(rodata)
+@(export)
 Vector2i_RIGHT : Vector2i= {1, 0}
 @(rodata)
+@(export)
 Vector2i_UP : Vector2i= {0, -1}
 @(rodata)
+@(export)
 Vector2i_DOWN : Vector2i= {0, 1}
 
 Vector2i_Axis :: enum i64 {
@@ -73,7 +81,7 @@ Vector2i_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Vector2i, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Vector2i, p_right: ^Array, r_result: ^Bool),
 }
-init_Vector2i_Methods :: proc(Vector2i_method_store: ^Vector2i_Methods_list) {
+init_Vector2i_Methods :: proc "c" (Vector2i_method_store: ^Vector2i_Methods_list) {
   Vector2i_method_store.Create0 = cast(type_of(Vector2i_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 0)
   Vector2i_method_store.Create1 = cast(type_of(Vector2i_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 1)
   Vector2i_method_store.Create2 = cast(type_of(Vector2i_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 2)

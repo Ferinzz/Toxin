@@ -19,29 +19,6 @@ SN_Error :: enum {
     BAD_INDEX,
 }
 
-GDClass_StringName_get :: proc(classname_index: ClassName_Index) -> ^StringName {
-    //ClassName_StringNames[classname_index]
-    if ClassName_StringNames[classname_index].ptr == nil {
-        StringConstruct(&ClassName_StringNames[classname_index], reflect.enum_field_names(ClassName_Index)[classname_index])
-    }
-    return &ClassName_StringNames[classname_index]
-}
-
-ClassName_StringName_Del :: proc(classname_index: ClassName_Index) -> SN_Error {
-    when ODIN_DEBUG {
-        if int(classname_index) > len(ClassName_Index) {
-            return .BAD_INDEX
-        }
-        if ClassName_StringNames[classname_index].ptr == nil {
-            return .ALREADY_NIL
-        }
-    }
-
-    StringName_M_List.Destroy(&ClassName_StringNames[classname_index])
-
-    return nil
-}
-
 ClassName_Index :: enum {
     nil,
     Marshalls,

@@ -1,13 +1,14 @@
 package Toxin
 
 import "base:runtime"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import GDW "../GDWrapper"
+import "../GDWrapper/gdAPI"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:mem"
 import "core:reflect"
+import Classes "../GD_Classes"
 
 /*
 * Container type for the class Node.
@@ -15,7 +16,7 @@ import "core:reflect"
 * Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
-Class_Container :: struct ($Class_Structure: typeid) {
+Class_Container :: struct ($Class_Structure: typeid) #packed {
     self: ^Object, //Keep as first so it can be trivially cast.
     using class: Class_Structure,
 }
@@ -37,20 +38,21 @@ CC_Dummy:: struct{}
 * binder: procedure to call in order to export the values you would like to expose to Godot. Variables, procedures, etc via Export; Export_Range
 */
 Class_Deets :: struct {
-    using registerer: Registerer, //Keep as first value in order to trivially cast it.
+    required: required_deets,
+    //using registerer: Registerer, //Keep as first value in order to trivially cast it.
     create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object), //Cast to the Object class that your class extends.
     destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr),
-    using required: required_deets,
     vtable: rawptr,
     GDClass_StringName: ^StringName,
     SN : StringName,
-    binder: proc(className: ^StringName),
+    Exporter: proc(className: ^StringName),
 }
 
 required_deets:: struct #all_or_none{
+    using registerer: Registerer, //Keep as first value in order to trivially cast it.
     class_struct: typeid,
     init_level: InitializationLevel,
-    GDClass_Index: GDW.ClassName_Index,
+    GDClass_Index: Classes.ClassName_Index,
 }
 
 InitializationLevel :: enum {
@@ -66,7 +68,7 @@ InitializationLevel :: enum {
 * see example_self_reggy.
 * This implementation of registerer allows for the shorthand class_deets->self_register(init_level)
 */
-Registerer:: struct{
+Registerer:: struct #all_or_none{
     self_register: proc(self: ^Registerer, init_level: InitializationLevel),
 }
 
@@ -101,17 +103,17 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 //construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
 //This is different from Godot's ready, which is called sometime after this.
 //Returns a pointer to Class_Container(your_class_struct)
-Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Class_Container(CC_Dummy)) {
+Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> ([^]^Object) {
     //context = runtime.default_context()
 
     object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
 
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^Object))
-    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.class_struct) + size_of(^Object))
+    self: = cast([^]^Object)gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
+    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
-    self.self= object
+    self[0]= object
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
@@ -122,7 +124,7 @@ Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -
 Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
     class:= Create(p_class_user_data, p_notify_postinitialize)
-    return class.self
+    return (cast(^Class_Container(CC_Dummy))class).self
 }
 
 /*
@@ -166,23 +168,23 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
         //Will exit early if there is a match on the value.
         ok:bool=false
         virtual:rawptr=nil
-        when sics.type_is_subtype_of(sics.type_elem_type(T), Node_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vNode"){
+        when sics.type_is_specialization_of(T, Node_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vNode") {
             virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), CanvasItem_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vCanvasItem"){
+        when sics.type_is_specialization_of(T, CanvasItem_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vCanvasItem") {
             virtual, ok = Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), CollisionObject2D_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vCollisionObject2D"){
+        when sics.type_is_specialization_of(T, CollisionObject2D_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vCollisionObject2D") {
             virtual, ok = GDW.Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
-        when sics.type_is_subtype_of(sics.type_elem_type(T), Texture2D_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vTexture"){
+        when sics.type_is_specialization_of(T, Texture2D_v_table) || 
+        sics.type_has_field( sics.type_base_type(T), "vTexture") {
             virtual, ok = GDW.Return_texture_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
@@ -194,10 +196,10 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
 Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_table: GDE.ClassGetVirtual2 = nil, \
     create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) = Class_Init, \
     destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) = Destroy, \
-    class_info: GDE.ClassCreationInfo4 = class_info_Default) {
+    class_info: GDE.ClassCreationInfo4 = class_info_Default, loc:= #caller_location) {
     
     // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
-    assert(self.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name))
+    assert(self.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name))
 
     //Set the create and destroy procs in the class's deets struct for easy reference in Odin-land.
     self.create = create
@@ -218,14 +220,14 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
     class_info.get_virtual_func = get_v_table
     //class_info.to_string_func(nil, &r_bool, &pout)
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct(&self.SN, type_info_of(self.class_struct).variant.(runtime.Type_Info_Named).name)
+    GDW.StringConstruct(&self.SN, type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name)
 
-    self.GDClass_StringName = GDW.GDClass_StringName_get(self.GDClass_Index)
+    self.GDClass_StringName = GDClass_StringName_get(self.required.GDClass_Index)
 
     gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &self.SN, self.GDClass_StringName, &class_info)
-    
-    if self.binder != nil {
-        self.binder(&self.SN)
+
+    if self.Exporter != nil {
+        self.Exporter(&self.SN)
     }
 }
 

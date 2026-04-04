@@ -6,10 +6,13 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Transform2D_IDENTITY : Transform2D= {1, 0, 0, 1, 0, 0}
 @(rodata)
+@(export)
 Transform2D_FLIP_X : Transform2D= {-1, 0, 0, 1, 0, 0}
 @(rodata)
+@(export)
 Transform2D_FLIP_Y : Transform2D= {1, 0, 0, -1, 0, 0}
 Transform2D_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Transform2D, p_args: rawptr = nil),
@@ -55,7 +58,7 @@ Transform2D_Methods_list :: struct {
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Transform2D, p_right: ^Array, r_result: ^Bool),
     VARIANT_OP_MULTIPLY_PackedVector2Array: proc "c" (p_left: ^Transform2D, p_right: ^PackedVector2Array, r_result: ^PackedVector2Array),
 }
-init_Transform2D_Methods :: proc(Transform2D_method_store: ^Transform2D_Methods_list) {
+init_Transform2D_Methods :: proc "c" (Transform2D_method_store: ^Transform2D_Methods_list) {
   Transform2D_method_store.Create0 = cast(type_of(Transform2D_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 0)
   Transform2D_method_store.Create1 = cast(type_of(Transform2D_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 1)
   Transform2D_method_store.Create2 = cast(type_of(Transform2D_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 2)

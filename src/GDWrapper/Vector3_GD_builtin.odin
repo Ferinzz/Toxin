@@ -6,34 +6,49 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Vector3_ZERO : Vector3= {0, 0, 0}
 @(rodata)
+@(export)
 Vector3_ONE : Vector3= {1, 1, 1}
 @(rodata)
+@(export)
 Vector3_INF : Vector3= {math.INF_F32, math.INF_F32, math.INF_F32}
 @(rodata)
+@(export)
 Vector3_LEFT : Vector3= {-1, 0, 0}
 @(rodata)
+@(export)
 Vector3_RIGHT : Vector3= {1, 0, 0}
 @(rodata)
+@(export)
 Vector3_UP : Vector3= {0, 1, 0}
 @(rodata)
+@(export)
 Vector3_DOWN : Vector3= {0, -1, 0}
 @(rodata)
+@(export)
 Vector3_FORWARD : Vector3= {0, 0, -1}
 @(rodata)
+@(export)
 Vector3_BACK : Vector3= {0, 0, 1}
 @(rodata)
+@(export)
 Vector3_MODEL_LEFT : Vector3= {1, 0, 0}
 @(rodata)
+@(export)
 Vector3_MODEL_RIGHT : Vector3= {-1, 0, 0}
 @(rodata)
+@(export)
 Vector3_MODEL_TOP : Vector3= {0, 1, 0}
 @(rodata)
+@(export)
 Vector3_MODEL_BOTTOM : Vector3= {0, -1, 0}
 @(rodata)
+@(export)
 Vector3_MODEL_FRONT : Vector3= {0, 0, 1}
 @(rodata)
+@(export)
 Vector3_MODEL_REAR : Vector3= {0, 0, -1}
 
 Vector3_Axis :: enum i64 {
@@ -121,7 +136,7 @@ Vector3_Methods_list :: struct {
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Vector3, p_right: ^Array, r_result: ^Bool),
     VARIANT_OP_IN_PackedVector3Array: proc "c" (p_left: ^Vector3, p_right: ^PackedVector3Array, r_result: ^Bool),
 }
-init_Vector3_Methods :: proc(Vector3_method_store: ^Vector3_Methods_list) {
+init_Vector3_Methods :: proc "c" (Vector3_method_store: ^Vector3_Methods_list) {
   Vector3_method_store.Create0 = cast(type_of(Vector3_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 0)
   Vector3_method_store.Create1 = cast(type_of(Vector3_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 1)
   Vector3_method_store.Create2 = cast(type_of(Vector3_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR3, 2)

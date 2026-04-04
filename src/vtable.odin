@@ -2,18 +2,19 @@ package main
 
 import "core:flags"
 import "core:reflect"
-//import GDW "shared:GDWrapper"
+//import GDW "GDWrapper"
 import "Toxin"
 import "base:runtime"
 import "core:fmt"
-import GDW "shared:GDWrapper"
+import GDW "GDWrapper"
 import sics "base:intrinsics"
 //import "../GD_Classes"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import Classes "GD_Classes"
+import "GDWrapper/gdAPI"
+import GDE "GDWrapper/gdAPI/gdextension"
 import Math "core:math"
 import rand "core:math/rand"
+import "GD_Classes"
 import "base:builtin"
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
@@ -106,11 +107,13 @@ Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
-    self_register = self_reggy,
-    init_level = .INITIALIZATION_SCENE,
-    GDClass_Index = .Sprite2D,
-    class_struct = THIS_CLASS_NAME,
-    binder = THIS_CLASS_NAME_Export,
+    required = {
+        class_struct = THIS_CLASS_NAME,
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = Classes.ClassName_Index.Sprite2D,
+        registerer = {self_register = self_reggy,},
+    },
+    Exporter = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
 }
 

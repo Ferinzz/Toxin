@@ -1,10 +1,10 @@
 #+ignore
 package main
 
-import "shared:Toxin"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import "Toxin"
+import Classes "Godot_Odin_Binds/GD_Classes"
+import GDW "GDWrapper"
+import "GDWrapper/gdAPI"
 import "core:fmt"
 import "base:runtime"
 import "core:math"
@@ -49,6 +49,7 @@ frame_times:[frame_count_amout]f64
 frame_current:int=0
 
 MainLoopFrameCallback :: proc "c" () {
+    GDW.getMainLoop()
     context = runtime.default_context()
     perf:Toxin.float=0
     Node_Class.get_process_delta_time->m_call(root, r_ret = &perf)

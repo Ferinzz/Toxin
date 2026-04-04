@@ -101,7 +101,7 @@ Nil_Methods_list :: struct {
     VARIANT_OP_EQUAL_PackedVector4Array: proc "c" (p_left: rawptr = nil, p_right: ^PackedVector4Array, r_result: ^Bool),
     VARIANT_OP_NOT_EQUAL_PackedVector4Array: proc "c" (p_left: rawptr = nil, p_right: ^PackedVector4Array, r_result: ^Bool),
 }
-init_Nil_Methods :: proc(Nil_method_store: ^Nil_Methods_list) {
+init_Nil_Methods :: proc "c" (Nil_method_store: ^Nil_Methods_list) {
   Nil_method_store.Create0 = cast(type_of(Nil_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.NIL, 0)
   Nil_method_store.Create1 = cast(type_of(Nil_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.NIL, 1)
     Nil_method_store.get_ptr = cast(type_of(Nil_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.NIL)

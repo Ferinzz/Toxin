@@ -13,7 +13,7 @@ import "base:runtime"
 * hash : the hash of the method. find it in the json. Careful of buildmode it's under.
 */
 @(deprecated="Use classDBGetMethodBind3")
-classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+classDBGetMethodBind :: proc "c" (className, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
 
     native_class_name: StringName;
     method_name: StringName;
@@ -22,7 +22,7 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #
     gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
     
     methodBind = gdAPI.ClassDB.GetMethodBind(&native_class_name, &method_name, hash)
-    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+    //assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
     
     StringName_M_List.Destroy(&native_class_name)
     StringName_M_List.Destroy(&method_name)
@@ -31,14 +31,14 @@ classDBGetMethodBind :: proc(className, methodName: cstring, hash: i64, loc := #
 }
 
 @(deprecated="Use classDBGetMethodBind3")
-classDBGetMethodBind2 :: proc(className: ^StringName, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
-    assert(className != nil, "ClassName is nil. Did you accidentally free this early?")
+classDBGetMethodBind2 :: proc "c" (className: ^StringName, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+    //assert(className != nil, "ClassName is nil. Did you accidentally free this early?")
     method_name: StringName;
     
     gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
     
     methodBind = gdAPI.ClassDB.GetMethodBind(className, &method_name, hash)
-    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+    //assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
     
     
     StringName_M_List.Destroy(&method_name)
@@ -46,15 +46,15 @@ classDBGetMethodBind2 :: proc(className: ^StringName, methodName: cstring, hash:
     return methodBind
 }
 
-classDBGetMethodBind3 :: proc(className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+classDBGetMethodBind3 :: proc "c" (className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
     native_class_name: ^StringName;
     method_name: StringName;
 
-    native_class_name = GDClass_StringName_get(className)
+    //native_class_name = GDClass_StringName_get(className)
     gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
 
-    methodBind = gdAPI.ClassDB.GetMethodBind(native_class_name, &method_name, hash)
-    assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+    methodBind = gdAPI.ClassDB.GetMethodBind(&method_name, &method_name, hash)
+    //assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
 
     StringName_M_List.Destroy(&method_name)
 

@@ -1,3 +1,4 @@
+#+ignore
 package GDWrapper
 
 import "base:runtime"

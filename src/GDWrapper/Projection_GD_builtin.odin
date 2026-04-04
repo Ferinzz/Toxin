@@ -6,8 +6,10 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Projection_IDENTITY : Projection= {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
 @(rodata)
+@(export)
 Projection_ZERO : Projection= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 Projection_Planes :: enum i64 {
@@ -60,7 +62,7 @@ Projection_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Projection, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Projection, p_right: ^Array, r_result: ^Bool),
 }
-init_Projection_Methods :: proc(Projection_method_store: ^Projection_Methods_list) {
+init_Projection_Methods :: proc "c" (Projection_method_store: ^Projection_Methods_list) {
   Projection_method_store.Create0 = cast(type_of(Projection_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 0)
   Projection_method_store.Create1 = cast(type_of(Projection_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 1)
   Projection_method_store.Create2 = cast(type_of(Projection_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PROJECTION, 2)

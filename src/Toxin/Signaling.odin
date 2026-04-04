@@ -1,8 +1,8 @@
 package Toxin
 
-import GDW "shared:GDWrapper"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
+import GDW "../GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
 import "base:runtime"
 import sics "base:intrinsics"
 

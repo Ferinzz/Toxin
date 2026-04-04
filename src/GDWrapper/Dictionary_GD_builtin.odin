@@ -56,7 +56,7 @@ Dictionary_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Dictionary, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Dictionary, p_right: ^Array, r_result: ^Bool),
 }
-init_Dictionary_Methods :: proc(Dictionary_method_store: ^Dictionary_Methods_list) {
+init_Dictionary_Methods :: proc "c" (Dictionary_method_store: ^Dictionary_Methods_list) {
   Dictionary_method_store.Create0 = cast(type_of(Dictionary_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 0)
   Dictionary_method_store.Create1 = cast(type_of(Dictionary_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 1)
   Dictionary_method_store.Create2 = cast(type_of(Dictionary_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 2)

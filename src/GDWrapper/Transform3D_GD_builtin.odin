@@ -6,12 +6,16 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Transform3D_IDENTITY : Transform3D= {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}
 @(rodata)
+@(export)
 Transform3D_FLIP_X : Transform3D= {-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}
 @(rodata)
+@(export)
 Transform3D_FLIP_Y : Transform3D= {1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0}
 @(rodata)
+@(export)
 Transform3D_FLIP_Z : Transform3D= {1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0}
 Transform3D_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Transform3D, p_args: rawptr = nil),
@@ -48,7 +52,7 @@ Transform3D_Methods_list :: struct {
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Transform3D, p_right: ^Array, r_result: ^Bool),
     VARIANT_OP_MULTIPLY_PackedVector3Array: proc "c" (p_left: ^Transform3D, p_right: ^PackedVector3Array, r_result: ^PackedVector3Array),
 }
-init_Transform3D_Methods :: proc(Transform3D_method_store: ^Transform3D_Methods_list) {
+init_Transform3D_Methods :: proc "c" (Transform3D_method_store: ^Transform3D_Methods_list) {
   Transform3D_method_store.Create0 = cast(type_of(Transform3D_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 0)
   Transform3D_method_store.Create1 = cast(type_of(Transform3D_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 1)
   Transform3D_method_store.Create2 = cast(type_of(Transform3D_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM3D, 2)

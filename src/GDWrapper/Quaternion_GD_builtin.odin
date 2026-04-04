@@ -50,7 +50,7 @@ Quaternion_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Quaternion, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Quaternion, p_right: ^Array, r_result: ^Bool),
 }
-init_Quaternion_Methods :: proc(Quaternion_method_store: ^Quaternion_Methods_list) {
+init_Quaternion_Methods :: proc "c" (Quaternion_method_store: ^Quaternion_Methods_list) {
   Quaternion_method_store.Create0 = cast(type_of(Quaternion_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 0)
   Quaternion_method_store.Create1 = cast(type_of(Quaternion_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 1)
   Quaternion_method_store.Create2 = cast(type_of(Quaternion_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 2)

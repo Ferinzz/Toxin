@@ -1,8 +1,10 @@
-#+ignore
+//#+ignore
 package Toxin
 
 //import GDE "GDWrapper/gdAPI/gdextension"
-import GDW "shared:GDWrapper"
+import GDW "../GDWrapper"
+import Classes "../GD_Classes"
+import "core:reflect"
 
 ClassNameString :: string
 
@@ -11,25 +13,25 @@ SN_Error :: enum {
     BAD_INDEX,
 }
 
-GDClass_StringName_get :: proc(classname_index: GDW.ClassName_Index) -> ^StringName {
+GDClass_StringName_get :: proc(classname_index: Classes.ClassName_Index) -> ^StringName {
     //ClassName_StringNames[classname_index]
-    if GDW.ClassName_StringNames[classname_index].ptr == nil {
-        GDW.StringConstruct.stringNameNewString(&ClassName_StringNames[classname_index], reflect.enum_field_names(ClassName_Index)[classname_index])
+    if Classes.ClassName_StringNames[classname_index].ptr == nil {
+        GDW.StringConstruct(&Classes.ClassName_StringNames[classname_index], reflect.enum_field_names(Classes.ClassName_Index)[classname_index])
     }
-    return &ClassName_StringNames[classname_index]
+    return &Classes.ClassName_StringNames[classname_index]
 }
 
-ClassName_StringName_Del :: proc(classname_index: GDW.ClassName_Index) -> SN_Error {
+ClassName_StringName_Del :: proc(classname_index: Classes.ClassName_Index) -> SN_Error {
     when ODIN_DEBUG {
-        if int(classname_index) > len(ClassName_Index) {
+        if int(classname_index) > len(classname_index) {
             return .BAD_INDEX
         }
-        if ClassName_StringNames[classname_index].ptr == nil {
+        if Classes.ClassName_StringNames[classname_index].ptr == nil {
             return .ALREADY_NIL
         }
     }
 
-    GDW.StringName_M_List.Destroy(&GDW.ClassName_StringNames[classname_index])
+    GDW.StringName_M_List.Destroy(&Classes.ClassName_StringNames[classname_index])
 
     return nil
 }

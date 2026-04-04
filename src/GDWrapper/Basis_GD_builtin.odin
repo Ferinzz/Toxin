@@ -6,12 +6,16 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Basis_IDENTITY : Basis= {1, 0, 0, 0, 1, 0, 0, 0, 1}
 @(rodata)
+@(export)
 Basis_FLIP_X : Basis= {-1, 0, 0, 0, 1, 0, 0, 0, 1}
 @(rodata)
+@(export)
 Basis_FLIP_Y : Basis= {1, 0, 0, 0, -1, 0, 0, 0, 1}
 @(rodata)
+@(export)
 Basis_FLIP_Z : Basis= {1, 0, 0, 0, 1, 0, 0, 0, -1}
 Basis_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Basis, p_args: rawptr = nil),
@@ -54,7 +58,7 @@ Basis_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Basis, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Basis, p_right: ^Array, r_result: ^Bool),
 }
-init_Basis_Methods :: proc(Basis_method_store: ^Basis_Methods_list) {
+init_Basis_Methods :: proc "c" (Basis_method_store: ^Basis_Methods_list) {
   Basis_method_store.Create0 = cast(type_of(Basis_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 0)
   Basis_method_store.Create1 = cast(type_of(Basis_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 1)
   Basis_method_store.Create2 = cast(type_of(Basis_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 2)

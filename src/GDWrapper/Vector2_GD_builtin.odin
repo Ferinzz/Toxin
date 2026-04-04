@@ -6,18 +6,25 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Vector2_ZERO : Vector2= {0, 0}
 @(rodata)
+@(export)
 Vector2_ONE : Vector2= {1, 1}
 @(rodata)
+@(export)
 Vector2_INF : Vector2= {math.INF_F32, math.INF_F32}
 @(rodata)
+@(export)
 Vector2_LEFT : Vector2= {-1, 0}
 @(rodata)
+@(export)
 Vector2_RIGHT : Vector2= {1, 0}
 @(rodata)
+@(export)
 Vector2_UP : Vector2= {0, -1}
 @(rodata)
+@(export)
 Vector2_DOWN : Vector2= {0, 1}
 
 Vector2_Axis :: enum i64 {
@@ -102,7 +109,7 @@ Vector2_Methods_list :: struct {
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Vector2, p_right: ^Array, r_result: ^Bool),
     VARIANT_OP_IN_PackedVector2Array: proc "c" (p_left: ^Vector2, p_right: ^PackedVector2Array, r_result: ^Bool),
 }
-init_Vector2_Methods :: proc(Vector2_method_store: ^Vector2_Methods_list) {
+init_Vector2_Methods :: proc "c" (Vector2_method_store: ^Vector2_Methods_list) {
   Vector2_method_store.Create0 = cast(type_of(Vector2_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 0)
   Vector2_method_store.Create1 = cast(type_of(Vector2_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 1)
   Vector2_method_store.Create2 = cast(type_of(Vector2_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2, 2)

@@ -1,8 +1,8 @@
 package Toxin
 
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 import "base:runtime"
 import "core:mem"
 import "core:slice"
@@ -196,7 +196,9 @@ copy_from_variant :: proc{
     DictionaryfromVariant,
 
     ArrayfromVariant,
+    PackedByteArrayfromVariant,
     Packedi32ArrayfromVariant,
+    PackedStringArrayfromVariant,
     Packedi64ArrayfromVariant,
     Packedf32ArrayfromVariant,
     Packedf64ArrayfromVariant,
@@ -566,12 +568,26 @@ ArrayfromVariant :: proc(P_dest: ^Array, p_source: ^Variant) -> type_from_varian
         return {}
     } else do return {.WRONG_TYPE, .ARRAY, p_source.VType}
 }
+PackedByteArrayfromVariant :: proc(P_dest: ^GDW.packedArray(u8), p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_BYTE_ARRAY {
+        P_dest^ = GDW.PackedByteArray_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_BYTE_ARRAY, p_source.VType}
+}
 Packedi32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i32), p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .PACKED_INT32_ARRAY {
         P_dest^ = GDW.PackedInt32Array_M_List.get_ptr(p_source)^
         return {}
     }
     return {.WRONG_TYPE, .PACKED_INT32_ARRAY, p_source.VType}
+}
+PackedStringArrayfromVariant :: proc(P_dest: ^GDE.PackedStringArray, p_source: ^Variant) -> type_from_variant_error {
+    if p_source.VType == .PACKED_STRING_ARRAY {
+        P_dest^ = GDW.PackedStringArray_M_List.get_ptr(p_source)^
+        return {}
+    }
+    return {.WRONG_TYPE, .PACKED_STRING_ARRAY, p_source.VType}
 }
 Packedi64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i64), p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .PACKED_INT64_ARRAY {
@@ -619,7 +635,8 @@ PackedColorArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Color), p_source: ^
     if p_source.VType == .PACKED_COLOR_ARRAY {
         P_dest^ = GDW.PackedColorArray_M_List.get_ptr(p_source)^
         return {}
-    }
+    } else {
+        GDW.PackedColorArray_M_List.Create2(P_dest,{(transmute(^Array)p_source.data[0])})}
     return {.WRONG_TYPE, .PACKED_COLOR_ARRAY, p_source.VType}
 }
 
@@ -777,18 +794,18 @@ Packedf32ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedFloat32A
         panic("PackedFloat32Array was not initialized before using with Godot method.", loc)
     }
 }
+PackedStringArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedStringArray, loc:=#caller_location) {
+    GDW.new_variant_from_methods(p_variant, p_from)
+    //Godot doesn't seem to handle receiving nil very well for this particular type.
+    if p_from.data == nil {
+        panic("PackedFloat32Array was not initialized before using with Godot method.", loc)
+    }
+}
 Packedf64ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedFloat64Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
     //Godot doesn't seem to handle receiving nil very well for this particular type.
     if p_from.data == nil {
         panic("PackedFloat64Array was not initialized before using with Godot method.", loc)
-    }
-}
-PackedStringArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedStringArray, loc:=#caller_location) {
-    GDW.new_variant_from_methods(p_variant, p_from)
-    //Godot doesn't seem to handle receiving nil very well for this particular type.
-    if p_from.data == nil {
-        panic("PackedStringArray was not initialized before using with Godot method.", loc)
     }
 }
 PackedVec2ArraytoVariant :: proc(p_variant: ^GDE.Variant, p_from: ^PackedVector2Array, loc:=#caller_location) {
@@ -903,90 +920,68 @@ fromvariant :: proc(variant: ^Variant, $T: typeid) -> T {
 }
 
 ref_count_AABB :: proc(source: ^AABB, copy: ^AABB) {
-    arg:=[1]rawptr {source}
     GDW.AABB_M_List.Create1(copy, {source})
 }
 ref_count_BASIS :: proc(source: ^Basis, copy: ^Basis) {
-    arg:=[1]rawptr {source}
     GDW.Basis_M_List.Create1(copy, {source})
 }
 ref_count_TRANSFORM2D :: proc(source: ^Transform2D, copy: ^Transform2D) {
-    arg:=[1]rawptr {source}
     GDW.Transform2D_M_List.Create1(copy, {source})
 }
 ref_count_TRANSFORM3D :: proc(source: ^Transform3D, copy: ^Transform3D) {
-    arg:=[1]rawptr {source}
     GDW.Transform3D_M_List.Create1(copy, {source})
 }
 ref_count_PROJECTION :: proc(source: ^Projection, copy: ^Projection) {
-    arg:=[1]rawptr {source}
     GDW.Projection_M_List.Create1(copy, {source})
 }
 ref_count_STRING :: proc(source: ^gdstring, copy: ^gdstring) {
-    arg:=[1]rawptr {source}
     GDW.gdstring_M_List.Create1(copy, {source})
 }
 ref_count_STRING_NAME :: proc(source: ^StringName, copy: ^StringName) {
-    arg:=[1]rawptr {source}
     GDW.StringName_M_List.Create1(copy, {source})
 }
 ref_count_NODE_PATH :: proc(source: ^NodePath, copy: ^NodePath) {
-    arg:=[1]rawptr {source}
     GDW.NodePath_M_List.Create1(copy, {source})
 }
 ref_count_SIGNAL :: proc(source: ^Signal, copy: ^Signal) {
-    arg:=[1]rawptr {source}
     GDW.Signal_M_List.Create1(copy, {source})
 }
 ref_count_CALLABLE :: proc(source: ^Callable, copy: ^Callable) {
-    arg:=[1]rawptr {source}
     GDW.Callable_M_List.Create1(copy, {source})
 }
 ref_count_DICTIONARY :: proc(source: ^Dictionary, copy: ^Dictionary) {
-    arg:=[1]rawptr {source}
     GDW.Dictionary_M_List.Create1(copy, {source})
 }
 ref_count_ARRAY :: proc(source: ^Array, copy: ^Array) {
-    arg:=[1]rawptr{source }
     GDW.Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_BYTE_ARRAY :: proc(source: ^PackedByteArray, copy: ^PackedByteArray) {
-    arg:=[1]rawptr {source}
     GDW.PackedByteArray_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_INT32_ARRAY :: proc(source: ^PackedInt32Array, copy: ^PackedInt32Array) {
-    arg:=[1]rawptr {source}
     GDW.PackedInt32Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_INT64_ARRAY :: proc(source: ^PackedInt64Array, copy: ^PackedInt64Array) {
-    arg:=[1]rawptr {source}
     GDW.PackedInt64Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_FLOAT32_ARRAY :: proc(source: ^PackedFloat32Array, copy: ^PackedFloat32Array) {
-    arg:=[1]rawptr {source}
     GDW.PackedFloat32Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_FLOAT64_ARRAY :: proc(source: ^PackedFloat64Array, copy: ^PackedFloat64Array) {
-    arg:=[1]rawptr {source}
     GDW.PackedFloat64Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_STRING_ARRAY :: proc(source: ^PackedStringArray, copy: ^PackedStringArray) {
-    arg:=[1]rawptr {source}
     GDW.PackedStringArray_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_VECTOR2_ARRAY :: proc(source: ^PackedVector2Array, copy: ^PackedVector2Array) {
-    arg:=[1]rawptr {source}
     GDW.PackedVector2Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_VECTOR3_ARRAY :: proc(source: ^PackedVector3Array, copy: ^PackedVector3Array) {
-    arg:=[1]rawptr {source}
     GDW.PackedVector3Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_COLOR_ARRAY :: proc(source: ^PackedColorArray, copy: ^PackedColorArray) {
-    arg:=[1]rawptr {source}
     GDW.PackedColorArray_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_VECTOR4_ARRAY :: proc(source: ^PackedVector4Array, copy: ^PackedVector4Array) {
-    arg:=[1]rawptr {source}
     GDW.PackedVector4Array_M_List.Create1(copy, {source})
 }

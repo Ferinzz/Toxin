@@ -28,7 +28,7 @@ NodePath_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^NodePath, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^NodePath, p_right: ^Array, r_result: ^Bool),
 }
-init_NodePath_Methods :: proc(NodePath_method_store: ^NodePath_Methods_list) {
+init_NodePath_Methods :: proc "c" (NodePath_method_store: ^NodePath_Methods_list) {
   NodePath_method_store.Create0 = cast(type_of(NodePath_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.NODE_PATH, 0)
   NodePath_method_store.Create1 = cast(type_of(NodePath_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.NODE_PATH, 1)
   NodePath_method_store.Create2 = cast(type_of(NodePath_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.NODE_PATH, 2)

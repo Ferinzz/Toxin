@@ -143,6 +143,8 @@ Object :: distinct struct{
     proxy:rawptr,
 }
 
+ClassTag :: distinct rawptr
+
 //Check Godot's docs for more info about each variant type: https://docs.godotengine.org/en/stable/classes/index.html#variant-types
 //Set to 40 if double is double precision
 //Data itself is in the _data union : https://github.com/godotengine/godot/blob/45fc515ae3574e9c1f9deacaa6960dec68a7d38b/core/variant/variant.h#L263
@@ -384,7 +386,7 @@ ClassPropertyGetRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: Cons
 ClassValidateProperty 		:: proc "c" (p_instance: ClassInstancePtr, p_property: ^PropertyInfo) -> b8
 ClassNotification 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32); // Deprecated. Use ClassNotification2 instead.
 ClassNotification2 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32,  p_reversed: b8);
-ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: b8, p_out: StringPtr);
+ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: ^b8, p_out: StringPtr);
 ClassReference 				:: proc "c" (p_instance: ClassInstancePtr);
 ClassUnreference 			:: proc "c" (p_instance: ClassInstancePtr);
 ClassCallVirtual 			:: proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtr ,  r_ret: TypePtr);
@@ -3292,7 +3294,7 @@ InterfaceClassdbGetMethodBind :: proc "c" (p_classname: ConstStringNamePtr, p_me
  *
  * @return A pointer uniquely identifying the built-in class in the ClassDB.
  */
-InterfaceClassdbGetClassTag :: proc "c" (p_classname: ConstStringNamePtr) -> rawptr;
+InterfaceClassdbGetClassTag :: proc "c" (p_classname: ConstStringNamePtr) -> ClassTag;
 
 /* INTERFACE: ClassDB Extension */
 

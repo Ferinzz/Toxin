@@ -85,7 +85,7 @@ Array_Methods_list :: struct {
     VARIANT_OP_ADD_Array: proc "c" (p_left: ^Array, p_right: ^Array, r_result: ^Array),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Array, p_right: ^Array, r_result: ^Bool),
 }
-init_Array_Methods :: proc(Array_method_store: ^Array_Methods_list) {
+init_Array_Methods :: proc "c" (Array_method_store: ^Array_Methods_list) {
   Array_method_store.Create0 = cast(type_of(Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 0)
   Array_method_store.Create1 = cast(type_of(Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 1)
   Array_method_store.Create2 = cast(type_of(Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 2)

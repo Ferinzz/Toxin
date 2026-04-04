@@ -43,7 +43,7 @@ PackedFloat32Array_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedFloat32Array: proc "c" (p_left: ^PackedFloat32Array, p_right: ^PackedFloat32Array, r_result: ^Bool),
     VARIANT_OP_ADD_PackedFloat32Array: proc "c" (p_left: ^PackedFloat32Array, p_right: ^PackedFloat32Array, r_result: ^PackedFloat32Array),
 }
-init_PackedFloat32Array_Methods :: proc(PackedFloat32Array_method_store: ^PackedFloat32Array_Methods_list) {
+init_PackedFloat32Array_Methods :: proc "c" (PackedFloat32Array_method_store: ^PackedFloat32Array_Methods_list) {
   PackedFloat32Array_method_store.Create0 = cast(type_of(PackedFloat32Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 0)
   PackedFloat32Array_method_store.Create1 = cast(type_of(PackedFloat32Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 1)
   PackedFloat32Array_method_store.Create2 = cast(type_of(PackedFloat32Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 2)

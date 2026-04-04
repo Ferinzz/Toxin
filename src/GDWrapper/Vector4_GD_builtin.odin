@@ -6,10 +6,13 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Vector4_ZERO : Vector4= {0, 0, 0, 0}
 @(rodata)
+@(export)
 Vector4_ONE : Vector4= {1, 1, 1, 1}
 @(rodata)
+@(export)
 Vector4_INF : Vector4= {math.INF_F32, math.INF_F32, math.INF_F32, math.INF_F32}
 
 Vector4_Axis :: enum i64 {
@@ -80,7 +83,7 @@ Vector4_Methods_list :: struct {
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Vector4, p_right: ^Array, r_result: ^Bool),
     VARIANT_OP_IN_PackedVector4Array: proc "c" (p_left: ^Vector4, p_right: ^PackedVector4Array, r_result: ^Bool),
 }
-init_Vector4_Methods :: proc(Vector4_method_store: ^Vector4_Methods_list) {
+init_Vector4_Methods :: proc "c" (Vector4_method_store: ^Vector4_Methods_list) {
   Vector4_method_store.Create0 = cast(type_of(Vector4_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 0)
   Vector4_method_store.Create1 = cast(type_of(Vector4_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 1)
   Vector4_method_store.Create2 = cast(type_of(Vector4_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR4, 2)

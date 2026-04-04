@@ -1,13 +1,14 @@
 #+feature using-stmt
 package Toxin
 
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 import "base:runtime"
 import sics "base:intrinsics"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../GD_Classes"
 import "Input"
+import "core:fmt"
 
 /*
 * A bit of a hack, but since the data passed in from Godot is known based on the method being called
@@ -231,7 +232,7 @@ CollisionObject3D_Virtual_Info: struct {
 Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
 
         using Node_Virtuals_Info
-        
+        //fmt.println("node virtuals")
         if (GDW.stringNameCompare(p_name, &_ready.name) && p_hash == _ready.p_hash) {
             return cast(rawptr)class_v_table._ready, true
         }

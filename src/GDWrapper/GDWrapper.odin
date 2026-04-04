@@ -6,13 +6,12 @@ import "gdAPI"
 import sics "base:intrinsics"
 import "core:slice"
 import "core:reflect"
-import "core:fmt"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
+//import Classes "Godot_Odin_Binds/GD_Classes"
 
 Library : GDE.ClassDB = nil
 
-
-Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
+@(export)
+Init_Wrapper :: proc "c" (p_get_proc_address : GDE.InterfaceGetProcAddress) {
     gdAPI.loadAPI(p_get_proc_address)
     Init_Builtins()
     Init_Variant_Converters()
@@ -24,7 +23,8 @@ Init_Wrapper :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress) {
 * This function returns a pointer to the object. If SceneTree is your mainLoop (or your own version of it) call
 * this to get the object instead of Node's get_tree which would provide a ref to SceneTree instead.
 */
-getMainLoop :: proc() -> (gdLoop: ^Object) {
+/*
+getMainLoop :: proc "c" () -> (gdLoop: ^Object) {
     @(static)getMainLoop:GDE.MethodBindPtr
 
     ClassDB:StringName
@@ -39,7 +39,7 @@ getMainLoop :: proc() -> (gdLoop: ^Object) {
     gdAPI.Object_Utils.MethodBindPtrcall(getMainLoop, myEngine, nil, &gdLoop)
     return
 }
-get_current_scene :: proc() -> ^Object {
+get_current_scene :: proc "c" () -> ^Object {
     @(static)getCurrentScene: GDE.MethodBindPtr
     if getCurrentScene == nil {
         getCurrentScene = classDBGetMethodBind3(.SceneTree, "get_current_scene", 3160264692)
@@ -49,8 +49,9 @@ get_current_scene :: proc() -> ^Object {
     gdAPI.Object_Utils.MethodBindPtrcall(getCurrentScene, mySceneTree, nil, &r_ret)
     return r_ret
 }
+*/
 
-getPerformance :: proc() -> ^Object {
+getPerformance :: proc "c" () -> ^Object {
     @(static)getMainLoop:GDE.MethodBindPtr
 
     ClassDB:StringName
@@ -64,7 +65,8 @@ getPerformance :: proc() -> ^Object {
 * Force_readable_name default should be false if you care about performance. True if you really want a name to be visible to the user.
 * Use internalMode to hide children from the user. But make sure to set include_internal to true when calling get_children.
 */
-addChild :: proc(parent: ^Object, child: ^^Object, force_readable_name: Bool = false, internalMode: InternalMode = .INTERNAL_MODE_DISABLED) {
+/*
+addChild :: proc "c" (parent: ^Object, child: ^^Object, force_readable_name: Bool = false, internalMode: InternalMode = .INTERNAL_MODE_DISABLED) {
 
     force_readable_name:= force_readable_name
     internalMode:= internalMode
@@ -78,7 +80,7 @@ addChild :: proc(parent: ^Object, child: ^^Object, force_readable_name: Bool = f
     
     dummyReturn:rawptr
     gdAPI.Object_Utils.MethodBindPtrcall(addChild, parent, raw_data(args[:]), dummyReturn)
-}
+}*/
 
 InternalMode :: enum GDE.Int {
     INTERNAL_MODE_DISABLED,
@@ -86,7 +88,8 @@ InternalMode :: enum GDE.Int {
     INTERNAL_MODE_BACK,
 }
 
-getRoot :: proc() -> ^Object {
+/*
+getRoot :: proc "c" () -> ^Object {
     @(static)getRoot: GDE.MethodBindPtr
     if getRoot == nil {
         getRoot = classDBGetMethodBind3(.SceneTree, "get_root", 1757182445)
@@ -95,23 +98,27 @@ getRoot :: proc() -> ^Object {
     r_ret:^Object
     gdAPI.Object_Utils.MethodBindPtrcall(getRoot, mySceneTree, nil, &r_ret)
     return r_ret
-}
+}*/
 
 
 StringConstruct :: proc {
     stringNameNewString,
     stringNameNewString_r,
 }
-stringNameNewString :: proc(StringName_r: ^StringName, name: string) {
+@(export)
+stringNameNewString :: proc "c" (StringName_r: ^StringName, name: string) {
         gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
     }
+
+@(export)
 @(require_results)
-stringNameNewString_r :: proc(name: string) -> (r_ret: StringName) {
+stringNameNewString_r :: proc "c" (name: string) -> (r_ret: StringName) {
         gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
         return
 }
 
-Get_Builtin_Method :: proc(variant_type: GDE.VariantType, method_name: string, hash: Int) -> GDE.PtrBuiltInMethod {
+@(export)
+Get_Builtin_Method :: proc "c" (variant_type: GDE.VariantType, method_name: string, hash: Int) -> GDE.PtrBuiltInMethod {
     method_name_SN: StringName
     defer StringName_M_List.Destroy(&method_name_SN)
     stringNameNewString(&method_name_SN, method_name)
@@ -126,7 +133,7 @@ stringNameCompare :: proc {
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
 @(deprecated="use stringNameCompare_string")
-stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (ret: Bool) {
+stringNameCompare_cstring :: proc "c" (l_value: ^StringName, r_value: cstring) -> (ret: Bool) {
     r_name: StringName
     gdAPI.StringName_Utils.Latin1Chars(&r_name, r_value, false)
     defer(StringName_M_List.Destroy(&r_name))
@@ -138,7 +145,8 @@ stringNameCompare_cstring :: proc(l_value: ^StringName, r_value: cstring) -> (re
 
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare_string :: proc(l_value: ^StringName, r_value: string) -> (ret: Bool) {
+@(export)
+stringNameCompare_string :: proc "c" (l_value: ^StringName, r_value: string) -> (ret: Bool) {
     r_name: StringName
     StringConstruct(&r_name, r_value)
     defer(StringName_M_List.Destroy(&r_name))
@@ -149,32 +157,34 @@ stringNameCompare_string :: proc(l_value: ^StringName, r_value: string) -> (ret:
 }
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-stringNameCompare_StringName :: proc(l_value: ^StringName, r_value: ^StringName) -> (ret: Bool) {
+@(export)
+stringNameCompare_StringName :: proc "c" (l_value: ^StringName, r_value: ^StringName) -> (ret: Bool) {
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
     StringName_M_List.VARIANT_OP_EQUAL_StringName(l_value, r_value, &ret)
     return ret
 }
 
-getRid :: proc(ref: ^Object, r_ret: ^RID) {
+/*
+getRid :: proc "c" (ref: ^Object, r_ret: ^RID) {
     @(static)GetRID: GDE.MethodBindPtr
     if GetRID == nil do GetRID = classDBGetMethodBind3(.Resource, "get_rid", 2944877500)
     
     gdAPI.Object_Utils.MethodBindPtrcall(GetRID, ref, nil, r_ret)
 }
+*/
 
-
-Get_Method_Getter :: proc(type: GDE.VariantType, name: string) -> GDE.PtrGetter {
+Get_Method_Getter :: proc "c" (type: GDE.VariantType, name: string) -> GDE.PtrGetter {
     name_SN:StringName
     StringConstruct(&name_SN, name)
     return gdAPI.Variant_Utils.GetPtrGetter(type, &name_SN)
 }
-Get_Method_Setter :: proc(type: GDE.VariantType, name: string) -> GDE.PtrGetter {
+Get_Method_Setter :: proc "c" (type: GDE.VariantType, name: string) -> GDE.PtrGetter {
     name_SN:= StringConstruct(name)
     return gdAPI.Variant_Utils.GetPtrSetter(type, &name_SN)
 }
 
-StringNameGetBasename :: proc(StringNamePtr: ^StringName, r_String: ^gdstring) {
+StringNameGetBasename :: proc "c" (StringNamePtr: ^StringName, r_String: ^gdstring) {
     @(static)stringNameGetBasename: GDE.PtrBuiltInMethod
     if stringNameGetBasename == nil {
         ClassDB:StringName
@@ -186,7 +196,7 @@ StringNameGetBasename :: proc(StringNamePtr: ^StringName, r_String: ^gdstring) {
 
 }
 
-GDStringJoin :: proc(packedString: ^PackedStringArray, r_String: ^gdstring) {
+GDStringJoin :: proc "c" (packedString: ^PackedStringArray, r_String: ^gdstring) {
     @(static)gdStringJoin: GDE.PtrBuiltInMethod
     if gdStringJoin == nil {
         ClassDB:StringName
@@ -203,39 +213,14 @@ GDStringJoin :: proc(packedString: ^PackedStringArray, r_String: ^gdstring) {
 * Use with checkCast in order to verify if a GDObject received can be cast to the specific class.
 * classTagName: string representing the name of the class. ie InputEvent
 */
-get_ClassTagName :: proc(classTagName: string) -> ClassTag {
+@(export)
+get_ClassTagName :: proc "c" (classTagName: string) -> GDE.ClassTag {
     
     classTagName_SN: StringName
     StringConstruct(&classTagName_SN, classTagName)
     defer(StringName_M_List.Destroy(&classTagName_SN))
     return gdAPI.ClassDB.GetClassTag(&classTagName_SN)
 }
-
-get_All_ClassTag :: proc {
-    get_All_ClassTag_struct,
-    get_All_ClassTag_array,
-}
-
-get_All_ClassTag_struct :: proc(classtypes: ^$T) where sics.type_is_struct(T){
-    pos:^T = classtypes
-    for field, i in reflect.struct_fields_zipped(T) {
-        field_pos:^ClassTag=cast(^ClassTag)(uintptr(pos) + field.offset)
-        field_pos^ = get_ClassTagName(field.name)
-    }
-};
-
-/*
-* Populate an array with the ClassTag(s).
-* See Input.odin for an example InputEvent_get_ClassTag of its usage.
-* classtypes: a pointer to an enumerated array of ClassTags.
-*/
-get_All_ClassTag_array :: proc(classtypes: ^$T/[$E]ClassTag) where sics.type_is_enum(E){
-    for name, i in reflect.enum_field_names(E) {
-        classtypes[E(i)] = get_ClassTagName(name)
-    }
-};
-
-
 
 /*
 * Use this function to generate a ptr call for your virutal functions.
@@ -247,7 +232,7 @@ get_All_ClassTag_array :: proc(classtypes: ^$T/[$E]ClassTag) where sics.type_is_
 * p_args : An array of args sent by Godot in callVirtualFunctionWithData
 * r_ret : A pointer to hold the return value of your function
 */
-virtualProcCall :: #force_inline proc (procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
+virtualProcCall :: #force_inline proc(procPointer: $T, p_instance: rawptr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr)
                             where (sics.type_is_proc(T) && sics.type_proc_parameter_count(T) <= 11){
 
     classStructPtr::sics.type_proc_parameter_type(T, 0)

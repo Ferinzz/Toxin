@@ -43,7 +43,7 @@ PackedInt32Array_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedInt32Array: proc "c" (p_left: ^PackedInt32Array, p_right: ^PackedInt32Array, r_result: ^Bool),
     VARIANT_OP_ADD_PackedInt32Array: proc "c" (p_left: ^PackedInt32Array, p_right: ^PackedInt32Array, r_result: ^PackedInt32Array),
 }
-init_PackedInt32Array_Methods :: proc(PackedInt32Array_method_store: ^PackedInt32Array_Methods_list) {
+init_PackedInt32Array_Methods :: proc "c" (PackedInt32Array_method_store: ^PackedInt32Array_Methods_list) {
   PackedInt32Array_method_store.Create0 = cast(type_of(PackedInt32Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT32_ARRAY, 0)
   PackedInt32Array_method_store.Create1 = cast(type_of(PackedInt32Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT32_ARRAY, 1)
   PackedInt32Array_method_store.Create2 = cast(type_of(PackedInt32Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_INT32_ARRAY, 2)

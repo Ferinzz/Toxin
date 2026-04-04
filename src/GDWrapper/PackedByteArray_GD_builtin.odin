@@ -89,7 +89,7 @@ PackedByteArray_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedByteArray: proc "c" (p_left: ^PackedByteArray, p_right: ^PackedByteArray, r_result: ^Bool),
     VARIANT_OP_ADD_PackedByteArray: proc "c" (p_left: ^PackedByteArray, p_right: ^PackedByteArray, r_result: ^PackedByteArray),
 }
-init_PackedByteArray_Methods :: proc(PackedByteArray_method_store: ^PackedByteArray_Methods_list) {
+init_PackedByteArray_Methods :: proc "c" (PackedByteArray_method_store: ^PackedByteArray_Methods_list) {
   PackedByteArray_method_store.Create0 = cast(type_of(PackedByteArray_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_BYTE_ARRAY, 0)
   PackedByteArray_method_store.Create1 = cast(type_of(PackedByteArray_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_BYTE_ARRAY, 1)
   PackedByteArray_method_store.Create2 = cast(type_of(PackedByteArray_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_BYTE_ARRAY, 2)

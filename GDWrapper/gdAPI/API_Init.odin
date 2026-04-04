@@ -4,7 +4,7 @@ import GDE "gdextension"
 
 get_Interface_Address: GDE.InterfaceGetProcAddress
 
-loadAPI :: proc(p_get_proc_address : GDE.InterfaceGetProcAddress){
+loadAPI :: proc "c" (p_get_proc_address : GDE.InterfaceGetProcAddress){
     get_Interface_Address = p_get_proc_address
 
     //Function_Pointer.FunctionPtr = cast(GDE.InterfaceFunctionPtr)get_Interface_Address("")

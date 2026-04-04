@@ -31,7 +31,7 @@ Bool_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Bool, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Bool, p_right: ^Array, r_result: ^Bool),
 }
-init_Bool_Methods :: proc(Bool_method_store: ^Bool_Methods_list) {
+init_Bool_Methods :: proc "c" (Bool_method_store: ^Bool_Methods_list) {
   Bool_method_store.Create0 = cast(type_of(Bool_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.BOOL, 0)
   Bool_method_store.Create1 = cast(type_of(Bool_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.BOOL, 1)
   Bool_method_store.Create2 = cast(type_of(Bool_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.BOOL, 2)

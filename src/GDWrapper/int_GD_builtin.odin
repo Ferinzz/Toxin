@@ -72,7 +72,7 @@ Int_Methods_list :: struct {
     VARIANT_OP_IN_PackedFloat32Array: proc "c" (p_left: ^Int, p_right: ^PackedFloat32Array, r_result: ^Bool),
     VARIANT_OP_IN_PackedFloat64Array: proc "c" (p_left: ^Int, p_right: ^PackedFloat64Array, r_result: ^Bool),
 }
-init_Int_Methods :: proc(Int_method_store: ^Int_Methods_list) {
+init_Int_Methods :: proc "c" (Int_method_store: ^Int_Methods_list) {
   Int_method_store.Create0 = cast(type_of(Int_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.INT, 0)
   Int_method_store.Create1 = cast(type_of(Int_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.INT, 1)
   Int_method_store.Create2 = cast(type_of(Int_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.INT, 2)

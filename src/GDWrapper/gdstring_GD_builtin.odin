@@ -186,7 +186,7 @@ gdstring_Methods_list :: struct {
     VARIANT_OP_MODULE_PackedColorArray: proc "c" (p_left: ^gdstring, p_right: ^PackedColorArray, r_result: ^gdstring),
     VARIANT_OP_MODULE_PackedVector4Array: proc "c" (p_left: ^gdstring, p_right: ^PackedVector4Array, r_result: ^gdstring),
 }
-init_gdstring_Methods :: proc(gdstring_method_store: ^gdstring_Methods_list) {
+init_gdstring_Methods :: proc "c" (gdstring_method_store: ^gdstring_Methods_list) {
   gdstring_method_store.Create0 = cast(type_of(gdstring_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 0)
   gdstring_method_store.Create1 = cast(type_of(gdstring_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 1)
   gdstring_method_store.Create2 = cast(type_of(gdstring_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.STRING, 2)

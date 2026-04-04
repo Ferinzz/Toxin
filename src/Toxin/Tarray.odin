@@ -1,9 +1,9 @@
 #+ignore
 package Toxin
 
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import GDW "../GDWrapper"
+import "../GDWrapper/gdAPI"
 
 
 getIndex_v:: proc {

@@ -6,10 +6,13 @@ import "core:math"
 
 
 @(rodata)
+@(export)
 Plane_PLANE_YZ : Plane= {1, 0, 0, 0}
 @(rodata)
+@(export)
 Plane_PLANE_XZ : Plane= {0, 1, 0, 0}
 @(rodata)
+@(export)
 Plane_PLANE_XY : Plane= {0, 0, 1, 0}
 Plane_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Plane, p_args: rawptr = nil),
@@ -40,7 +43,7 @@ Plane_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Plane, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Plane, p_right: ^Array, r_result: ^Bool),
 }
-init_Plane_Methods :: proc(Plane_method_store: ^Plane_Methods_list) {
+init_Plane_Methods :: proc "c" (Plane_method_store: ^Plane_Methods_list) {
   Plane_method_store.Create0 = cast(type_of(Plane_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 0)
   Plane_method_store.Create1 = cast(type_of(Plane_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 1)
   Plane_method_store.Create2 = cast(type_of(Plane_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PLANE, 2)
