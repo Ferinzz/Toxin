@@ -52,6 +52,13 @@ MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
 
     
+    Classes.Window_Init_(&window_Class)
+    Classes.Sprite2D_Init_(&Texture_Class)
+    Classes.Node2D_Init_(&Node2D_Class)
+    Classes.Node_Init_(&Node_Class)
+    Classes.SceneTree_Init_(&SceneTree_Class)
+    Classes.ImageTexture_Init_(&texture_Class)
+    Classes.Image_Init_(&image_Class)
     //Doing it this way otherwise need to run an import from the editor in order to get the icon file.
     image: Classes.Image
     path:Toxin.gdstring
@@ -59,27 +66,29 @@ MainLoopFrameCallback :: proc "c" () {
     image_Class.load_from_file->m_call(nil, {&path}, &image)
     GDW.gdstring_M_List.Destroy(&path)
     texture_Class.create_from_image->m_call(nil, {&image}, &texture)
-    gdAPI.Object_Utils.Destroy(image)
 
     //Setup an object to hold the MainLoop object.
     scene_tree_obj = GDW.getMainLoop()
     //Fetch the root of the current sceneTree
     root= GDW.getRoot()
     scene:= GDW.get_current_scene()
-    fmt.println("11!!special stress test!!")
     window_Class.get_size->m_call(root, r_ret=&w_size)
     image_Class.get_size->m_call(texture, r_ret=&tex_size)
+    if tex_size == {} {
+        tex_size = {64,64}
+    }
+    fmt.println(tex_size)
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //A scene is not added when running editor mode unless there is already a default scene. Check for the scene before trying to add the child to it.
-    if scene != nil {
+    //if scene != nil {
         //You can add a node directly to the root.
         //Add the class to the root of the sceneTree
         for i in 0..<sprite_count {
             root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
             GDW.addChild(root, &root_node_instance)
         }
-    };
+    //};
 
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback2
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
@@ -91,9 +100,9 @@ MainLoopFrameCallback2 :: proc "c" () {
     context = runtime.default_context()
     perf:Toxin.float=0
     Node_Class.get_process_delta_time->m_call(root, r_ret = &perf)
-    if frame_current > 1000 {
-        if frame_current < frame_count_amout+1000 {
-            Node_Class.get_process_delta_time->m_call(root, r_ret = &frame_times[frame_current-1000])
+    //if frame_current > 1000 {
+        if frame_current < frame_count_amout {
+            Node_Class.get_process_delta_time->m_call(root, r_ret = &frame_times[frame_current])
             frame_current+=1
         } else if printonce {
             printonce = false
@@ -106,9 +115,9 @@ MainLoopFrameCallback2 :: proc "c" () {
             exit_code:Toxin.Int=0
             SceneTree_Class.quit->m_call(scene_tree_obj, {&exit_code})
         }
-    }
-    if frame_current <= 1000{
-    frame_current+=1}
+    //}
+    //if frame_current <= 1000{
+    //frame_current+=1}
 }
 
 //If running directly from the script this does not run.
@@ -121,10 +130,7 @@ MainLoopStartupCallback :: proc "c" () {
     Classes.SceneTree_Init_(&SceneTree_Class)
     Classes.ImageTexture_Init_(&texture_Class)
     Classes.Image_Init_(&image_Class)
-    fmt.println("22!!special stress test!!")
     size:Toxin.Vector2i
-    //window_Class.get_size->m_call(root, r_ret=&size)
-    fmt.println("22!!special stress test!!")
 };;
 
 MainLoopShutdownCallback :: proc "c" () {

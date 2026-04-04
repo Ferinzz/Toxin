@@ -77,6 +77,7 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context();
+        //fmt.println(texture)
         Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
         Node2D_Class.set_position->m_call(self.self, {&self.class.position})
         //size: Toxin.Vector2i
