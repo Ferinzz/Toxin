@@ -106,11 +106,13 @@ Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
-    self_register = self_reggy,
-    init_level = .INITIALIZATION_SCENE,
-    GDClass_Index = .Sprite2D,
-    class_struct = THIS_CLASS_NAME,
-    binder = THIS_CLASS_NAME_Export,
+    required = {
+        registerer = {self_reggy},
+        class_struct = THIS_CLASS_NAME,
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = .Sprite2D,
+    },
+    Exporter = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
 }
 
