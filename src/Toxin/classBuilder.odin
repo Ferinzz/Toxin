@@ -39,8 +39,8 @@ CC_Dummy:: struct{}
 Class_Deets :: struct {
     required: required_deets,
     //using registerer: Registerer, //Keep as first value in order to trivially cast it.
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object), //Cast to the Object class that your class extends.
-    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr),
+    create: proc(self: rawptr), //Cast to the Object class that your class extends.
+    destroy: proc(self: rawptr),
     vtable: rawptr,
     GDClass_StringName: ^StringName,
     SN : StringName,
@@ -49,9 +49,10 @@ Class_Deets :: struct {
 
 required_deets:: struct #all_or_none{
     using registerer: Registerer, //Keep as first value in order to trivially cast it.
-    class_struct: typeid,
+    class_struct_size: i64,
     init_level: InitializationLevel,
     GDClass_Index: GDW.ClassName_Index,
+    name: string,
 }
 
 InitializationLevel :: enum {
@@ -102,23 +103,25 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 //construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
 //This is different from Godot's ready, which is called sometime after this.
 //Returns a pointer to Class_Container(your_class_struct)
-Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> ([^]^Object) {
-    //context = runtime.default_context()
+Create :: proc"c"(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+    context = runtime.default_context()
 
     object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
-
+    fmt.println(p_class_user_data)
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast([^]^Object)gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
-    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
+    self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(p_class_user_data.required.class_struct_size + size_of(^Object))
+    mem.set(self, 0, int(p_class_user_data.required.class_struct_size) + size_of(^Object))
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
-    self[0]= object
+    self.self= object
+
+    if p_class_user_data.create != nil {
+        p_class_user_data.create(self)
+    }
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
-
-
-    return self
+    return object
 }
 Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
@@ -136,6 +139,9 @@ Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstan
     context = runtime.default_context()
     if (p_instance == nil){
         return
+    }
+    if p_class_userdata.destroy != nil {
+        p_class_userdata.destroy(p_instance)
     }
     gdAPI.Memory_Uils.MemFree(p_instance)
 }
@@ -193,36 +199,36 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
 }
 
 Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_table: GDE.ClassGetVirtual2 = nil, \
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) = Class_Init, \
-    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) = Destroy, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
+    assert(self != nil, "Register procedure received a nil value for deets. This should never happen.")
     // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
-    assert(self.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name))
+    assert(self.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", self.required.name))
 
-    //Set the create and destroy procs in the class's deets struct for easy reference in Odin-land.
-    self.create = create
-    self.destroy = destroy
-
-    //string to a svg which will be used as an icon for your Nodes.
-    //Must be NewLatin. UTF8 does not work :/
-    stringraw:gdstring
-    gdAPI.Strings_Utils.NewWithLatin1Chars(&stringraw, "res://icon.svg")
 
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
     
     class_info: GDE.ClassCreationInfo4 = class_info
-    class_info.icon_path = &stringraw
-    class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
-    class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
+
+    if class_info.icon_path == nil {
+        //string to a svg which will be used as an icon for your Nodes.
+        //Must be NewLatin. UTF8 does not work :/
+        stringraw:gdstring
+        gdAPI.Strings_Utils.NewWithLatin1Chars(&stringraw, "res://icon.svg")
+        class_info.icon_path = &stringraw
+    }
+    if class_info.create_instance_func == nil {
+        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)Create
+    }
+    if class_info.free_instance_func == nil {
+        class_info.free_instance_func = cast(GDE.ClassFreeInstance)Destroy
+    }
     class_info.class_userdata = self
     class_info.get_virtual_func = get_v_table
-    //class_info.to_string_func(nil, &r_bool, &pout)
+
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct(&self.SN, type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name)
-
+    GDW.StringConstruct(&self.SN, self.required.name)
     self.GDClass_StringName = GDW.GDClass_StringName_get(self.required.GDClass_Index)
-
     gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &self.SN, self.GDClass_StringName, &class_info)
 
     if self.Exporter != nil {

@@ -7,10 +7,10 @@
 			"preLaunchTask": "extBuild",
 			"name": "Debug",
 			//The Godot exe to launch. If you have setup a Path to Godot you can use that instead.
-			//"program": "C:\\Godot\\godot\\bin\\godot.windows.editor.dev.x86_64.exe", //v4_6
+			"program": "C:\\Godot\\godot\\bin\\godot.windows.editor.dev.x86_64.exe", //v4_6
 			//"program": "C:\\GodotSrc\\godot4_5\\bin\\godot.windows.editor.dev.x86_64.exe",
 			//"program": "C:\\GodotSrc\\godot\\bin\\godot.windows.editor.dev.x86_64.exe",
-			"program": "C:\\Godot\\Godot_v4.6-release.exe",
+			//"program": "C:\\Godot\\Godot_v4.6-release.exe",
 			//Tells godot what project file to use.
 			//Generally this .godot file will be in the root of your project's folder.
 			//One set of args launches the editor, the other launches the game exe directly.
