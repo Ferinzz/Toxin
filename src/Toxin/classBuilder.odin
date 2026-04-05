@@ -1,3 +1,4 @@
+#+feature using-stmt
 package Toxin
 
 import "base:runtime"
@@ -8,6 +9,7 @@ import sics "base:intrinsics"
 import "core:fmt"
 import "core:mem"
 import "core:reflect"
+import "base:builtin"
 
 /*
 * Container type for the class Node.
@@ -41,10 +43,21 @@ Class_Deets :: struct {
     //using registerer: Registerer, //Keep as first value in order to trivially cast it.
     create: proc(self: rawptr), //Cast to the Object class that your class extends.
     destroy: proc(self: rawptr),
-    vtable: rawptr,
+    vtable: struct {
+        table_type: vtable_type,
+        table: rawptr,
+    },
     GDClass_StringName: ^StringName,
     SN : StringName,
     Exporter: proc(className: ^StringName),
+}
+
+vtable_type:: enum i32 {
+    None,
+    Node,
+    CanvasItem,
+    CollisionObject2D,
+    Texture2D,
 }
 
 required_deets:: struct #all_or_none{
@@ -79,7 +92,7 @@ Registerer:: struct #all_or_none{
 */
 example_self_reggy:: proc(self: ^Registerer, init_level: InitializationLevel) {
     me:=(^Class_Deets)(self)
-    Register(me, init_level)// make_get_virtual_func(THIS_CLASS_NAME_VTable)) //make_get_virtual_func will likely be needed as most classes will have virtual proc calls.
+    Register(me, init_level)
 }
 
 //Implementation details. For a simple implementation you should only need to use the above structs and call the self referenced register proc.
@@ -180,7 +193,7 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
         }
         when sics.type_is_specialization_of(T, CanvasItem_v_table) || 
         sics.type_has_field( sics.type_base_type(T), "vCanvasItem") {
-            virtual, ok = Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
+            virtual, ok = Return_CanvasItem_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
         when sics.type_is_specialization_of(T, CollisionObject2D_v_table) || 
@@ -198,7 +211,58 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
     return cast(GDE.ClassGetVirtual2)intermediate
 }
 
-Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_table: GDE.ClassGetVirtual2 = nil, \
+intermediate:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
+    context = runtime.default_context()
+    if p_class_userdata.vtable.table == nil {
+        return nil
+    }
+
+    when builtin.ODIN_DEBUG {
+        if p_class_userdata.vtable.table != nil {
+            assert(p_class_userdata.vtable.table_type != .None)
+        }
+        if p_class_userdata.vtable.table_type != nil {
+            assert(p_class_userdata.vtable.table != nil)
+        }
+    }
+
+    ok:bool=false
+    virtual:rawptr=nil
+    switch p_class_userdata.vtable.table_type{
+        case .None:
+        case .Node:
+            arg:= cast(^Node_v_table(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case .CanvasItem:
+            arg:= cast(^vCanvasItem(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case .CollisionObject2D:
+            arg:= cast(^vCollisionObject2D(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_Collision2D_Virtuals(arg.vCollisionObject2D, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case .Texture2D:
+            arg:= cast(^vTexture2D(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_texture_Virtuals(arg.vTexture, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case:
+            assert(false, "Virtual table does not match list available.")
+    }
+    return cast(GDE.ClassCallVirtual)virtual
+}
+
+Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
     assert(self != nil, "Register procedure received a nil value for deets. This should never happen.")
@@ -224,7 +288,20 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_tabl
         class_info.free_instance_func = cast(GDE.ClassFreeInstance)Destroy
     }
     class_info.class_userdata = self
-    class_info.get_virtual_func = get_v_table
+
+    when builtin.ODIN_DEBUG {
+        if self.vtable.table != nil {
+            assert(self.vtable.table_type != .None, "Failed to set type of the vTable.")
+        }
+        if self.vtable.table_type != nil {
+            assert(self.vtable.table != nil, "Failed to provide vTable despite specifying type.")
+        }
+    }
+
+    if (self.vtable.table != nil) {
+        class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)intermediate
+    }
+    
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct(&self.SN, self.required.name)

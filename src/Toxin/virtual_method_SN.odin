@@ -281,7 +281,7 @@ Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name
 }
 
 
-Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
+Return_CanvasItem_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
         if (GDW.stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw, true
@@ -292,7 +292,7 @@ Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
 Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CollisionObject2D_Virtual_Info
         if (GDW.stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
-            if class_v_table._input_event == nil do return nil
+            if class_v_table._input_event == nil do return nil, false
             return cast(rawptr)class_v_table._input_event, true
         }
     return nil, false
@@ -300,24 +300,19 @@ Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr
 
 Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using Texture2D_Virtuals_Info
-        if (GDW.stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
-            if class_v_table._is_pixel_opaque == nil do return nil
+        if (p_hash == _is_pixel_opaque.p_hash && GDW.stringNameCompare(p_name, &_is_pixel_opaque.name)) {
             return cast(rawptr)class_v_table._is_pixel_opaque, true
         }
-        if (GDW.stringNameCompare(p_name, &_get_height.name) && p_hash == _get_height.p_hash) {
-            if class_v_table._get_height == nil do return nil
+        if (p_hash == _get_height.p_hash && GDW.stringNameCompare(p_name, &_get_height.name)) {
             return cast(rawptr)class_v_table._get_height, true
         }
-        if (GDW.stringNameCompare(p_name, &_get_width.name) && p_hash == _get_width.p_hash) {
-            if class_v_table._get_width == nil do return nil
+        if (p_hash == _get_width.p_hash && GDW.stringNameCompare(p_name, &_get_width.name)) {
             return cast(rawptr)class_v_table._get_width, true
         }
-        if (GDW.stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
-            if class_v_table._draw_txt2D == nil do return nil
+        if (p_hash == _draw_txt2D.p_hash && GDW.stringNameCompare(p_name, &_draw_txt2D.name)) {
             return cast(rawptr)class_v_table._draw_txt2D, true
         }
-        if (GDW.stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
-            if class_v_table._draw_txt2D == nil do return nil
+        if (p_hash == _draw_txt2D.p_hash && GDW.stringNameCompare(p_name, &_draw_txt2D.name)) {
             return cast(rawptr)class_v_table._draw_txt2D, true
         }
     return nil, false

@@ -83,7 +83,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     context = runtime.default_context()
     me:=(^Toxin.Class_Deets)(self)
 
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable))
+    Toxin.Register(me, init_level)
 
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
@@ -110,7 +110,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     },
     create=constructor,
     Exporter = THIS_CLASS_NAME_Export,
-    vtable = &THIS_CLASS_NAME_VTable,
+    vtable ={.Node, &THIS_CLASS_NAME_VTable},
 }
 
 //Constructor receive an opaque pointer which is in reality a pointer to this class's container.
