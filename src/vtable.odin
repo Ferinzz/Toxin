@@ -78,6 +78,19 @@ windowSize:Toxin.Vector2i
 frame_current:int=0
 Window_MethodBind_List: Classes.Window_MethodBind_List
 
+THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
+    required = {
+        registerer = {self_reggy},
+        class_struct_size = size_of(THIS_CLASS_NAME),
+        name = Toxin.get_name(THIS_CLASS_NAME),
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = .Sprite2D,
+    },
+    create=constructor,
+    Exporter = THIS_CLASS_NAME_Export,
+    vtable ={.Node, &THIS_CLASS_NAME_VTable},
+}
+
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
     context = runtime.default_context()
@@ -96,22 +109,6 @@ texture: Classes.Texture2D
 Texture_Class: Classes.Sprite2D_MethodBind_List
 Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
-
-get_name:: proc "contextless" (class: typeid) -> string {
-    return type_info_of(class).variant.(runtime.Type_Info_Named).name
-}
-THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
-    required = {
-        registerer = {self_reggy},
-        class_struct_size = size_of(THIS_CLASS_NAME),
-        name = get_name(THIS_CLASS_NAME),
-        init_level = .INITIALIZATION_SCENE,
-        GDClass_Index = .Sprite2D,
-    },
-    create=constructor,
-    Exporter = THIS_CLASS_NAME_Export,
-    vtable ={.Node, &THIS_CLASS_NAME_VTable},
-}
 
 //Constructor receive an opaque pointer which is in reality a pointer to this class's container.
 constructor :: proc(self: rawptr) {

@@ -52,6 +52,10 @@ Class_Deets :: struct {
     Exporter: proc(className: ^StringName),
 }
 
+get_name:: proc "contextless" (class: typeid) -> string {
+    return type_info_of(class).variant.(runtime.Type_Info_Named).name
+}
+
 vtable_type:: enum i32 {
     None,
     Node,
