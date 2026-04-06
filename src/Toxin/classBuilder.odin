@@ -242,7 +242,8 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
     return cast(GDE.ClassGetVirtual2)intermediate
 }
 
-intermediate:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
+@(export)
+get_virtual:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
     context = runtime.default_context()
     if p_class_userdata.vtable.table == nil {
         return nil
@@ -330,7 +331,7 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, \
     }
 
     if (self.vtable.table != nil) {
-        class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)intermediate
+        class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)get_virtual
     }
     
 
