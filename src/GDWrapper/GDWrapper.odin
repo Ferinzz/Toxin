@@ -7,7 +7,7 @@ import sics "base:intrinsics"
 import "core:slice"
 import "core:reflect"
 import "core:fmt"
-//import Classes "shared:Godot_Odin_Binds/GD_Classes"
+//import Classes ".."
 
 Library : GDE.ClassDB = nil
 
@@ -102,11 +102,11 @@ StringConstruct :: proc {
     stringNameNewString,
     stringNameNewString_r,
 }
-stringNameNewString :: proc(StringName_r: ^StringName, name: string) {
+stringNameNewString :: proc"c"(StringName_r: ^StringName, name: string) {
         gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
     }
 @(require_results)
-stringNameNewString_r :: proc(name: string) -> (r_ret: StringName) {
+stringNameNewString_r :: proc"c"(name: string) -> (r_ret: StringName) {
         gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
         return
 }

@@ -4,9 +4,9 @@ package Toxin
 
 import "base:builtin"
 import "base:runtime"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:slice"
@@ -36,6 +36,7 @@ import "core:reflect"
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
+//offset, stringname, string field name, usage
 Export :: proc(className_SN: ^StringName, $classStruct: typeid,  $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -60,6 +61,29 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid,  $fieldName: str
     Bind_Property(className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, Field_Type, methodType, &info, loc)
     destructProperty(&info)
+}
+
+Export2 :: proc(classname_sn: ^StringName, fieldname: ^StringName, getter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(CC_Dummy), godotValue: rawptr, r_ret: rawptr), \
+    setter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(CC_Dummy), godotValue: ^struct{self:rawptr}, r_ret: GDE.TypePtr)) {
+setter_passthrough(nil, nil, {&{.INT, {32, 0}}}, 1, nil, &{})
+}
+
+setter_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        #by_ptr p_args: struct{var: ^Variant}, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context= runtime.default_context()
+    if p_argument_count != 1 {
+        r_error^= {
+            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+            argument= i32(p_argument_count),
+            expected = 1,
+        }
+    }
+    call:=cast(proc(a: rawptr, b: rawptr, #by_ptr c: struct{_: rawptr}, d: rawptr))method_userdata
+    //If it is a type which needs to be destroyed, Ref_count new source then destroy old.
+    val: Int
+    copy_from_variant(&val, p_args.var)
+    call(method_userdata, p_instance, {&val}, r_return)
+    r_error^={}
 }
 
 /*
@@ -290,7 +314,7 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
     else if FIELD_TYPE == float {
         field_type = .FLOAT
     } else {
-        GDW.failureProc("", "unsupported type in Export_Range", loc)
+        failureProc("", "unsupported type in Export_Range", loc)
     }
     if len(flag_string) > 0{
         output = strings.concatenate({min,",",max,",",step,",",string(flag_string[:])})

@@ -1,7 +1,7 @@
 package Toxin
 
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDW "../GDWrapper"
+import "../GDWrapper/gdAPI"
 
 
 Objectc :: ^GDW.Object

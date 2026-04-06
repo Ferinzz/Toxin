@@ -1,6 +1,6 @@
 package Toxin
 
-import GDW "shared:GDWrapper"
+import GDW "../GDWrapper"
 
 //Will likely need to make some build specific definitions since the size of things changes based on the Godot build used.
 

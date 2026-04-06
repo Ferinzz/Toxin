@@ -1,8 +1,8 @@
 package Toxin
 
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 import "base:runtime"
 import "core:mem"
 import "core:slice"

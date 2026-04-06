@@ -2,9 +2,9 @@
 package Toxin
 
 import "base:runtime"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import GDW "../GDWrapper"
+import "../GDWrapper/gdAPI"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:mem"
@@ -144,9 +144,9 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
     self:^Class_Container(CC_Dummy)
      if TMAlloc == nil {
         //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-        self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(p_class_userdata.required.class_struct_size + size_of(^Object))
+        self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(^Object))
     } else {
-        self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, p_class_userdata.required.class_struct_size + size_of(^Object))
+        self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(^Object))
     }
     mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))

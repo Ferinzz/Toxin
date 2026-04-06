@@ -2,8 +2,8 @@
 package GDWrapper
 
 import "base:runtime"
-import GDE "gdAPI/gdextension"
-import "gdAPI"
+import GDE "../../gdAPI/gdextension"
+import "../../gdAPI"
 import sics "base:intrinsics"
 import "core:slice"
 import "core:reflect"

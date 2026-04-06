@@ -1,6 +1,6 @@
 package Input
 
-import GDW "shared:GDWrapper"
+import GDW "../../GDWrapper"
 
 DEVICE_ID_EMULATION : GDW.Int : -1
 InputEvent :: GDW.Object

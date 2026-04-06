@@ -1,12 +1,12 @@
 #+feature using-stmt
 package Toxin
 
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 import "base:runtime"
 import sics "base:intrinsics"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../GD_Classes"
 import "Input"
 
 /*
