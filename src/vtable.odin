@@ -65,7 +65,7 @@ THIS_CLASS_NAME :: struct {
 
 munum::enum{
     a1,a2,a3,
-    a7=7
+    a7=7,
 }
 nest :: struct {
         nested: Toxin.Int,
@@ -209,8 +209,8 @@ MainLoopStartupCallback :: proc "c" () {
             //root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
             //GDW.addChild(root, &root_node_instance)
         }
-    };
-};;
+    }
+}
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
@@ -221,7 +221,7 @@ MainLoopStartupCallback :: proc "c" () {
 */
 THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
-        context = runtime.default_context();
+        context = runtime.default_context()
 
         set:=[?]rawptr{&texture}
         Texture_Class.set_texture->m_call(self.self, {&texture}, nil)

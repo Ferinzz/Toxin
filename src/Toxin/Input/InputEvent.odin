@@ -27,7 +27,7 @@ Input_methods_list:: struct {
 Input_methods: Input_methods_list
 
 Input: Input_C = {
-    methods = &Input_methods
+    methods = &Input_methods,
 }
 
 

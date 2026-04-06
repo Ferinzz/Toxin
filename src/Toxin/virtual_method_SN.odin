@@ -142,7 +142,7 @@ Control_Virtual_Info: struct {
 Logger_Virtual: struct {
     _log_error: Method_Callback_Compare_Info,
     _log_message: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Object",
 MainLoop_Virtual: struct {
@@ -150,7 +150,7 @@ MainLoop_Virtual: struct {
     _physics_process: Method_Callback_Compare_Info,
     _process: Method_Callback_Compare_Info,
     _finalize: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "RefCounted",
 Resource_Virtual: struct {
@@ -158,7 +158,7 @@ Resource_Virtual: struct {
     _get_rid: Method_Callback_Compare_Info,
     _reset_state: Method_Callback_Compare_Info,
     _set_path_cache: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "RenderData",
 RenderDataExtension_Virtual_Info: struct {
@@ -166,14 +166,14 @@ RenderDataExtension_Virtual_Info: struct {
     _get_render_scene_data: Method_Callback_Compare_Info,
     _get_environment: Method_Callback_Compare_Info,
     _get_camera_attributes: Method_Callback_Compare_Info,
-};
+}
 
 //This resource defines a custom rendering effect that can be applied to Viewports through the viewports' Environment. 
 //This particular method receives the RenderData from the RenderServer.
 //"inherits": "Resource",
 CompositorEffect_Virtual_Info: struct {
     _render_callback: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Resource"
 AudioStreamPlayback_Virtual_Info: struct {
@@ -187,7 +187,7 @@ AudioStreamPlayback_Virtual_Info: struct {
     _tag_used_streams: Method_Callback_Compare_Info,
     _set_parameter: Method_Callback_Compare_Info,
     _get_parameter: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Resource",
 AudioStream_Virtual_Info: Classes.AudioStream_Virtual_Info
@@ -204,7 +204,7 @@ AudioStream_Virtual_Info2: struct {
     _get_parameter_list: Method_Callback_Compare_Info,
     _has_loop: Method_Callback_Compare_Info,
     _get_bar_beats: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Node2D",
 CollisionObject2D_Virtual_Info: struct {
@@ -213,7 +213,7 @@ CollisionObject2D_Virtual_Info: struct {
     _mouse_exit: Method_Callback_Compare_Info,
     _mouse_shape_enter: Method_Callback_Compare_Info,
     _mouse_shape_exit: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Node2D",
 CollisionObject2D_v_table:: struct (T: typeid){
@@ -225,7 +225,7 @@ CollisionObject3D_Virtual_Info: struct {
     _input_event: Method_Callback_Compare_Info,
     _mouse_enter: Method_Callback_Compare_Info,
     _mouse_exit: Method_Callback_Compare_Info,
-};
+}
 
 
 Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {

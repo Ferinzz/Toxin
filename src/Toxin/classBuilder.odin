@@ -122,27 +122,41 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     reference_callback = nil,
 };
 
-//This runs once when the class is created before it gets added to a tree.
-//construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
-//This is different from Godot's ready, which is called sometime after this.
-//Returns a pointer to Class_Container(your_class_struct)
-Create :: proc"c"(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+//Optional. If you do not provide this Toxin will default to Godot's memory.
+@(export)
+TMAlloc : proc "c" (p_class_user_data: ^Class_Deets, p_bytes: Int) -> rawptr
+//Optional. If you do not provide this Toxin will default to Godot's memory.
+@(export)
+TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
+
+/*This runs once when the class is created before it gets added to a tree.
+* construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
+* This is different from Godot's ready, which is called sometime after this.
+* Returns a pointer to Class_Container(your_class_struct)
+*/
+@(export)
+Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
 
-    object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
+    object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
 
     //Create our containing struct.
-    //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(p_class_user_data.required.class_struct_size + size_of(^Object))
-    mem.set(self, 0, int(p_class_user_data.required.class_struct_size) + size_of(^Object))
+    self:^Class_Container(CC_Dummy)
+     if TMAlloc == nil {
+        //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
+        self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(p_class_userdata.required.class_struct_size + size_of(^Object))
+    } else {
+        self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, p_class_userdata.required.class_struct_size + size_of(^Object))
+    }
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
     //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
     self.self= object
 
-    if p_class_user_data.create != nil {
-        p_class_user_data.create(self)
+    if p_class_userdata.create != nil {
+        p_class_userdata.create(self)
     }
 
-    gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^Object)self)
+    gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(^Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
 
     return object
@@ -160,6 +174,7 @@ Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: 
 * This procedure is associated with your class via the class_info struct built-up in the Register procedure.
 * GDE.ClassInstancePtr is a pointer to a Class_Container(T:typeid)
 */
+@(export)
 Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){
@@ -168,7 +183,11 @@ Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstan
     if p_class_userdata.destroy != nil {
         p_class_userdata.destroy(p_instance)
     }
-    gdAPI.Memory_Uils.MemFree(p_instance)
+    if TMFree != nil {
+        TMFree(p_class_userdata, p_instance)
+    } else {
+        gdAPI.Memory_Uils.MemFree(p_instance)
+    }
 }
 
 /*
