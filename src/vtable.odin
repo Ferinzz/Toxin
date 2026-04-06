@@ -84,7 +84,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
         class_struct_size = size_of(THIS_CLASS_NAME),
         name = Toxin.get_name(THIS_CLASS_NAME),
         init_level = .INITIALIZATION_SCENE,
-        GDClass_Index = .Sprite2D,
+        GDClass_Index = .AudioStreamPlayback,
     },
     create=constructor,
     Exporter = THIS_CLASS_NAME_Export,
@@ -206,8 +206,8 @@ MainLoopStartupCallback :: proc "c" () {
         //You can add a node directly to the root.
         //Add the class to the root of the sceneTree
         for i in 0..<frame_count {
-            root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
-            GDW.addChild(root, &root_node_instance)
+            //root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
+            //GDW.addChild(root, &root_node_instance)
         }
     };
 };;

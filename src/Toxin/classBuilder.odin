@@ -109,7 +109,13 @@ reg_list: struct {
     deets: [5]^Registerer,
 }
 
-//I still don't know what these are for :/
+/*
+* These are not necessary for the custom classes, but are useful if you want to include side-effects to an object that has no association with this GDE.
+* Main example is to make your own wrapper around the object through create.
+* create_callback is used when get_instance_binding is unable to find the GDE associated with an object
+* free_callback is called whenever the object is freed. Use for destructor side-effects (all the children are dead, kill parent)
+* reference_callback called on reference. Reply if this can be destroyed.
+*/
 classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     create_callback    = nil,
     free_callback      = nil,
@@ -124,7 +130,7 @@ Create :: proc"c"(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool
     context = runtime.default_context()
 
     object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
-    fmt.println(p_class_user_data)
+
     //Create our containing struct.
     //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
     self: = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(p_class_user_data.required.class_struct_size + size_of(^Object))
@@ -138,8 +144,10 @@ Create :: proc"c"(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^Object)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
+
     return object
 }
+
 Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
     class:= Create(p_class_user_data, p_notify_postinitialize)
