@@ -26,6 +26,7 @@ inits: struct {
 ** minimum_initialization_level: At what point in engine init should Godot start calling the procedure specified in initialize.
 */
 @export
+@(entry_point_only)
 godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassDB, initialization: ^GDE.Initialization) -> b8 {
     //GDW.initGodotContext()
     context = runtime.default_context()

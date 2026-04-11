@@ -17,6 +17,7 @@ import "base:builtin"
 * Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
+@(tag="export")
 Class_Container :: struct ($Class_Structure: typeid) #packed {
     self: ^Object, //Keep as first so it can be trivially cast.
     using class: Class_Structure,
@@ -135,7 +136,7 @@ TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
 * Returns a pointer to Class_Container(your_class_struct)
 */
 @(export)
-Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+Create :: proc"c"(#by_ptr p_class_userdata: Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
 
     object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
@@ -243,7 +244,7 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
 }
 
 @(export)
-get_virtual:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
+get_virtual::  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
     context = runtime.default_context()
     if p_class_userdata.vtable.table == nil {
         return nil
@@ -294,7 +295,7 @@ get_virtual:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_
     return cast(GDE.ClassCallVirtual)virtual
 }
 
-Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, \
+Register :: proc(self: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
     assert(self != nil, "Register procedure received a nil value for deets. This should never happen.")

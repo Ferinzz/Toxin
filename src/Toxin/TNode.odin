@@ -24,6 +24,7 @@ Node_methods: Node_methods_list
 
 Node_mb: Classes.Node_MethodBind_List
 
+@(tag="export_custom")
 Node_methods_list:: struct {
     set_name: proc (self: ^Node_C, vals: struct{r_name: ^StringName}, loc := #caller_location),
     get_name: proc (self: ^Node_C, r_ret: ^StringName, loc := #caller_location),
