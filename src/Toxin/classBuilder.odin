@@ -136,10 +136,10 @@ TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
 * Returns a pointer to Class_Container(your_class_struct)
 */
 @(export)
-Create :: proc"c"(#by_ptr p_class_userdata: Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
 
-    object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
+    object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
 
     //Create our containing struct.
     self:^Class_Container(CC_Dummy)
@@ -157,7 +157,7 @@ Create :: proc"c"(#by_ptr p_class_userdata: Class_Deets, p_notify_postinitialize
         p_class_userdata.create(self)
     }
 
-    gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(^Object)self)
+    gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)self)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
 
     return object
