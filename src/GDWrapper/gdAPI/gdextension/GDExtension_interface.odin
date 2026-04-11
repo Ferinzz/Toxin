@@ -158,13 +158,13 @@ ConstVariantPtr 					:: ^Variant
 ConstVariantPtrargs 				:: [^]ConstVariantPtr
 UninitializedVariantPtr 			:: rawptr
 StringNamePtr 						:: ^StringName
-ConstStringNamePtr 					:: [^]StringName
+ConstStringNamePtr 					:: ^StringName
 UninitializedStringNamePtr          :: ^StringName
 StringPtr 							:: ^gdstring
-ConstStringPtr 						:: [^]gdstring
+ConstStringPtr 						:: ^gdstring
 UninitializedStringPtr 				:: ^gdstring
 ObjectPtr 							:: ^Object
-ConstObjectPtr 						:: [^]Object
+ConstObjectPtr 						:: ^Object
 UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
 ConstTypePtr 						:: rawptr
@@ -173,7 +173,7 @@ MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64
 
 RefPtr 								:: rawptr
-ConstRefPtr 						:: [^]RefPtr
+ConstRefPtr 						:: ^RefPtr
 ClassDB  							:: distinct ^Object
 ConstTypePtrargs					:: [^]rawptr
 
