@@ -1,9 +1,8 @@
-#+ignore
-package GDWrapper
+package Toxin
 
 import "base:runtime"
-import GDE "gdAPI/gdextension"
-import "gdAPI"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
 import "core:strings"
 import "base:intrinsics"
 import "core:time"

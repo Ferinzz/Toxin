@@ -1,6 +1,7 @@
 package Input
 
 import GDW "../../GDWrapper"
+import GDW "../../GDWrapper"
 import GDE "../../GDWrapper/gdAPI/gdextension"
 import sics "base:intrinsics"
 import reflect "core:reflect"

@@ -28,7 +28,7 @@ MouseButton :: enum i64 {
     MOUSE_BUTTON_XBUTTON1,
     MOUSE_BUTTON_XBUTTON2,
 }
-    
+
 Key :: enum i64 {
     KEY_NONE= 0,
     KEY_SPECIAL= 4194304,
@@ -238,7 +238,7 @@ MouseMode :: enum i64 {
     MOUSE_MODE_CONFINED_HIDDEN = 4,
     MOUSE_MODE_MAX = 5
 }
-    
+
 CursorShape :: enum i64 {
     CURSOR_ARROW = 0,
     CURSOR_IBEAM = 1,

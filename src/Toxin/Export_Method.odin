@@ -57,7 +57,8 @@ bindMethod :: #force_inline proc(className: ^StringName, function: $T,
         when argcount > 5 do argsInfo[5] = make_property(variant_index(sics.type_proc_parameter_type(T, 6)), argNames[6])
         when argcount > 6 do argsInfo[6] = make_property(variant_index(sics.type_proc_parameter_type(T, 7)), argNames[7])
     }
-    else do argsInfo:= 0
+    else 
+    { argsInfo:= 0}
     
 
     //TODO: test removing this or setting a fixed value.
@@ -74,7 +75,8 @@ bindMethod :: #force_inline proc(className: ^StringName, function: $T,
         when argcount > 5 do args_metadata[5] = GDE.ClassMethodArgumentMetadata.NONE
         when argcount > 6 do args_metadata[6] = GDE.ClassMethodArgumentMetadata.NONE
     }
-    else do args_metadata:= 0
+    else 
+    { args_metadata:= 0}
 
     //Check if there's a return. If there is, search for the corresponding type.
     //Else set 0.

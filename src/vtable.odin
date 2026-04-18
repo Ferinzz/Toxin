@@ -66,7 +66,7 @@ THIS_CLASS_NAME :: struct {
 
 munum::enum{
     a1,a2,a3,
-    a7=7
+    a7=7,
 }
 nest :: struct {
         nested: Toxin.Int,
@@ -79,20 +79,25 @@ windowSize:Toxin.Vector2i
 frame_current:int=0
 Window_MethodBind_List: Classes.Window_MethodBind_List
 
+THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
+    required = {
+        registerer = {self_reggy},
+        class_struct_size = size_of(THIS_CLASS_NAME),
+        name = Toxin.get_name(THIS_CLASS_NAME),
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = .AudioStreamPlayback,
+    },
+    create=constructor,
+    Exporter = THIS_CLASS_NAME_Export,
+    vtable ={.Node, &THIS_CLASS_NAME_VTable},
+}
+
 
 self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
     context = runtime.default_context()
     me:=(^Toxin.Class_Deets)(self)
-    //fmt.println(typeid_of(type_of(THIS_CLASS_NAME_VTable)))
-    //tabletype:: sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME))
-    //tabletype2:: sics.type_is_subtype_of( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), Toxin.Node_v_table)
-    //tabletype3:: sics.type_has_field( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), "vNode")
-    //tabletype4:: sics.type_has_field( sics.type_base_type(Toxin.vNode2D(THIS_CLASS_NAME)), "vCanvasItem")
-    //fmt.println(tabletype2)
-    //fmt.println(tabletype3)
-    //fmt.println(tabletype4)
-    //fmt.println(typeid_of(tabletype))
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)
+
+    Toxin.Register(me, init_level)
 
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
@@ -106,42 +111,35 @@ Texture_Class: Classes.Sprite2D_MethodBind_List
 Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
 
-THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
-    required = {
-        class_struct = THIS_CLASS_NAME,
-        init_level = .INITIALIZATION_SCENE,
-        GDClass_Index = Classes.ClassName_Index.Sprite2D,
-        registerer = {self_register = self_reggy,},
-    },
-    Exporter = THIS_CLASS_NAME_Export,
-    vtable = &THIS_CLASS_NAME_VTable,
-}
+//Constructor receive an opaque pointer which is in reality a pointer to this class's container.
+constructor :: proc(self: rawptr) {
+    self:=cast(^Toxin.Class_Container(THIS_CLASS_NAME))self
 
-//If there's nothing that is heap allocated, can yse Toxin.Class_Init instead.
-//This class has a Array type and this must initialize it at object creation (RAII)
-THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
-    context = runtime.default_context()
-    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
-
-    GDW.Array_M_List.Create0(&class.class.rarray, nil)
-    GDW.Array_M_List.Create0(&class.class.a_real_array, nil)
-    GDW.PackedInt32Array_M_List.Create0(&class.class.an_array, nil)
+    GDW.Array_M_List.Create0(&self.class.rarray, nil)
+    GDW.Array_M_List.Create0(&self.class.a_real_array, nil)
+    GDW.PackedInt32Array_M_List.Create0(&self.class.an_array, nil)
     size:Toxin.Int=0
     args:=[1]rawptr{&size}
 
-    GDW.Dictionary_M_List.Create0(&class.class.a_dictionary, nil)
-    GDW.Dictionary_M_List.Create0(&class.class.dictionary_type, nil)
-    GDW.Dictionary_M_List.Create0(&class.class.locale_dictionary, nil)
-    //GDW.PackedInt32Array_Methods.Create0(&class.class.an_array, nil)
+    GDW.Dictionary_M_List.Create0(&self.class.a_dictionary, nil)
+    GDW.Dictionary_M_List.Create0(&self.class.dictionary_type, nil)
+    GDW.Dictionary_M_List.Create0(&self.class.locale_dictionary, nil)
 
-    class.class.angle=rand.float64_range(0, Math.PI*2)
-    class.class.speed=rand.int64_range(100, 600)
-    //class.class.position.x = rand.float32_range(0,1100)
-    //class.class.position.y = rand.float32_range(0,750)
+    self.class.angle=rand.float64_range(0, Math.PI*2)
+    self.class.speed=rand.int64_range(100, 600)
     window:Toxin.Vector2
-    
-    
-    return class.self
+}
+
+destructor :: proc(self: rawptr) {
+    self:=cast(^Toxin.Class_Container(THIS_CLASS_NAME))self
+    GDW.Array_M_List.Destroy(&self.class.rarray)
+    GDW.Array_M_List.Destroy(&self.class.a_real_array)
+    GDW.PackedInt32Array_M_List.Destroy(&self.class.an_array)
+
+    GDW.Dictionary_M_List.Destroy(&self.class.a_dictionary)
+    GDW.Dictionary_M_List.Destroy(&self.class.dictionary_type)
+    GDW.Dictionary_M_List.Destroy(&self.class.locale_dictionary)
+
 }
 
 scene_tree_obj: ^GDW.Object
@@ -166,6 +164,7 @@ MainLoopStartupCallback :: proc "c" () {
     //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
+
     Classes.Sprite2D_Init_(&Texture_Class)
     Classes.Node2D_Init_(&Node2D_Class)
     Classes.Node_Init_(&Node_Class)
@@ -208,11 +207,11 @@ MainLoopStartupCallback :: proc "c" () {
         //You can add a node directly to the root.
         //Add the class to the root of the sceneTree
         for i in 0..<frame_count {
-            root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
-            GDW.addChild(root, &root_node_instance)
+            //root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
+            //GDW.addChild(root, &root_node_instance)
         }
-    };
-};;
+    }
+}
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
@@ -223,67 +222,17 @@ MainLoopStartupCallback :: proc "c" () {
 */
 THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
-        context = runtime.default_context();
-        //fmt.println("Hello mom!")
-        //fmt.println(self^)
-        //from_position_default :f64= 0
-        //murray: Toxin.Array
-        //r_ret: Toxin.Variant
-        //fmt.println(Toxin.GetArrayIndex)
-        //myArray: Toxin.Class_Array
-        //Toxin.BuiltinMake(&myArray)
-        //myArray->GetIndex(3, &r_ret)
-        //receive:Toxin.Variant
-        //aabber: Toxin.AABB = {
-        //    4,5,0,0,12,18
-        //}
-        //vecker: Toxin.Vector2 = { 6, 92 }
-        //
-        //GDW.new_variant_from_methods(&receive, &vecker)
-        //GDW.new_type_from_methods(&vecker, &receive)
-        //Toxin.variant_Destroy(&receive)
-        //GDW.new_variant_from_methods(&receive, &vecker)
-        //GDW.new_type_from_methods(&vecker, &receive)
-        //Toxin.variant_Destroy(&receive)
-//
-        //GDW.new_variant_from_methods(&receive, &myArray.self)
-        //GDW.new_type_from_methods(&myArray.self, &receive)
-        //Toxin.copy_from_variant(&myArray.self, &receive)
-        //Toxin.variant_Destroy(&receive)
-        //GDW.new_variant_from_methods(&receive, &myArray.self)
-        //GDW.new_type_from_methods(&myArray.self, &receive)
-        //Toxin.variant_Destroy(&receive)
-//
-        //GDW.new_variant_from_methods(&receive, &myArray.self)
-        //GDW.new_type_from_methods(&myArray.self, &receive)
-        //Toxin.variant_Destroy(&receive)
-        //GDW.new_variant_from_methods(&receive, &aabber)
-        //Toxin.copy_from_variant(&aabber, &receive)
-        //GDW.new_type_from_methods(&aabber, &receive)
-        //GDW.new_variant_from_methods(&receive, &aabber)
-        //GDW.new_type_from_methods(&aabber, &receive)
-        //GDW.new_variant_from_methods(&receive, &aabber)
-        //GDW.new_type_from_methods(&aabber, &receive)
-        //fmt.println((transmute(^Toxin.AABB)receive.data[0])^)
-        //fmt.println(size_of(Toxin.Vector4))
-        //fmt.println((cast(^Toxin.variant_union)(&receive.data[0])).AABB^)
-        //checker:Toxin.Bool=false
-        //mbewl: Toxin.Int
-        //myNode: Toxin.Node_C
-        //Toxin.Maker(&myNode)
-        //myNode->get_child_count({&checker}, &mbewl)
-        //Toxin.GDArray_Methods.Create0(cast(rawptr)(&self.rarray),nil)
-        //myNode->call_deferred({nil}, &mbewl)
+        context = runtime.default_context()
+
         set:=[?]rawptr{&texture}
         Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
     },
     _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context()
-        
+
         Node_Class.get_window->m_call(self.self, nil, &wind_obj)
         window:Toxin.Vector2i
         Window_MethodBind_List.get_size->m_call(wind_obj, nil, &window)
-        //fmt.println(window)
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
         context = runtime.default_context()

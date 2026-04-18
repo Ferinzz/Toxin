@@ -2,7 +2,7 @@
 package main
 
 import "Toxin"
-import Classes "Godot_Odin_Binds/GD_Classes"
+import Classes "GD_Classes"
 import GDW "GDWrapper"
 import "GDWrapper/gdAPI"
 import "core:fmt"

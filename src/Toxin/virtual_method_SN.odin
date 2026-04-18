@@ -143,7 +143,7 @@ Control_Virtual_Info: struct {
 Logger_Virtual: struct {
     _log_error: Method_Callback_Compare_Info,
     _log_message: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Object",
 MainLoop_Virtual: struct {
@@ -151,7 +151,7 @@ MainLoop_Virtual: struct {
     _physics_process: Method_Callback_Compare_Info,
     _process: Method_Callback_Compare_Info,
     _finalize: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "RefCounted",
 Resource_Virtual: struct {
@@ -159,7 +159,7 @@ Resource_Virtual: struct {
     _get_rid: Method_Callback_Compare_Info,
     _reset_state: Method_Callback_Compare_Info,
     _set_path_cache: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "RenderData",
 RenderDataExtension_Virtual_Info: struct {
@@ -167,14 +167,14 @@ RenderDataExtension_Virtual_Info: struct {
     _get_render_scene_data: Method_Callback_Compare_Info,
     _get_environment: Method_Callback_Compare_Info,
     _get_camera_attributes: Method_Callback_Compare_Info,
-};
+}
 
 //This resource defines a custom rendering effect that can be applied to Viewports through the viewports' Environment. 
 //This particular method receives the RenderData from the RenderServer.
 //"inherits": "Resource",
 CompositorEffect_Virtual_Info: struct {
     _render_callback: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Resource"
 AudioStreamPlayback_Virtual_Info: struct {
@@ -188,7 +188,7 @@ AudioStreamPlayback_Virtual_Info: struct {
     _tag_used_streams: Method_Callback_Compare_Info,
     _set_parameter: Method_Callback_Compare_Info,
     _get_parameter: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Resource",
 AudioStream_Virtual_Info: Classes.AudioStream_Virtual_Info
@@ -205,7 +205,7 @@ AudioStream_Virtual_Info2: struct {
     _get_parameter_list: Method_Callback_Compare_Info,
     _has_loop: Method_Callback_Compare_Info,
     _get_bar_beats: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Node2D",
 CollisionObject2D_Virtual_Info: struct {
@@ -214,7 +214,7 @@ CollisionObject2D_Virtual_Info: struct {
     _mouse_exit: Method_Callback_Compare_Info,
     _mouse_shape_enter: Method_Callback_Compare_Info,
     _mouse_shape_exit: Method_Callback_Compare_Info,
-};
+}
 
 //"inherits": "Node2D",
 CollisionObject2D_v_table:: struct (T: typeid){
@@ -226,7 +226,7 @@ CollisionObject3D_Virtual_Info: struct {
     _input_event: Method_Callback_Compare_Info,
     _mouse_enter: Method_Callback_Compare_Info,
     _mouse_exit: Method_Callback_Compare_Info,
-};
+}
 
 
 Return_Node_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
@@ -282,7 +282,7 @@ Match_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name
 }
 
 
-Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
+Return_CanvasItem_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CanvasItem_Virtuals_Info
         if (GDW.stringNameCompare(p_name, &_draw.name) && p_hash == _draw.p_hash) {
             return cast(rawptr)class_v_table._draw, true
@@ -293,7 +293,7 @@ Return_Draw_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_nam
 Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using CollisionObject2D_Virtual_Info
         if (GDW.stringNameCompare(p_name, &_input_event.name) && p_hash == _input_event.p_hash) {
-            if class_v_table._input_event == nil do return nil
+            if class_v_table._input_event == nil do return nil, false
             return cast(rawptr)class_v_table._input_event, true
         }
     return nil, false
@@ -301,24 +301,19 @@ Return_Collision2D_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr
 
 Return_texture_Virtuals :: proc (class_v_table: $T, p_class_userdata: rawptr, p_name: ^StringName, p_hash: u32) -> (rawptr, bool) {
         using Texture2D_Virtuals_Info
-        if (GDW.stringNameCompare(p_name, &_is_pixel_opaque.name) && p_hash == _is_pixel_opaque.p_hash) {
-            if class_v_table._is_pixel_opaque == nil do return nil
+        if (p_hash == _is_pixel_opaque.p_hash && GDW.stringNameCompare(p_name, &_is_pixel_opaque.name)) {
             return cast(rawptr)class_v_table._is_pixel_opaque, true
         }
-        if (GDW.stringNameCompare(p_name, &_get_height.name) && p_hash == _get_height.p_hash) {
-            if class_v_table._get_height == nil do return nil
+        if (p_hash == _get_height.p_hash && GDW.stringNameCompare(p_name, &_get_height.name)) {
             return cast(rawptr)class_v_table._get_height, true
         }
-        if (GDW.stringNameCompare(p_name, &_get_width.name) && p_hash == _get_width.p_hash) {
-            if class_v_table._get_width == nil do return nil
+        if (p_hash == _get_width.p_hash && GDW.stringNameCompare(p_name, &_get_width.name)) {
             return cast(rawptr)class_v_table._get_width, true
         }
-        if (GDW.stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
-            if class_v_table._draw_txt2D == nil do return nil
+        if (p_hash == _draw_txt2D.p_hash && GDW.stringNameCompare(p_name, &_draw_txt2D.name)) {
             return cast(rawptr)class_v_table._draw_txt2D, true
         }
-        if (GDW.stringNameCompare(p_name, &_draw_txt2D.name) && p_hash == _draw_txt2D.p_hash) {
-            if class_v_table._draw_txt2D == nil do return nil
+        if (p_hash == _draw_txt2D.p_hash && GDW.stringNameCompare(p_name, &_draw_txt2D.name)) {
             return cast(rawptr)class_v_table._draw_txt2D, true
         }
     return nil, false

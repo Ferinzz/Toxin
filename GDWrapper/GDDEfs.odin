@@ -45,6 +45,7 @@ VariantData :: union #align(16) {
 //optional in Godot. These are mainly to define pointer etc variable lengths in C.
 
 Int     :: GDE.Int
+@(tag="something")
 Bool    :: b8
 float   :: f64
 ObjectInstanceID :: u64

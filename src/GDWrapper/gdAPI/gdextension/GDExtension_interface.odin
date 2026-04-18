@@ -160,13 +160,13 @@ ConstVariantPtr 					:: ^Variant
 ConstVariantPtrargs 				:: [^]ConstVariantPtr
 UninitializedVariantPtr 			:: rawptr
 StringNamePtr 						:: ^StringName
-ConstStringNamePtr 					:: [^]StringName
+ConstStringNamePtr 					:: ^StringName
 UninitializedStringNamePtr          :: ^StringName
 StringPtr 							:: ^gdstring
-ConstStringPtr 						:: [^]gdstring
+ConstStringPtr 						:: ^gdstring
 UninitializedStringPtr 				:: ^gdstring
 ObjectPtr 							:: ^Object
-ConstObjectPtr 						:: [^]Object
+ConstObjectPtr 						:: ^Object
 UninitializedObjectPtr 				:: ^Object
 TypePtr 							:: rawptr
 ConstTypePtr 						:: rawptr
@@ -175,7 +175,7 @@ MethodBindPtr 						:: distinct rawptr
 GDObjectInstanceID 					:: u64
 
 RefPtr 								:: rawptr
-ConstRefPtr 						:: [^]RefPtr
+ConstRefPtr 						:: ^RefPtr
 ClassDB  							:: distinct ^Object
 ConstTypePtrargs					:: [^]rawptr
 
@@ -371,7 +371,7 @@ InstanceBindingReferenceCallback :: proc "c" (p_token: rawptr, p_binding: rawptr
 /* EXTENSION CLASSES */
 
 //p_instance is a pointer to allocated memory of our custom class's struct.
-ClassInstancePtr :: ObjectPtr;
+ClassInstancePtr :: ^ObjectPtr;
 
 ClassSet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_value: ConstVariantPtr) -> b8
 ClassGet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8
@@ -389,7 +389,7 @@ ClassNotification2 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32,  p
 ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: ^b8, p_out: StringPtr);
 ClassReference 				:: proc "c" (p_instance: ClassInstancePtr);
 ClassUnreference 			:: proc "c" (p_instance: ClassInstancePtr);
-ClassCallVirtual 			:: proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtr ,  r_ret: TypePtr);
+ClassCallVirtual 			:: proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtrargs,  r_ret: TypePtr);
 //p_class_userdata is a pointer to whatever you make which should live the whole lifetime of the class.
 //I believe this is typically used to pass context in C.
 ClassCreateInstance 		:: proc "c" (p_class_userdata: rawptr) -> ObjectPtr;

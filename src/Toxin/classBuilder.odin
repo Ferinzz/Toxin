@@ -1,3 +1,4 @@
+#+feature using-stmt
 package Toxin
 
 import "base:runtime"
@@ -8,27 +9,100 @@ import sics "base:intrinsics"
 import "core:fmt"
 import "core:mem"
 import "core:reflect"
-import Classes "../GD_Classes"
+import "base:builtin"
+import "core:c"
 
 /*
-* Container type for the class Node.
-* Self: pointer to the Godot Class as instantiated by Create.
-* Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
-* Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
+* Function used to register a custom class with Godot. This will use the information provided in class_info or default to bltn equivalents.
+* This will need to be called by you at some point during your extension's initialization. Typically this is done via the registerer method of your Class_Deets struct.
+* deets: the struct describing the class which you are registering.
+* init_level: the current initialization level of Godot's startup procedure.
+* class_info: the information about the class which you would like to use when customizing.
 */
-Class_Container :: struct ($Class_Structure: typeid) #packed {
-    self: ^Object, //Keep as first so it can be trivially cast.
-    using class: Class_Structure,
-}
-CC_Dummy:: struct{}
+Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
+    class_info: GDE.ClassCreationInfo4 = class_info_Default) {
+    
+    assert(deets != nil, "Register procedure received a nil value for deets. This should never happen.")
+    // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
+    assert(deets.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", deets.required.name))
 
+
+    //review definition of GDE.ClassCreationInfo4 for more details on each field.
+    
+    class_info: GDE.ClassCreationInfo4 = class_info
+
+    if class_info.icon_path == nil {
+        //string to a svg which will be used as an icon for your Nodes.
+        //Must be NewLatin. UTF8 does not work :/
+        stringraw:gdstring
+        gdAPI.Strings_Utils.NewWithLatin1Chars(&stringraw, "res://icon.svg")
+        class_info.icon_path = &stringraw
+    }
+    if class_info.create_instance_func == nil {
+        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)bltn_Create
+    }
+    if class_info.free_instance_func == nil {
+        class_info.free_instance_func = cast(GDE.ClassFreeInstance)bltn_Destroy
+    }
+    class_info.class_userdata = deets
+
+    when builtin.ODIN_DEBUG {
+        if self.vtable.table != nil {
+            assert(self.vtable.table_type != .None, "Failed to set type of the vTable.")
+        }
+        if self.vtable.table_type != nil {
+            assert(self.vtable.table != nil, "Failed to provide vTable despite specifying type.")
+        }
+    }
+
+    if (deets.vtable.table != nil) {
+        class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)get_virtual
+    }
+    
+
+    //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
+    GDW.StringConstruct(&deets.SN, deets.required.name)
+    deets.GDClass_StringName = GDW.GDClass_StringName_get(deets.required.GDClass_Index)
+    gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &deets.SN, deets.GDClass_StringName, &class_info)
+
+    if deets.Exporter != nil {
+        deets.Exporter(&deets.SN)
+    }
+}
+
+//Needed for interop with external libs.
+/*
+* Function used to register a custom class with Godot. This will use the information provided in class_info or default to bltn equivalents.
+* This will need to be called by you at some point during your extension's initialization.
+* deets: the struct describing the class which you are registering.
+* init_level: the current initialization level of Godot's startup procedure.
+* class_info: the information about the class which you would like to use when customizing.
+*/
+@(export)
+txn_Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, \
+    class_info: GDE.ClassCreationInfo4) {
+        context = runtime.default_context()
+        Register(deets, init_level, class_info)
+}
+
+/*
+* default for class_info would be just to expose it.
+* read definition of GDE.ClassCreationInfo4 for more details on each field.
+*/
+@(rodata)
+class_info_Default: GDE.ClassCreationInfo4 = {
+    is_virtual = false,
+    is_abstract = false,
+    is_exposed = true,
+    is_runtime = false,
+}
 
 /*
 * Details for the class. Used for registration or to create directly from Odin's side.
 * Fields populated by the user: self_register; init_level; GDClass_Index; class_struct; binder; vtable;
 * registerer: the registration procedure to use for this class
-* create: the create procedure to use for Node instantiation. Defaults to Create. Will be set with the procedure passed into the Register procedure.
-* destroy: the destructor for the Node. Defaults to Destroy. Will be set with the procedure passed into the Register procedure.
+* create: The procedure called after the memory has been allocated. This is called during the class init process, before _ready and is used to set defaults and init heap memory.
+* destroy: The procedure called before the memory is destroyed. This is called during the destruction phased and is used to delete any heap allocated memory or other cleanup as needed.
 * class_struct: the type of the struct being used as the class struct.
 * init_level: Godot's initialization level at which this class should be registered. (Some Node types are not available until a later time in Godot's initialization.)
 * GDClass_Index: the enum value representing the Godot Node to build off of. Such as .Node2D; .Object; .CharacterBody2D
@@ -39,23 +113,40 @@ CC_Dummy:: struct{}
 */
 Class_Deets :: struct {
     required: required_deets,
-    //using registerer: Registerer, //Keep as first value in order to trivially cast it.
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object), //Cast to the Object class that your class extends.
-    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr),
-    vtable: rawptr,
+    create: proc(self: rawptr), //Cast to the Object class that your class extends.
+    destroy: proc(self: rawptr),
+    vtable: struct {
+        table_type: vtable_type,
+        table: rawptr,
+    },
     GDClass_StringName: ^StringName,
     SN : StringName,
     Exporter: proc(className: ^StringName),
+    GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
+}
+
+//Easily get the name of the struct you are using for your class information.
+get_name:: proc "contextless" (class: typeid) -> string {
+    return type_info_of(class).variant.(runtime.Type_Info_Named).name
+}
+
+vtable_type:: enum i32 {
+    None,
+    Node,
+    CanvasItem,
+    CollisionObject2D,
+    Texture2D,
 }
 
 required_deets:: struct #all_or_none{
     using registerer: Registerer, //Keep as first value in order to trivially cast it.
-    class_struct: typeid,
+    class_struct_size: i64,
     init_level: InitializationLevel,
-    GDClass_Index: Classes.ClassName_Index,
+    GDClass_Index: GDW.ClassName_Index,
+    name: string,
 }
 
-InitializationLevel :: enum {
+InitializationLevel :: enum c.int {
 	INITIALIZATION_CORE,
 	INITIALIZATION_SERVERS,
 	INITIALIZATION_SCENE,
@@ -79,7 +170,7 @@ Registerer:: struct #all_or_none{
 */
 example_self_reggy:: proc(self: ^Registerer, init_level: InitializationLevel) {
     me:=(^Class_Deets)(self)
-    Register(me, init_level)// make_get_virtual_func(THIS_CLASS_NAME_VTable)) //make_get_virtual_func will likely be needed as most classes will have virtual proc calls.
+    Register(me, init_level)
 }
 
 //Implementation details. For a simple implementation you should only need to use the above structs and call the self referenced register proc.
@@ -92,38 +183,126 @@ reg_list: struct {
     deets: [5]^Registerer,
 }
 
-//I still don't know what these are for :/
+/*
+* These are not necessary for the custom classes, but are useful if you want to include side-effects to an object that has no association with this GDE.
+* Main example is to make your own wrapper around the object through create.
+* create_callback is used when get_instance_binding is unable to find the GDE associated with an object
+* free_callback is called whenever the object is freed. Use for destructor side-effects (all the children are dead, kill parent)
+* reference_callback called on reference. Reply if this can be destroyed.
+*/
 classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     create_callback    = nil,
     free_callback      = nil,
     reference_callback = nil,
 };
 
-//This runs once when the class is created before it gets added to a tree.
-//construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
-//This is different from Godot's ready, which is called sometime after this.
-//Returns a pointer to Class_Container(your_class_struct)
-Create :: proc(p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> ([^]^Object) {
-    //context = runtime.default_context()
+//Optional. Toxin will default to Godot's memory if you do not provide this.
+//Pass TMAlloc_Create via classCreateInfo during Registration if you use this.
+@(export)
+TMAlloc : proc "c" (p_class_user_data: ^Class_Deets, p_bytes: Int) -> rawptr
 
-    object: ^Object = gdAPI.ClassDB.ConstructObject(p_class_user_data.GDClass_StringName)
+//Optional. Toxin will default to Godot's memory if you do not provide this.
+//Pass TMAlloc_Destroy via classCreateInfo during Registration if you use this.
+@(export)
+TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
+
+/*
+* Container type for the class Node.
+* Self: pointer to the Godot Class as instantiated by Create.
+* Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
+* Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
+*/
+@(tag="export")
+Class_Container :: struct ($Class_Structure: typeid) #packed {
+    self: ^Object, //Keep as first so it can be trivially cast.
+    using class: Class_Structure,
+}
+CC_Dummy:: struct{}
+
+
+/*This runs once when the class is created before it gets added to a tree.
+* construct parent class, malloc your class struct, set defaults, heap allocate variables, construct any class children.
+* This is different from Godot's ready, which is called sometime after this.
+* Returns a pointer to Class_Container(your_class_struct)
+*/
+@(deprecated="use bltn_Create or TMAlloc_Create")
+Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+    context = runtime.default_context()
+
+    object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
 
     //Create our containing struct.
-    //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-    self: = cast([^]^Object)gdAPI.Memory_Uils.MemAlloc(reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
-    mem.set(self, 0, reflect.size_of_typeid(p_class_user_data.required.class_struct) + size_of(^Object))
-    //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
-    self[0]= object
+    self:^Class_Container(CC_Dummy)
+    if TMAlloc == nil {
+        //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
+        self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    } else {
+        self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    }
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    self.self= object
 
-    gdAPI.Object_Utils.SetInstance(object, &p_class_user_data.SN, cast(^Object)self)
-    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
+    if p_class_userdata.create != nil {
+        p_class_userdata.create(self)
+    }
 
+    gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)self)
+    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &p_class_userdata.GD_Binding_Callbacks)
 
-    return self
+    return object
 }
+
+/*
+* Called by User, bltn_Create, TMAlloc_Create
+* bltn_Create, TMAlloc_Create will automatically call this method. If you are not owning the allocation portion you can ignore this exists.
+*/
+@(export)
+Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool, class_obj: ^Class_Container(CC_Dummy)) -> (^Object) {
+    context = runtime.default_context()
+
+    object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
+    class_obj.self= object
+
+    if p_class_userdata.create != nil {
+        p_class_userdata.create(class_obj)
+    }
+
+    gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)class_obj)
+    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, class_obj, &p_class_userdata.GD_Binding_Callbacks)
+
+    return object
+}
+
+//Called by Godot
+//This is the default constructor used
+@(export)
+bltn_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+    context = runtime.default_context()
+
+    //Create our containing struct.
+    self:^Class_Container(CC_Dummy)
+    self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+
+    return Create2(p_class_userdata, p_notify_postinitialize, self)
+}
+
+//Called by Godot
+@(export)
+TMAlloc_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+    context = runtime.default_context()
+
+    //Create our containing struct.
+    self:^Class_Container(CC_Dummy)
+    self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+
+    return Create2(p_class_userdata, p_notify_postinitialize, self)
+}
+
 Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
-    class:= Create(p_class_user_data, p_notify_postinitialize)
+    class:= bltn_Create(p_class_user_data, p_notify_postinitialize)
     return (cast(^Class_Container(CC_Dummy))class).self
 }
 
@@ -132,11 +311,47 @@ Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: 
 * If you have a more complicated implementation you should either wrap this in your own call or replace it completely.
 * This procedure is associated with your class via the class_info struct built-up in the Register procedure.
 * GDE.ClassInstancePtr is a pointer to a Class_Container(T:typeid)
+//Called by Godot
 */
+@(deprecated="use bltn_Destroy or TMAlloc_Destroy")
 Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){
         return
+    }
+    if p_class_userdata.destroy != nil {
+        p_class_userdata.destroy(p_instance)
+    }
+    if TMFree != nil {
+        TMFree(p_class_userdata, p_instance)
+    } else {
+        gdAPI.Memory_Uils.MemFree(p_instance)
+    }
+}
+
+//Called by Godot
+@(export)
+TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
+    context = runtime.default_context()
+    if (p_instance == nil){
+        return
+    }
+    if p_class_userdata.destroy != nil {
+        p_class_userdata.destroy(p_instance)
+    }
+    TMFree(p_class_userdata, p_instance)
+}
+
+//Called by Godot
+//This is the default destructor used
+@(export)
+bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
+    context = runtime.default_context()
+    if (p_instance == nil){
+        return
+    }
+    if p_class_userdata.destroy != nil {
+        p_class_userdata.destroy(p_instance)
     }
     gdAPI.Memory_Uils.MemFree(p_instance)
 }
@@ -175,7 +390,7 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
         }
         when sics.type_is_specialization_of(T, CanvasItem_v_table) || 
         sics.type_has_field( sics.type_base_type(T), "vCanvasItem") {
-            virtual, ok = Return_Draw_Virtuals(arg^, nil, p_name, p_hash)
+            virtual, ok = Return_CanvasItem_Virtuals(arg^, nil, p_name, p_hash)
             if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
         }
         when sics.type_is_specialization_of(T, CollisionObject2D_v_table) || 
@@ -193,52 +408,54 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
     return cast(GDE.ClassGetVirtual2)intermediate
 }
 
-Register :: proc(self: ^Class_Deets, init_level: InitializationLevel, get_v_table: GDE.ClassGetVirtual2 = nil, \
-    create: proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) = Class_Init, \
-    destroy: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) = Destroy, \
-    class_info: GDE.ClassCreationInfo4 = class_info_Default, loc:= #caller_location) {
-    
-    // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
-    assert(self.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name))
-
-    //Set the create and destroy procs in the class's deets struct for easy reference in Odin-land.
-    self.create = create
-    self.destroy = destroy
-
-    //string to a svg which will be used as an icon for your Nodes.
-    //Must be NewLatin. UTF8 does not work :/
-    stringraw:gdstring
-    gdAPI.Strings_Utils.NewWithLatin1Chars(&stringraw, "res://icon.svg")
-
-    //review definition of GDE.ClassCreationInfo4 for more details on each field.
-    
-    class_info: GDE.ClassCreationInfo4 = class_info
-    class_info.icon_path = &stringraw
-    class_info.create_instance_func = cast(GDE.ClassCreateInstance2)create
-    class_info.free_instance_func = cast(GDE.ClassFreeInstance)destroy
-    class_info.class_userdata = self
-    class_info.get_virtual_func = get_v_table
-    //class_info.to_string_func(nil, &r_bool, &pout)
-    //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct(&self.SN, type_info_of(self.required.class_struct).variant.(runtime.Type_Info_Named).name)
-
-    self.GDClass_StringName = GDClass_StringName_get(self.required.GDClass_Index)
-
-    gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &self.SN, self.GDClass_StringName, &class_info)
-
-    if self.Exporter != nil {
-        self.Exporter(&self.SN)
+@(export)
+get_virtual::  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
+    context = runtime.default_context()
+    if p_class_userdata.vtable.table == nil {
+        return nil
     }
-}
 
-/*
-* default for class_info would be just to expose it.
-* read definition of GDE.ClassCreationInfo4 for more details on each field.
-*/
-@(rodata)
-class_info_Default: GDE.ClassCreationInfo4 = {
-    is_virtual = false,
-    is_abstract = false,
-    is_exposed = true,
-    is_runtime = false,
+    when builtin.ODIN_DEBUG {
+        if p_class_userdata.vtable.table != nil {
+            assert(p_class_userdata.vtable.table_type != .None)
+        }
+        if p_class_userdata.vtable.table_type != nil {
+            assert(p_class_userdata.vtable.table != nil)
+        }
+    }
+
+    ok:bool=false
+    virtual:rawptr=nil
+    switch p_class_userdata.vtable.table_type{
+        case .None:
+        case .Node:
+            arg:= cast(^Node_v_table(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case .CanvasItem:
+            arg:= cast(^vCanvasItem(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case .CollisionObject2D:
+            arg:= cast(^vCollisionObject2D(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_Collision2D_Virtuals(arg.vCollisionObject2D, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case .Texture2D:
+            arg:= cast(^vTexture2D(CC_Dummy))p_class_userdata.vtable.table
+            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+            virtual, ok = Return_texture_Virtuals(arg.vTexture, nil, p_name, p_hash)
+            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
+        case:
+            assert(false, "Virtual table does not match list available.")
+    }
+    return cast(GDE.ClassCallVirtual)virtual
 }

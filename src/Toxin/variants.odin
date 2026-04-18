@@ -38,6 +38,7 @@ enumtotype :: proc(varType: GDE.VariantType) -> typeid {
 
 //Give me the pointer each and every time.
 //Use types from GDDEfs.odin
+@(deprecated="Use builtin VARIANT_OP_* isntead")
 variantOperator :: proc(p_operator: GDE.VariantOperator, p_type_a: ^GDE.Variant,
                         p_type_b: ^GDE.Variant, r_return: $T)
                         where sics.type_is_pointer(T) {
@@ -45,6 +46,59 @@ variantOperator :: proc(p_operator: GDE.VariantOperator, p_type_a: ^GDE.Variant,
 
     variant_op(&p_type_a.data, &p_type_b.data, r_return)
 
+}
+
+/*
+* Helper method. Nothing special.
+* Does not allocate new. Simply returns a pointer to the data. If the value is a stack value then it will only be valid as long as that stack value is valid.
+* If it's a packed array it will call that get_ptr Godot method in order to get the correct pointer.
+*/
+variant_get_ptr :: proc(variant: ^Variant) -> rawptr {
+    switch variant.VType {
+    case .NIL,
+    /*  atomic types */
+	.BOOL, .INT, .FLOAT, .STRING,
+	/* math types */
+	.VECTOR2, .VECTOR2I, .RECT2, .RECT2I, .VECTOR3, .VECTOR3I,
+	.VECTOR4, .VECTOR4I, .PLANE, .QUATERNION,
+	/* misc types */
+	.COLOR, .STRING_NAME, .NODE_PATH, .RID,
+    .OBJECT, .CALLABLE, .SIGNAL, .DICTIONARY, .ARRAY:
+        return raw_data(variant.data[:])
+
+    //These are passed by pointer from a bucket in Godot's memory. Owner cleans it up.
+    //Remember to copy!
+	case .AABB, .BASIS, .TRANSFORM3D, .TRANSFORM2D, .PROJECTION:
+        return transmute(rawptr)(variant.data[0])
+
+	/* typed arrays */
+	case .PACKED_BYTE_ARRAY:
+        return GDW.PackedByteArray_M_List.get_ptr(variant)
+	case .PACKED_INT32_ARRAY:
+        return GDW.PackedInt32Array_M_List.get_ptr(variant)
+	case .PACKED_INT64_ARRAY:
+        return GDW.PackedInt64Array_M_List.get_ptr(variant)
+	case .PACKED_FLOAT32_ARRAY:
+        return GDW.PackedFloat32Array_M_List.get_ptr(variant)
+	case .PACKED_FLOAT64_ARRAY:
+        return GDW.PackedFloat64Array_M_List.get_ptr(variant)
+	case .PACKED_STRING_ARRAY:
+        return GDW.PackedStringArray_M_List.get_ptr(variant)
+	case .PACKED_VECTOR2_ARRAY:
+        return GDW.PackedVector2Array_M_List.get_ptr(variant)
+	case .PACKED_VECTOR3_ARRAY:
+        return GDW.PackedVector3Array_M_List.get_ptr(variant)
+	case .PACKED_COLOR_ARRAY:
+        return GDW.PackedColorArray_M_List.get_ptr(variant)
+	case .PACKED_VECTOR4_ARRAY:
+        return GDW.PackedVector4Array_M_List.get_ptr(variant)
+
+	case .VARIANT_MAX:
+        assert(true, "Variant without a correct type provided!")
+    case:
+        assert(true, "Variant without a correct type provided!")
+    }
+    return nil
 }
 
 /*
@@ -261,6 +315,7 @@ copy_to_variant :: proc{
 
 VAR_ERROR:: enum {
     WRONG_TYPE,
+    SUPPORTED_CONVERSION,
 }
 
 type_from_variant_error :: struct {
@@ -572,6 +627,9 @@ PackedByteArrayfromVariant :: proc(P_dest: ^GDW.packedArray(u8), p_source: ^Vari
     if p_source.VType == .PACKED_BYTE_ARRAY {
         P_dest^ = GDW.PackedByteArray_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedByteArray_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_BYTE_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_BYTE_ARRAY, p_source.VType}
 }
@@ -579,6 +637,9 @@ Packedi32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i32), p_source: ^Vari
     if p_source.VType == .PACKED_INT32_ARRAY {
         P_dest^ = GDW.PackedInt32Array_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedInt32Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_INT32_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_INT32_ARRAY, p_source.VType}
 }
@@ -586,6 +647,9 @@ PackedStringArrayfromVariant :: proc(P_dest: ^GDE.PackedStringArray, p_source: ^
     if p_source.VType == .PACKED_STRING_ARRAY {
         P_dest^ = GDW.PackedStringArray_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedStringArray_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_STRING_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_STRING_ARRAY, p_source.VType}
 }
@@ -593,6 +657,9 @@ Packedi64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i64), p_source: ^Vari
     if p_source.VType == .PACKED_INT64_ARRAY {
         P_dest^ = GDW.PackedInt64Array_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedInt64Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_INT64_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_INT64_ARRAY, p_source.VType}
 }
@@ -600,6 +667,9 @@ Packedf32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(f32), p_source: ^Vari
     if p_source.VType == .PACKED_FLOAT32_ARRAY {
         P_dest^ = GDW.PackedFloat32Array_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedFloat32Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_FLOAT32_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_FLOAT32_ARRAY, p_source.VType}
 }
@@ -607,6 +677,9 @@ Packedf64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(f64), p_source: ^Vari
     if p_source.VType == .PACKED_FLOAT64_ARRAY {
         P_dest^ = GDW.PackedFloat64Array_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedFloat64Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_FLOAT64_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_FLOAT64_ARRAY, p_source.VType}
 }
@@ -614,6 +687,9 @@ PackedVec2ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector2), p_source: 
     if p_source.VType == .PACKED_VECTOR2_ARRAY {
         P_dest^ = GDW.PackedVector2Array_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedVector2Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_VECTOR2_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_VECTOR2_ARRAY, p_source.VType}
 }
@@ -621,6 +697,9 @@ PackedVec3ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector3), p_source: 
     if p_source.VType == .PACKED_VECTOR3_ARRAY {
         P_dest^ = GDW.PackedVector3Array_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedVector3Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_VECTOR3_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_VECTOR3_ARRAY, p_source.VType}
 }
@@ -628,6 +707,9 @@ PackedVec4ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector4), p_source: 
     if p_source.VType == .PACKED_VECTOR4_ARRAY {
         P_dest^ = GDW.PackedVector4Array_M_List.get_ptr(p_source)^
         return {}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedVector4Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_VECTOR4_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_VECTOR4_ARRAY, p_source.VType}
 }
@@ -635,8 +717,10 @@ PackedColorArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Color), p_source: ^
     if p_source.VType == .PACKED_COLOR_ARRAY {
         P_dest^ = GDW.PackedColorArray_M_List.get_ptr(p_source)^
         return {}
-    } else {
-        GDW.PackedColorArray_M_List.Create2(P_dest,{(transmute(^Array)p_source.data[0])})}
+    } else if p_source.VType == .ARRAY {
+        GDW.PackedColorArray_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        return {.SUPPORTED_CONVERSION, .PACKED_COLOR_ARRAY, p_source.VType}
+    }
     return {.WRONG_TYPE, .PACKED_COLOR_ARRAY, p_source.VType}
 }
 
