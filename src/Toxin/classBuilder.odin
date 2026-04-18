@@ -13,12 +13,12 @@ import "base:builtin"
 import "core:c"
 
 @(export)
-Register :: proc(self: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
+Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
-    assert(self != nil, "Register procedure received a nil value for deets. This should never happen.")
+    assert(deets != nil, "Register procedure received a nil value for deets. This should never happen.")
     // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
-    assert(self.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", self.required.name))
+    assert(deets.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", deets.required.name))
 
 
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
@@ -38,7 +38,7 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel= .INITIALIZ
     if class_info.free_instance_func == nil {
         class_info.free_instance_func = cast(GDE.ClassFreeInstance)bltn_Destroy
     }
-    class_info.class_userdata = self
+    class_info.class_userdata = deets
 
     when builtin.ODIN_DEBUG {
         if self.vtable.table != nil {
@@ -49,19 +49,31 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel= .INITIALIZ
         }
     }
 
-    if (self.vtable.table != nil) {
+    if (deets.vtable.table != nil) {
         class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)get_virtual
     }
     
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
-    GDW.StringConstruct(&self.SN, self.required.name)
-    self.GDClass_StringName = GDW.GDClass_StringName_get(self.required.GDClass_Index)
-    gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &self.SN, self.GDClass_StringName, &class_info)
+    GDW.StringConstruct(&deets.SN, deets.required.name)
+    deets.GDClass_StringName = GDW.GDClass_StringName_get(deets.required.GDClass_Index)
+    gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &deets.SN, deets.GDClass_StringName, &class_info)
 
-    if self.Exporter != nil {
-        self.Exporter(&self.SN)
+    if deets.Exporter != nil {
+        deets.Exporter(&deets.SN)
     }
+}
+
+/*
+* default for class_info would be just to expose it.
+* read definition of GDE.ClassCreationInfo4 for more details on each field.
+*/
+@(rodata)
+class_info_Default: GDE.ClassCreationInfo4 = {
+    is_virtual = false,
+    is_abstract = false,
+    is_exposed = true,
+    is_runtime = false,
 }
 
 /*
@@ -424,17 +436,4 @@ get_virtual::  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_
             assert(false, "Virtual table does not match list available.")
     }
     return cast(GDE.ClassCallVirtual)virtual
-}
-
-
-/*
-* default for class_info would be just to expose it.
-* read definition of GDE.ClassCreationInfo4 for more details on each field.
-*/
-@(rodata)
-class_info_Default: GDE.ClassCreationInfo4 = {
-    is_virtual = false,
-    is_abstract = false,
-    is_exposed = true,
-    is_runtime = false,
 }
