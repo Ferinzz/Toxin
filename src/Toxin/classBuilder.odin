@@ -126,10 +126,12 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 };
 
 //Optional. Toxin will default to Godot's memory if you do not provide this.
+//Pass TMAlloc_Create via classCreateInfo during Registration if you use this.
 @(export)
 TMAlloc : proc "c" (p_class_user_data: ^Class_Deets, p_bytes: Int) -> rawptr
 
 //Optional. Toxin will default to Godot's memory if you do not provide this.
+//Pass TMAlloc_Destroy via classCreateInfo during Registration if you use this.
 @(export)
 TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
 
@@ -187,6 +189,7 @@ Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bo
 }
 
 //Called by Godot
+//This is the default constructor used
 @(export)
 bltn_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
@@ -255,6 +258,7 @@ TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.Clas
 }
 
 //Called by Godot
+//This is the default destructor used
 @(export)
 bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
@@ -391,10 +395,10 @@ Register :: proc(self: ^Class_Deets, init_level: InitializationLevel= .INITIALIZ
         class_info.icon_path = &stringraw
     }
     if class_info.create_instance_func == nil {
-        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)Create
+        class_info.create_instance_func = cast(GDE.ClassCreateInstance2)bltn_Create
     }
     if class_info.free_instance_func == nil {
-        class_info.free_instance_func = cast(GDE.ClassFreeInstance)Destroy
+        class_info.free_instance_func = cast(GDE.ClassFreeInstance)bltn_Destroy
     }
     class_info.class_userdata = self
 
