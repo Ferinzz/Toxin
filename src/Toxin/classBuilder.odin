@@ -13,6 +13,12 @@ import "base:builtin"
 import "core:c"
 
 @(export)
+txn_Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, \
+    class_info: GDE.ClassCreationInfo4) {
+        context = runtime.default_context()
+        Register(deets, init_level, class_info)
+}
+
 Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
