@@ -38,6 +38,40 @@ import "shared:GDWrapper/gdAPI"
 import GDE "shared:GDWrapper/gdAPI/gdextension"
 
 
+classDBGetMethodBind3 :: proc "c" (className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+    native_class_name: ^GDW.StringName;
+    method_name: GDW.StringName;
+
+    native_class_name = GDClass_StringName_get(className)
+    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
+
+    methodBind = gdAPI.ClassDB.GetMethodBind(native_class_name, &method_name, hash)
+    //assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
+
+    GDW.StringName_M_List.Destroy(&method_name)
+
+    return methodBind
+}
+
+GDClass_StringName_get :: proc "c" (classname_index: ClassName_Index) -> ^GDW.StringName {
+  context= runtime.default_context()
+    //ClassName_StringNames[classname_index]
+    if ClassName_StringNames[classname_index].ptr == nil {
+        GDW.StringConstruct(&ClassName_StringNames[classname_index], reflect.enum_field_names(ClassName_Index)[classname_index])
+    }
+    return &ClassName_StringNames[classname_index]
+}
+
+method_bind_info :: struct {
+  index: ClassName_Index,
+  name: cstring,
+  hash: GDW.Int
+}
+
+mb_container :: struct {
+  mb: ^GDW.MethodBind,
+  mbptrcall: rawptr,
+}
 `
 
   file_path:= "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAUtils_GD_Class.odin"
