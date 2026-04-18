@@ -286,7 +286,7 @@ TMAlloc_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitial
 
 Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
-    class:= Create(p_class_user_data, p_notify_postinitialize)
+    class:= bltn_Create(p_class_user_data, p_notify_postinitialize)
     return (cast(^Class_Container(CC_Dummy))class).self
 }
 
