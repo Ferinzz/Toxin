@@ -4,12 +4,9 @@ package Toxin
 
 import "base:builtin"
 import "base:runtime"
-import GDE "../GDWrapper/gdAPI/gdextension"
-import "../GDWrapper/gdAPI"
 import GDW "../GDWrapper"
 import GDE "../GDWrapper/gdAPI/gdextension"
 import "../GDWrapper/gdAPI"
-import GDW "../GDWrapper"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:slice"
