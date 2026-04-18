@@ -101,8 +101,8 @@ class_info_Default: GDE.ClassCreationInfo4 = {
 * Details for the class. Used for registration or to create directly from Odin's side.
 * Fields populated by the user: self_register; init_level; GDClass_Index; class_struct; binder; vtable;
 * registerer: the registration procedure to use for this class
-* create: the create procedure to use for Node instantiation. Defaults to Create. Will be set with the procedure passed into the Register procedure.
-* destroy: the destructor for the Node. Defaults to Destroy. Will be set with the procedure passed into the Register procedure.
+* create: The procedure called after the memory has been allocated. This is called during the class init process, before _ready and is used to set defaults and init heap memory.
+* destroy: The procedure called before the memory is destroyed. This is called during the destruction phased and is used to delete any heap allocated memory or other cleanup as needed.
 * class_struct: the type of the struct being used as the class struct.
 * init_level: Godot's initialization level at which this class should be registered. (Some Node types are not available until a later time in Godot's initialization.)
 * GDClass_Index: the enum value representing the Godot Node to build off of. Such as .Node2D; .Object; .CharacterBody2D
