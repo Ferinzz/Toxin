@@ -59,6 +59,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which should be considered Core to the rest of the system.
             */
+            Classes.Engine_Init_(&Engine_M_List)
             init_Node_Virtuals_Info()
             init_CanvasItem_Virtuals_Info()
             init_Texture2D_Virtuals_Info()

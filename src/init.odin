@@ -9,23 +9,6 @@ import "core:fmt"
 import "base:runtime"
 import "core:math"
 
-init:: proc ()  {
-    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
-
-    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
-    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
-    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
-
-    //Register custom class.
-    THIS_CLASS_NAME_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
-}
-
-@(init)
-asdf :: proc "contextless" () {
-    Toxin.inits.scene = init
-    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
-}
-
 scene_tree_obj: ^GDW.Object
 root_node_instance: ^GDW.Object
 root:^Toxin.Object
@@ -42,6 +25,24 @@ SceneTree_Class: Classes.SceneTree_MethodBind_List
 Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
 World2D_Class: Classes.World2D_MethodBind_List
 Texture2D_Class: Classes.Texture2D_MethodBind_List
+Engine: Classes.Engine_MethodBind_List
+
+init:: proc ()  {
+    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
+
+    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
+    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
+    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
+
+    //Register custom class.
+    THIS_CLASS_NAME_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
+}
+
+@(init)
+asdf :: proc "contextless" () {
+    Toxin.inits.scene = init
+    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
+}
 
 printonce:bool=true
 frame_count_amout::2000
@@ -86,20 +87,14 @@ MainLoopStartupCallback :: proc "c" () {
     Classes.Texture2D_Init_(&Texture2D_Class)
     Classes.CanvasGroup_Init_(&CanvasGroup_Class)
     Classes.SceneTree_Init_(&SceneTree_Class)
-
-    //indx_ret: Variant
-    //default_Array_class->GetIndex(0, &indx_ret)
-    //TODO: fix the singleton getters.
+    Classes.Engine_Init_(&Engine)
     Toxin.getPhysServer2dObj()
-    //GDW.getRenderServer2dObj()
-    //GDW.class_get_method_list()
-    //GDW.getInputSingleton()
-    //Setup an object to hold the MainLoop object.
-    scene_tree_obj = GDW.getMainLoop()
-    //GDW.init_InputEvent()
-    //Fetch the root of the current sceneTree
-    root= GDW.getRoot()
-    scene:= GDW.get_current_scene()
+
+    //myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
+    Engine.get_main_loop->m_call(Toxin.EngineObj(), nil, &scene_tree_obj)
+    SceneTree_Class.get_root->m_call(scene_tree_obj, nil, &root)
+    scene: ^Toxin.Object
+    SceneTree_Class.get_current_scene->m_call(scene_tree_obj, nil, &scene)
     Classes.Window_Init_(&Window_MethodBind_List)
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.

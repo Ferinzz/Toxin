@@ -26,7 +26,9 @@ loadResource :: proc(path, hint: cstring, cacheMode: ^Classes.ResourceLoader_Cac
 
     args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
     r_resource: GDE.ObjectPtr
-    resource_M.load->m_call(GDW.getMainLoop(), {&pathS, &hintS, cacheMode}, &r_resource)
+    scene_tree_obj: ^Object
+    Engine_M_List.get_main_loop->m_call(EngineObj(), nil, &scene_tree_obj)
+    resource_M.load->m_call(scene_tree_obj, {&pathS, &hintS, cacheMode}, &r_resource)
     //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)resource_M.load.m_call, GDW.getMainLoop(), raw_data(args_res[:]), &r_resource)
     return r_resource
 }

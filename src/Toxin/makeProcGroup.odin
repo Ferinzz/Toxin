@@ -105,7 +105,7 @@ texture2D :: ^Object
 destroy_texture :: proc(texture: texture2D) {
     die:RID
     if texture != nil && texture.proxy != nil {
-        GDW.getRid(texture, &die)
+        //GDW.getRid(texture, &die)
         //GDW.freeRenderRID(&die)
     }
 }

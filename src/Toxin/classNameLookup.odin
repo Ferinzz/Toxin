@@ -23,7 +23,7 @@ GDClass_StringName_get :: proc(classname_index: Classes.ClassName_Index) -> ^Str
 
 ClassName_StringName_Del :: proc(classname_index: Classes.ClassName_Index) -> SN_Error {
     when ODIN_DEBUG {
-        if int(classname_index) > len(classname_index) {
+        if int(classname_index) > len(Classes.ClassName_Index) {
             return .BAD_INDEX
         }
         if Classes.ClassName_StringNames[classname_index].ptr == nil {

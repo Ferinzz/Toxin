@@ -5,6 +5,7 @@ import "base:runtime"
 import GDE "../GDWrapper/gdAPI/gdextension"
 import GDW "../GDWrapper"
 import "../GDWrapper/gdAPI"
+import Classes "../GD_Classes"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:mem"
@@ -47,11 +48,11 @@ Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALI
     class_info.class_userdata = deets
 
     when builtin.ODIN_DEBUG {
-        if self.vtable.table != nil {
-            assert(self.vtable.table_type != .None, "Failed to set type of the vTable.")
+        if deets.vtable.table != nil {
+            assert(deets.vtable.table_type != .None, "Failed to set type of the vTable.")
         }
-        if self.vtable.table_type != nil {
-            assert(self.vtable.table != nil, "Failed to provide vTable despite specifying type.")
+        if deets.vtable.table_type != nil {
+            assert(deets.vtable.table != nil, "Failed to provide vTable despite specifying type.")
         }
     }
 
@@ -62,7 +63,7 @@ Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALI
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct(&deets.SN, deets.required.name)
-    deets.GDClass_StringName = GDW.GDClass_StringName_get(deets.required.GDClass_Index)
+    deets.GDClass_StringName = Classes.GDClass_StringName_get(deets.required.GDClass_Index)
     gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &deets.SN, deets.GDClass_StringName, &class_info)
 
     if deets.Exporter != nil {
@@ -142,7 +143,7 @@ required_deets:: struct #all_or_none{
     using registerer: Registerer, //Keep as first value in order to trivially cast it.
     class_struct_size: i64,
     init_level: InitializationLevel,
-    GDClass_Index: GDW.ClassName_Index,
+    GDClass_Index: Classes.ClassName_Index,
     name: string,
 }
 

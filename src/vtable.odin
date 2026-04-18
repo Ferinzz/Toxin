@@ -99,17 +99,27 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
 
     Toxin.Register(me, init_level)
 
-    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
+    //Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
     cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
     texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
 }
 
+root:^Toxin.Object
 texture: Classes.Texture2D
 Texture_Class: Classes.Sprite2D_MethodBind_List
 Node2D_Class: Classes.Node2D_MethodBind_List
 Node_Class: Classes.Node_MethodBind_List
+Viewport_Class: Classes.Viewport_MethodBind_List
+CanvasItem_Class: Classes.CanvasItem_MethodBind_List
+CanvasGroup_Class: Classes.CanvasGroup_MethodBind_List
+SceneTree_Class: Classes.SceneTree_MethodBind_List
+
+Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
+World2D_Class: Classes.World2D_MethodBind_List
+Texture2D_Class: Classes.Texture2D_MethodBind_List
+Engine: Classes.Engine_MethodBind_List
 
 //Constructor receive an opaque pointer which is in reality a pointer to this class's container.
 constructor :: proc(self: rawptr) {
@@ -169,33 +179,15 @@ MainLoopStartupCallback :: proc "c" () {
     Classes.Node2D_Init_(&Node2D_Class)
     Classes.Node_Init_(&Node_Class)
 
-    //indx_ret: Variant
-    //default_Array_class->GetIndex(0, &indx_ret)
-    //TODO: fix the singleton getters.
-    //GDW.getPhysServer2dObj()
-    //GDW.getRenderServer2dObj()
-    //GDW.class_get_method_list()
-    //GDW.getInputSingleton()
-    //Setup an object to hold the MainLoop object.
-    scene_tree_obj = GDW.getMainLoop()
-    //GDW.init_InputEvent()
-    //Fetch the root of the current sceneTree
-    root:= GDW.getRoot()
-    scene:= GDW.get_current_scene()
     Classes.Window_Init_(&Window_MethodBind_List)
-    //SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-    //rando: rawptr = new(rawptr)
-    //minput: Node_C
-    //fmt.println(size_of(minput))
-    //make_Node(&minput)
-    //fmt.println(cast(^[30]u8)minput.self.proxy)
-    //SN2: StringName
-    //SN_p2: StringName
-//
-    //minput.set_name(&minput, {&SN})
-    //minput->get_name(&SN_p2)
-    //minput->set_name({&SN})
-    //minput->get_name(&SN_p2)
+    Toxin.getPhysServer2dObj()
+
+    //myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
+    Engine.get_main_loop->m_call(Toxin.EngineObj(), nil, &scene_tree_obj)
+    SceneTree_Class.get_root->m_call(scene_tree_obj, nil, &root)
+    scene: ^Toxin.Object
+    SceneTree_Class.get_current_scene->m_call(scene_tree_obj, nil, &scene)
+    Classes.Window_Init_(&Window_MethodBind_List)
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
