@@ -10,6 +10,7 @@ import "core:fmt"
 import "core:mem"
 import "core:reflect"
 import "base:builtin"
+import "core:c"
 
 /*
 * Container type for the class Node.
@@ -51,6 +52,7 @@ Class_Deets :: struct {
     GDClass_StringName: ^StringName,
     SN : StringName,
     Exporter: proc(className: ^StringName),
+    GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
 }
 
 get_name:: proc "contextless" (class: typeid) -> string {
@@ -123,10 +125,11 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     reference_callback = nil,
 };
 
-//Optional. If you do not provide this Toxin will default to Godot's memory.
+//Optional. Toxin will default to Godot's memory if you do not provide this.
 @(export)
 TMAlloc : proc "c" (p_class_user_data: ^Class_Deets, p_bytes: Int) -> rawptr
-//Optional. If you do not provide this Toxin will default to Godot's memory.
+
+//Optional. Toxin will default to Godot's memory if you do not provide this.
 @(export)
 TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
 
@@ -157,11 +160,15 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
     }
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)self)
-    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
+    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &p_class_userdata.GD_Binding_Callbacks)
 
     return object
 }
 
+/*
+* Called by User, bltn_Create, TMAlloc_Create
+* bltn_Create, TMAlloc_Create will automatically call this method. If you are not owning the allocation portion you can ignore this exists.
+*/
 @(export)
 Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool, class_obj: ^Class_Container(CC_Dummy)) -> (^Object) {
     context = runtime.default_context()
@@ -174,13 +181,14 @@ Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bo
     }
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)class_obj)
-    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, class_obj, &classBindingCallbacks)
+    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, class_obj, &p_class_userdata.GD_Binding_Callbacks)
 
     return object
 }
 
+//Called by Godot
 @(export)
-bltn_Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+bltn_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
 
     //Create our containing struct.
@@ -191,8 +199,9 @@ bltn_Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: 
     return Create2(p_class_userdata, p_notify_postinitialize, self)
 }
 
+//Called by Godot
 @(export)
-TMAlloc_Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+TMAlloc_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
 
     //Create our containing struct.
@@ -214,6 +223,7 @@ Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: 
 * If you have a more complicated implementation you should either wrap this in your own call or replace it completely.
 * This procedure is associated with your class via the class_info struct built-up in the Register procedure.
 * GDE.ClassInstancePtr is a pointer to a Class_Container(T:typeid)
+//Called by Godot
 */
 @(export)
 Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
@@ -231,6 +241,7 @@ Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstan
     }
 }
 
+//Called by Godot
 @(export)
 TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
@@ -243,6 +254,7 @@ TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.Clas
     TMFree(p_class_userdata, p_instance)
 }
 
+//Called by Godot
 @(export)
 bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
