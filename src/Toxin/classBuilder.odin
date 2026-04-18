@@ -143,14 +143,13 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
 
     //Create our containing struct.
     self:^Class_Container(CC_Dummy)
-     if TMAlloc == nil {
+    if TMAlloc == nil {
         //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
         self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(^Object))
     } else {
         self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(^Object))
     }
     mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
-    //mem.set(self, 0, size_of(p_class_user_data.class_struct) + size_of(^GDW.Object))
     self.self= object
 
     if p_class_userdata.create != nil {
@@ -161,6 +160,47 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
     gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &classBindingCallbacks)
 
     return object
+}
+
+@(export)
+Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool, class_obj: ^Class_Container(CC_Dummy)) -> (^Object) {
+    context = runtime.default_context()
+
+    object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
+    class_obj.self= object
+
+    if p_class_userdata.create != nil {
+        p_class_userdata.create(class_obj)
+    }
+
+    gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)class_obj)
+    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, class_obj, &classBindingCallbacks)
+
+    return object
+}
+
+@(export)
+bltn_Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+    context = runtime.default_context()
+
+    //Create our containing struct.
+    self:^Class_Container(CC_Dummy)
+    self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+
+    return Create2(p_class_userdata, p_notify_postinitialize, self)
+}
+
+@(export)
+TMAlloc_Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+    context = runtime.default_context()
+
+    //Create our containing struct.
+    self:^Class_Container(CC_Dummy)
+    self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+
+    return Create2(p_class_userdata, p_notify_postinitialize, self)
 }
 
 Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
@@ -189,6 +229,30 @@ Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstan
     } else {
         gdAPI.Memory_Uils.MemFree(p_instance)
     }
+}
+
+@(export)
+TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
+    context = runtime.default_context()
+    if (p_instance == nil){
+        return
+    }
+    if p_class_userdata.destroy != nil {
+        p_class_userdata.destroy(p_instance)
+    }
+    TMFree(p_class_userdata, p_instance)
+}
+
+@(export)
+bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
+    context = runtime.default_context()
+    if (p_instance == nil){
+        return
+    }
+    if p_class_userdata.destroy != nil {
+        p_class_userdata.destroy(p_instance)
+    }
+    gdAPI.Memory_Uils.MemFree(p_instance)
 }
 
 /*
