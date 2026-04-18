@@ -375,6 +375,7 @@ get_virtual::  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_
     return cast(GDE.ClassCallVirtual)virtual
 }
 
+@(export)
 Register :: proc(self: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
