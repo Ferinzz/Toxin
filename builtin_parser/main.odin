@@ -378,7 +378,13 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
         //Constants only exist for compound types such as vec2, basis etc.
         consts:= `@(rodata)
 %s_%s : %s`
+        consts2:= `    %s,`
+        consts3:= `    .%s = %s,`
+        const_enum_name:= `%s_consts :: enum c.int {{`
+        const_impl:= `@(export, rodata)
+%s_Defaults := [%s_consts]%s {{`
         if len(BUILT_FROM.constants) > 0 && BUILT_FROM.name != "Quaternion" {
+            fmt.sbprintf(&consts_builder, const_enum_name, BUILT_FROM.name, newline =true)
             for constants in BUILT_FROM.constants {
                 inf:bool
                 inf_replacement:string
@@ -390,9 +396,36 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
                 if inf do delete(inf_replacement)
                 outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
                 delete(outoput)
-                fmt.sbprintf(&consts_builder, consts, BUILT_FROM.name, constants.name, outoput2, newline =true)
+                //fmt.sbprintf(&consts_builder, consts, BUILT_FROM.name, constants.name, outoput2, newline =true)
+                fmt.sbprintf(&consts_builder, consts2, constants.name, newline =true)
                 delete(outoput2)
             }
+            fmt.sbprintf(&consts_builder, `}`, newline =true)
+        }
+
+        //need to use a special find proc in order to find where the open brackets starts.
+	    find :: proc(r: rune) -> bool {
+	    	return r != '{'
+	    }
+        if len(BUILT_FROM.constants) > 0 && BUILT_FROM.name != "Quaternion" {
+            fmt.sbprintf(&consts_builder, const_impl, BUILT_FROM.name, BUILT_FROM.name, BUILT_FROM.name, newline =true)
+            for constants in BUILT_FROM.constants {
+                inf:bool
+                inf_replacement:string
+                if strings.contains(constants.value, "inf"){
+                    inf_replacement, inf = strings.replace_all(constants.value, "inf", "math.INF_F32")
+                } else {inf_replacement=constants.value}
+                
+                outoput, did_alloc:=strings.replace_all(inf_replacement, "(", " {")
+                outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
+                if inf do delete(inf_replacement)
+                trunc:= strings.trim_left_proc(outoput2, find)
+                fmt.println(strings.trim_left_proc(outoput2, find))
+                //delete(outoput)
+                fmt.sbprintf(&consts_builder, consts3, constants.name, trunc[:], newline =true)
+                delete(outoput2)
+            }
+            fmt.sbprintf(&consts_builder, `}`, newline =true)
         }
 
         //fmt.println(strings.to_string(init_builder))
