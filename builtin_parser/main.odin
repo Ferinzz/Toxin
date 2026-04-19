@@ -12,7 +12,7 @@ import "core:bytes"
 
 /*
 TODO!
-Projection_Constants :: [Projection_Const_names]Projection {
+Projection_Constants := [Projection_Const_names]Projection {
   .IDENTITY = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
   .ZERO = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 }

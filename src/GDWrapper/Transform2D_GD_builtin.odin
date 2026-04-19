@@ -4,16 +4,23 @@ import "gdAPI"
 import GDE "gdAPI/gdextension"
 import "core:math"
 
+Transform2D_const:: enum u8 {
+  IDENTITY,
+  FLIP_X,
+  FLIP_Y,
+}
 
-@(rodata)
-@(export)
+@(export, rodata)
+Transform2D_Defaults := [Transform2D_const]Transform2D{
+  .IDENTITY = {1, 0, 0, 1, 0, 0},
+  .FLIP_X = {-1, 0, 0, 1, 0, 0},
+  .FLIP_Y = {1, 0, 0, -1, 0, 0},
+}
+
 Transform2D_IDENTITY : Transform2D= {1, 0, 0, 1, 0, 0}
-@(rodata)
-@(export)
 Transform2D_FLIP_X : Transform2D= {-1, 0, 0, 1, 0, 0}
-@(rodata)
-@(export)
 Transform2D_FLIP_Y : Transform2D= {1, 0, 0, -1, 0, 0}
+
 Transform2D_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Transform2D, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^Transform2D,  #by_ptr p_args: struct{ from: ^Transform2D, }),

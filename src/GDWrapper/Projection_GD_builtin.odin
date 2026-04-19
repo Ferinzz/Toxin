@@ -4,13 +4,16 @@ import "gdAPI"
 import GDE "gdAPI/gdextension"
 import "core:math"
 
+Projection_const :: enum u8 {
+  IDENTITY,
+  ZERO,
+}
 
-@(rodata)
-@(export)
-Projection_IDENTITY : Projection= {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}
-@(rodata)
-@(export)
-Projection_ZERO : Projection= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+@export
+Projection_Defaults := [Projection_const]Projection {
+  .IDENTITY={1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+  .ZERO= {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+}
 
 Projection_Planes :: enum i64 {
   PLANE_NEAR = 0,

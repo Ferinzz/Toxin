@@ -4,19 +4,21 @@ import "gdAPI"
 import GDE "gdAPI/gdextension"
 import "core:math"
 
+Transform3D_const:: enum u8 {
+  IDENTITY,
+  FLIP_X,
+  FLIP_Y,
+  FLIP_Z,
+}
 
-@(rodata)
-@(export)
-Transform3D_IDENTITY : Transform3D= {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}
-@(rodata)
-@(export)
-Transform3D_FLIP_X : Transform3D= {-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0}
-@(rodata)
-@(export)
-Transform3D_FLIP_Y : Transform3D= {1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0}
-@(rodata)
-@(export)
-Transform3D_FLIP_Z : Transform3D= {1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0}
+@(export, rodata)
+Transform3D_Defaults := [Transform3D_const]Transform3D{
+  .IDENTITY = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0},
+  .FLIP_X = {-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0},
+  .FLIP_Y = {1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0},
+  .FLIP_Z = {1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0},
+}
+
 Transform3D_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Transform3D, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^Transform3D,  #by_ptr p_args: struct{ from: ^Transform3D, }),

@@ -550,7 +550,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{
   MB_ptr_call:=gdAPI.get_Interface_Address("object_method_bind_ptrcall")`
   //name, name, name
-  Meth_Getter:=`  %s_methods.%s._%[1]s = (cast(^GDW.MethodBind)GDW.classDBGetMethodBind3(.%s, "%s", %v, loc))`
+  Meth_Getter:=`  %s_methods.%s._%[1]s = (cast(^GDW.MethodBind)classDBGetMethodBind3(.%s, "%s", %v, loc))`
   //name, method.name, variant_type, method.name, hash
   ptrCall_getter:=`  %s_methods.%s.m_call = cast(type_of(%[0]s_methods.%[1]s.m_call))MB_ptr_call`
   //name, method.name, variant_type, method.name, hash
