@@ -85,7 +85,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
         class_struct_size = size_of(THIS_CLASS_NAME),
         name = Toxin.get_name(THIS_CLASS_NAME),
         init_level = .INITIALIZATION_SCENE,
-        GDClass_Index = .AudioStreamPlayback,
+        GDClass_Index = .Sprite2D,
     },
     create=constructor,
     Exporter = THIS_CLASS_NAME_Export,
@@ -99,7 +99,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
 
     Toxin.Register(me, init_level)
 
-    //Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
+    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
     cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
@@ -120,6 +120,8 @@ Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
 World2D_Class: Classes.World2D_MethodBind_List
 Texture2D_Class: Classes.Texture2D_MethodBind_List
 Engine: Classes.Engine_MethodBind_List
+
+singletons: Toxin.Singletons
 
 //Constructor receive an opaque pointer which is in reality a pointer to this class's container.
 constructor :: proc(self: rawptr) {
@@ -174,17 +176,19 @@ MainLoopStartupCallback :: proc "c" () {
     //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
+    Toxin._Init_Singletons(&singletons)
 
     Classes.Sprite2D_Init_(&Texture_Class)
     Classes.Node2D_Init_(&Node2D_Class)
     Classes.Node_Init_(&Node_Class)
-
     Classes.Window_Init_(&Window_MethodBind_List)
-    Toxin.getPhysServer2dObj()
+    Classes.SceneTree_Init_(&SceneTree_Class)
 
     //myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
-    Engine.get_main_loop->m_call(Toxin.EngineObj(), nil, &scene_tree_obj)
-    SceneTree_Class.get_root->m_call(scene_tree_obj, nil, &root)
+    //Engine.get_main_loop->m_call(Toxin.EngineObj(), nil, &scene_tree_obj)
+    scene_tree_obj= Toxin._getMainLoop(singletons)
+    //SceneTree_Class.get_root->m_call(scene_tree_obj, nil, &root)
+    Toxin._getRoot(singletons, SceneTree_Class)
     scene: ^Toxin.Object
     SceneTree_Class.get_current_scene->m_call(scene_tree_obj, nil, &scene)
     Classes.Window_Init_(&Window_MethodBind_List)

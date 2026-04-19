@@ -42,29 +42,6 @@ MainLoopStartupCallback :: proc "c" () {
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
 
-
-    //indx_ret: Variant
-    //default_Array_class->GetIndex(0, &indx_ret)
-    //TODO: fix the singleton getters.
-    //GDW.getPhysServer2dObj()
-    //GDW.getRenderServer2dObj()
-    //GDW.class_get_method_list()
-    //GDW.getInputSingleton()
-    //Setup an object to hold the MainLoop object.
-    scene_tree_obj = GDW.getMainLoop()
-    //GDW.init_InputEvent()
-    //Fetch the root of the current sceneTree
-    root:= GDW.getRoot()
-    scene:= GDW.get_current_scene()
-    //SN: StringName = GDW.StringConstruct.stringNameNewString_r("ClassDB")
-    //rando: rawptr = new(rawptr)
-    //minput: Node_C
-    //fmt.println(size_of(minput))
-    //make_Node(&minput)
-    //fmt.println(cast(^[30]u8)minput.self.proxy)
-    //SN2: StringName
-    //SN_p2: StringName
-//
     //minput.set_name(&minput, {&SN})
     //minput->get_name(&SN_p2)
     //minput->set_name({&SN})
@@ -78,18 +55,13 @@ MainLoopStartupCallback :: proc "c" () {
     //GDW.addChild(root, &root_node_instance)
 
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
-    if scene != nil {
-        //You can add a node directly to the root.
-        //Add the class to the root of the sceneTree
-
-    };
-};;
+};
 
 /* Called when shutting down the main loop. */
 MainLoopShutdownCallback :: proc "c" () {
     context = runtime.default_context()
     //GDW.Destructors.ObjectDestroy(root_node_instance)
-};;
+};
 
 callOnce:bool=false
 /*
@@ -106,7 +78,7 @@ MainLoopFrameCallback :: proc "c" () {
         myMainLoopCallbacks.frame_func = nil
     }
 
-};;
+};
 myMainLoopCallbacks: GDE.MainLoopCallbacks
 /*
 //create a GDE.MainLoopCallbacks struct which will hold the pointers to the callbacks
@@ -119,7 +91,7 @@ myMainLoopCallbacks: GDE.MainLoopCallbacks = {
 	 * This is intended to be the equivalent of `ScriptLanguage::frame()` for GDExtension language bindings that don't use the script API.
 	 */
 	frame_func = MainLoopFrameCallback,
-};;*/
+};*/
 
 
 //I register the GDE.MainLoopCallbacks struct in the init of the Extension.
