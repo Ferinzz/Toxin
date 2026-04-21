@@ -2,12 +2,12 @@ package Toxin
 
 import GDW "../GDWrapper"
 import "../GDWrapper/gdAPI"
-
+import Classes "../GD_Classes"
 
 Objectc :: ^GDW.Object
 
 make_Objectc :: proc(p_Objectc_C: ^Objectc_C) {
-    p_Objectc_C.self = gdAPI.ClassDB.ConstructObject(GDClass_StringName_get(.Object))
+    p_Objectc_C.self = gdAPI.ClassDB.ConstructObject(Classes.GDClass_StringName_get(.Object))
     p_Objectc_C.methods = &Objectc_methods
     //GDW.Objectc_Input(&Objectc_methods)
 }

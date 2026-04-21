@@ -71,7 +71,6 @@ Vector3 :: GDW.Vector3
 
 Vector3i :: GDW.Vector3i
 
-
 Vector4 :: GDW.Vector4
 
 Vector4i :: GDW.Vector4i

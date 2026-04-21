@@ -1,4 +1,4 @@
-//#+ignore
+#+ignore
 package Toxin
 
 //import GDE "GDWrapper/gdAPI/gdextension"

@@ -18,8 +18,12 @@ _getMainLoop :: proc(singletons: Singletons) -> (mainLoop: GDE.ObjectPtr) {
 }
 
 _getRoot :: proc(singletons: Singletons, scenetree_class: Classes.SceneTree_MethodBind_List) -> (root: GDE.ObjectPtr) {
-    scenetree_class.get_root->m_call(getMainLoop_C(singletons), nil, &root)
+    scenetree_class.get_root->m_call(getMainLoop(singletons), nil, &root)
     return
+}
+
+EngineObj :: proc() -> ^Object {
+    return gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
 }
 
 _Init_Singletons :: proc(singletons: ^Singletons) {

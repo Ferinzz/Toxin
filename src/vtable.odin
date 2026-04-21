@@ -97,7 +97,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     context = runtime.default_context()
     me:=(^Toxin.Class_Deets)(self)
 
-    Toxin.Register(me, init_level)
+    Toxin.Register(me, init_level, {})
 
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback

@@ -165,6 +165,7 @@ variant_index :: proc($field: typeid, loc:=#caller_location) -> GDE.VariantType 
     index :: GDE.VariantType(sics.type_variant_index_of(variant_union_lookup, field))
     return index
 }
+
 /*
 * To use sics.type_variant_index_of
 */
@@ -263,10 +264,9 @@ copy_from_variant :: proc{
 }
 
 //Use this if you need a quick return based on the typeID instead of passing it to a pointer.
-copy_to_variant_r :: proc(variant: ^$T) -> GDE.Variant {
-    ret: GDE.Variant
+copy_to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
     copy_to_variant(&ret, variant)
-    return ret
+    return
 }
 
 copy_to_variant :: proc{

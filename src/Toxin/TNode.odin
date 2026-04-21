@@ -7,7 +7,7 @@ import Classes "../GD_Classes"
 
 Node :: ^GDW.Object
 make_Node :: proc(p_Node_C: ^Node_C) {
-    p_Node_C.self = gdAPI.ClassDB.ConstructObject(GDClass_StringName_get(.Node))
+    p_Node_C.self = gdAPI.ClassDB.ConstructObject(Classes.GDClass_StringName_get(.Node))
     p_Node_C.methods = &Node_methods
     p_Node_C.objectc_methods = cast(^Objectc_methods_list)&Objectc_methods
     //GDW.Node_Input(&Node_methods)

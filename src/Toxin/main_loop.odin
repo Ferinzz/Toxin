@@ -42,25 +42,12 @@ MainLoopStartupCallback :: proc "c" () {
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
 
-    //minput.set_name(&minput, {&SN})
-    //minput->get_name(&SN_p2)
-    //minput->set_name({&SN})
-    //minput->get_name(&SN_p2)
-
-    //Create a class. Your extension registerations should all be done and all classes available at this point.
-    //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
-
-    //Create a class. Your extension registerations should all be done and all classes available at this point.
-    //root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
-    //GDW.addChild(root, &root_node_instance)
-
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
 };
 
 /* Called when shutting down the main loop. */
 MainLoopShutdownCallback :: proc "c" () {
     context = runtime.default_context()
-    //GDW.Destructors.ObjectDestroy(root_node_instance)
 };
 
 callOnce:bool=false
@@ -71,9 +58,6 @@ callOnce:bool=false
 MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
     if callOnce {
-        //These are good to set in a singleton at some point.
-        //These are statically stored and thus only need to be called once when the game engine is fully initialize.
-
         callOnce = false
         myMainLoopCallbacks.frame_func = nil
     }
@@ -93,9 +77,4 @@ myMainLoopCallbacks: GDE.MainLoopCallbacks = {
 	frame_func = MainLoopFrameCallback,
 };*/
 
-
 //I register the GDE.MainLoopCallbacks struct in the init of the Extension.
-
-testProc::proc(){
-
-}

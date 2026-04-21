@@ -13,6 +13,7 @@ import "core:time"
 
 godotContext: runtime.Context
 
+@(init)
 initGodotContext :: proc "contextless" () {
     godotContext = runtime.default_context()
     godotContext.assertion_failure_proc = failureProc

@@ -20,7 +20,7 @@ import "core:c"
 * init_level: the current initialization level of Godot's startup procedure.
 * class_info: the information about the class which you would like to use when customizing.
 */
-Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
+_Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
     assert(deets != nil, "Register procedure received a nil value for deets. This should never happen.")
@@ -29,7 +29,6 @@ Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALI
 
 
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
-    
     class_info: GDE.ClassCreationInfo4 = class_info
 
     if class_info.icon_path == nil {
@@ -71,20 +70,6 @@ Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALI
     }
 }
 
-//Needed for interop with external libs.
-/*
-* Function used to register a custom class with Godot. This will use the information provided in class_info or default to bltn equivalents.
-* This will need to be called by you at some point during your extension's initialization.
-* deets: the struct describing the class which you are registering.
-* init_level: the current initialization level of Godot's startup procedure.
-* class_info: the information about the class which you would like to use when customizing.
-*/
-@(export)
-txn_Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, \
-    class_info: GDE.ClassCreationInfo4) {
-        context = runtime.default_context()
-        Register(deets, init_level, class_info)
-}
 
 /*
 * default for class_info would be just to expose it.
@@ -171,7 +156,7 @@ Registerer:: struct #all_or_none{
 */
 example_self_reggy:: proc(self: ^Registerer, init_level: InitializationLevel) {
     me:=(^Class_Deets)(self)
-    Register(me, init_level)
+    _Register(me, init_level, {})
 }
 
 //Implementation details. For a simple implementation you should only need to use the above structs and call the self referenced register proc.

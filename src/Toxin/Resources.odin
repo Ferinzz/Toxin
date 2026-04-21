@@ -6,30 +6,30 @@ import GDE "../GDWrapper/gdAPI/gdextension"
 import Classes "../GD_Classes"
 
 resource_M: Classes.ResourceLoader_MethodBind_List
+
 //WARNING DO NOT USE WITH RANDOM PNG ETC.
 //The Resource only works with files that have already been imported into the engine.
 //If you just have a file sitting in the directory and haven't interacted with the editor to import it 
 //use Image->load() instead. Jesus fucking christ it took a while to find confirmation about this.
-loadResource :: proc(path, hint: cstring, cacheMode: ^Classes.ResourceLoader_CacheMode) -> GDE.ObjectPtr{
+//This also fetches methods and singletons at every call. Prefer making your own version using the singletons directly based on the calls used.
+loadResource :: proc(path, hint: string, cacheMode: ^Classes.ResourceLoader_CacheMode, load_proc: ^Classes.ResourceLoader_MethodBind_List) -> GDE.ObjectPtr{
     @(static)load: GDE.MethodBindPtr
-
-    
-    Classes.ResourceLoader_Init_(&resource_M)
     
     pathS: GDE.gdstring
     hintS: GDE.gdstring
-    gdAPI.Strings_Utils.NewWithLatin1Chars(&pathS, path)
-    //defer(Destructors.stringDestruction(&pathS))
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&pathS, cstring(raw_data(path)), i64(len(path)))
+    defer(GDW.gdstring_M_List.Destroy(&pathS))
 
-    gdAPI.Strings_Utils.NewWithLatin1Chars(&hintS, hint)
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&hintS, cstring(raw_data(hint)), i64(len(hint)))
     defer(GDW.gdstring_M_List.Destroy(&hintS))
 
-    args_res:= [?]rawptr {&pathS, &hintS, cacheMode}
+
+    return loadResource_GDS(&pathS, &hintS, cacheMode, load_proc)
+}
+
+loadResource_GDS :: proc(path, hint: ^gdstring, cacheMode: ^Classes.ResourceLoader_CacheMode, load_proc: ^Classes.ResourceLoader_MethodBind_List) -> GDE.ObjectPtr{
     r_resource: GDE.ObjectPtr
-    scene_tree_obj: ^Object
-    Engine_M_List.get_main_loop->m_call(EngineObj(), nil, &scene_tree_obj)
-    resource_M.load->m_call(scene_tree_obj, {&pathS, &hintS, cacheMode}, &r_resource)
-    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)resource_M.load.m_call, GDW.getMainLoop(), raw_data(args_res[:]), &r_resource)
+    load_proc.load->m_call(nil, {path, hint, cacheMode}, &r_resource)
     return r_resource
 }
 

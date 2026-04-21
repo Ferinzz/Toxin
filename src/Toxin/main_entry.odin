@@ -7,13 +7,8 @@ import "base:runtime"
 import "core:fmt"
 import Classes "../GD_Classes"
 
-Scene_Init_Callback:: proc ();
 
 scene_inits:[500]^Class_Deets
-
-inits: struct {
-    scene: Scene_Init_Callback,
-}
 
 /*
 * This procedure will be called by Godot at the very beginning.
@@ -33,9 +28,10 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
 
     GDW.Library = p_library
     GDW.Init_Wrapper(p_get_proc_address)
-    //Init_Builtins()
-    initialization.initialize = extensionInit
-    initialization.deinitialize = extensionDeinit
+    
+    //This can only run if building directly from Odin (right?) if that's the case assuming that the entry should be Toxin's
+    initialization.initialize = _extensionInit
+    initialization.deinitialize = _extensionDeinit
     initialization.userdata     = nil
     initialization.minimum_initialization_level = .INITIALIZATION_SCENE
     return true
@@ -49,7 +45,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
 * userdata: Pointer specified in the initialize struct.
 * initLevel: The current init level that the Godot engine is going through.
 */
-extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel) {
+_extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel) {
     context = runtime.default_context()
     //fmt.println(Toxin.reg_list)
     //There are multiple steps to the init process which Godot goes through.
@@ -59,7 +55,10 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which should be considered Core to the rest of the system.
             */
-            Classes.Engine_Init_(&Engine_M_List)
+            if inits.core != nil {
+                inits.core(userdata)
+            }
+            //Classes.Engine_Init_(&Engine_M_List)
             init_Node_Virtuals_Info()
             init_CanvasItem_Virtuals_Info()
             init_Texture2D_Virtuals_Info()
@@ -71,7 +70,9 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which depend on core classes.
             */
-
+            if inits.servers != nil {
+                inits.servers(userdata)
+            }
             return
         case .INITIALIZATION_SCENE:
             /*
@@ -79,7 +80,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             */
             //THIS_CLASS_NAME_deets->self_register(init_Level)
             if inits.scene != nil {
-                inits.scene()
+                inits.scene(userdata)
             } else {
                 fmt.println("WARNING! scene init proc was not setup.")
             }
@@ -90,6 +91,9 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
             /*
             * Register the different classes which should be used with the Editor.
             */
+            if inits.editor != nil {
+                inits.editor(userdata)
+            }
             return
         //Prettys 
         case .MAX_INITIALIZATION_LEVEL:
@@ -109,7 +113,7 @@ extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel
 //This function will be called when the Godot program is closing.
 //It will be called once at each level of the deinit process.
 //deinit is in reverse order with INITIALIZATION_EDITOR first and INITIALIZATION_CORE last.
-extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLevel) {
+_extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLevel) {
     context = runtime.default_context()
 
     switch deinitLevel{
@@ -117,22 +121,34 @@ extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLe
             /*
             * Free the different classes which should be considered Core to the rest of the system.
             */
+            if Deinits.core != nil {
+                Deinits.core(userdata)
+            }
             return
         case .INITIALIZATION_SERVERS:
             /*
             * Free the different classes which depend on core classes.
             */
+            if Deinits.servers != nil {
+                Deinits.servers(userdata)
+            }
             return
         case .INITIALIZATION_SCENE:
             /*
             * Free the different classes which depend on servers classes.
             */
+            if Deinits.scene != nil {
+                Deinits.scene(userdata)
+            }
             return
         //INITIALIZATION_EDITOR should only happen if running from the editor.
         case .INITIALIZATION_EDITOR:
             /*
             * Free the different classes which should be used with the Editor.
             */
+            if Deinits.editor != nil {
+                Deinits.editor(userdata)
+            }
             return
         case .MAX_INITIALIZATION_LEVEL:
             /*
