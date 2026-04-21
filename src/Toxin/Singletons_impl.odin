@@ -22,7 +22,7 @@ _getRoot :: proc(singletons: Singletons, scenetree_class: Classes.SceneTree_Meth
     return
 }
 
-EngineObj :: proc() -> ^Object {
+_EngineObj :: proc() -> ^Object {
     return gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
 }
 
@@ -106,4 +106,3 @@ _Init_Singletons :: proc(singletons: ^Singletons) {
     Classes.PhysicsServer3D_Init_(&singletons.PhysicsServer3D_M_List)
     Classes.XRServer_Init_(&singletons.XRServer_M_List)
 }
-

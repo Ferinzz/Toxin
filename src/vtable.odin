@@ -103,7 +103,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
     cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-    texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
+    //texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
 }
 
 root:^Toxin.Object

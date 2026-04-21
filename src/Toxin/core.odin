@@ -59,6 +59,12 @@ getRoot :: proc "c" (singletons: Singletons, scenetree_class: Classes.SceneTree_
     return _getRoot(singletons, scenetree_class)
 }
 
+@(export)
+EngineObj :: proc "c" () -> ^Object {
+    context = runtime.default_context()
+    return _EngineObj()
+}
+
 singletons: Singletons
 
 Singletons :: struct {
