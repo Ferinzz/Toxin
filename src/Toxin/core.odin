@@ -170,6 +170,103 @@ class_info_Default: GDE.ClassCreationInfo4 = {
     is_runtime = false,
 }
 
+/*
+* Details for the class. Used for registration or to create directly from Odin's side.
+* Fields populated by the user: self_register; init_level; GDClass_Index; class_struct; binder; vtable;
+* registerer: the registration procedure to use for this class
+* create: The procedure called after the memory has been allocated. This is called during the class init process, before _ready and is used to set defaults and init heap memory.
+* destroy: The procedure called before the memory is destroyed. This is called during the destruction phased and is used to delete any heap allocated memory or other cleanup as needed.
+* class_struct: the type of the struct being used as the class struct.
+* init_level: Godot's initialization level at which this class should be registered. (Some Node types are not available until a later time in Godot's initialization.)
+* GDClass_Index: the enum value representing the Godot Node to build off of. Such as .Node2D; .Object; .CharacterBody2D
+* vtable: pointer to the vtable of procedures. vtable would hold Godot class virtuals such as _process; _ready; _input.
+* GDClass_StringName: pointer to the StringName value representing the Godot Node. Will be populated by the Register procedure based on the GDClass_Index value.
+* SN: StringName representing the name of your class. Should be used to request instantiation from Godot as well as other Godot interactions. Will be populated by Register procedure.
+* binder: procedure to call in order to export the values you would like to expose to Godot. Variables, procedures, etc via Export; Export_Range
+*/
+Class_Deets :: struct {
+    required: required_deets,
+    create: proc(self: rawptr), //Cast to the Object class that your class extends.
+    destroy: proc(self: rawptr),
+    vtable: struct {
+        table_type: vtable_type,
+        table: rawptr,
+    },
+    GDClass_StringName: ^StringName,
+    SN : StringName,
+    Exporter: proc(className: ^StringName),
+    GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
+}
+
+vtable_type:: enum i32 {
+    None,
+    Node,
+    CanvasItem,
+    CollisionObject2D,
+    Texture2D,
+}
+
+required_deets:: struct #all_or_none{
+    using registerer: Registerer, //Keep as first value in order to trivially cast it.
+    class_struct_size: i64,
+    init_level: InitializationLevel,
+    GDClass_Index: Classes.ClassName_Index,
+    name: string,
+}
+
+InitializationLevel :: enum c.int {
+	INITIALIZATION_CORE,
+	INITIALIZATION_SERVERS,
+	INITIALIZATION_SCENE,
+	INITIALIZATION_EDITOR,
+	MAX_INITIALIZATION_LEVEL,
+}
+
+//Optional. Toxin will default to Godot's memory if you do not provide this.
+//Pass TMAlloc_Create via classCreateInfo during Registration if you use this.
+@(export)
+TMAlloc : proc "c" (p_class_user_data: ^Class_Deets, p_bytes: Int) -> rawptr
+
+//Optional. Toxin will default to Godot's memory if you do not provide this.
+//Pass TMAlloc_Destroy via classCreateInfo during Registration if you use this.
+@(export)
+TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
+
+/*
+* Container type for the class Node.
+* Self: pointer to the Godot Class as instantiated by Create.
+* Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
+* Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
+*/
+@(tag="export")
+Class_Container_c :: struct #packed {
+    self: ^Object, //Keep as first so it can be trivially cast.
+    class: struct{},
+}
+
+//Called by Godot
+//This is the default constructor used. You do not need to pass this explicitly.
+@(export)
+bltn_Alloc_Create:= bltn_Create
+
+//Called by Godot
+//pass to register via ClassCreateInfo to override default.
+@(export)
+cstm_Alloc_Create2 := TMAlloc_Create
+
+//Called by Godot
+//This is the default destructor used. No need to pass to Register.
+@(export)
+bltn_Alloc_Destroy:= bltn_Destroy
+
+//Called by Godot
+//pass to register via ClassCreateInfo to override default.
+@(export)
+cstm_Free_Destroy:= TMFree_Destroy
+
+//Pass to Register via ClassCreateInfo if your class will use any virtual methods.
+@(export)
+get_virtual:= _get_virtual
 
 //**********************\\
 //*******Variants*******\\
