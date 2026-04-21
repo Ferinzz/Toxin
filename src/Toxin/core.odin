@@ -153,10 +153,21 @@ Singletons :: struct {
 * class_info: the information about the class which you would like to use when customizing.
 */
 @(export)
-Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, \
-    class_info: GDE.ClassCreationInfo4) {
+Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, class_info: GDE.ClassCreationInfo4) {
         context = runtime.default_context()
         _Register(deets, init_level, class_info)
+}
+
+/*
+* default for class_info would be just to expose it.
+* read definition of GDE.ClassCreationInfo4 for more details on each field.
+*/
+@(export, rodata)
+class_info_Default: GDE.ClassCreationInfo4 = {
+    is_virtual = false,
+    is_abstract = false,
+    is_exposed = true,
+    is_runtime = false,
 }
 
 

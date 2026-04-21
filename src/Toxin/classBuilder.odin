@@ -71,17 +71,6 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIAL
 }
 
 
-/*
-* default for class_info would be just to expose it.
-* read definition of GDE.ClassCreationInfo4 for more details on each field.
-*/
-@(rodata)
-class_info_Default: GDE.ClassCreationInfo4 = {
-    is_virtual = false,
-    is_abstract = false,
-    is_exposed = true,
-    is_runtime = false,
-}
 
 /*
 * Details for the class. Used for registration or to create directly from Odin's side.
