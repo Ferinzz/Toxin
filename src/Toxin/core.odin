@@ -198,13 +198,15 @@ Class_Deets :: struct {
     GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
 }
 
-vtable_type:: enum i32 {
+//@(export)
+vtable_type:: enum c.int {
     None,
     Node,
     CanvasItem,
     CollisionObject2D,
     Texture2D,
 }
+
 
 required_deets:: struct #all_or_none{
     using registerer: Registerer, //Keep as first value in order to trivially cast it.
@@ -214,6 +216,7 @@ required_deets:: struct #all_or_none{
     name: string,
 }
 
+//@(export)
 InitializationLevel :: enum c.int {
 	INITIALIZATION_CORE,
 	INITIALIZATION_SERVERS,
