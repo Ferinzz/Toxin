@@ -106,19 +106,6 @@ reg_list: struct {
 }
 
 /*
-* These are not necessary for the custom classes, but are useful if you want to include side-effects to an object that has no association with this GDE.
-* Main example is to make your own wrapper around the object through create.
-* create_callback is used when get_instance_binding is unable to find the GDE associated with an object
-* free_callback is called whenever the object is freed. Use for destructor side-effects (all the children are dead, kill parent)
-* reference_callback called on reference. Reply if this can be destroyed.
-*/
-classBindingCallbacks: GDE.InstanceBindingCallbacks = {
-    create_callback    = nil,
-    free_callback      = nil,
-    reference_callback = nil,
-};
-
-/*
 * Container type for the class Node.
 * Self: pointer to the Godot Class as instantiated by Create.
 * Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)

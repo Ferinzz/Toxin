@@ -13,6 +13,12 @@ inits: struct {
     editor: Editor_Init_Callback,
 }
 
+Source_Code_Location :: struct {
+	file_path:    string,
+	line, column: i32,
+	procedure:    string,
+}
+
 Core_Init_Callback :: #type proc "c" (userdata: rawptr);
 Servers_Init_Callback :: #type proc "c" (userdata: rawptr);
 Scene_Init_Callback :: #type proc "c" (userdata: rawptr);
@@ -65,7 +71,7 @@ EngineObj :: proc "c" () -> ^Object {
     return _EngineObj()
 }
 
-singletons: Singletons
+//singletons: Singletons
 
 Singletons :: struct {
     Performance: ^Object,
@@ -270,6 +276,20 @@ cstm_Free_Destroy:= TMFree_Destroy
 //Pass to Register via ClassCreateInfo if your class will use any virtual methods.
 @(export)
 get_virtual:= _get_virtual
+
+/*
+* These are not necessary for the custom classes, but are useful if you want to include side-effects to an object that has no association with this GDE.
+* Main example is to make your own wrapper around the object through create.
+* create_callback is used when get_instance_binding is unable to find the GDE associated with an object
+* free_callback is called whenever the object is freed. Use for destructor side-effects (all the children are dead, kill parent)
+* reference_callback called on reference. Reply if this can be destroyed.
+*/
+@(export)
+classBindingCallbacks: GDE.InstanceBindingCallbacks = {
+    create_callback    = nil,
+    free_callback      = nil,
+    reference_callback = nil,
+};
 
 //**********************\\
 //*******Variants*******\\
