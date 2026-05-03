@@ -268,51 +268,83 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
     //field_vals(THIS_CLASS_NAME{}.someProperty)
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, somePublicFunction)
+    //Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, somePublicFunction)
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.+ offset_of(THIS_CLASS_NAME{}.nest.nested)
-    Toxin.Export(className, THIS_CLASS_NAME, "someProperty")
-    //Toxin.Export(className, THIS_CLASS_NAME, "receive")
-    Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
-    Toxin.Export(className, THIS_CLASS_NAME, "rarray")
-    Toxin.Export(className, THIS_CLASS_NAME, "stringname")
-    Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
+    //Toxin.Export(className, THIS_CLASS_NAME, "someProperty")
     
-    Toxin.Export(className, THIS_CLASS_NAME, "my_range_num")
-    Toxin.Export_Range(className, THIS_CLASS_NAME, "exampleInt", Toxin.Ranged_Num(Toxin.Int){0, 45, 1, {}})
+    @(rodata, static)
+    somproperty:= Toxin.gsetter_userdata{
+        rs_type=.INT,
+        getter_method= proc(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.Int)r_return
+            r_return^= Object.someProperty
+        },
+        setter_method= proc(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast([^]Toxin.Int)args
+            Object.someProperty = args[0]
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &somproperty, "someProperty")
+    @(rodata, static)
+    rarray:= Toxin.gsetter_userdata{
+        rs_type=.ARRAY,
+        getter_method= proc(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.Array)r_return
+            r_return^= Object.rarray
+        },
+        setter_method= proc(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast([^]Toxin.Array)args
+            Toxin.Ref_Count(&args[0], &Object.rarray)
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &rarray, "rarray")
+    //Toxin.Export(className, THIS_CLASS_NAME, "receive")
+    //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
+    //Toxin.Export(className, THIS_CLASS_NAME, "stringname")
+    //Toxin.Export(className, THIS_CLASS_NAME, "godotstring")
+    
+    //Toxin.Export(className, THIS_CLASS_NAME, "my_range_num")
+    //Toxin.Export_Range(className, THIS_CLASS_NAME, "exampleInt", Toxin.Ranged_Num(Toxin.Int){0, 45, 1, {}})
     //TODO: still kinda weird
-    Toxin.Export_Easing(className, THIS_CLASS_NAME, "easing_float", .attenuation)
-    Toxin.Export_Easing(className, THIS_CLASS_NAME, "pos_float", .positive_only)
-    Toxin.Export_Easing(className, THIS_CLASS_NAME, "exp_float", .none)
-    Toxin.Export_Array_Type(className, THIS_CLASS_NAME, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
-    Toxin.Export(className, THIS_CLASS_NAME, "an_array")
+    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "easing_float", .attenuation)
+    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "pos_float", .positive_only)
+    //Toxin.Export_Easing(className, THIS_CLASS_NAME, "exp_float", .none)
+    //Toxin.Export_Array_Type(className, THIS_CLASS_NAME, "a_real_array", {.ARRAY, .NONE, ""}, {.INT, .RANGE, "1,10,1"} )
+    //Toxin.Export(className, THIS_CLASS_NAME, "an_array")
     //Toxin.Export(className, THIS_CLASS_NAME, "a_real_array")
-    Toxin.Export_Pointer(className, THIS_CLASS_NAME, "is_Pointer")
-    Toxin.Export_Color_No_Alpha(className, THIS_CLASS_NAME, "color_no_alpha")
-    Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags")
-    Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags3d")
-    Toxin.Export_Int_As_Enum(className, THIS_CLASS_NAME, "int_as_enum")
-    Toxin.Export(className, THIS_CLASS_NAME, "Plane")
-    Toxin.Export_Layers(className, THIS_CLASS_NAME, "layers", .LAYERS_2D_RENDER)
-    Toxin.Export_Path(className, THIS_CLASS_NAME, "path", .DIR)
-    Toxin.Export_Locale(className, THIS_CLASS_NAME, "locale")
-    Toxin.Export_Password(className, THIS_CLASS_NAME, "my_password", {.STORAGE, .EDITOR, .SECRET})
-    default_text: Toxin.Placeholder_Text = "This is my default text."
-    Toxin.Export_With_Placeholder_Text(className, THIS_CLASS_NAME, "string_with_default", default_text)
+    //Toxin.Export_Pointer(className, THIS_CLASS_NAME, "is_Pointer")
+    //Toxin.Export_Color_No_Alpha(className, THIS_CLASS_NAME, "color_no_alpha")
+    //Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags")
+    //Toxin.Export_Int_As_Flags(className, THIS_CLASS_NAME, "flags3d")
+    //Toxin.Export_Int_As_Enum(className, THIS_CLASS_NAME, "int_as_enum")
+    //Toxin.Export(className, THIS_CLASS_NAME, "Plane")
+    //Toxin.Export_Layers(className, THIS_CLASS_NAME, "layers", .LAYERS_2D_RENDER)
+    //Toxin.Export_Path(className, THIS_CLASS_NAME, "path", .DIR)
+    //Toxin.Export_Locale(className, THIS_CLASS_NAME, "locale")
+    //Toxin.Export_Password(className, THIS_CLASS_NAME, "my_password", {.STORAGE, .EDITOR, .SECRET})
+    //default_text: Toxin.Placeholder_Text = "This is my default text."
+    //Toxin.Export_With_Placeholder_Text(className, THIS_CLASS_NAME, "string_with_default", default_text)
 //
-    Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.layers_2d_navigation)
-    Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.PropertyUsageFlagsbits)
-    Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum", {"one", "two", "fdkasljw"})
-    Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum2", {"one", "two", "fdkasljw"})
-    Toxin.Export_Input_Name(className, THIS_CLASS_NAME, "input", {.show_builtin})
-    Toxin.Export_Multiline(className, THIS_CLASS_NAME, "multiline")
-    Toxin.Export_Node_Path_Types(className, THIS_CLASS_NAME,"valid_nodes", "Sprite2D")
-    Toxin.Export_Object_ID(className, THIS_CLASS_NAME, "valid_objects", "")//, string(GDW.ClassName_Strings[.ButtonGroup]))
-    Toxin.Export_Dictionary_type(className, THIS_CLASS_NAME, "dictionary_type", {.INT, .STRING})
-    Toxin.Export(className, THIS_CLASS_NAME, "a_dictionary")
-    Toxin.Export_Dictionary_Localizable_String(className, THIS_CLASS_NAME, "locale_dictionary")
+    //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.layers_2d_navigation)
+    //Toxin.Export_Flags(className, THIS_CLASS_NAME, Toxin.PropertyUsageFlagsbits)
+    //Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum", {"one", "two", "fdkasljw"})
+    //Toxin.Export_String_As_Enum(className, THIS_CLASS_NAME, "string_enum2", {"one", "two", "fdkasljw"})
+    //Toxin.Export_Input_Name(className, THIS_CLASS_NAME, "input", {.show_builtin})
+    //Toxin.Export_Multiline(className, THIS_CLASS_NAME, "multiline")
+    //Toxin.Export_Node_Path_Types(className, THIS_CLASS_NAME,"valid_nodes", "Sprite2D")
+    //Toxin.Export_Object_ID(className, THIS_CLASS_NAME, "valid_objects", "")//, string(GDW.ClassName_Strings[.ButtonGroup]))
+    //Toxin.Export_Dictionary_type(className, THIS_CLASS_NAME, "dictionary_type", {.INT, .STRING})
+    //Toxin.Export(className, THIS_CLASS_NAME, "a_dictionary")
+    //Toxin.Export_Dictionary_Localizable_String(className, THIS_CLASS_NAME, "locale_dictionary")
 
 }
 
