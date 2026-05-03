@@ -88,6 +88,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
         GDClass_Index = .Sprite2D,
     },
     create=constructor,
+    destroy=destructor,
     Exporter = THIS_CLASS_NAME_Export,
     vtable ={.Node, &THIS_CLASS_NAME_VTable},
 }
@@ -97,7 +98,7 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     context = runtime.default_context()
     me:=(^Toxin.Class_Deets)(self)
 
-    Toxin.Register(me, init_level, {})
+    Toxin.Register(me, init_level, {is_exposed = true})
 
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
