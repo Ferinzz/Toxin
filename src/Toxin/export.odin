@@ -32,12 +32,12 @@ gsetter_userdata:: struct {
     rs_type: GDE.VariantType,
     getter_method: proc(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
     setter_method: proc(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
+    userdata: rawptr,
 }
 
 Export_Default :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata, fieldName: string) {
     info:= make_property(getter_setter.rs_type, fieldName)
-    className_SN: StringName
-    Export4(&className_SN, getter_setter, fieldName, &info, GDE.PROPERTY_USAGE_DEFAULT, GDE.Method_Flags_DEFAULT)
+    Export4(className_SN, getter_setter, fieldName, &info, GDE.PROPERTY_USAGE_DEFAULT, GDE.Method_Flags_DEFAULT)
     destructProperty(&info)
 }
 
@@ -259,6 +259,8 @@ godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     r_error^={}
 }
 
+
+
 godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
         p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
     context= runtime.default_context()
@@ -280,6 +282,71 @@ godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     insert_variant_data(r_return, &tr_return)
 }
 
+insert_variant_data :: proc(container: ^Variant, source: ^variant_union) {
+    switch container.VType {
+    case .NIL,
+    /*  atomic types */
+	.BOOL, .INT, .FLOAT,
+	/* math types */
+	.VECTOR2, .VECTOR2I, .RECT2, .RECT2I, .VECTOR3, .VECTOR3I,
+	.VECTOR4, .VECTOR4I, .PLANE, .QUATERNION,
+	/* misc types */
+	.COLOR,  .RID, .OBJECT:
+        container.data = transmute([2]u64)(source.Vector4)
+    case  .STRING:
+        StringtoVariant(container, cast(^gdstring)source)
+    case .STRING_NAME:
+        StringNametoVariant(container, cast(^StringName)source)
+    case .NODE_PATH:
+        NodePathtoVariant(container, cast(^NodePath)source)
+    case .CALLABLE:
+        CallabletoVariant(container, cast(^Callable)source)
+    case .SIGNAL:
+        SignaltoVariant(container, cast(^Signal)source)
+    case .DICTIONARY:
+        DictionarytoVariant(container, cast(^Dictionary)source)
+    case .ARRAY:
+        ArraytoVariant(container, cast(^Array)source)
+    //Godot sets these in its own bucket of memory. Need to assign this way so that it can cleanup appropriately.
+	case .AABB:
+        AABBtoVariant(container, cast(^AABB)source)
+    case .BASIS:
+        BasistoVariant(container, cast(^Basis)source)
+    case .TRANSFORM3D:
+        Transform3dtoVariant(container, cast(^Transform3D)source)
+    case .TRANSFORM2D:
+        Transform2DtoVariant(container, cast(^Transform2D)source)
+    case .PROJECTION:
+        ProjectiontoVariant(container, cast(^Projection)source)
+
+	/* typed arrays */
+	case .PACKED_BYTE_ARRAY:
+        PackedByteArraytoVariant(container, cast(^PackedByteArray)source)//.get_ptr(variant)
+	case .PACKED_INT32_ARRAY:
+         GDW.Packedi32ArrayToVariant(container, &source.PackedInt32Array)
+	case .PACKED_INT64_ARRAY:
+         GDW.Packedi64ArrayToVariant(container, &source.PackedInt64Array)
+	case .PACKED_FLOAT32_ARRAY:
+         GDW.Packedf32ArrayToVariant(container, &source.PackedFloat32Array)
+	case .PACKED_FLOAT64_ARRAY:
+         GDW.Packedf64ArrayToVariant(container, &source.PackedFloat64Array)
+	case .PACKED_STRING_ARRAY:
+         GDW.PackedStringArrayToVariant(container, &source.PackedStringArray)
+	case .PACKED_VECTOR2_ARRAY:
+         GDW.PackedVec2ArrayToVariant(container, &source.PackedVector2Array)
+	case .PACKED_VECTOR3_ARRAY:
+         GDW.PackedVec3ArrayToVariant(container, &source.PackedVector3Array)
+	case .PACKED_COLOR_ARRAY:
+         GDW.PackedColorArrayToVariant(container, &source.PackedColorArray)
+	case .PACKED_VECTOR4_ARRAY:
+         GDW.PackedVec4ArrayToVariant(container, &source.PackedVector4Array)
+
+	case .VARIANT_MAX:
+        assert(true, "Variant without a correct type provided!")
+    case:
+        assert(true, "Variant without a correct type provided!")
+    }
+}
 
 //I wouldn't need any of this if Godot set the type of the return type before calling out variant function.
 Variant_Getter_Bool :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
@@ -471,58 +538,4 @@ Variant_Getter_PackedVector4Array :: proc "c" (method_userdata: rawptr, p_instan
         p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
     r_return.VType = .PACKED_VECTOR4_ARRAY
     godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
-}
-
-insert_variant_data :: proc(container: ^Variant, source: ^variant_union) {
-    switch container.VType {
-    case .NIL,
-    /*  atomic types */
-	.BOOL, .INT, .FLOAT, .STRING,
-	/* math types */
-	.VECTOR2, .VECTOR2I, .RECT2, .RECT2I, .VECTOR3, .VECTOR3I,
-	.VECTOR4, .VECTOR4I, .PLANE, .QUATERNION,
-	/* misc types */
-	.COLOR, .STRING_NAME, .NODE_PATH, .RID,
-    .OBJECT, .CALLABLE, .SIGNAL, .DICTIONARY, .ARRAY:
-        container.data = transmute([2]u64)(source.Vector4)
-
-    //Godot sets these in its own bucket of memory. Need to assign this way so that it can cleanup appropriately.
-	case .AABB:
-        AABBtoVariant(container, cast(^AABB)source)
-    case .BASIS:
-        BasistoVariant(container, cast(^Basis)source)
-    case .TRANSFORM3D:
-        Transform3dtoVariant(container, cast(^Transform3D)source)
-    case .TRANSFORM2D:
-        Transform2DtoVariant(container, cast(^Transform2D)source)
-    case .PROJECTION:
-        ProjectiontoVariant(container, cast(^Projection)source)
-
-	/* typed arrays */
-	case .PACKED_BYTE_ARRAY:
-        PackedByteArraytoVariant(container, cast(^PackedByteArray)source)//.get_ptr(variant)
-	case .PACKED_INT32_ARRAY:
-         GDW.Packedi32ArrayToVariant(container, &source.PackedInt32Array)
-	case .PACKED_INT64_ARRAY:
-         GDW.Packedi64ArrayToVariant(container, &source.PackedInt64Array)
-	case .PACKED_FLOAT32_ARRAY:
-         GDW.Packedf32ArrayToVariant(container, &source.PackedFloat32Array)
-	case .PACKED_FLOAT64_ARRAY:
-         GDW.Packedf64ArrayToVariant(container, &source.PackedFloat64Array)
-	case .PACKED_STRING_ARRAY:
-         GDW.PackedStringArrayToVariant(container, &source.PackedStringArray)
-	case .PACKED_VECTOR2_ARRAY:
-         GDW.PackedVec2ArrayToVariant(container, &source.PackedVector2Array)
-	case .PACKED_VECTOR3_ARRAY:
-         GDW.PackedVec3ArrayToVariant(container, &source.PackedVector3Array)
-	case .PACKED_COLOR_ARRAY:
-         GDW.PackedColorArrayToVariant(container, &source.PackedColorArray)
-	case .PACKED_VECTOR4_ARRAY:
-         GDW.PackedVec4ArrayToVariant(container, &source.PackedVector4Array)
-
-	case .VARIANT_MAX:
-        assert(true, "Variant without a correct type provided!")
-    case:
-        assert(true, "Variant without a correct type provided!")
-    }
 }
