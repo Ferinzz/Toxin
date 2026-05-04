@@ -53,7 +53,7 @@ variantOperator :: proc(p_operator: GDE.VariantOperator, p_type_a: ^GDE.Variant,
 * Does not allocate new. Simply returns a pointer to the data. If the value is a stack value then it will only be valid as long as that stack value is valid.
 * If it's a packed array it will call that get_ptr Godot method in order to get the correct pointer.
 */
-variant_get_ptr :: proc(variant: ^Variant) -> rawptr {
+variant_get_ptr :: proc "c" (variant: ^Variant) -> rawptr {
     switch variant.VType {
     case .NIL,
     /*  atomic types */
@@ -94,8 +94,10 @@ variant_get_ptr :: proc(variant: ^Variant) -> rawptr {
         return GDW.PackedVector4Array_M_List.get_ptr(variant)
 
 	case .VARIANT_MAX:
+        context = runtime.default_context()
         assert(true, "Variant without a correct type provided!")
     case:
+        context = runtime.default_context()
         assert(true, "Variant without a correct type provided!")
     }
     return nil
@@ -1036,7 +1038,7 @@ ref_count_CALLABLE :: proc(source: ^Callable, copy: ^Callable) {
 ref_count_DICTIONARY :: proc(source: ^Dictionary, copy: ^Dictionary) {
     GDW.Dictionary_M_List.Create1(copy, {source})
 }
-ref_count_ARRAY :: proc(source: ^Array, copy: ^Array) {
+ref_count_ARRAY :: proc "c" (source: ^Array, copy: ^Array) {
     GDW.Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_BYTE_ARRAY :: proc(source: ^PackedByteArray, copy: ^PackedByteArray) {

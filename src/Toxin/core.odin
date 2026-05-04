@@ -54,7 +54,7 @@ Init_Singletons :: proc "c" (singletons: ^Singletons) {
 }
 
 @(export)
-getMainLoop :: proc"c"(singletons: Singletons) -> ^Object {
+getMainLoop :: proc "c" (singletons: Singletons) -> ^Object {
     context = runtime.default_context()
     return _getMainLoop(singletons)
 }
