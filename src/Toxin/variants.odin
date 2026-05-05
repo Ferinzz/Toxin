@@ -164,15 +164,15 @@ variant_union_raw :: struct #raw_union {
 }
 
 variant_index :: proc($field: typeid, loc:=#caller_location) -> GDE.VariantType {
-    index :: GDE.VariantType(sics.type_variant_index_of(variant_union_lookup, field))
+    index :: GDE.VariantType(sics.type_variant_index_of(variant_union, field))
     return index
 }
 
 /*
 * To use sics.type_variant_index_of
 */
-variant_union_lookup :: union {
-    rawptr,
+variant_union :: union {
+    rawptr, //Godot's Nil Should always be nil
 
 	/*  atomic types */
 	Bool,
