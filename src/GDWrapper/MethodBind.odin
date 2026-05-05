@@ -67,6 +67,12 @@ cowData :: struct {
     data: rawptr,
 }
 
+mb_container :: struct {
+  mb: ^MethodBind,
+  mbptrcall: rawptr,
+}
+
+
 //Godot creates a class which has several utility methods and the below properties.
 //Of interest if you feel like being hacky would be the method value, which is a direct pointer to the method which you could call if you're brave enough.
 //(Don't call them directly. The setup needed to do so feels very hacky and property fields are verrrry inconsistent.)
