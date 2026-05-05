@@ -122,7 +122,7 @@ variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: GDE.ConstVariantP
 * Matching Godot's raw_union for easy transfer of values.
 * 
 */
-variant_union :: struct #raw_union {
+variant_union_raw :: struct #raw_union {
     Bool: Bool,
     Int: Int,
     float: float,
@@ -453,175 +453,175 @@ copy_from_variant_r :: proc(variant: ^Variant, $T: typeid) -> T {
 */
 BoolfromVariant :: proc(P_dest: ^Bool, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .BOOL {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Bool
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Bool
         return {}
     } else do return {.WRONG_TYPE, .BOOL, p_source.VType}
 }
 IntfromVariant :: proc(P_dest: ^Int, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .INT {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Int
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Int
         return {}
     } else do return {.WRONG_TYPE, .INT, p_source.VType}
 }
 PtrfromVariant :: proc(P_dest: ^rawptr, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .INT {
-        P_dest^=transmute(rawptr)((cast(^variant_union)(&p_source.data[0])).Int)
+        P_dest^=transmute(rawptr)((cast(^variant_union_raw)(&p_source.data[0])).Int)
         return {}
     } else do return {.WRONG_TYPE, .INT, p_source.VType}
 }
 FloatfromVariant :: proc(P_dest: ^float, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .FLOAT {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).float
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).float
         return {}
     } else do return {.WRONG_TYPE, .FLOAT, p_source.VType}
 }
 StringfromVariant :: proc(P_dest: ^gdstring, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .STRING {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).gdstring
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).gdstring
         return {}
     } else do return {.WRONG_TYPE, .STRING, p_source.VType}
 }
 Vec2fromVariant :: proc(P_dest: ^Vector2, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .VECTOR2 {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Vector2
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Vector2
         return {}
     } else do return {.WRONG_TYPE, .VECTOR2, p_source.VType}
 }
 Vec2ifromVariant :: proc(P_dest: ^Vector2i, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .VECTOR2I {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Vector2i
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Vector2i
         return {}
     } else do return {.WRONG_TYPE, .VECTOR2I, p_source.VType}
 }
 Recf32fromVariant :: proc(P_dest: ^Rect2, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .RECT2 {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Rect2
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Rect2
         return {}
     } else do return {.WRONG_TYPE, .RECT2, p_source.VType}
 }
 Rect2ifromVariant :: proc(P_dest: ^Rect2i, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .RECT2I {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Rect2i
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Rect2i
         return {}
     } else do return {.WRONG_TYPE, .RECT2I, p_source.VType}
 }
 Vec3fromVariant :: proc(P_dest: ^Vector3, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .VECTOR3 {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Vector3
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Vector3
         return {}
     } else do return {.WRONG_TYPE, .VECTOR3, p_source.VType}
 }
 Vec3ifromVariant :: proc(P_dest: ^Vector3i, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .VECTOR3I {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Vector3i
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Vector3i
         return {}
     } else do return {.WRONG_TYPE, .VECTOR3I, p_source.VType}
 }
 Transform2DfromVariant :: proc(P_dest: ^Transform2D, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .TRANSFORM2D {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Transform2D^
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Transform2D^
         return {}
     } else do return {.WRONG_TYPE, .TRANSFORM2D, p_source.VType}
 }
 Vec4fromVariant :: proc(P_dest: ^Vector4, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .VECTOR4 {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Vector4
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Vector4
         return {}
     } else do return {.WRONG_TYPE, .VECTOR4, p_source.VType}
 }
 Vec4ifromVariant :: proc(P_dest: ^Vector4i, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .VECTOR4I {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Vector4i
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Vector4i
         return {}
     } else do return {.WRONG_TYPE, .VECTOR4I, p_source.VType}
 }
 PlanefromVariant :: proc(P_dest: ^Plane, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .PLANE {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Plane
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Plane
         return {}
     } else do return {.WRONG_TYPE, .PLANE, p_source.VType}
 }
 QuaternionfromVariant :: proc(P_dest: ^Quaternion, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .QUATERNION {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Quaternion
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Quaternion
         return {}
     } else do return {.WRONG_TYPE, .QUATERNION, p_source.VType}
 }
 AABBfromVariant :: proc(P_dest: ^AABB, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .AABB {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).AABB^
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).AABB^
         return {}
     } else do return {.WRONG_TYPE, .AABB, p_source.VType}
 }
 BasisfromVariant :: proc(P_dest: ^Basis, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .BASIS {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Basis^
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Basis^
         return {}
     } else do return {.WRONG_TYPE, .BASIS, p_source.VType}
 }
 Transform3dfromVariant :: proc(P_dest: ^Transform3D, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .TRANSFORM3D {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Transform3D^
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Transform3D^
         return {}
     } else do return {.WRONG_TYPE, .TRANSFORM3D, p_source.VType}
 }
 ProjectionfromVariant :: proc(P_dest: ^Projection, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .PROJECTION {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Projection^
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Projection^
         return {}
     } else do return {.WRONG_TYPE, .PROJECTION, p_source.VType}
 }
 ColorfromVariant :: proc(P_dest: ^Color, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .COLOR {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Color
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Color
         return {}
     } else do return {.WRONG_TYPE, .COLOR, p_source.VType}
 }
 StringNamefromVariant :: proc(P_dest: ^StringName, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .STRING_NAME {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).StringName
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).StringName
         return {}
     } else do return {.WRONG_TYPE, .STRING_NAME, p_source.VType}
 }
 NodePathfromVariant :: proc(P_dest: ^NodePath, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .NODE_PATH {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).NodePath
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).NodePath
         return {}
     } else do return {.WRONG_TYPE, .NODE_PATH, p_source.VType}
 }
 RidfromVariant :: proc(P_dest: ^RID, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .RID {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).RID
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).RID
         return {}
     } else do return {.WRONG_TYPE, .RID, p_source.VType}
 }
 ObjectfromVariant :: proc(P_dest: ^Object, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .OBJECT {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Object
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Object
         return {}
     } else do return {.WRONG_TYPE, .OBJECT, p_source.VType}
 }
 CallablefromVariant :: proc(P_dest: ^Callable, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .CALLABLE {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Callable
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Callable
         return {}
     } else do return {.WRONG_TYPE, .CALLABLE, p_source.VType}
 }
 SignalfromVariant :: proc(P_dest: ^Signal, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .SIGNAL {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Signal
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Signal
         return {}
     } else do return {.WRONG_TYPE, .SIGNAL, p_source.VType}
 }
 DictionaryfromVariant :: proc(P_dest: ^Dictionary, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .DICTIONARY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Dictionary
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Dictionary
         return {}
     } else do return {.WRONG_TYPE, .DICTIONARY, p_source.VType}
 }
 ArrayfromVariant :: proc(P_dest: ^Array, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .ARRAY {
-        P_dest^=(cast(^variant_union)(&p_source.data[0])).Array
+        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Array
         return {}
     } else do return {.WRONG_TYPE, .ARRAY, p_source.VType}
 }
@@ -630,7 +630,7 @@ PackedByteArrayfromVariant :: proc(P_dest: ^GDW.packedArray(u8), p_source: ^Vari
         P_dest^ = GDW.PackedByteArray_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedByteArray_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedByteArray_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_BYTE_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_BYTE_ARRAY, p_source.VType}
@@ -640,7 +640,7 @@ Packedi32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i32), p_source: ^Vari
         P_dest^ = GDW.PackedInt32Array_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedInt32Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedInt32Array_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_INT32_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_INT32_ARRAY, p_source.VType}
@@ -650,7 +650,7 @@ PackedStringArrayfromVariant :: proc(P_dest: ^GDE.PackedStringArray, p_source: ^
         P_dest^ = GDW.PackedStringArray_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedStringArray_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedStringArray_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_STRING_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_STRING_ARRAY, p_source.VType}
@@ -660,7 +660,7 @@ Packedi64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(i64), p_source: ^Vari
         P_dest^ = GDW.PackedInt64Array_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedInt64Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedInt64Array_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_INT64_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_INT64_ARRAY, p_source.VType}
@@ -670,7 +670,7 @@ Packedf32ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(f32), p_source: ^Vari
         P_dest^ = GDW.PackedFloat32Array_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedFloat32Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedFloat32Array_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_FLOAT32_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_FLOAT32_ARRAY, p_source.VType}
@@ -680,7 +680,7 @@ Packedf64ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(f64), p_source: ^Vari
         P_dest^ = GDW.PackedFloat64Array_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedFloat64Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedFloat64Array_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_FLOAT64_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_FLOAT64_ARRAY, p_source.VType}
@@ -690,7 +690,7 @@ PackedVec2ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector2), p_source: 
         P_dest^ = GDW.PackedVector2Array_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedVector2Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedVector2Array_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_VECTOR2_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_VECTOR2_ARRAY, p_source.VType}
@@ -700,7 +700,7 @@ PackedVec3ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector3), p_source: 
         P_dest^ = GDW.PackedVector3Array_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedVector3Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedVector3Array_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_VECTOR3_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_VECTOR3_ARRAY, p_source.VType}
@@ -710,7 +710,7 @@ PackedVec4ArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Vector4), p_source: 
         P_dest^ = GDW.PackedVector4Array_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedVector4Array_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedVector4Array_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_VECTOR4_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_VECTOR4_ARRAY, p_source.VType}
@@ -720,7 +720,7 @@ PackedColorArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Color), p_source: ^
         P_dest^ = GDW.PackedColorArray_M_List.get_ptr(p_source)^
         return {}
     } else if p_source.VType == .ARRAY {
-        GDW.PackedColorArray_M_List.Create2(P_dest, {&(cast(^variant_union)(&p_source.data[0])).Array})
+        GDW.PackedColorArray_M_List.Create2(P_dest, {&(cast(^variant_union_raw)(&p_source.data[0])).Array})
         return {.SUPPORTED_CONVERSION, .PACKED_COLOR_ARRAY, p_source.VType}
     }
     return {.WRONG_TYPE, .PACKED_COLOR_ARRAY, p_source.VType}
@@ -1003,71 +1003,4 @@ fromvariant :: proc(variant: ^Variant, $T: typeid) -> T {
         copy_from_variant(&ret, variant)
     }
     return ret
-}
-
-ref_count_AABB :: proc(source: ^AABB, copy: ^AABB) {
-    GDW.AABB_M_List.Create1(copy, {source})
-}
-ref_count_BASIS :: proc(source: ^Basis, copy: ^Basis) {
-    GDW.Basis_M_List.Create1(copy, {source})
-}
-ref_count_TRANSFORM2D :: proc(source: ^Transform2D, copy: ^Transform2D) {
-    GDW.Transform2D_M_List.Create1(copy, {source})
-}
-ref_count_TRANSFORM3D :: proc(source: ^Transform3D, copy: ^Transform3D) {
-    GDW.Transform3D_M_List.Create1(copy, {source})
-}
-ref_count_PROJECTION :: proc(source: ^Projection, copy: ^Projection) {
-    GDW.Projection_M_List.Create1(copy, {source})
-}
-ref_count_STRING :: proc(source: ^gdstring, copy: ^gdstring) {
-    GDW.gdstring_M_List.Create1(copy, {source})
-}
-ref_count_STRING_NAME :: proc(source: ^StringName, copy: ^StringName) {
-    GDW.StringName_M_List.Create1(copy, {source})
-}
-ref_count_NODE_PATH :: proc(source: ^NodePath, copy: ^NodePath) {
-    GDW.NodePath_M_List.Create1(copy, {source})
-}
-ref_count_SIGNAL :: proc(source: ^Signal, copy: ^Signal) {
-    GDW.Signal_M_List.Create1(copy, {source})
-}
-ref_count_CALLABLE :: proc(source: ^Callable, copy: ^Callable) {
-    GDW.Callable_M_List.Create1(copy, {source})
-}
-ref_count_DICTIONARY :: proc(source: ^Dictionary, copy: ^Dictionary) {
-    GDW.Dictionary_M_List.Create1(copy, {source})
-}
-ref_count_ARRAY :: proc "c" (source: ^Array, copy: ^Array) {
-    GDW.Array_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_BYTE_ARRAY :: proc(source: ^PackedByteArray, copy: ^PackedByteArray) {
-    GDW.PackedByteArray_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_INT32_ARRAY :: proc(source: ^PackedInt32Array, copy: ^PackedInt32Array) {
-    GDW.PackedInt32Array_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_INT64_ARRAY :: proc(source: ^PackedInt64Array, copy: ^PackedInt64Array) {
-    GDW.PackedInt64Array_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_FLOAT32_ARRAY :: proc(source: ^PackedFloat32Array, copy: ^PackedFloat32Array) {
-    GDW.PackedFloat32Array_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_FLOAT64_ARRAY :: proc(source: ^PackedFloat64Array, copy: ^PackedFloat64Array) {
-    GDW.PackedFloat64Array_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_STRING_ARRAY :: proc(source: ^PackedStringArray, copy: ^PackedStringArray) {
-    GDW.PackedStringArray_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_VECTOR2_ARRAY :: proc(source: ^PackedVector2Array, copy: ^PackedVector2Array) {
-    GDW.PackedVector2Array_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_VECTOR3_ARRAY :: proc(source: ^PackedVector3Array, copy: ^PackedVector3Array) {
-    GDW.PackedVector3Array_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_COLOR_ARRAY :: proc(source: ^PackedColorArray, copy: ^PackedColorArray) {
-    GDW.PackedColorArray_M_List.Create1(copy, {source})
-}
-ref_count_PACKED_VECTOR4_ARRAY :: proc(source: ^PackedVector4Array, copy: ^PackedVector4Array) {
-    GDW.PackedVector4Array_M_List.Create1(copy, {source})
 }

@@ -319,7 +319,7 @@ godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
         return
     }
     method_userdata:= cast(^gsetter_userdata)method_userdata
-    tr_return: variant_union
+    tr_return: variant_union_raw
     method_userdata.getter_method(method_userdata, p_instance, nil, &tr_return)
     r_error.error = .CALL_OK
     r_error.expected = 0
@@ -328,7 +328,7 @@ godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     insert_variant_data(r_return, &tr_return)
 }
 
-insert_variant_data :: proc(container: ^Variant, source: ^variant_union) {
+insert_variant_data :: proc(container: ^Variant, source: ^variant_union_raw) {
     switch container.VType {
     case .NIL,
     /*  atomic types */
