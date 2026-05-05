@@ -214,7 +214,7 @@ Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: 
 //Called by Godot
 */
 @(deprecated="use bltn_Destroy or TMAlloc_Destroy")
-Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
+Destroy_ :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){
         return
