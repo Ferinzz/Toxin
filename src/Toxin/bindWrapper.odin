@@ -1612,6 +1612,12 @@ Bind_Property_Prop_Info :: #force_inline proc(className: ^StringName, name: stri
     gdAPI.StringName_Utils.Utf8CharsAndLen(&setterName, raw_data(setter[:]), i64(len(setter)))
     gdAPI.ClassDB.RegisterExtensionClassProperty(GDW.Library, className, prop_hint, &setterName, &getterName)
     
+    fmethod_name:= GDE.Variant{VType = .STRING_NAME}
+    fmethod_name.data[0] = transmute(u64)(getterName.ptr)
+    gdAPI.Variant_Utils.Destroy(&fmethod_name)
+    fmethod_name.data[0] = transmute(u64)(setterName.ptr)
+    gdAPI.Variant_Utils.Destroy(&fmethod_name)
+    
 }
 
 /*
@@ -1772,6 +1778,7 @@ Bind_Set :: #force_inline proc(className: ^StringName, methodName: string,
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
+    destructProperty(&argsInfo[0])
 }
 
 Bind_Get :: #force_inline proc(className: ^StringName, methodName: string,

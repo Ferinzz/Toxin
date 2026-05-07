@@ -96,6 +96,7 @@ Bind_Set2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
+    destructProperty(&argsInfo[0])
 }
 
 
