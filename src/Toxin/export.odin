@@ -24,6 +24,7 @@ binding_error:: enum {
 }
 
 /*
+* This needs to be kept alive. Godot will be passing a pointer to it to each of the calls.
 * Setter does not manange the ref counting. If it is a type which needs ref counting increment it with the Ref_Count proc group.
 * Getter does increment the ref counting because there are few ways to avoid it due to how Godot stores memory of certain types.
 * Buit why? Because sometimes Godot will call through the variant getter and sometimes it will call your getter directly.
@@ -293,6 +294,11 @@ Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GD
         GDW.PackedVector4Array_M_List.Create2(&parray, {marray})
         (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
         GDW.PackedVector4Array_M_List.Destroy(&parray)
+    }
+    when builtin.ODIN_DEBUG {
+    method_userdata:= cast(^gsetter_userdata)method_userdata
+        gdAPI.Logging.PrintWarningWithMessage("Packed array helper", caprintf("Do not use an Array for a packed*array, this causes additional allocations and refCounting", method_userdata.fieldname), \
+            fmt.caprint(#procedure), fmt.caprint(#file), #line, true)
     }
 }
 
