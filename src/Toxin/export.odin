@@ -31,8 +31,8 @@ binding_error:: enum {
 */
 gsetter_userdata:: struct {
     rs_type: GDE.VariantType,
-    getter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr),
-    setter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr),
+    getter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
+    setter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
     userdata: rawptr,
     fieldname: cstring,
 }
@@ -296,10 +296,148 @@ Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GD
         GDW.PackedVector4Array_M_List.Destroy(&parray)
     }
     when builtin.ODIN_DEBUG {
-    method_userdata:= cast(^gsetter_userdata)method_userdata
+        method_userdata:= cast(^gsetter_userdata)method_userdata
         gdAPI.Logging.PrintWarningWithMessage("Packed array helper", caprintf("Do not use an Array for a packed*array, this causes additional allocations and refCounting", method_userdata.fieldname), \
             fmt.caprint(#procedure), fmt.caprint(#file), #line, true)
     }
+}
+
+get_passthrough :: #force_inline proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    (cast(^gsetter_userdata)method_userdata).getter_method(method_userdata, p_instance, args[0], r_return)
+}
+
+//tPtr stands for typePointer ie an opaque pointer to the actual type.
+
+get_tPtr_Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Array)r_return)
+}
+
+get_tPtr_AABB_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: AABB
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^AABB)r_return)
+}
+
+get_tPtr_Basis_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Basis
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Basis)r_return)
+}
+
+get_tPtr_Transform2D_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Transform2D
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Transform2D)r_return)
+}
+
+get_tPtr_Transform3D_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Transform3D
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Transform3D)r_return)
+}
+
+get_tPtr_Projection_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Projection
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Projection)r_return)
+}
+
+get_tPtr_gdstring_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: gdstring
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^gdstring)r_return)
+}
+
+get_tPtr_StringName_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: StringName
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^StringName)r_return)
+}
+
+get_tPtr_NodePath_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: NodePath
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^NodePath)r_return)
+}
+
+get_tPtr_Signal_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Signal
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Signal)r_return)
+}
+
+get_tPtr_Callable_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Callable
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Callable)r_return)
+}
+
+get_tPtr_Dictionary_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: Dictionary
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^Dictionary)r_return)
+}
+
+get_tPtr_PackedByteArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedByteArray
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedByteArray)r_return)
+}
+
+get_tPtr_PackedInt32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedInt32Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedInt32Array)r_return)
+}
+
+get_tPtr_PackedInt64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedInt64Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedInt64Array)r_return)
+}
+
+get_tPtr_PackedFloat32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedFloat32Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedFloat32Array)r_return)
+}
+
+get_tPtr_PackedFloat64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedFloat64Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedFloat64Array)r_return)
+}
+
+get_tPtr_PackedStringArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedStringArray
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedStringArray)r_return)
+}
+
+get_tPtr_PackedVector2Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedVector2Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedVector2Array)r_return)
+}
+
+get_tPtr_PackedVector3Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedVector3Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedVector3Array)r_return)
+}
+
+get_tPtr_PackedColorArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedColorArray
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedColorArray)r_return)
+}
+
+get_tPtr_PackedVector4Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
+    ret: PackedVector4Array
+    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    Ref_Count(&ret, cast(^PackedVector4Array)r_return)
 }
 
 godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,\
@@ -312,8 +450,8 @@ godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
             expected = 1,
         }
     }
-    //inlined for speed. Return should not be accessed.
-    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{variant_get_ptr(p_args[0])}), nil)
+    //inlined for speed. Return should not be accessed so is nil.
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]), nil)
     r_error^={}
 }
 
