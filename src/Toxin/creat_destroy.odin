@@ -4,6 +4,7 @@ import GDW "../GDWrapper"
 import "../GDWrapper/gdAPI"
 import "core:reflect"
 import "base:builtin"
+import "base:runtime"
 
 Destroy_Callable :: proc "c" (base: ^Callable) {
     when builtin.ODIN_DEBUG {

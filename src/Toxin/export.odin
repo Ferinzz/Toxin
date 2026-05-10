@@ -233,7 +233,7 @@ Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.Clas
         Transform_Array_Call_Setter(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
         return
     }
-    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{variant_get_ptr(p_args[0])}), nil)
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]), nil)
 }
 
 /*
@@ -296,8 +296,9 @@ Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GD
         GDW.PackedVector4Array_M_List.Destroy(&parray)
     }
     when builtin.ODIN_DEBUG {
+        context = runtime.default_context()
         method_userdata:= cast(^gsetter_userdata)method_userdata
-        gdAPI.Logging.PrintWarningWithMessage("Packed array helper", caprintf("Do not use an Array for a packed*array, this causes additional allocations and refCounting", method_userdata.fieldname), \
+        gdAPI.Logging.PrintWarningWithMessage("Packed array helper", fmt.caprintf("Do not use an Array for a packed*array, this causes additional allocations and refCounting", method_userdata.fieldname), \
             fmt.caprint(#procedure), fmt.caprint(#file), #line, true)
     }
 }

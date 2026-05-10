@@ -279,44 +279,47 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     @(rodata, static)
     somproperty:= Toxin.gsetter_userdata{
         rs_type=.INT,
-        getter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr){
+        getter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Int)r_return
             r_return^= Object.someProperty
         },
-        setter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr){
+        setter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            args:= cast([^]^Toxin.Int)args
-            Object.someProperty = args[0]^
+            args:= cast(^Toxin.Int)args
+            Object.someProperty = args^
         },
         userdata= nil,
     }
     Toxin.Export_Default(className, &somproperty, "someProperty")
+
     @(rodata, static)
     rarray:= Toxin.gsetter_userdata{
         rs_type=.ARRAY,
-        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr){
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Array)r_return
-            r_return^= Object.rarray
+            Toxin.Ref_Count(&Object.rarray, r_return)
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            args:= cast([^]^Toxin.Array)args
-            Toxin.Ref_Count(args[0], &Object.rarray)
+            args:= cast(^Toxin.Array)args
+            Toxin.Destroy(&Object.rarray)
+            Toxin.Ref_Count(args, &Object.rarray)
         },
         userdata= nil,
     }
     Toxin.Export_Default(className, &rarray, "rarray")
-    
+
+    @(rodata, static)
     anarray:= Toxin.gsetter_userdata{
         rs_type=.PACKED_INT32_ARRAY,
-        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr){
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.PackedInt32Array)r_return
             r_return^= Object.an_array
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: [^]rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast([^]^Toxin.PackedInt32Array)args
             Toxin.Ref_Count(args[0], &Object.an_array)
