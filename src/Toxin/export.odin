@@ -235,6 +235,9 @@ Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.Clas
     (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{variant_get_ptr(p_args[0])}), nil)
 }
 
+/*
+* This exists to support Godot passing an array as if it were a packed array.
+*/
 Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
     p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
@@ -303,8 +306,8 @@ godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
             expected = 1,
         }
     }
-    //inlined for speed.
-    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{variant_get_ptr(p_args[0])}), r_return)
+    //inlined for speed. Return should not be accessed.
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{variant_get_ptr(p_args[0])}), nil)
     r_error^={}
 }
 
@@ -322,9 +325,7 @@ godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     method_userdata:= cast(^gsetter_userdata)method_userdata
     tr_return: variant_union_raw
     method_userdata.getter_method(method_userdata, p_instance, nil, &tr_return)
-    r_error.error = .CALL_OK
-    r_error.expected = 0
-    r_error.argument = i32(p_argument_count)
+    r_error^ = {}
     r_return.VType = method_userdata.rs_type
     insert_variant_data(r_return, &tr_return)
 }
