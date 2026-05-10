@@ -336,7 +336,7 @@ godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     insert_variant_data(r_return, &tr_return)
 }
 
-insert_variant_data :: proc(container: ^Variant, source: ^variant_union_raw) {
+insert_variant_data :: proc "c" (container: ^Variant, source: ^variant_union_raw) {
     switch container.VType {
     case .NIL,
     /*  atomic types */
@@ -396,9 +396,11 @@ insert_variant_data :: proc(container: ^Variant, source: ^variant_union_raw) {
          GDW.PackedVec4ArrayToVariant(container, &source.PackedVector4Array)
 
 	case .VARIANT_MAX:
-        assert(true, "Variant without a correct type provided!")
+        context = runtime.default_context()
+        panic("Variant without a correct type provided!")
     case:
-        assert(true, "Variant without a correct type provided!")
+        context = runtime.default_context()
+        panic("Variant without a correct type provided!")
     }
 }
 
