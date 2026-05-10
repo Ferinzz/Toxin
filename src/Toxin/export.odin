@@ -114,9 +114,6 @@ Bind_Get2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
     methodInfo : GDE.ClassMethodInfo = {
         name = &methodStringName,
         method_userdata = cast(rawptr)function,
-
-        //call_func = godotVariantGetterCallback,
-        ptrcall_func = GDE.ClassMethodPtrCall(function.getter_method),
         method_flags = (methodType),
     }
 
@@ -126,80 +123,118 @@ Bind_Get2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
             assert(false, "should not exportin nil as field type.")
         case .BOOL:
             methodInfo.call_func = Variant_Getter_Bool
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .INT:
             methodInfo.call_func = Variant_Getter_Int
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .FLOAT:
             methodInfo.call_func = Variant_Getter_Float
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .VECTOR2:
             methodInfo.call_func = Variant_Getter_Vector2
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .VECTOR2I:
             methodInfo.call_func = Variant_Getter_Vector2i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .RECT2:
             methodInfo.call_func = Variant_Getter_Rect
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .RECT2I:
             methodInfo.call_func = Variant_Getter_Rect2i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .VECTOR3:
             methodInfo.call_func = Variant_Getter_Vector3
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .VECTOR3I:
             methodInfo.call_func = Variant_Getter_Vector3i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .VECTOR4:
             methodInfo.call_func = Variant_Getter_Vector4
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .VECTOR4I:
             methodInfo.call_func = Variant_Getter_Vector4i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .PLANE:
             methodInfo.call_func = Variant_Getter_Plane
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .COLOR:
             methodInfo.call_func = Variant_Getter_Color
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .QUATERNION:
             methodInfo.call_func = Variant_Getter_Quaternion
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .STRING:
             methodInfo.call_func = Variant_Getter_GDString
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_gdstring_passthrough)
         case .STRING_NAME:
             methodInfo.call_func = Variant_Getter_StringName
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_StringName_passthrough)
         case .NODE_PATH:
             methodInfo.call_func = Variant_Getter_NodePath
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_NodePath_passthrough)
         case .RID:
             methodInfo.call_func = Variant_Getter_RID
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
         case .OBJECT:
             methodInfo.call_func = Variant_Getter_Object
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Object_passthrough)
         case .CALLABLE:
             methodInfo.call_func = Variant_Getter_Callable
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Callable_passthrough)
         case .SIGNAL:
             methodInfo.call_func = Variant_Getter_Signal
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Signal_passthrough)
         case .DICTIONARY:
             methodInfo.call_func = Variant_Getter_Dictionary
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Dictionary_passthrough)
         case .TRANSFORM2D:
             methodInfo.call_func = Variant_Getter_Tansform2D
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Transform2D_passthrough)
         case .AABB:
             methodInfo.call_func = Variant_Getter_AABB
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_AABB_passthrough)
         case .BASIS:
             methodInfo.call_func = Variant_Getter_Basis
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Basis_passthrough)
         case .TRANSFORM3D:
             methodInfo.call_func = Variant_Getter_Transform3D
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Transform3D_passthrough)
         case .PROJECTION:
             methodInfo.call_func = Variant_Getter_Projection
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Projection_passthrough)
         case .ARRAY:
             methodInfo.call_func = Variant_Getter_Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Array_passthrough)
         case .PACKED_BYTE_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedByteArray
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedByteArray_passthrough)
         case .PACKED_INT32_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedInt32Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedInt32Array_passthrough)
         case .PACKED_INT64_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedInt64Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedInt64Array_passthrough)
         case .PACKED_FLOAT32_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedFloat32Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedFloat32Array_passthrough)
         case .PACKED_FLOAT64_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedFloat64Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedFloat64Array_passthrough)
         case .PACKED_STRING_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedStringArray
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedStringArray_passthrough)
         case .PACKED_VECTOR2_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedVector2Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedVector2Array_passthrough)
         case .PACKED_VECTOR3_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedVector3Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedVector3Array_passthrough)
         case .PACKED_COLOR_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedColorArray
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedColorArray_passthrough)
         case .PACKED_VECTOR4_ARRAY:
             methodInfo.call_func = Variant_Getter_PackedVector4Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedVector4Array_passthrough)
         case .VARIANT_MAX:
             assert(false, "attempted to bind export a variant type outside the VariantType range.")
         case:
@@ -308,136 +343,142 @@ get_passthrough :: #force_inline proc "c" (method_userdata: rawptr, p_instance: 
 }
 
 //tPtr stands for typePointer ie an opaque pointer to the actual type.
-
 get_tPtr_Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Array)r_return)
+}
+
+get_tPtr_Object_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: ^Object) {
+    ret: Object
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    safeRef_Object(&ret)
+    r_return^ = ret
 }
 
 get_tPtr_AABB_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: AABB
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^AABB)r_return)
 }
 
 get_tPtr_Basis_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Basis
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Basis)r_return)
 }
 
 get_tPtr_Transform2D_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Transform2D
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Transform2D)r_return)
 }
 
 get_tPtr_Transform3D_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Transform3D
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Transform3D)r_return)
 }
 
 get_tPtr_Projection_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Projection
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Projection)r_return)
 }
 
 get_tPtr_gdstring_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: gdstring
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^gdstring)r_return)
 }
 
 get_tPtr_StringName_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: StringName
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^StringName)r_return)
 }
 
 get_tPtr_NodePath_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: NodePath
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^NodePath)r_return)
 }
 
 get_tPtr_Signal_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Signal
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Signal)r_return)
 }
 
 get_tPtr_Callable_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Callable
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Callable)r_return)
 }
 
 get_tPtr_Dictionary_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: Dictionary
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^Dictionary)r_return)
 }
 
 get_tPtr_PackedByteArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedByteArray
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedByteArray)r_return)
 }
 
 get_tPtr_PackedInt32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedInt32Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedInt32Array)r_return)
 }
 
 get_tPtr_PackedInt64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedInt64Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedInt64Array)r_return)
 }
 
 get_tPtr_PackedFloat32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedFloat32Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedFloat32Array)r_return)
 }
 
 get_tPtr_PackedFloat64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedFloat64Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedFloat64Array)r_return)
 }
 
 get_tPtr_PackedStringArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedStringArray
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedStringArray)r_return)
 }
 
 get_tPtr_PackedVector2Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedVector2Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedVector2Array)r_return)
 }
 
 get_tPtr_PackedVector3Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedVector3Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedVector3Array)r_return)
 }
 
 get_tPtr_PackedColorArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedColorArray
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedColorArray)r_return)
 }
 
 get_tPtr_PackedVector4Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: rawptr, args: [^]rawptr, r_return: rawptr) {
     ret: PackedVector4Array
-    get_passthrough(method_userdata, p_instance, raw_data(args[:1]), &ret)
+    get_passthrough(method_userdata, p_instance, args, &ret)
     Ref_Count(&ret, cast(^PackedVector4Array)r_return)
 }
 
@@ -484,8 +525,10 @@ insert_variant_data :: proc "c" (container: ^Variant, source: ^variant_union_raw
 	.VECTOR2, .VECTOR2I, .RECT2, .RECT2I, .VECTOR3, .VECTOR3I,
 	.VECTOR4, .VECTOR4I, .PLANE, .QUATERNION,
 	/* misc types */
-	.COLOR,  .RID, .OBJECT:
+	.COLOR, .RID:
         container.data = transmute([2]u64)(source.Vector4)
+    case .OBJECT:
+        ObjecttoVariant(container, cast(^Object)source)
     case  .STRING:
         StringtoVariant(container, cast(^gdstring)source)
     case .STRING_NAME:

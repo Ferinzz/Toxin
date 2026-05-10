@@ -4,18 +4,40 @@ import GDW "../GDWrapper"
 import GDE "../GDWrapper/gdAPI/gdextension"
 import "../GDWrapper/gdAPI"
 import Classes "../GD_Classes"
+import "base:builtin"
+import "base:runtime"
 
 
 RefCounted_Methods_list: Classes.RefCounted_MethodBind_List
-Reference :: proc(ref: ^Object, r_bool: ^Bool) {
+RefTag: GDE.ClassTag
+
+safeRef_Object :: proc "c" (obj: ^Object) {
+    when builtin.ODIN_DEBUG {
+        context = runtime.default_context()
+        assert(RefTag != nil, "Reference Tag pointer was not initialized. Cannot cast check to RefCounted. Must initialize.")
+    }
+    casted:= gdAPI.Object_Utils.CastTo(obj, RefTag)
+    if casted != nil {
+        b:Bool
+        Ref_Count(casted, &b)
+        when builtin.ODIN_DEBUG {
+            context = runtime.default_context()
+            assert(bool(b), "failed to ref count an object which is a RefCount object")
+        }
+    }
+}
+
+//Returns true if the increment was successful, false otherwise.
+Reference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
     gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.reference.m_call, ref, nil, r_bool)
 }
 
-Unreference :: proc(ref: ^Object, r_bool: ^Bool) {
+//Returns true if the increment was successful, false otherwise.
+Unreference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
     gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.unreference.m_call, ref, nil, r_bool)
 }
 
-Reference_init :: proc(ref: ^Object, r_bool: ^Bool) {
+Reference_init :: proc "c" (ref: ^Object, r_bool: ^Bool) {
     gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.init_ref.m_call, ref, nil, r_bool)
 }
 
