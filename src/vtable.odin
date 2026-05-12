@@ -299,7 +299,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Array)r_return
-            Toxin.Ref_Count(&Object.rarray, r_return)
+            r_return^ = Object.rarray
         },
         setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
@@ -310,6 +310,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         userdata= nil,
     }
     Toxin.Export_Default(className, &rarray, "rarray")
+    //Toxin.Export(className, THIS_CLASS_NAME, "rarray")
 
     @(rodata, static)
     anarray:= Toxin.gsetter_userdata{

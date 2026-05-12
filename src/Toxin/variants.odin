@@ -118,6 +118,31 @@ variantTypeCheck :: proc(typeList: []GDE.VariantType, argList: GDE.ConstVariantP
     }
 }
 
+//Is a godot class: https://github.com/godotengine/godot/blob/7775792057009cb27068f1a3252902fb9c991836/core/object/object_id.h#L41
+ObjectID :: u64
+
+//This is what a Variant is actually holding: https://github.com/godotengine/godot/blob/7775792057009cb27068f1a3252902fb9c991836/core/variant/variant.h#L169
+ObjData :: struct {
+	id: ObjectID,
+	obj: ^Object,
+
+	ref: proc(#by_ptr p_from: ObjData),
+	obj_ref_pointer: proc(p_object: ^Object),
+	refCounted_ref_pointer: proc(p_object: ^Object), //Object is the RefCounted object wrapping it.
+	unref: proc(),
+	ref2: obj_ref,
+}
+
+//Templated method to convert Ref<T> types into Object types
+obj_ref:: #type proc(#by_ptr p_from: Object) 
+// {
+// 			if (p_from.is_valid()) {
+// 				ref(ObjData{ p_from->get_instance_id(), p_from.ptr() });
+// 			} else {
+// 				unref();
+// 			}
+// }
+
 /*
 * Matching Godot's raw_union for easy transfer of values.
 * 
@@ -141,7 +166,7 @@ variant_union_raw :: struct #raw_union {
     StringName: StringName, // RefCounted
     NodePath: NodePath, // RefCounted
     RID: RID,
-    Object: Object, // RefCounted
+    Object: ObjData, // RefCounted
     Callable: Callable, // RefCounted
     Signal: Signal, // RefCounted
     Dictionary: Dictionary, //Godot: construct dict, ref count dict, copy class ptr.
@@ -595,9 +620,9 @@ RidfromVariant :: proc(P_dest: ^RID, p_source: ^Variant) -> type_from_variant_er
         return {}
     } else do return {.WRONG_TYPE, .RID, p_source.VType}
 }
-ObjectfromVariant :: proc(P_dest: ^Object, p_source: ^Variant) -> type_from_variant_error {
+ObjectfromVariant :: proc(P_dest: ^^Object, p_source: ^Variant) -> type_from_variant_error {
     if p_source.VType == .OBJECT {
-        P_dest^=(cast(^variant_union_raw)(&p_source.data[0])).Object
+        P_dest^=((cast(^variant_union_raw)(&p_source.data[0])).Object).obj
         return {}
     } else do return {.WRONG_TYPE, .OBJECT, p_source.VType}
 }

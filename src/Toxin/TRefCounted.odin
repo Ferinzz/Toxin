@@ -11,7 +11,13 @@ import "base:runtime"
 RefCounted_Methods_list: Classes.RefCounted_MethodBind_List
 RefTag: GDE.ClassTag
 
-safeRef_Object :: proc "c" (obj: ^Object) {
+safeRef_Error :: enum {
+    NONE,
+    FAILED_TO_REF,
+    NOT_REF_COUNTED_OBJECT,
+}
+
+safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
     when builtin.ODIN_DEBUG {
         context = runtime.default_context()
         assert(RefTag != nil, "Reference Tag pointer was not initialized. Cannot cast check to RefCounted. Must initialize.")
@@ -22,9 +28,15 @@ safeRef_Object :: proc "c" (obj: ^Object) {
         Ref_Count(casted, &b)
         when builtin.ODIN_DEBUG {
             context = runtime.default_context()
-            assert(bool(b), "failed to ref count an object which is a RefCount object")
+            assert(bool(b), "failed to ref count an object which is a RefCount object. This is a bug.")
+        }
+        if b {
+            return .NONE
+        } else {
+            return .FAILED_TO_REF
         }
     }
+    return .NOT_REF_COUNTED_OBJECT
 }
 
 //Returns true if the increment was successful, false otherwise.
