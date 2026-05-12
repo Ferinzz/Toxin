@@ -400,96 +400,112 @@ get_tPtr_Projection_passthrough :: proc "c" (method_userdata: rawptr, p_instance
 get_tPtr_gdstring_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^gdstring) {
     ret: gdstring
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^gdstring)r_return)
 }
 
 get_tPtr_StringName_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^StringName) {
     ret: StringName
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^StringName)r_return)
 }
 
 get_tPtr_NodePath_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^NodePath) {
     ret: NodePath
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^NodePath)r_return)
 }
 
 get_tPtr_Signal_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Signal) {
     ret: Signal
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^Signal)r_return)
 }
 
 get_tPtr_Callable_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Callable) {
     ret: Callable
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^Callable)r_return)
 }
 
 get_tPtr_Dictionary_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Dictionary) {
     ret: Dictionary
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^Dictionary)r_return)
 }
 
 get_tPtr_PackedByteArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedByteArray) {
     ret: PackedByteArray
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedByteArray)r_return)
 }
 
 get_tPtr_PackedInt32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedInt32Array) {
     ret: PackedInt32Array
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedInt32Array)r_return)
 }
 
 get_tPtr_PackedInt64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedInt64Array) {
     ret: PackedInt64Array
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedInt64Array)r_return)
 }
 
 get_tPtr_PackedFloat32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedFloat32Array) {
     ret: PackedFloat32Array
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedFloat32Array)r_return)
 }
 
 get_tPtr_PackedFloat64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedFloat64Array) {
     ret: PackedFloat64Array
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedFloat64Array)r_return)
 }
 
 get_tPtr_PackedStringArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedStringArray) {
     ret: PackedStringArray
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedStringArray)r_return)
 }
 
 get_tPtr_PackedVector2Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedVector2Array) {
     ret: PackedVector2Array
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedVector2Array)r_return)
 }
 
 get_tPtr_PackedVector3Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedVector3Array) {
     ret: PackedVector3Array
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedVector3Array)r_return)
 }
 
 get_tPtr_PackedColorArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedColorArray) {
     ret: PackedColorArray
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedColorArray)r_return)
 }
 
 get_tPtr_PackedVector4Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedVector4Array) {
     ret: PackedVector4Array
     get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
     Ref_Count(&ret, cast(^PackedVector4Array)r_return)
 }
 
