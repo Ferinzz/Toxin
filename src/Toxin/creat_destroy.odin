@@ -135,6 +135,7 @@ Destroy :: proc {
     Destroy_StringName,
     Destroy_Array,
     Destroy_PackedByteArray,
+    Destroy_PackedColorArray,
     Destroy_PackedFloat32Array,
     Destroy_PackedFloat64Array,
     Destroy_PackedInt32Array,
