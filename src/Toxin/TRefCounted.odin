@@ -112,8 +112,10 @@ ref_count_CALLABLE :: proc "c" (source: ^Callable, copy: ^Callable) {
 ref_count_DICTIONARY :: proc "c" (source: ^Dictionary, copy: ^Dictionary) {
     GDW.Dictionary_M_List.Create1(copy, {source})
 }
+//Array ref is deprecated but it ensures that if destination is already initialized it will clear it.
 ref_count_ARRAY :: proc "c" (source: ^Array, copy: ^Array) {
-    GDW.Array_M_List.Create1(copy, {source})
+    //GDW.Array_M_List.Create1(copy, {source})
+    gdAPI.Packed_Array_Utils.ArrayRef(copy, source)
 }
 ref_count_PACKED_BYTE_ARRAY :: proc "c" (source: ^PackedByteArray, copy: ^PackedByteArray) {
     GDW.PackedByteArray_M_List.Create1(copy, {source})
