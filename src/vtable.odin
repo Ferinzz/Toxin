@@ -61,6 +61,7 @@ THIS_CLASS_NAME :: struct {
     dictionary_type: Toxin.Dictionary,
     a_dictionary: Toxin.Dictionary,
     locale_dictionary: Toxin.Dictionary,
+    callable: Toxin.Callable,
     int_as_enum: munum,
 }
 
@@ -224,6 +225,9 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 
         set:=[?]rawptr{&texture}
         Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
+        num:i64=32
+        ret:Toxin.Bool
+        GDW.PackedInt32Array_M_List.append(&self.an_array, {&num}, &ret)
     },
     _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context()
@@ -246,10 +250,13 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         //if self.position.x > window.x do self.angle = Math.PI - self.angle
         //if self.position.y > window.y do self.angle = -self.angle
     },
-    //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
-    //    //context = runtime.default_context()
-    //    //fmt.println("yarrr")
-    //},
+    _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
+        //context = runtime.default_context()
+        //fmt.println("yarrr")
+    },
+    _get_focused_accessibility_element= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
+
+    }
 }
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1100, 750}
@@ -327,7 +334,115 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         },
         userdata= nil,
     }
-    Toxin.Export(className, THIS_CLASS_NAME, "an_array")
+    Toxin.Export_Default(className, &anarray, "anarray")
+
+    @(rodata, static)
+    dictionary_type:= Toxin.gsetter_userdata{
+        rs_type=.DICTIONARY,
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.Dictionary)r_return
+            r_return^ = Object.dictionary_type
+        },
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast(^Toxin.Dictionary)args
+            Toxin.Destroy(&Object.dictionary_type)
+            Toxin.Ref_Count(args, &Object.dictionary_type)
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &dictionary_type, "dictionary_type")
+
+    @(rodata, static)
+    callable:= Toxin.gsetter_userdata{
+        rs_type=.CALLABLE,
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.Callable)r_return
+            r_return^ = Object.callable
+        },
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast(^Toxin.Callable)args
+            Toxin.Destroy(&Object.callable)
+            Toxin.Ref_Count(args, &Object.callable)
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &callable, "callable")
+
+    @(rodata, static)
+    stringname:= Toxin.gsetter_userdata{
+        rs_type=.STRING_NAME,
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.StringName)r_return
+            r_return^ = Object.stringname
+        },
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast(^Toxin.StringName)args
+            Toxin.Destroy(&Object.stringname)
+            Toxin.Ref_Count(args, &Object.stringname)
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &stringname, "stringname")
+
+    @(rodata, static)
+    valid_objects:= Toxin.gsetter_userdata{
+        rs_type=.OBJECT,
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.Object)r_return
+            r_return^ = Object.valid_objects
+        },
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast(^Toxin.Object)args
+            Toxin.safeRef_Object(&Object.valid_objects)
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &valid_objects, "valid_objects")
+
+    @(rodata, static)
+    godotstring:= Toxin.gsetter_userdata{
+        rs_type=.STRING,
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.gdstring)r_return
+            r_return^ = Object.godotstring
+        },
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast(^Toxin.gdstring)args
+            Toxin.Destroy(&Object.godotstring)
+            Toxin.Ref_Count(args, &Object.godotstring)
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &godotstring, "godotstring")
+
+    @(rodata, static)
+    receive:= Toxin.gsetter_userdata{
+        rs_type=.AABB,
+        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            r_return:=cast(^Toxin.AABB)r_return
+            r_return^ = Object.receive
+        },
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
+            args:= cast(^Toxin.AABB)args
+            //Toxin.Destroy(&Object.receive)
+            Toxin.Ref_Count(args, &Object.receive)
+        },
+        userdata= nil,
+    }
+    Toxin.Export_Default(className, &receive, "receive")
+
     //Toxin.Export(className, THIS_CLASS_NAME, "receive")
     //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
     //Toxin.Export(className, THIS_CLASS_NAME, "stringname")

@@ -865,7 +865,7 @@ SignaltoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Signal, loc:=#cal
 DictionarytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Dictionary, loc:=#caller_location) {        
     GDW.new_variant_from_methods(p_variant, p_from)
     //Godot doesn't seem to handle receiving nil very well for this particular type.
-    if p_from.id != nil {
+    if p_from.id == nil {
         context = runtime.default_context()
         panic("Dictionary was not initialized before using with Godot method.", loc)
     }
