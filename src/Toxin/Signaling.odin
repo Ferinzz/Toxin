@@ -18,7 +18,7 @@ arg_deets :: struct {
 }
 
 @(require_results)
-register_signal2 :: proc (className: StringName, signalName: string, args: []arg_deets) -> (signalSName: StringName) {
+register_signal2 :: proc (className: ^StringName, signalName: string, args: []arg_deets) -> (signalSName: StringName) {
     gdAPI.StringName_Utils.Utf8CharsAndLen(&signalSName, raw_data(signalName), i64(len(signalName)))
 
     signalProp:[32]GDE.PropertyInfo
@@ -26,8 +26,7 @@ register_signal2 :: proc (className: StringName, signalName: string, args: []arg
         signalProp[i] = make_property(arg.variant_type, arg.name)
     }
 
-    className:=className
-    gdAPI.ClassDB.RegisterExtensionClassSignal(GDW.Library, &className, &signalSName, raw_data(signalProp[:]), i64(len(args)))
+    gdAPI.ClassDB.RegisterExtensionClassSignal(GDW.Library, className, &signalSName, raw_data(signalProp[:]), i64(len(args)))
     for &prop in signalProp {
         destructProperty(&prop)
     }
