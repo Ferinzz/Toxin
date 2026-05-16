@@ -142,7 +142,7 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
     self.self= object
 
     if p_class_userdata.create != nil {
-        p_class_userdata.create(self)
+        p_class_userdata.create(p_class_userdata, self)
     }
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)self)
@@ -163,7 +163,7 @@ Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bo
     class_obj.self= object
 
     if p_class_userdata.create != nil {
-        p_class_userdata.create(class_obj)
+        p_class_userdata.create(p_class_userdata, class_obj)
     }
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)class_obj)
@@ -220,7 +220,7 @@ Destroy_ :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInsta
         return
     }
     if p_class_userdata.destroy != nil {
-        p_class_userdata.destroy(p_instance)
+        p_class_userdata.destroy(p_class_userdata, p_instance)
     }
     if TMFree != nil {
         TMFree(p_class_userdata, p_instance)
@@ -237,7 +237,7 @@ TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.Clas
         return
     }
     if p_class_userdata.destroy != nil {
-        p_class_userdata.destroy(p_instance)
+        p_class_userdata.destroy(p_class_userdata, p_instance)
     }
     TMFree(p_class_userdata, p_instance)
 }
@@ -251,7 +251,7 @@ bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassI
         return
     }
     if p_class_userdata.destroy != nil {
-        p_class_userdata.destroy(p_instance)
+        p_class_userdata.destroy(p_class_userdata, p_instance)
     }
     gdAPI.Memory_Uils.MemFree(p_instance)
 }

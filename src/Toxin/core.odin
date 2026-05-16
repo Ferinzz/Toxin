@@ -192,8 +192,8 @@ class_info_Default: GDE.ClassCreationInfo4 = {
 */
 Class_Deets :: struct {
     required: required_deets,
-    create: proc(self: rawptr), //Cast to the Object class that your class extends.
-    destroy: proc(self: rawptr),
+    create: proc(userdata: ^Class_Deets, self: rawptr), //Cast to the Object class that your class extends.
+    destroy: proc(userdata: ^Class_Deets, self: rawptr),
     vtable: struct {
         table_type: vtable_type,
         table: rawptr,

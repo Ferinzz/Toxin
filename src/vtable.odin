@@ -126,7 +126,7 @@ Engine: Classes.Engine_MethodBind_List
 singletons: Toxin.Singletons
 
 //Constructor receive an opaque pointer which is in reality a pointer to this class's container.
-constructor :: proc(self: rawptr) {
+constructor :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
     self:=cast(^Toxin.Class_Container(THIS_CLASS_NAME))self
 
     GDW.Array_M_List.Create0(&self.class.rarray, nil)
@@ -145,7 +145,7 @@ constructor :: proc(self: rawptr) {
     window:Toxin.Vector2
 }
 
-destructor :: proc(self: rawptr) {
+destructor :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
     self:=cast(^Toxin.Class_Container(THIS_CLASS_NAME))self
     GDW.Array_M_List.Destroy(&self.class.rarray)
     GDW.Array_M_List.Destroy(&self.class.a_real_array)
