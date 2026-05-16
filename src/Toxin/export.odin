@@ -40,6 +40,7 @@ gsetter_userdata:: struct {
     fieldname: cstring,
 }
 
+//Does not support pass by copy.
 Export_Default :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata, fieldName: string) {
     info:= make_property(getter_setter.rs_type, fieldName)
     Export4(className_SN, getter_setter, fieldName, &info, GDE.PROPERTY_USAGE_DEFAULT, GDE.Method_Flags_DEFAULT)
