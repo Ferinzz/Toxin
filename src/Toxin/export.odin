@@ -29,6 +29,7 @@ binding_error:: enum {
 * This needs to be kept alive. Godot will be passing a pointer to it to each of the calls.
 * Setter does not manange the ref counting. If it is a type which needs ref counting increment it with the Ref_Count proc group.
 * Getter does increment the ref counting because there are few ways to avoid it due to how Godot stores memory of certain types.
+** Because of this, don't pass by copy with Export_Default
 ** For Objects the Getter's return is a ^^Object, because you should be creating/holding ^Object
 * Buit why? Because sometimes Godot will call through the variant getter and sometimes it will call your getter directly.
 */
