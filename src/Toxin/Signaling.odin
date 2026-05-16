@@ -5,6 +5,7 @@ import GDE "../GDWrapper/gdAPI/gdextension"
 import "../GDWrapper/gdAPI"
 import "base:runtime"
 import sics "base:intrinsics"
+import Classes "../GD_Classes"
 
 callable_container:: struct {
     function: rawptr,
@@ -48,6 +49,19 @@ register_signal2 :: proc (className: StringName, signalName: string, args: []arg
     }
     return
 }
+
+/*
+* Subscriber does not need to know about the state of the object, only the data sent to it.
+* signal does not need to know the Object it is going to or the method details, but it does need to 
+* Subscriber Object is identified by the Objectid
+*/
+@(require_results)
+connect_to :: proc(object: ^Object, callback: ^Callable, signal_name: ^StringName, flags: ConnectFlags = nil) -> (ret_err: GDW.Error) {
+    flags:i64=i64(transmute(u32)flags)
+    Object_M_methods.connect->m_call(object, {signal_name, callback, &flags}, &ret_err)
+    return
+}
+
 /*
 * I already have a Variant -> type proc generator for normal exports.
 * I can make changes to the bindnoreturn2 proc in order to generate the variant->type system.
@@ -80,11 +94,6 @@ Connection_Error :: enum {
 
 }
 
-/*
-* Subscriber does not need to know about the state of the object, only the data sent to it.
-* signal does not need to know the Object it is going to or the method details, but it does need to 
-* Subscriber Object is identified by the Objectid
-*/
 Connect_to :: proc(target_signal: string, subscription: ^Object, subscriber: ^Object, callback: proc "c" (self: ^Object)) {
 
 }

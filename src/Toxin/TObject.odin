@@ -8,16 +8,17 @@ Objectc :: ^GDW.Object
 
 make_Objectc :: proc(p_Objectc_C: ^Objectc_C) {
     p_Objectc_C.self = gdAPI.ClassDB.ConstructObject(Classes.GDClass_StringName_get(.Object))
-    p_Objectc_C.methods = &Objectc_methods
+    p_Objectc_C.methods = &Object_M_methods
     //GDW.Objectc_Input(&Objectc_methods)
 }
 
 Objectc_C :: struct {
     self: Objectc,
-    using methods: ^Objectc_methods_list,
+    using methods: ^Classes.Object_MethodBind_List,
 }
 
-Objectc_methods: Objectc_methods_list
+@(export)
+Object_M_methods: Classes.Object_MethodBind_List
 /*
 Objectc_methods_list:: struct($T:typeid) {
     add_user_signal: proc (self: ^T, vals: struct{r_name: ^StringName}),

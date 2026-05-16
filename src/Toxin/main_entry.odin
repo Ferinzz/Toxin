@@ -81,6 +81,8 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             * Register the different classes which depend on servers classes.
             */
             //THIS_CLASS_NAME_deets->self_register(init_Level)
+            Classes.SceneTree_Init_(&SceneTree_M_List)
+            Classes.Object_Init_(&Object_M_methods)
             if inits.scene != nil {
                 inits.scene(userdata)
             } else {
