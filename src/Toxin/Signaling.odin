@@ -27,6 +27,27 @@ Signal_Callback :: proc "c" (callable_self: callable_container, p_args: GDE.Cons
     }
 }
 
+arg_deets :: struct {
+    name: string,
+    variant_type: GDE.VariantType,
+}
+
+@(require_results)
+register_signal2 :: proc (className: StringName, signalName: string, args: []arg_deets) -> (signalSName: StringName) {
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&signalSName, raw_data(signalName), i64(len(signalName)))
+
+    signalProp:[32]GDE.PropertyInfo
+    for arg, i in args {
+        signalProp[i] = make_property(arg.variant_type, arg.name)
+    }
+
+    className:=className
+    gdAPI.ClassDB.RegisterExtensionClassSignal(GDW.Library, &className, &signalSName, raw_data(signalProp[:]), i64(len(args)))
+    for &prop in signalProp {
+        destructProperty(&prop)
+    }
+    return
+}
 /*
 * I already have a Variant -> type proc generator for normal exports.
 * I can make changes to the bindnoreturn2 proc in order to generate the variant->type system.
