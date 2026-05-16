@@ -64,6 +64,8 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             init_Texture2D_Virtuals_Info()
             init_MainLoop_Virtual_Info()
             Classes.RefCounted_Init_(&RefCounted_Methods_list)
+            refname:= GDW.StringConstruct("RefCounted")
+            RefTag = gdAPI.ClassDB.GetClassTag(&refname)
             objectEmitSignal = GDW.classDBGetMethodBind3(.Object, "emit_signal", 4047867050)
             return
         case .INITIALIZATION_SERVERS:

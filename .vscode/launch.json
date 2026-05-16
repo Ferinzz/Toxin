@@ -14,8 +14,8 @@
 			//Tells godot what project file to use.
 			//Generally this .godot file will be in the root of your project's folder.
 			//One set of args launches the editor, the other launches the game exe directly.
-			//"args": [ ".\/TopDown/project.godot"], //launch editor
-			"args": [ "--path ./TopDown --verbose"], //launch game
+			//"args": [ "--verbose .\/TopDown/project.godot"], //launch editor
+			"args": [ "--verbose --path ./TopDown"], //launch game
 			//Tell VSCode where to look for the binary when debugging.
 			"cwd": "${workspaceFolder}/TopDown",
 		}

@@ -122,8 +122,13 @@ stringNameNewString_r :: proc "c" (name: string) -> (r_ret: StringName) {
 @(export)
 Get_Builtin_Method :: proc "c" (variant_type: GDE.VariantType, method_name: string, hash: Int) -> GDE.PtrBuiltInMethod {
     method_name_SN: StringName
-    defer StringName_M_List.Destroy(&method_name_SN)
     stringNameNewString(&method_name_SN, method_name)
+    //defer StringName_M_List.Destroy(&method_name_SN)
+    defer {
+        fmethod_name:= GDE.Variant{VType = .STRING_NAME}
+        fmethod_name.data[0] = transmute(u64)(method_name_SN.ptr)
+        gdAPI.Variant_Utils.Destroy(&fmethod_name)
+    }
     return gdAPI.Variant_Utils.GetPtrBuiltinMethod(variant_type, &method_name_SN, hash)
 }
 

@@ -61,7 +61,7 @@ init_Dictionary_Methods :: proc "c" (Dictionary_method_store: ^Dictionary_Method
   Dictionary_method_store.Create1 = cast(type_of(Dictionary_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 1)
   Dictionary_method_store.Create2 = cast(type_of(Dictionary_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 2)
   Dictionary_method_store.Destroy = cast(type_of(Dictionary_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.DICTIONARY)
-    Dictionary_method_store.get_ptr = cast(type_of(Dictionary_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.DICTIONARY)
+  Dictionary_method_store.get_ptr = cast(type_of(Dictionary_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.DICTIONARY)
   Dictionary_method_store.KeyedSetter = cast(type_of(Dictionary_method_store.KeyedSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
   Dictionary_method_store.KeyedGetter = cast(type_of(Dictionary_method_store.KeyedGetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
   Dictionary_method_store.KeyedChecker = cast(type_of(Dictionary_method_store.KeyedChecker))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
