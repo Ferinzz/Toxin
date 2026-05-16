@@ -8,24 +8,8 @@ import sics "base:intrinsics"
 import Classes "../GD_Classes"
 
 callable_container:: struct {
-    function: rawptr,
+    function: rawptr, //there is no method to get the call_func so it's being stored on our end.
     callable: Callable,
-}
-
-Signal_Callback :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    context = runtime.default_context()
-    p_args:[]^Variant=p_args[:p_argument_count]
-    switch p_argument_count {
-        case 1:
-            call:= cast(proc(object: ^Object, arg1: rawptr))(callable_self.function)
-            //TODO: Make a Variant helper which returns a value based on the variant's enum value. Current version sucks.
-            call(cast(^Object)(callable_self.callable.call_p.stringName.ptr), nil)
-    }
-    r_error^= {
-        error= .CALL_OK,
-        argument = i32(p_argument_count),
-        expected = 0,
-    }
 }
 
 arg_deets :: struct {
@@ -93,7 +77,7 @@ Create_Callable2 :: proc(
         to_string_func:          GDE.CallableCustomToString = nil, //Stringify the Callable info.
         get_argument_count_func: GDE.CallableCustomGetArgumentCount = nil, //Helper func to get arg count at runtime.
         token:                   GDE.ClassDB = GDW.Library, //Should be the GDE's library pointer.
-    ) -> (r_callable: ^Callable) {
+    ) -> (r_callable: Callable) {
     //
     s_call_info:GDE.CallableCustomInfo2 = {
         callable_userdata= callable_userdata,
@@ -108,47 +92,153 @@ Create_Callable2 :: proc(
         to_string_func= to_string_func,
         get_argument_count_func= get_argument_count_func,
     }
-    gdAPI.Callable_Utils.CustomCreate2(r_callable, (&s_call_info))
+    gdAPI.Callable_Utils.CustomCreate2(&r_callable, (&s_call_info))
     return
 }
 
-/*
-* I already have a Variant -> type proc generator for normal exports.
-* I can make changes to the bindnoreturn2 proc in order to generate the variant->type system.
-* All signal procs should therefore use pointers as parameters.
-*/
-some_Signal :: proc(val1: ^Array, val2: ^float, val3: ^Basis) -> Vector2 {
-    return {0,3}
+//container needs to exist for as long as this can be called.
+@(require_results)
+create_callable_container :: proc(
+        function:                rawptr, //function pointer to the proc this should be calling.
+        argcount:                int, //number of arguments in the function.
+        
+        object_id:               ^Object, //Pointer to the Object instance which should be used as _this_ function's instance.
+        is_valid_func:           GDE.CallableCustomIsValid = nil, //If it's possible the callable is destroyed before disconnecting.
+        free_func:               GDE.CallableCustomFree = nil, //Only needed if some memory it was using needs to be freed.
+        hash_func:               GDE.CallableCustomHash = nil, //Godot runs a hash method twice. Not sure what that's used for.
+        equal_func:              GDE.CallableCustomEqual = nil, //proc which will compare two callable_userdata in order to determine if they match.
+        less_than_func:          GDE.CallableCustomLessThan = nil, //May be useful if you're sotring them in an array?
+        to_string_func:          GDE.CallableCustomToString = nil, //Stringify the Callable info.
+        get_argument_count_func: GDE.CallableCustomGetArgumentCount = nil, //Helper func to get arg count at runtime.
+        token:                   GDE.ClassDB = GDW.Library, //Should be the GDE's library pointer.
+        allocator:               runtime.Allocator              = context.allocator
+    ) -> (container: ^callable_container) {
+    passthrough: GDE.CallableCustomCall
+    switch argcount {
+    case 0:
+        passthrough = GDE.CallableCustomCall(Signal_Callback0)
+    case 1:
+        passthrough = GDE.CallableCustomCall(Signal_Callback1)
+    case 2:
+        passthrough = GDE.CallableCustomCall(Signal_Callback2)
+    case 3:
+        passthrough = GDE.CallableCustomCall(Signal_Callback3)
+    case 4:
+        passthrough = GDE.CallableCustomCall(Signal_Callback4)
+    case 5:
+        passthrough = GDE.CallableCustomCall(Signal_Callback5)
+    case 6:
+        passthrough = GDE.CallableCustomCall(Signal_Callback6)
+    }
+    container = new(callable_container, allocator)
+    container.callable = Create_Callable2(container, object_id, passthrough, is_valid_func, free_func, hash_func, equal_func, less_than_func, to_string_func, get_argument_count_func, token)
+    container.function = function
+    return
 }
 
-some_callback :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    context=runtime.default_context()
-    p_args:=p_args[:p_argument_count]
-    r_arg::sics.type_proc_return_type(type_of(some_Signal), 0)
-    newproc:=cast(proc(rawptr,rawptr,rawptr) -> (r_arg))some_Signal
-    ret:= newproc(variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]))
+Signal_Callback0 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    p_args:[]^Variant=p_args[:p_argument_count]
+    callable_self:=callable_self
+    obj: Object
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
+            (cast(proc(object: ^Object))(callable_self.function))\
+            (&obj)
+    r_error^= {
+        error= .CALL_OK,
+        argument = i32(p_argument_count),
+        expected = 0,
+    }
 }
 
-muh_callback :: proc(self: ^Object, p_args: [3]GDE.ConstVariantPtr, r_return: ^Variant) {
-
+Signal_Callback1 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    p_args:[]^Variant=p_args[:p_argument_count]
+    callable_self:=callable_self
+    obj: Object
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
+            (cast(proc(object: ^Object, arg1: rawptr))(callable_self.function))\
+            (&obj, variant_get_ptr(p_args[0]))
+    r_error^= {
+        error= .CALL_OK,
+        argument = i32(p_argument_count),
+        expected = 0,
+    }
 }
 
-dataneeded:: struct ($T: typeid) {
-    callproc: rawptr, //of type proc
-    calldeets: Callable,
-    object: ^Class_Container(T),
+Signal_Callback2 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    p_args:[]^Variant=p_args[:p_argument_count]
+    callable_self:=callable_self
+    obj: Object
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
+            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr))(callable_self.function))\
+            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]))
+    r_error^= {
+        error= .CALL_OK,
+        argument = i32(p_argument_count),
+        expected = 0,
+    }
 }
 
-Connection_Error :: enum {
-    DOES_NOT_HAVE_SIGNAL,
-
+Signal_Callback3 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    p_args:[]^Variant=p_args[:p_argument_count]
+    callable_self:=callable_self
+    obj: Object
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
+            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr))(callable_self.function))\
+            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]))
+        
+    r_error^= {
+        error= .CALL_OK,
+        argument = i32(p_argument_count),
+        expected = 0,
+    }
 }
 
-Connect_to :: proc(target_signal: string, subscription: ^Object, subscriber: ^Object, callback: proc "c" (self: ^Object)) {
-
+Signal_Callback4 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    p_args:[]^Variant=p_args[:p_argument_count]
+    callable_self:=callable_self
+    obj: Object
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
+            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr))(callable_self.function))\
+            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]))
+        
+    r_error^= {
+        error= .CALL_OK,
+        argument = i32(p_argument_count),
+        expected = 0,
+    }
 }
 
-subscription:: struct {
-    target_signal: ^string,
-    subscription: ^Object,
+Signal_Callback5 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    p_args:[]^Variant=p_args[:p_argument_count]
+    callable_self:=callable_self
+    obj: Object
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
+            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr, arg5: rawptr))(callable_self.function))\
+            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]), variant_get_ptr(p_args[4]))
+    r_error^= {
+        error= .CALL_OK,
+        argument = i32(p_argument_count),
+        expected = 0,
+    }
+}
+
+Signal_Callback6 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    p_args:[]^Variant=p_args[:p_argument_count]
+    callable_self:=callable_self
+    obj: Object
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
+            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr, arg5: rawptr, arg6: rawptr))(callable_self.function))\
+            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]), variant_get_ptr(p_args[4]), variant_get_ptr(p_args[5]))
+    r_error^= {
+        error= .CALL_OK,
+        argument = i32(p_argument_count),
+        expected = 0,
+    }
 }
