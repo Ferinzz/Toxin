@@ -89,7 +89,7 @@ Bind_Set2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
         method_userdata = cast(rawptr)function,
 
         call_func = godotVariantSetterCallback,
-        ptrcall_func = GDE.ClassMethodPtrCall(function.setter_method),
+        ptrcall_func = set_passthrough,
         method_flags = (methodType),
     }
     
@@ -260,6 +260,46 @@ Bind_Get2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
 }
 
 
+godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,\
+            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context= runtime.default_context()
+    if p_argument_count != 1 {
+        r_error^= {
+            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+            argument= i32(p_argument_count),
+            expected = 1,
+        }
+    }
+    //inlined for speed. Return should not be accessed so is nil.
+    if (cast(^gsetter_userdata)method_userdata).setter_method == nil {
+        assert(false, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
+    }
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]), nil)
+    r_error^={}
+}
+
+//Godot calls with an uninitialized variant.
+godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    context= runtime.default_context()
+    if p_argument_count != 0 {
+        r_error^= {
+            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+            argument= i32(p_argument_count),
+            expected = 0,
+        }
+        return
+    }
+    if (cast(^gsetter_userdata)method_userdata).getter_method == nil {
+        assert(false, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
+    }
+    method_userdata:= cast(^gsetter_userdata)method_userdata
+    tr_return: variant_union_raw
+    method_userdata.getter_method(method_userdata, p_instance, nil, &tr_return)
+    r_error^ = {}
+    r_return.VType = method_userdata.rs_type
+    insert_variant_data(r_return, &tr_return)
+}
 Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
         p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     if p_args[0].VType == .ARRAY {
@@ -352,6 +392,18 @@ Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GD
         delete(file)
         delete(procedure)
     }
+}
+
+set_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
+    when builtin.ODIN_DEBUG{
+        context = runtime.default_context()
+        if (cast(^gsetter_userdata)method_userdata).setter_method == nil{
+            warning:= fmt.aprintf("attempted to call setter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname)
+            assert(false, warning)
+            delete(warning)
+        }
+    }
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, p_args[0], nil)
 }
 
 //Warning, this is not an return uninitialized pointer, this an initialized pointer -> Will pass an empty initialized array in return.
@@ -521,46 +573,6 @@ get_tPtr_PackedVector4Array_passthrough :: proc "c" (method_userdata: rawptr, p_
     Ref_Count(&ret, cast(^PackedVector4Array)r_return)
 }
 
-godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,\
-            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
-    context= runtime.default_context()
-    if p_argument_count != 1 {
-        r_error^= {
-            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
-            argument= i32(p_argument_count),
-            expected = 1,
-        }
-    }
-    //inlined for speed. Return should not be accessed so is nil.
-    if (cast(^gsetter_userdata)method_userdata).setter_method == nil {
-        assert(false, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
-    }
-    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]), nil)
-    r_error^={}
-}
-
-//Godot calls with an uninitialized variant.
-godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
-    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
-    context= runtime.default_context()
-    if p_argument_count != 0 {
-        r_error^= {
-            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
-            argument= i32(p_argument_count),
-            expected = 0,
-        }
-        return
-    }
-    if (cast(^gsetter_userdata)method_userdata).getter_method == nil {
-        assert(false, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
-    }
-    method_userdata:= cast(^gsetter_userdata)method_userdata
-    tr_return: variant_union_raw
-    method_userdata.getter_method(method_userdata, p_instance, nil, &tr_return)
-    r_error^ = {}
-    r_return.VType = method_userdata.rs_type
-    insert_variant_data(r_return, &tr_return)
-}
 
 insert_variant_data :: proc "c" (container: ^Variant, source: ^variant_union_raw) {
     switch container.VType {
