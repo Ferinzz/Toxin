@@ -1,3 +1,4 @@
+#+ignore
 package Toxin
 
 import "base:runtime"
@@ -224,6 +225,7 @@ connectToSignal :: proc(object: ^Object, callback: ^Callable, signal_name: ^Stri
 
 }
 
+/*
 /*
 * emitSignal creates a vararg list of ^Variants from the values passed in.
 * destroy the Variants after they have been used by Godot or get memory leaks for some types.
@@ -547,3 +549,4 @@ emitSignal9 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     variant_Destroy(&arg10)
     variant_Destroy(&ret)
 }
+    */
