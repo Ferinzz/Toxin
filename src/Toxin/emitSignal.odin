@@ -1,3 +1,4 @@
+#+ignore
 package Toxin
 
 import "base:runtime"
@@ -225,6 +226,7 @@ connectToSignal :: proc(object: ^Object, callback: ^Callable, signal_name: ^Stri
 }
 
 /*
+/*
 * emitSignal creates a vararg list of ^Variants from the values passed in.
 * destroy the Variants after they have been used by Godot or get memory leaks for some types.
 */
@@ -238,15 +240,13 @@ emitSignal0 :: proc "c" (p_instance: ^Object, signalName: ^StringName) {
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1}
 
-    // Add dummy return value storage.
     ret: GDE.Variant
-
-    // Call the function.
-    gdAPI.Object_Utils.MethodBindCall(objectEmitSignal, p_instance, raw_data(varSet[:]), 1, &ret, nil)
+    defer(variant_Destroy(&ret))
+    gdAPI.Object_Utils.MethodBindCall(cast(GDE.MethodBindPtr)(Object_M_methods.emit_signal._emit_signal), p_instance, raw_data(varSet[:]), 1, &ret, nil)
 
     // Destroy the arguments that need it.
     variant_Destroy(&arg1)
-    variant_Destroy(&ret)
+    //variant_Destroy(&ret)
 }
 
 emitSignal1 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P) {
@@ -549,3 +549,4 @@ emitSignal9 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     variant_Destroy(&arg10)
     variant_Destroy(&ret)
 }
+    */

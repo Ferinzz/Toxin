@@ -34,7 +34,7 @@ binding_error:: enum {
 * Buit why? Because sometimes Godot will call through the variant getter and sometimes it will call your getter directly.
 */
 gsetter_userdata:: struct {
-    rs_type: GDE.VariantType,
+    gs_type: GDE.VariantType,
     getter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
     setter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
     userdata: rawptr,
@@ -43,7 +43,7 @@ gsetter_userdata:: struct {
 
 //Does not support pass by copy.
 Export_Default :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata, fieldName: string) {
-    info:= make_property(getter_setter.rs_type, fieldName)
+    info:= make_property(getter_setter.gs_type, fieldName)
     Export4(className_SN, getter_setter, fieldName, &info, GDE.PROPERTY_USAGE_DEFAULT, GDE.Method_Flags_DEFAULT)
     destructProperty(&info)
 }
@@ -59,11 +59,11 @@ Export4 :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata, fie
     setbuf:[100]u8
     getName:= fmt.bprint(getbuf[:], "get", fieldName, sep="_")
     setName:= fmt.bprint(setbuf[:], "set", fieldName, sep="_")
-    Bind_Set2(getter_setter.rs_type, className_SN, setName, getter_setter, fieldName, methodType = methodType, loc = loc)
-    Bind_Get2(getter_setter.rs_type, className_SN, getName, getter_setter, methodType, loc = loc)
+    Bind_Set2(getter_setter.gs_type, className_SN, setName, getter_setter, fieldName, methodType = methodType, loc = loc)
+    Bind_Get2(getter_setter.gs_type, className_SN, getName, getter_setter, methodType, loc = loc)
 
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(className_SN, fieldName, getter_setter.rs_type, info, getName, setName)
+    Bind_Property(className_SN, fieldName, getter_setter.gs_type, info, getName, setName)
     return nil
 }
 
@@ -297,7 +297,7 @@ godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     tr_return: variant_union_raw
     method_userdata.getter_method(method_userdata, p_instance, nil, &tr_return)
     r_error^ = {}
-    r_return.VType = method_userdata.rs_type
+    r_return.VType = method_userdata.gs_type
     insert_variant_data(r_return, &tr_return)
 }
 Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
@@ -305,7 +305,7 @@ Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.Clas
     if p_args[0].VType == .ARRAY {
         context = runtime.default_context()
         when builtin.ODIN_DEBUG {
-            message:= fmt.caprintf("incorrect type passed as Packed%sArray, this will cause extra allocations", (cast(^gsetter_userdata)method_userdata).rs_type)
+            message:= fmt.caprintf("incorrect type passed as Packed%sArray, this will cause extra allocations", (cast(^gsetter_userdata)method_userdata).gs_type)
             gdAPI.Logging.PrintErrorWithMessage("mistyped", message, (cast(^gsetter_userdata)method_userdata).fieldname,
             "", -1, true)
             delete(message)
@@ -327,7 +327,7 @@ Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GD
     p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     
     marray:= cast(^Array)variant_get_ptr(p_args[0])
-    #partial switch (cast(^gsetter_userdata)method_userdata).rs_type {
+    #partial switch (cast(^gsetter_userdata)method_userdata).gs_type {
     case .PACKED_BYTE_ARRAY:
         parray: PackedByteArray
         GDW.PackedByteArray_M_List.Create2(&parray, {marray})
@@ -586,54 +586,54 @@ insert_variant_data :: proc "c" (container: ^Variant, source: ^variant_union_raw
 	.COLOR, .RID:
         container.data = transmute([2]u64)(source.Vector4)
     case .OBJECT:
-        ObjecttoVariant(container, cast(^Object)source)
+        ObjecttoVariant(container, (cast(^Object)source)^)
     case  .STRING:
-        StringtoVariant(container, cast(^gdstring)source)
+        StringtoVariant(container, (cast(^gdstring)source)^)
     case .STRING_NAME:
-        StringNametoVariant(container, cast(^StringName)source)
+        StringNametoVariant(container, (cast(^StringName)source)^)
     case .NODE_PATH:
-        NodePathtoVariant(container, cast(^NodePath)source)
+        NodePathtoVariant(container, (cast(^NodePath)source)^)
     case .CALLABLE:
-        CallabletoVariant(container, cast(^Callable)source)
+        CallabletoVariant(container, (cast(^Callable)source)^)
     case .SIGNAL:
-        SignaltoVariant(container, cast(^Signal)source)
+        SignaltoVariant(container, (cast(^Signal)source)^)
     case .DICTIONARY:
-        DictionarytoVariant(container, cast(^Dictionary)source)
+        DictionarytoVariant(container, (cast(^Dictionary)source)^)
     case .ARRAY:
-        ArraytoVariant(container, cast(^Array)source)
+        ArraytoVariant(container, (cast(^Array)source)^)
     //Godot sets these in its own bucket of memory. Need to assign this way so that it can cleanup appropriately.
 	case .AABB:
-        AABBtoVariant(container, cast(^AABB)source)
+        AABBtoVariant(container, (cast(^AABB)source)^)
     case .BASIS:
-        BasistoVariant(container, cast(^Basis)source)
+        BasistoVariant(container, (cast(^Basis)source)^)
     case .TRANSFORM3D:
-        Transform3dtoVariant(container, cast(^Transform3D)source)
+        Transform3dtoVariant(container, (cast(^Transform3D)source)^)
     case .TRANSFORM2D:
-        Transform2DtoVariant(container, cast(^Transform2D)source)
+        Transform2DtoVariant(container, (cast(^Transform2D)source)^)
     case .PROJECTION:
-        ProjectiontoVariant(container, cast(^Projection)source)
+        ProjectiontoVariant(container, (cast(^Projection)source)^)
 
 	/* typed arrays */
 	case .PACKED_BYTE_ARRAY:
-        PackedByteArraytoVariant(container, cast(^PackedByteArray)source)//.get_ptr(variant)
+        PackedByteArraytoVariant(container, (cast(^PackedByteArray)source)^)//.get_ptr(variant)
 	case .PACKED_INT32_ARRAY:
-         GDW.Packedi32ArrayToVariant(container, &source.PackedInt32Array)
+         GDW.Packedi32ArrayToVariant(container, source.PackedInt32Array)
 	case .PACKED_INT64_ARRAY:
-         GDW.Packedi64ArrayToVariant(container, &source.PackedInt64Array)
+         GDW.Packedi64ArrayToVariant(container, source.PackedInt64Array)
 	case .PACKED_FLOAT32_ARRAY:
-         GDW.Packedf32ArrayToVariant(container, &source.PackedFloat32Array)
+         GDW.Packedf32ArrayToVariant(container, source.PackedFloat32Array)
 	case .PACKED_FLOAT64_ARRAY:
-         GDW.Packedf64ArrayToVariant(container, &source.PackedFloat64Array)
+         GDW.Packedf64ArrayToVariant(container, source.PackedFloat64Array)
 	case .PACKED_STRING_ARRAY:
-         GDW.PackedStringArrayToVariant(container, &source.PackedStringArray)
+         GDW.PackedStringArrayToVariant(container, source.PackedStringArray)
 	case .PACKED_VECTOR2_ARRAY:
-         GDW.PackedVec2ArrayToVariant(container, &source.PackedVector2Array)
+         GDW.PackedVec2ArrayToVariant(container, source.PackedVector2Array)
 	case .PACKED_VECTOR3_ARRAY:
-         GDW.PackedVec3ArrayToVariant(container, &source.PackedVector3Array)
+         GDW.PackedVec3ArrayToVariant(container, source.PackedVector3Array)
 	case .PACKED_COLOR_ARRAY:
-         GDW.PackedColorArrayToVariant(container, &source.PackedColorArray)
+         GDW.PackedColorArrayToVariant(container, source.PackedColorArray)
 	case .PACKED_VECTOR4_ARRAY:
-         GDW.PackedVec4ArrayToVariant(container, &source.PackedVector4Array)
+         GDW.PackedVec4ArrayToVariant(container, source.PackedVector4Array)
 
 	case .VARIANT_MAX:
         context = runtime.default_context()

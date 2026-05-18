@@ -66,7 +66,6 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             Classes.RefCounted_Init_(&RefCounted_Methods_list)
             refname:= GDW.StringConstruct("RefCounted")
             RefTag = gdAPI.ClassDB.GetClassTag(&refname)
-            objectEmitSignal = GDW.classDBGetMethodBind3(.Object, "emit_signal", 4047867050)
             return
         case .INITIALIZATION_SERVERS:
             /*
@@ -81,6 +80,8 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             * Register the different classes which depend on servers classes.
             */
             //THIS_CLASS_NAME_deets->self_register(init_Level)
+            Classes.SceneTree_Init_(&SceneTree_M_List)
+            Classes.Object_Init_(&Object_M_methods)
             if inits.scene != nil {
                 inits.scene(userdata)
             } else {

@@ -36,6 +36,11 @@ enumtotype :: proc(varType: GDE.VariantType) -> typeid {
 }
 
 
+variant_r :: proc(val: $T) -> (ret: Variant) where !sics.type_is_pointer(T) {
+    to_variant(&ret, val)
+    return
+}
+
 //Give me the pointer each and every time.
 //Use types from GDDEfs.odin
 @(deprecated="Use builtin VARIANT_OP_* isntead")
@@ -291,14 +296,15 @@ copy_from_variant :: proc{
 }
 
 //Use this if you need a quick return based on the typeID instead of passing it to a pointer.
-copy_to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
+to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
     copy_to_variant(&ret, variant)
     return
 }
 
-copy_to_variant :: proc{
+to_variant :: proc{
     BooltoVariant,
     InttoVariant,
+    inttoVariant,
     PtrtoVariant,
     FloattoVariant,
     StringtoVariant,
@@ -763,106 +769,113 @@ packedHolder:: struct ($packed_type: typeid) {
 * variant_Destroy will take care of the type check.
 * Call the destructor directly from gdAPI if you want on less cycle.
 */
-BooltoVariant       :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Bool, loc:=#caller_location) {
+BooltoVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Bool, loc:=#caller_location) {
     p_variant.VType = .BOOL
-    p_variant.data[0] = 0
-    mem.copy(&p_variant.data[0], p_from, 1)
+    container:=u64(p_from)
+    p_variant.data[0] = transmute(u64)container
 }
-InttoVariant       :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Int, loc:=#caller_location) {
+InttoVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Int, loc:=#caller_location) {
     p_variant.VType = .INT
-    mem.copy(&p_variant.data, p_from, 8)
+    p_variant.data[0] = transmute(u64)p_from
 }
-PtrtoVariant       :: proc "c" (p_variant: ^GDE.Variant, p_from: ^rawptr, loc:=#caller_location) {
+inttoVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: int, loc:=#caller_location) {
     p_variant.VType = .INT
-    mem.copy(&p_variant.data, p_from, 8)
+    p_from:=i64(p_from)
+    p_variant.data[0] = transmute(u64)p_from
 }
-FloattoVariant      :: proc "c" (p_variant: ^GDE.Variant, p_from: ^float, loc:=#caller_location) {
+PtrtoVariant       :: proc "c" (p_variant: ^GDE.Variant, p_from: rawptr, loc:=#caller_location) {
+    p_variant.VType = .INT
+    p_variant.data[0] = transmute(u64)p_from
+}
+FloattoVariant      :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: float, loc:=#caller_location) {
     p_variant.VType = .FLOAT
-    mem.copy(&p_variant.data, p_from, 8)
+    p_variant.data[0] = transmute(u64)p_from
 }
-StringtoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^gdstring, loc:=#caller_location) {
+StringtoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: gdstring, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-Vec2toVariant       :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Vector2, loc:=#caller_location) {
+Vec2toVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Vector2, loc:=#caller_location) {
     p_variant.VType = .VECTOR2
-    mem.copy(&p_variant.data, p_from, 8)
+    p_variant.data[0] = transmute(u64)p_from
 }
-Vec2itoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Vector2i, loc:=#caller_location) {
+Vec2itoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Vector2i, loc:=#caller_location) {
     p_variant.VType = .VECTOR2I
-    mem.copy(&p_variant.data, p_from, 8)
+    p_variant.data[0] = transmute(u64)p_from
 }
-Recf32toVariant     :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Rect2, loc:=#caller_location) {
+Recf32toVariant     :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Rect2, loc:=#caller_location) {
     p_variant.VType = .RECT2
-    mem.copy(&p_variant.data, p_from, 16)
+    p_variant.data = transmute([2]u64)p_from
 }    
-Rect2itoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Rect2i, loc:=#caller_location) {
+Rect2itoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Rect2i, loc:=#caller_location) {
     p_variant.VType = .RECT2I
-    mem.copy(&p_variant.data, p_from, 16)
+    p_variant.data = transmute([2]u64)p_from
 }
-Vec3toVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Vector3, loc:=#caller_location) {
+Vec3toVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Vector3, loc:=#caller_location) {
     p_variant.VType = .VECTOR3
-    mem.copy(&p_variant.data, p_from, 12)
+    container:=[4]f32{p_from.x,p_from.y,p_from.z,0}
+    p_variant.data = transmute([2]u64)container
 }
-Vec3itoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Vector3i, loc:=#caller_location) {
+Vec3itoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Vector3i, loc:=#caller_location) {
     p_variant.VType = .VECTOR3I
-    mem.copy(&p_variant.data, p_from, 12)
+    container:=[4]i32{p_from.x,p_from.y,p_from.z,0}
+    p_variant.data = transmute([2]u64)container
 }
-Vec4toVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Vector4, loc:=#caller_location) {
+Vec4toVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Vector4, loc:=#caller_location) {
     p_variant.VType = .VECTOR4
-    mem.copy(&p_variant.data, p_from, 16)
+    p_variant.data = transmute([2]u64)p_from
 }
-Vec4itoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Vector4i, loc:=#caller_location) {
+Vec4itoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Vector4i, loc:=#caller_location) {
     p_variant.VType = .VECTOR4I
-    mem.copy(&p_variant.data, p_from, 16)
+    p_variant.data = transmute([2]u64)p_from
 }
-PlanetoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Plane, loc:=#caller_location) {
+PlanetoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Plane, loc:=#caller_location) {
     p_variant.VType = .PLANE
-    mem.copy(&p_variant.data, p_from, 16)
+    p_variant.data = transmute([2]u64)p_from
 }
-QuaterniontoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Quaternion, loc:=#caller_location) {
+QuaterniontoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Quaternion, loc:=#caller_location) {
     p_variant.VType = .QUATERNION
-    mem.copy(&p_variant.data, p_from, 16)
+    p_variant.data = transmute([2]u64)p_from
 }
-AABBtoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^AABB, loc:=#caller_location) {
+AABBtoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: AABB, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-BasistoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Basis, loc:=#caller_location) {
+BasistoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Basis, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-Transform3dtoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Transform3D, loc:=#caller_location) {
+Transform3dtoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Transform3D, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-ProjectiontoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Projection, loc:=#caller_location) {
+ProjectiontoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Projection, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-Transform2DtoVariant    :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Transform2D, loc:=#caller_location) {
+Transform2DtoVariant    :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Transform2D, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
 
-ColortoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Color, loc:=#caller_location) {
+ColortoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Color, loc:=#caller_location) {
     p_variant.VType = .COLOR
-    mem.copy(&p_variant.data, p_from, 16)
+    p_variant.data = transmute([2]u64)p_from
 }
-StringNametoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^StringName, loc:=#caller_location) {
+StringNametoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: StringName, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }    
-NodePathtoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^NodePath, loc:=#caller_location) {
+NodePathtoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: NodePath, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-RidtoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^RID, loc:=#caller_location) {
+RidtoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: RID, loc:=#caller_location) {
     p_variant.VType = .RID
-    mem.copy(&p_variant.data, p_from, 8)
+    p_variant.data = transmute([2]u64)p_from
 }
-ObjecttoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Object, loc:=#caller_location) {
+ObjecttoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Object, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-CallabletoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Callable, loc:=#caller_location) {
+CallabletoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Callable, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-SignaltoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Signal, loc:=#caller_location) {
+SignaltoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Signal, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-DictionarytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Dictionary, loc:=#caller_location) {        
+DictionarytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Dictionary, loc:=#caller_location) {        
     GDW.new_variant_from_methods(p_variant, p_from)
     //Godot doesn't seem to handle receiving nil very well for this particular type.
     if p_from.id == nil {
@@ -871,7 +884,7 @@ DictionarytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Dictionary, l
     }
 }
 
-ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Array, loc:=#caller_location) {
+ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
     //Godot doesn't seem to handle receiving nil very well for this particular type.
     if p_from.id == nil {
@@ -879,34 +892,34 @@ ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^Array, loc:=#calle
         panic("Array was not initialized before using with Godot method.", loc)
     }
 }
-PackedByteArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedByteArray, loc:=#caller_location) {
+PackedByteArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedByteArray, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-Packedi32ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedInt32Array, loc:=#caller_location) {
+Packedi32ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedInt32Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-Packedi64ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedInt64Array, loc:=#caller_location) {
+Packedi64ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedInt64Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-Packedf32ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedFloat32Array, loc:=#caller_location) {
+Packedf32ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedFloat32Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-PackedStringArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedStringArray, loc:=#caller_location) {
+PackedStringArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedStringArray, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-Packedf64ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedFloat64Array, loc:=#caller_location) {
+Packedf64ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedFloat64Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-PackedVec2ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedVector2Array, loc:=#caller_location) {
+PackedVec2ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedVector2Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-PackedVec3ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedVector3Array, loc:=#caller_location) {
+PackedVec3ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedVector3Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-PackedColorArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedColorArray, loc:=#caller_location) {
+PackedColorArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedColorArray, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
-PackedVec4ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ^PackedVector4Array, loc:=#caller_location) {
+PackedVec4ArraytoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: PackedVector4Array, loc:=#caller_location) {
     GDW.new_variant_from_methods(p_variant, p_from)
 }
 
