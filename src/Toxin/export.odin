@@ -586,54 +586,54 @@ insert_variant_data :: proc "c" (container: ^Variant, source: ^variant_union_raw
 	.COLOR, .RID:
         container.data = transmute([2]u64)(source.Vector4)
     case .OBJECT:
-        ObjecttoVariant(container, cast(^Object)source)
+        ObjecttoVariant(container, (cast(^Object)source)^)
     case  .STRING:
-        StringtoVariant(container, cast(^gdstring)source)
+        StringtoVariant(container, (cast(^gdstring)source)^)
     case .STRING_NAME:
-        StringNametoVariant(container, cast(^StringName)source)
+        StringNametoVariant(container, (cast(^StringName)source)^)
     case .NODE_PATH:
-        NodePathtoVariant(container, cast(^NodePath)source)
+        NodePathtoVariant(container, (cast(^NodePath)source)^)
     case .CALLABLE:
-        CallabletoVariant(container, cast(^Callable)source)
+        CallabletoVariant(container, (cast(^Callable)source)^)
     case .SIGNAL:
-        SignaltoVariant(container, cast(^Signal)source)
+        SignaltoVariant(container, (cast(^Signal)source)^)
     case .DICTIONARY:
-        DictionarytoVariant(container, cast(^Dictionary)source)
+        DictionarytoVariant(container, (cast(^Dictionary)source)^)
     case .ARRAY:
-        ArraytoVariant(container, cast(^Array)source)
+        ArraytoVariant(container, (cast(^Array)source)^)
     //Godot sets these in its own bucket of memory. Need to assign this way so that it can cleanup appropriately.
 	case .AABB:
-        AABBtoVariant(container, cast(^AABB)source)
+        AABBtoVariant(container, (cast(^AABB)source)^)
     case .BASIS:
-        BasistoVariant(container, cast(^Basis)source)
+        BasistoVariant(container, (cast(^Basis)source)^)
     case .TRANSFORM3D:
-        Transform3dtoVariant(container, cast(^Transform3D)source)
+        Transform3dtoVariant(container, (cast(^Transform3D)source)^)
     case .TRANSFORM2D:
-        Transform2DtoVariant(container, cast(^Transform2D)source)
+        Transform2DtoVariant(container, (cast(^Transform2D)source)^)
     case .PROJECTION:
-        ProjectiontoVariant(container, cast(^Projection)source)
+        ProjectiontoVariant(container, (cast(^Projection)source)^)
 
 	/* typed arrays */
 	case .PACKED_BYTE_ARRAY:
-        PackedByteArraytoVariant(container, cast(^PackedByteArray)source)//.get_ptr(variant)
+        PackedByteArraytoVariant(container, (cast(^PackedByteArray)source)^)//.get_ptr(variant)
 	case .PACKED_INT32_ARRAY:
-         GDW.Packedi32ArrayToVariant(container, &source.PackedInt32Array)
+         GDW.Packedi32ArrayToVariant(container, source.PackedInt32Array)
 	case .PACKED_INT64_ARRAY:
-         GDW.Packedi64ArrayToVariant(container, &source.PackedInt64Array)
+         GDW.Packedi64ArrayToVariant(container, source.PackedInt64Array)
 	case .PACKED_FLOAT32_ARRAY:
-         GDW.Packedf32ArrayToVariant(container, &source.PackedFloat32Array)
+         GDW.Packedf32ArrayToVariant(container, source.PackedFloat32Array)
 	case .PACKED_FLOAT64_ARRAY:
-         GDW.Packedf64ArrayToVariant(container, &source.PackedFloat64Array)
+         GDW.Packedf64ArrayToVariant(container, source.PackedFloat64Array)
 	case .PACKED_STRING_ARRAY:
-         GDW.PackedStringArrayToVariant(container, &source.PackedStringArray)
+         GDW.PackedStringArrayToVariant(container, source.PackedStringArray)
 	case .PACKED_VECTOR2_ARRAY:
-         GDW.PackedVec2ArrayToVariant(container, &source.PackedVector2Array)
+         GDW.PackedVec2ArrayToVariant(container, source.PackedVector2Array)
 	case .PACKED_VECTOR3_ARRAY:
-         GDW.PackedVec3ArrayToVariant(container, &source.PackedVector3Array)
+         GDW.PackedVec3ArrayToVariant(container, source.PackedVector3Array)
 	case .PACKED_COLOR_ARRAY:
-         GDW.PackedColorArrayToVariant(container, &source.PackedColorArray)
+         GDW.PackedColorArrayToVariant(container, source.PackedColorArray)
 	case .PACKED_VECTOR4_ARRAY:
-         GDW.PackedVec4ArrayToVariant(container, &source.PackedVector4Array)
+         GDW.PackedVec4ArrayToVariant(container, source.PackedVector4Array)
 
 	case .VARIANT_MAX:
         context = runtime.default_context()

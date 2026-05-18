@@ -63,6 +63,8 @@ THIS_CLASS_NAME :: struct {
     locale_dictionary: Toxin.Dictionary,
     callable: Toxin.Callable,
     int_as_enum: munum,
+    call_container: ^Toxin.callable_container,
+    call_container2: ^Toxin.callable_container,
 }
 
 munum::enum{
@@ -220,6 +222,11 @@ signal_test :: proc "c" (obj: ^Toxin.Object) {
     fmt.println("connected signal")
 }
 
+bound_callable_test :: proc "c" (obj: ^Toxin.Object, str: ^Toxin.Int) {
+    context = runtime.default_context()
+    fmt.println(str^)
+}
+
 /*
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
@@ -233,9 +240,18 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         num:i64=32
         ret:Toxin.Bool
         GDW.PackedInt32Array_M_List.append(&self.an_array, {&num}, &ret)
-        container:= Toxin.create_callable_container(rawptr(signal_test), 0, self.self)
+
+        self.call_container= Toxin.create_callable_container(rawptr(signal_test), 0, self.self)
         name:= GDW.StringConstruct("test_signal")
-        err:= Toxin.connect_to(self.self, &container.callable, &name)
+        err:= Toxin.connect_to(self.self, &self.call_container.callable, &name)
+
+        self.call_container2= Toxin.create_callable_container(rawptr(bound_callable_test), 1, self.self)
+        varg:Toxin.Variant
+        Toxin.to_variant(&varg, 45)
+        store:=self.call_container2.callable
+        self.call_container2.callable = Toxin.callable_bind(&self.call_container2.callable, varg)
+        err = Toxin.connect_to(self.self, &self.call_container2.callable, &name)
+        Toxin.Destroy(&store)
         Toxin.Destroy(&name)
     },
     _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
@@ -260,6 +276,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         //if self.position.y > window.y do self.angle = -self.angle
         signal:= GDW.StringConstruct("test_signal")
         Toxin.emitSignal0(self.self, &signal)
+        Toxin.Destroy(&signal)
     },
     _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
         //context = runtime.default_context()

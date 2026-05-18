@@ -150,6 +150,54 @@ emit_signal_variant :: proc(p_instance: ^Object, args: []^Variant) -> GDW.Error 
     return GDW.Error(ret.data[0])
 }
 
+emitSignal :: proc{
+    emitSignal0,
+    emitSignal1,
+    emitSignal2,
+    emitSignal3,
+    emitSignal4,
+    emitSignal5,
+    emitSignal6,
+    emitSignal7,
+    emitSignal8,
+    emitSignal9,
+    emit_signal_variant,
+}
+
+/*
+* binds are useful when you would like to register values into a callable for use in each call.
+* bound values are included after all other values of a call.
+* Example: a signal doesn't send any values but you would like to include the same value for your callback each time.
+* This creates a NEW callable from the one that you pass
+*/
+@(require_results)
+callable_bind :: proc(callable: ^Callable, args: ..Variant) -> (callee: Callable) {
+    argsv:Array
+    append_slice(&argsv, args)
+    GDW.Callable_M_List.bindv(callable, {&argsv}, &callee)
+    return
+}
+
+append_slice :: proc(dest: ^Array, source: []Variant) {
+    size:Int
+    if dest.id != nil {
+        GDW.Array_M_List.size(dest, r_return= &size)
+    } else {
+        GDW.Array_M_List.Create0(dest)
+    }
+
+    newsize:Int=size+ i64(len(source))
+    r_size: Int
+    GDW.Array_M_List.resize(dest, {&newsize}, &r_size)
+    //if r_size != newsize {
+    //    return
+    //}
+    for &v, idx in source {
+        index:= i64(idx) + size
+        GDW.Array_M_List.IndxSetter(dest, index, &v)
+    }
+}
+
 check_variant_callback :: #force_inline proc(expected, received: Int, function: rawptr) -> (r_error: GDE.CallError) {
     
     if received > expected {
@@ -291,7 +339,7 @@ emitSignal0 :: proc "c" (p_instance: ^Object, signalName: ^StringName) -> GDW.Er
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     defer(variant_Destroy(&arg1))
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1}
@@ -302,10 +350,10 @@ emitSignal1 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     defer(variant_Destroy(&arg1))
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     defer(variant_Destroy(&arg2))
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2}
@@ -317,11 +365,11 @@ emitSignal2 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3}
     
@@ -337,13 +385,13 @@ emitSignal3 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     arg4: GDE.Variant
-    copy_to_variant(&arg4, p_arg3)
+    to_variant(&arg4, p_arg3)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4}
 
@@ -360,15 +408,15 @@ emitSignal4 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     arg4: GDE.Variant
-    copy_to_variant(&arg4, p_arg3)
+    to_variant(&arg4, p_arg3)
     arg5: GDE.Variant
-    copy_to_variant(&arg5, p_arg4)
+    to_variant(&arg5, p_arg4)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5}
 
@@ -386,17 +434,17 @@ emitSignal5 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     arg4: GDE.Variant
-    copy_to_variant(&arg4, p_arg3)
+    to_variant(&arg4, p_arg3)
     arg5: GDE.Variant
-    copy_to_variant(&arg5, p_arg4)
+    to_variant(&arg5, p_arg4)
     arg6: GDE.Variant
-    copy_to_variant(&arg6, p_arg5)
+    to_variant(&arg6, p_arg5)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6}
 
@@ -417,19 +465,19 @@ emitSignal6 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     arg4: GDE.Variant
-    copy_to_variant(&arg4, p_arg3)
+    to_variant(&arg4, p_arg3)
     arg5: GDE.Variant
-    copy_to_variant(&arg5, p_arg4)
+    to_variant(&arg5, p_arg4)
     arg6: GDE.Variant
-    copy_to_variant(&arg6, p_arg5)
+    to_variant(&arg6, p_arg5)
     arg7: GDE.Variant
-    copy_to_variant(&arg7, p_arg6)
+    to_variant(&arg7, p_arg6)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7}
 
@@ -450,21 +498,21 @@ emitSignal7 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     arg4: GDE.Variant
-    copy_to_variant(&arg4, p_arg3)
+    to_variant(&arg4, p_arg3)
     arg5: GDE.Variant
-    copy_to_variant(&arg5, p_arg4)
+    to_variant(&arg5, p_arg4)
     arg6: GDE.Variant
-    copy_to_variant(&arg6, p_arg5)
+    to_variant(&arg6, p_arg5)
     arg7: GDE.Variant
-    copy_to_variant(&arg7, p_arg6)
+    to_variant(&arg7, p_arg6)
     arg8: GDE.Variant
-    copy_to_variant(&arg8, p_arg7)
+    to_variant(&arg8, p_arg7)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8}
 
@@ -486,23 +534,23 @@ emitSignal8 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     arg4: GDE.Variant
-    copy_to_variant(&arg4, p_arg3)
+    to_variant(&arg4, p_arg3)
     arg5: GDE.Variant
-    copy_to_variant(&arg5, p_arg4)
+    to_variant(&arg5, p_arg4)
     arg6: GDE.Variant
-    copy_to_variant(&arg6, p_arg5)
+    to_variant(&arg6, p_arg5)
     arg7: GDE.Variant
-    copy_to_variant(&arg7, p_arg6)
+    to_variant(&arg7, p_arg6)
     arg8: GDE.Variant
-    copy_to_variant(&arg8, p_arg7)
+    to_variant(&arg8, p_arg7)
     arg9: GDE.Variant
-    copy_to_variant(&arg9, p_arg8)
+    to_variant(&arg9, p_arg8)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9}
 
@@ -525,25 +573,25 @@ emitSignal9 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    copy_to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName)
     arg2: GDE.Variant
-    copy_to_variant(&arg2, p_arg1)
+    to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
-    copy_to_variant(&arg3, p_arg2)
+    to_variant(&arg3, p_arg2)
     arg4: GDE.Variant
-    copy_to_variant(&arg4, p_arg3)
+    to_variant(&arg4, p_arg3)
     arg5: GDE.Variant
-    copy_to_variant(&arg5, p_arg4)
+    to_variant(&arg5, p_arg4)
     arg6: GDE.Variant
-    copy_to_variant(&arg6, p_arg5)
+    to_variant(&arg6, p_arg5)
     arg7: GDE.Variant
-    copy_to_variant(&arg7, p_arg6)
+    to_variant(&arg7, p_arg6)
     arg8: GDE.Variant
-    copy_to_variant(&arg8, p_arg7)
+    to_variant(&arg8, p_arg7)
     arg9: GDE.Variant
-    copy_to_variant(&arg9, p_arg8)
+    to_variant(&arg9, p_arg8)
     arg10: GDE.Variant
-    copy_to_variant(&arg10, p_arg9)
+    to_variant(&arg10, p_arg9)
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9, &arg10}
 
@@ -561,18 +609,4 @@ emitSignal9 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     defer(variant_Destroy(&ret))
 
     return emit_signal_variant(p_instance, varSet[:])
-}
-
-emitSignal :: proc{
-    emitSignal0,
-    emitSignal1,
-    emitSignal2,
-    emitSignal3,
-    emitSignal4,
-    emitSignal5,
-    emitSignal6,
-    emitSignal7,
-    emitSignal8,
-    emitSignal9,
-    emit_signal_variant,
 }
