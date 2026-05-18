@@ -111,7 +111,8 @@ create_callable_container :: proc(
         to_string_func:          GDE.CallableCustomToString = nil, //Stringify the Callable info.
         get_argument_count_func: GDE.CallableCustomGetArgumentCount = nil, //Helper func to get arg count at runtime.
         token:                   GDE.ClassDB = GDW.Library, //Should be the GDE's library pointer.
-        allocator:               runtime.Allocator              = context.allocator
+        allocator:               runtime.Allocator              = context.allocator,
+        loc:= #caller_location,
     ) -> (container: ^callable_container) {
     passthrough: GDE.CallableCustomCall
     switch argcount {
@@ -129,6 +130,8 @@ create_callable_container :: proc(
         passthrough = GDE.CallableCustomCall(Signal_Callback5)
     case 6:
         passthrough = GDE.CallableCustomCall(Signal_Callback6)
+    case:
+        assert(false, "too many arguments. Custom callable currently supports 6 arguments", loc)
     }
     container = new(callable_container, allocator)
     container.callable = Create_Callable2(container, object_id, passthrough, is_valid_func, free_func, hash_func, equal_func, less_than_func, to_string_func, get_argument_count_func, token)
