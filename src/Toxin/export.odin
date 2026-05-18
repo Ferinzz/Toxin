@@ -38,7 +38,7 @@ gsetter_userdata:: struct {
     getter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
     setter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
     userdata: rawptr,
-    fieldname: cstring,
+    fieldname: string,
 }
 
 //Does not support pass by copy.
@@ -306,9 +306,10 @@ Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.Clas
         context = runtime.default_context()
         when builtin.ODIN_DEBUG {
             message:= fmt.caprintf("incorrect type passed as Packed%sArray, this will cause extra allocations", (cast(^gsetter_userdata)method_userdata).gs_type)
-            gdAPI.Logging.PrintErrorWithMessage("mistyped", message, (cast(^gsetter_userdata)method_userdata).fieldname,
-            "", -1, true)
+            field:= fmt.caprint((cast(^gsetter_userdata)method_userdata).fieldname)
+            gdAPI.Logging.PrintErrorWithMessage("mistyped", message, field, "", -1, true)
             delete(message)
+            delete(field)
         }
         Transform_Array_Call_Setter(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
         return
