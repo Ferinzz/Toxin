@@ -331,8 +331,8 @@ Signal_Callback6 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
 emitSignal0 :: proc "c" (p_instance: ^Object, signalName: ^StringName) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
-    arg1: GDE.Variant
-    to_variant(&arg1, signalName^)
+    arg1: GDE.Variant = variant_r(signalName^)
+    //to_variant(&arg1, signalName^)
     defer(variant_Destroy(&arg1))
     //args: GDE.GDExtensionConstVariantPtrargs = {&arg1, &arg2};
     varSet:= [?]^GDE.Variant {&arg1}
@@ -343,7 +343,7 @@ emitSignal1 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     defer(variant_Destroy(&arg1))
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
@@ -358,7 +358,7 @@ emitSignal2 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
@@ -378,7 +378,7 @@ emitSignal3 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
@@ -401,7 +401,7 @@ emitSignal4 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
@@ -427,7 +427,7 @@ emitSignal5 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
@@ -458,7 +458,7 @@ emitSignal6 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
@@ -491,7 +491,7 @@ emitSignal7 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
@@ -527,7 +527,7 @@ emitSignal8 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant
@@ -566,7 +566,7 @@ emitSignal9 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
-    to_variant(&arg1, signalName)
+    to_variant(&arg1, signalName^)
     arg2: GDE.Variant
     to_variant(&arg2, p_arg1)
     arg3: GDE.Variant

@@ -36,6 +36,11 @@ enumtotype :: proc(varType: GDE.VariantType) -> typeid {
 }
 
 
+variant_r :: proc(val: $T) -> (ret: Variant) where !sics.type_is_pointer(T) {
+    to_variant(&ret, val)
+    return
+}
+
 //Give me the pointer each and every time.
 //Use types from GDDEfs.odin
 @(deprecated="Use builtin VARIANT_OP_* isntead")
@@ -291,7 +296,7 @@ copy_from_variant :: proc{
 }
 
 //Use this if you need a quick return based on the typeID instead of passing it to a pointer.
-copy_to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
+to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
     copy_to_variant(&ret, variant)
     return
 }
@@ -299,6 +304,7 @@ copy_to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
 to_variant :: proc{
     BooltoVariant,
     InttoVariant,
+    inttoVariant,
     PtrtoVariant,
     FloattoVariant,
     StringtoVariant,
@@ -770,6 +776,11 @@ BooltoVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Bool, 
 }
 InttoVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Int, loc:=#caller_location) {
     p_variant.VType = .INT
+    p_variant.data[0] = transmute(u64)p_from
+}
+inttoVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: int, loc:=#caller_location) {
+    p_variant.VType = .INT
+    p_from:=i64(p_from)
     p_variant.data[0] = transmute(u64)p_from
 }
 PtrtoVariant       :: proc "c" (p_variant: ^GDE.Variant, p_from: rawptr, loc:=#caller_location) {

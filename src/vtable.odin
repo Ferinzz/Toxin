@@ -246,10 +246,8 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         err:= Toxin.connect_to(self.self, &self.call_container.callable, &name)
 
         self.call_container2= Toxin.create_callable_container(rawptr(bound_callable_test), 1, self.self)
-        varg:Toxin.Variant
-        Toxin.to_variant(&varg, 45)
         store:=self.call_container2.callable
-        self.call_container2.callable = Toxin.callable_bind(&self.call_container2.callable, varg)
+        self.call_container2.callable = Toxin.callable_bind(&self.call_container2.callable, Toxin.variant_r(45))
         err = Toxin.connect_to(self.self, &self.call_container2.callable, &name)
         Toxin.Destroy(&store)
         Toxin.Destroy(&name)
