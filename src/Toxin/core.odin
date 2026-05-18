@@ -1,6 +1,7 @@
 package Toxin
 
 import Classes "../GD_Classes"
+import "../GDWrapper/gdAPI"
 import "base:runtime"
 import GDE "../GDWrapper/gdAPI/gdextension"
 import "core:c"
@@ -299,4 +300,9 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 _variant_get_ptr :: proc "c" (variant: ^Variant) -> rawptr {
     context = runtime.default_context()
     return _variant_get_ptr(variant)
+}
+
+get_version :: #force_inline proc() -> (version: GDE.GodotVersion2) {
+    gdAPI.GD_Version_Get.GetGodotVersion2(&version)
+    return 
 }
