@@ -297,7 +297,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin.Destroy(&signalName)
     @(rodata, static)
     somproperty:= Toxin.gsetter_userdata{
-        rs_type=.INT,
+        gs_type=.INT,
         getter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Int)r_return
@@ -314,7 +314,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     rarray:= Toxin.gsetter_userdata{
-        rs_type=.ARRAY,
+        gs_type=.ARRAY,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Array)r_return
@@ -333,7 +333,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     anarray:= Toxin.gsetter_userdata{
-        rs_type=.PACKED_INT32_ARRAY,
+        gs_type=.PACKED_INT32_ARRAY,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.PackedInt32Array)r_return
@@ -350,7 +350,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     dictionary_type:= Toxin.gsetter_userdata{
-        rs_type=.DICTIONARY,
+        gs_type=.DICTIONARY,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Dictionary)r_return
@@ -368,7 +368,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     callable:= Toxin.gsetter_userdata{
-        rs_type=.CALLABLE,
+        gs_type=.CALLABLE,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Callable)r_return
@@ -386,7 +386,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     stringname:= Toxin.gsetter_userdata{
-        rs_type=.STRING_NAME,
+        gs_type=.STRING_NAME,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.StringName)r_return
@@ -404,7 +404,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     valid_objects:= Toxin.gsetter_userdata{
-        rs_type=.OBJECT,
+        gs_type=.OBJECT,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Object)r_return
@@ -421,7 +421,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     godotstring:= Toxin.gsetter_userdata{
-        rs_type=.STRING,
+        gs_type=.STRING,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.gdstring)r_return
@@ -439,7 +439,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
     @(rodata, static)
     receive:= Toxin.gsetter_userdata{
-        rs_type=.AABB,
+        gs_type=.AABB,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.AABB)r_return
