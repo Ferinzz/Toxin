@@ -238,7 +238,6 @@ Signal_Callback0 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     if r_error.error != .CALL_OK {
         return
     }
-    p_args:[]^Variant=p_args[:p_argument_count]
     callable_self:=callable_self
     obj: Object
     GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
@@ -252,7 +251,6 @@ Signal_Callback1 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     if r_error.error != .CALL_OK {
         return
     }
-    p_args:[]^Variant=p_args[:p_argument_count]
     callable_self:=callable_self
     obj: Object
     GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
@@ -266,7 +264,6 @@ Signal_Callback2 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     if r_error.error != .CALL_OK {
         return
     }
-    p_args:[]^Variant=p_args[:p_argument_count]
     callable_self:=callable_self
     obj: Object
     GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
@@ -280,7 +277,6 @@ Signal_Callback3 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     if r_error.error != .CALL_OK {
         return
     }
-    p_args:[]^Variant=p_args[:p_argument_count]
     callable_self:=callable_self
     obj: Object
     GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
@@ -294,7 +290,6 @@ Signal_Callback4 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     if r_error.error != .CALL_OK {
         return
     }
-    p_args:[]^Variant=p_args[:p_argument_count]
     callable_self:=callable_self
     obj: Object
     GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
@@ -308,7 +303,6 @@ Signal_Callback5 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     if r_error.error != .CALL_OK {
         return
     }
-    p_args:[]^Variant=p_args[:p_argument_count]
     callable_self:=callable_self
     obj: Object
     GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
@@ -322,7 +316,6 @@ Signal_Callback6 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     if r_error.error != .CALL_OK {
         return
     }
-    p_args:[]^Variant=p_args[:p_argument_count]
     callable_self:=callable_self
     obj: Object
     GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
