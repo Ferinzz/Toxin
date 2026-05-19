@@ -3468,7 +3468,7 @@ InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: Cl
  * @param p_group_name A pointer to a String with the group name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this group.
  */
-InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_group_name: ConstStringPtr, p_prefix: ConstStringPtr);
+InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: ClassDB, #by_ptr p_class_name: StringName, #by_ptr p_group_name: gdstring, #by_ptr p_prefix: gdstring);
 
 /**
  * @name classdb_register_extension_class_property_subgroup
@@ -3481,7 +3481,7 @@ InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: Clas
  * @param p_subgroup_name A pointer to a String with the subgroup name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this subgroup.
  */
-InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_subgroup_name: ConstStringPtr, p_prefix: ConstStringPtr);
+InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: ClassDB, #by_ptr p_class_name: StringName, #by_ptr p_subgroup_name: gdstring, #by_ptr p_prefix: gdstring);
 
 /**
  * @name classdb_register_extension_class_signal

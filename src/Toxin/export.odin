@@ -300,6 +300,7 @@ godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     r_return.VType = method_userdata.gs_type
     insert_variant_data(r_return, &tr_return)
 }
+
 Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
         p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     if p_args[0].VType == .ARRAY {
@@ -835,4 +836,28 @@ Variant_Getter_PackedVector4Array :: proc "c" (method_userdata: rawptr, p_instan
         p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
     r_return.VType = .PACKED_VECTOR4_ARRAY
     godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+
+
+//*********************\\
+//********Groups*******\\
+//*********************\\
+
+property_group :: proc(lib: GDE.ClassDB, class_name: StringName, group_name, prefix: string) {
+    name: gdstring
+    pref: gdstring
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&name, cstring(raw_data(group_name)), i64(len(group_name)))
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&pref, cstring(raw_data(prefix)), i64(len(prefix)))
+    gdAPI.ClassDB.RegisterExtensionClassPropertyGroup(lib, class_name, name, pref)
+    Destroy(&name)
+    Destroy(&pref)
+}
+property_subgroup :: proc(lib: GDE.ClassDB, class_name: StringName, group_name, prefix: string) {
+    name: gdstring
+    pref: gdstring
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&name, cstring(raw_data(group_name)), i64(len(group_name)))
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&pref, cstring(raw_data(prefix)), i64(len(prefix)))
+    gdAPI.ClassDB.RegisterExtensionClassPropertySubgroup(lib, class_name, name, pref)
+    Destroy(&name)
+    Destroy(&pref)
 }
