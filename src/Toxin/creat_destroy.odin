@@ -226,3 +226,13 @@ Delete :: proc(typePtr: any) -> destroy_error {
     }
     return .undefined
 }
+
+Make :: proc{
+    make_packedbytearray_array,
+}
+
+make_packedbytearray_array :: proc(dest: ^PackedByteArray, source: ^Array) -> ^PackedByteArray {
+    Destroy(dest)
+    GDW.PackedByteArray_M_List.Create2(dest, {source})
+    return dest
+}

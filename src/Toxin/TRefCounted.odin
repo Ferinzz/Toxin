@@ -95,55 +95,70 @@ ref_count_PROJECTION :: proc "c" (source: ^Projection, copy: ^Projection) {
     GDW.Projection_M_List.Create1(copy, {source})
 }
 ref_count_STRING :: proc "c" (source: ^gdstring, copy: ^gdstring) {
+    Destroy(copy)
     GDW.gdstring_M_List.Create1(copy, {source})
 }
 ref_count_STRING_NAME :: proc "c" (source: ^StringName, copy: ^StringName) {
+    Destroy(copy)
     GDW.StringName_M_List.Create1(copy, {source})
 }
 ref_count_NODE_PATH :: proc "c" (source: ^NodePath, copy: ^NodePath) {
+    Destroy(copy)
     GDW.NodePath_M_List.Create1(copy, {source})
 }
 ref_count_SIGNAL :: proc "c" (source: ^Signal, copy: ^Signal) {
+    Destroy(copy)
     GDW.Signal_M_List.Create1(copy, {source})
 }
 ref_count_CALLABLE :: proc "c" (source: ^Callable, copy: ^Callable) {
+    Destroy(copy)
     GDW.Callable_M_List.Create1(copy, {source})
 }
 ref_count_DICTIONARY :: proc "c" (source: ^Dictionary, copy: ^Dictionary) {
+    Destroy(copy)
     GDW.Dictionary_M_List.Create1(copy, {source})
 }
 //Array ref is deprecated but it ensures that if destination is already initialized it will clear it.
 ref_count_ARRAY :: proc "c" (source: ^Array, copy: ^Array) {
-    //GDW.Array_M_List.Create1(copy, {source})
     gdAPI.Packed_Array_Utils.ArrayRef(copy, source)
 }
 ref_count_PACKED_BYTE_ARRAY :: proc "c" (source: ^PackedByteArray, copy: ^PackedByteArray) {
+    Destroy(copy)
     GDW.PackedByteArray_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_INT32_ARRAY :: proc "c" (source: ^PackedInt32Array, copy: ^PackedInt32Array) {
+    Destroy(copy)
     GDW.PackedInt32Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_INT64_ARRAY :: proc "c" (source: ^PackedInt64Array, copy: ^PackedInt64Array) {
+    Destroy(copy)
     GDW.PackedInt64Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_FLOAT32_ARRAY :: proc "c" (source: ^PackedFloat32Array, copy: ^PackedFloat32Array) {
+    Destroy(copy)
     GDW.PackedFloat32Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_FLOAT64_ARRAY :: proc "c" (source: ^PackedFloat64Array, copy: ^PackedFloat64Array) {
+    Destroy(copy)
     GDW.PackedFloat64Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_STRING_ARRAY :: proc "c" (source: ^PackedStringArray, copy: ^PackedStringArray) {
+    Destroy(copy)
     GDW.PackedStringArray_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_VECTOR2_ARRAY :: proc "c" (source: ^PackedVector2Array, copy: ^PackedVector2Array) {
+    Destroy(copy)
     GDW.PackedVector2Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_VECTOR3_ARRAY :: proc "c" (source: ^PackedVector3Array, copy: ^PackedVector3Array) {
+    Destroy(copy)
     GDW.PackedVector3Array_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_COLOR_ARRAY :: proc "c" (source: ^PackedColorArray, copy: ^PackedColorArray) {
+    Destroy(copy)
     GDW.PackedColorArray_M_List.Create1(copy, {source})
 }
 ref_count_PACKED_VECTOR4_ARRAY :: proc "c" (source: ^PackedVector4Array, copy: ^PackedVector4Array) {
+    Destroy(copy)
     GDW.PackedVector4Array_M_List.Create1(copy, {source})
 }

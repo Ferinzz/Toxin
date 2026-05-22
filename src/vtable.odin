@@ -302,7 +302,8 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
     //field_vals(THIS_CLASS_NAME{}.someProperty)
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    //Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, somePublicFunction)
+    Toxin.bind_default(somePublicFunction2, className)
+    Toxin.bind_default(somePublicFunction, className)
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
@@ -319,7 +320,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.Int)r_return
             r_return^= Object.someProperty
         },
-        setter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.Int)args
             Object.someProperty = args^
@@ -337,7 +338,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.Array)r_return
             r_return^ = Object.rarray
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.Array)args
             Toxin.Destroy(&Object.rarray)
@@ -356,7 +357,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.PackedInt32Array)r_return
             r_return^= Object.an_array
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.PackedInt32Array)args
             Toxin.Ref_Count(args, &Object.an_array)
@@ -373,7 +374,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.Dictionary)r_return
             r_return^ = Object.dictionary_type
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.Dictionary)args
             Toxin.Destroy(&Object.dictionary_type)
@@ -391,7 +392,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.Callable)r_return
             r_return^ = Object.callable
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.Callable)args
             Toxin.Destroy(&Object.callable)
@@ -409,7 +410,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.StringName)r_return
             r_return^ = Object.stringname
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.StringName)args
             Toxin.Destroy(&Object.stringname)
@@ -427,7 +428,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.Object)r_return
             r_return^ = Object.valid_objects
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.Object)args
             Toxin.safeRef_Object(&Object.valid_objects)
@@ -444,7 +445,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.gdstring)r_return
             r_return^ = Object.godotstring
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.gdstring)args
             Toxin.Destroy(&Object.godotstring)
@@ -462,7 +463,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
             r_return:=cast(^Toxin.AABB)r_return
             r_return^ = Object.receive
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
+        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.AABB)args
             //Toxin.Destroy(&Object.receive)
@@ -514,13 +515,19 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
-somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: Toxin.Int, arg2: Toxin.float) {
+somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int, arg2: ^Toxin.float) {
     context = runtime.default_context()
     //do stuff
-    fmt.println("I am called by Godot")
-    fmt.println("arg1: ", arg1)
-    fmt.println("arg2: ", arg2)
+    fmt.println("I am somePublicFunction. I am called by Godot")
+    fmt.println("arg1: ", arg1^)
+    fmt.println("arg2: ", arg2^)
 }
+somePublicFunction2 :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int, arg2: ^Toxin.float) {
+    context = runtime.default_context()
+    //do stuff
+    fmt.println("I am somePublicFunction2. I am called by Godot", arg1^, arg2^)
+}
+
 
 /*
 * Proc called by Godot when a signal this class is connected to emits.

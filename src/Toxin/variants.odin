@@ -68,12 +68,13 @@ variant_get_ptr :: proc "c" (variant: ^Variant) -> rawptr {
 	.VECTOR4, .VECTOR4I, .PLANE, .QUATERNION,
 	/* misc types */
 	.COLOR, .STRING_NAME, .NODE_PATH, .RID,
-    .OBJECT, .CALLABLE, .SIGNAL, .DICTIONARY, .ARRAY:
+    .CALLABLE, .SIGNAL:
         return raw_data(variant.data[:])
-
+    case .OBJECT:
+        return &(cast(^ObjData)(&variant.data)).obj
     //These are passed by pointer from a bucket in Godot's memory. Owner cleans it up.
     //Remember to copy!
-	case .AABB, .BASIS, .TRANSFORM3D, .TRANSFORM2D, .PROJECTION:
+	case .AABB, .BASIS, .TRANSFORM3D, .TRANSFORM2D, .PROJECTION, .DICTIONARY, .ARRAY:
         return transmute(rawptr)(variant.data[0])
 
 	/* typed arrays */
@@ -131,11 +132,11 @@ ObjData :: struct {
 	id: ObjectID,
 	obj: ^Object,
 
-	ref: proc(#by_ptr p_from: ObjData),
-	obj_ref_pointer: proc(p_object: ^Object),
-	refCounted_ref_pointer: proc(p_object: ^Object), //Object is the RefCounted object wrapping it.
-	unref: proc(),
-	ref2: obj_ref,
+	//ref: proc(#by_ptr p_from: ObjData),
+	//obj_ref_pointer: proc(p_object: ^Object),
+	//refCounted_ref_pointer: proc(p_object: ^Object), //Object is the RefCounted object wrapping it.
+	//unref: proc(),
+	//ref2: obj_ref,
 }
 
 //Templated method to convert Ref<T> types into Object types
@@ -302,6 +303,7 @@ to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
 }
 
 to_variant :: proc{
+    NiltoVariant,
     BooltoVariant,
     InttoVariant,
     inttoVariant,
@@ -395,6 +397,9 @@ variant_Destroy :: proc(var: ^Variant) {
     } else do var^ = {}
 }
 
+NiltoVariant:: proc(P_dest: ^Variant, p_source: rawptr=nil) {
+    P_dest^={}
+}
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.
 copy_from_variant_r :: proc(variant: ^Variant, $T: typeid) -> T {

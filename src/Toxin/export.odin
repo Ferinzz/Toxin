@@ -36,7 +36,7 @@ binding_error:: enum {
 gsetter_userdata:: struct {
     gs_type: GDE.VariantType,
     getter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
-    setter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
+    setter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr),
     userdata: rawptr,
     fieldname: string,
 }
@@ -87,10 +87,19 @@ Bind_Set2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
     methodInfo : GDE.ClassMethodInfo = {
         name = &methodStringName,
         method_userdata = cast(rawptr)function,
-
-        call_func = godotVariantSetterCallback,
         ptrcall_func = set_passthrough,
         method_flags = (methodType),
+    }
+    #partial switch function.gs_type {
+        case .ARRAY:
+            methodInfo.call_func = Variant_Setter_Array
+        case .PACKED_BYTE_ARRAY, .PACKED_INT32_ARRAY, .PACKED_INT64_ARRAY,
+          .PACKED_FLOAT32_ARRAY, .PACKED_FLOAT64_ARRAY, .PACKED_STRING_ARRAY,
+          .PACKED_VECTOR2_ARRAY, .PACKED_VECTOR3_ARRAY, .PACKED_COLOR_ARRAY,
+          .PACKED_VECTOR4_ARRAY :
+            methodInfo.call_func = Variant_Setter_Packed
+        case:
+            methodInfo.call_func = godotVariantSetterCallback
     }
     
         methodInfo.argument_count = 1
@@ -274,7 +283,7 @@ godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE
     if (cast(^gsetter_userdata)method_userdata).setter_method == nil {
         assert(false, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
     }
-    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]), nil)
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]))
     r_error^={}
 }
 
@@ -319,7 +328,31 @@ Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.Clas
         context = runtime.default_context()
         assert((cast(^gsetter_userdata)method_userdata).setter_method != nil, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
     }
-    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]), nil)
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]))
+}
+
+Variant_Setter_Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    if p_args[0].VType != .ARRAY {
+        context = runtime.default_context()
+        when builtin.ODIN_DEBUG {
+            message:= fmt.caprintf("incorrect type passed as Packed%sArray, this will cause extra allocations", (cast(^gsetter_userdata)method_userdata).gs_type)
+            field:= fmt.caprint((cast(^gsetter_userdata)method_userdata).fieldname)
+            gdAPI.Logging.PrintErrorWithMessage("mistyped", message, field, "", -1, true)
+            delete(message)
+            delete(field)
+        }
+        an_array: Array
+        GDW.new_type_from_methods(&an_array, p_args[0])
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, &an_array)
+        Destroy(&an_array)
+        return
+    }
+    when builtin.ODIN_DEBUG{
+        context = runtime.default_context()
+        assert((cast(^gsetter_userdata)method_userdata).setter_method != nil, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
+    }
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]))
 }
 
 /*
@@ -333,52 +366,52 @@ Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GD
     case .PACKED_BYTE_ARRAY:
         parray: PackedByteArray
         GDW.PackedByteArray_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedByteArray_M_List.Destroy(&parray)
     case .PACKED_INT32_ARRAY:
         parray: PackedInt32Array
         GDW.PackedInt32Array_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedInt32Array_M_List.Destroy(&parray)
     case .PACKED_INT64_ARRAY:
         parray: PackedInt64Array
         GDW.PackedInt64Array_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedInt64Array_M_List.Destroy(&parray)
     case .PACKED_FLOAT32_ARRAY:
         parray: PackedFloat32Array
         GDW.PackedFloat32Array_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedFloat32Array_M_List.Destroy(&parray)
     case .PACKED_FLOAT64_ARRAY:
         parray: PackedFloat64Array
         GDW.PackedFloat64Array_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedFloat64Array_M_List.Destroy(&parray)
     case .PACKED_STRING_ARRAY:
         parray: PackedStringArray
         GDW.PackedStringArray_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedStringArray_M_List.Destroy(&parray)
     case .PACKED_VECTOR2_ARRAY:
         parray: PackedVector2Array
         GDW.PackedVector2Array_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedVector2Array_M_List.Destroy(&parray)
     case .PACKED_VECTOR3_ARRAY:
         parray: PackedVector3Array
         GDW.PackedVector3Array_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedVector3Array_M_List.Destroy(&parray)
     case .PACKED_COLOR_ARRAY:
         parray: PackedColorArray
         GDW.PackedColorArray_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedColorArray_M_List.Destroy(&parray)
     case .PACKED_VECTOR4_ARRAY:
         parray: PackedVector4Array
         GDW.PackedVector4Array_M_List.Create2(&parray, {marray})
-        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}), nil)
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
         GDW.PackedVector4Array_M_List.Destroy(&parray)
     }
     when builtin.ODIN_DEBUG {
@@ -405,7 +438,7 @@ set_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInsta
             delete(warning)
         }
     }
-    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, p_args[0], nil)
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, p_args[0])
 }
 
 //Warning, this is not an return uninitialized pointer, this an initialized pointer -> Will pass an empty initialized array in return.

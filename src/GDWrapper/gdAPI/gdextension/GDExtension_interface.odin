@@ -781,7 +781,7 @@ ClassMethodInfo :: struct {
 
 	/* Default arguments: `default_arguments` is an array of size `default_argument_count`. */
 	default_argument_count: u32,
-	default_arguments: ^VariantPtr,
+	default_arguments: [^]VariantPtr,
 }
 
 

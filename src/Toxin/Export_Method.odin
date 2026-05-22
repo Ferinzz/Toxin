@@ -1,4 +1,4 @@
-
+#+ignore
 package Toxin
 
 import "base:runtime"
@@ -12,10 +12,6 @@ import "core:strings"
 import "core:strconv"
 import "core:reflect"
 
-Get_Proc_Names :: #force_inline proc(function: $T) -> []string {
-    info:= type_info_of(T)
-    return info.variant.(runtime.Type_Info_Procedure).params.variant.(runtime.Type_Info_Parameters).names
-}
 
 /*
 * Will call bindNoReturn2 to create callback functions for Godot to call your function with.

@@ -1,0 +1,416 @@
+
+package Toxin
+
+import "base:runtime"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
+import sics "base:intrinsics"
+import "core:fmt"
+import "base:builtin"
+import "core:slice"
+import "core:strings"
+import "core:strconv"
+import "core:reflect"
+
+
+//Arguments with default values must be at the end of the function’s argument list.
+//You just have to pass arguments in order. If you have more than one, and you want to pass something for the last, you have to pass something for all the ones before. There are no named arguments when calling a function. 
+
+bind_default :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+    argcount:: sics.type_proc_parameter_count(P) - 1
+
+    argNames:= Get_Proc_Names(function)
+    ptrcall:: sics.procedure_of(godotPtrCallback(function, nil, {}, nil))
+    call:: sics.procedure_of(godotVariantCallback(function, nil, {}, 0, nil, nil))
+    args: [5]arg_deets
+    get_arg_deets(args[:argcount], function, 1)
+
+    ret: GDE.VariantType
+    when sics.type_proc_return_count(P) > 0 {
+        ret = variant_index(sics.type_proc_return_type(P, 0))
+    }
+
+    methodStringName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
+
+    bind_method(class, &methodStringName, rawptr(function), call, ptrcall, ret, args[:argcount])
+    Destroy(&methodStringName)
+}
+
+@(private)
+Get_Proc_Names :: #force_inline proc(function: $T) -> []string {
+    info:= type_info_of(T)
+    return info.variant.(runtime.Type_Info_Procedure).params.variant.(runtime.Type_Info_Parameters).names
+}
+
+@(private)
+get_arg_deets :: #force_inline proc(args: []arg_deets, function: $P, $offset: int) {
+    argcount:: sics.type_proc_parameter_count(P) - offset
+    when argcount > 0 {
+        args[0].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, offset)))
+        
+        when argcount > 1 do args[1].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 1+ offset)))
+        when argcount > 2 do args[2].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 2+ offset)))
+        when argcount > 3 do args[3].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 3+ offset)))
+        when argcount > 4 do args[4].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 4+ offset)))
+        for name, i in (Get_Proc_Names(function))[offset:] {
+            args[i].name = name
+        }
+    }
+}
+
+//called by the binding methods. You should not need to call this directly yourself.
+bind_method :: proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:GDE.ClassMethodCall, ptrCallFunc: GDE.ClassMethodPtrCall, ret: GDE.VariantType, args: []arg_deets, methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT) {
+    maxargs::5
+    argsInfo: [maxargs]GDE.PropertyInfo
+    for arg, i in args {
+        argsInfo[i] = make_property(arg.variant_type, arg.name)
+    }
+    args_metadata:[maxargs]GDE.ClassMethodArgumentMetadata={}
+
+    //only necessary to have a specific string when the export type is not default.
+    returnInfo: GDE.PropertyInfo = make_property(ret, "")
+
+    methodInfo : GDE.ClassMethodInfo = {
+        name = funcname,
+        method_userdata = user_data,
+
+        call_func = vCallFunc,
+        ptrcall_func = ptrCallFunc,
+        method_flags = (methodType),
+        argument_count = u32(len(args)),
+        arguments_info = raw_data(argsInfo[:]),
+        arguments_metadata = raw_data(args_metadata[:]),
+        has_return_value = ret != .NIL,
+        return_value_info = &returnInfo,
+        return_value_metadata = GDE.ClassMethodArgumentMetadata.NONE,
+    }
+
+    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, class, &methodInfo)
+
+    destructProperty(&returnInfo)
+    for i in 0..<len(args) {
+        destructProperty(&argsInfo[i])
+    }
+}
+
+godotPtrCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
+    context = runtime.default_context()
+    func := cast(P)method_userdata
+    arg0:: sics.type_proc_parameter_type(P, 0)
+    when sics.type_proc_parameter_count(P)==2{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+        }
+    s_ptrs.arg1 = cast(sics.type_proc_parameter_type(P, 1))p_args[0]
+    }
+    when sics.type_proc_parameter_count(P)==3{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+        }
+    s_ptrs.arg1 = cast(sics.type_proc_parameter_type(P, 1))p_args[0]
+    s_ptrs.arg2 = cast(sics.type_proc_parameter_type(P, 2))p_args[1]
+    }
+    when sics.type_proc_parameter_count(P)==4{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg2: sics.type_proc_parameter_type(P, 3),
+        }
+    s_ptrs.arg1 = cast(sics.type_proc_parameter_type(P, 1))p_args[0]
+    s_ptrs.arg2 = cast(sics.type_proc_parameter_type(P, 2))p_args[1]
+    s_ptrs.arg3 = cast(sics.type_proc_parameter_type(P, 3))p_args[2]
+    }
+    when sics.type_proc_parameter_count(P)==5{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+            arg4: sics.type_proc_parameter_type(P, 4),
+        }
+    s_ptrs.arg1 = cast(sics.type_proc_parameter_type(P, 1))p_args[0]
+    s_ptrs.arg2 = cast(sics.type_proc_parameter_type(P, 2))p_args[1]
+    s_ptrs.arg3 = cast(sics.type_proc_parameter_type(P, 3))p_args[2]
+    s_ptrs.arg4 = cast(sics.type_proc_parameter_type(P, 4))p_args[3]
+    }
+    when sics.type_proc_parameter_count(P)==6{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+            arg4: sics.type_proc_parameter_type(P, 4),
+            arg5: sics.type_proc_parameter_type(P, 5),
+        }
+    s_ptrs.arg1 = cast(sics.type_proc_parameter_type(P, 1))p_args[0]
+    s_ptrs.arg2 = cast(sics.type_proc_parameter_type(P, 2))p_args[1]
+    s_ptrs.arg3 = cast(sics.type_proc_parameter_type(P, 3))p_args[2]
+    s_ptrs.arg4 = cast(sics.type_proc_parameter_type(P, 4))p_args[3]
+    s_ptrs.arg5 = cast(sics.type_proc_parameter_type(P, 5))p_args[4]
+    }
+    when sics.type_proc_parameter_count(P) > 1 {
+        when sics.type_proc_return_count(P) > 0 {
+        //Dictionary and Array need to be destroyed specifically before returning to them.
+        //Others are fine so far, but better safe than sorry.
+        when sics.type_proc_return_type(P, 0) == Dictionary || sics.type_proc_return_type(P, 0) == Array ||
+             sics.type_proc_return_type(P, 0) == gdstring || sics.type_proc_return_type(P, 0) == StringName ||
+             sics.type_proc_return_type(P, 0) == Callable || sics.type_proc_return_type(P, 0) == PackedByteArray ||
+             sics.type_proc_return_type(P, 0) == PackedInt32Array || sics.type_proc_return_type(P, 0) == PackedInt64Array ||
+             sics.type_proc_return_type(P, 0) == PackedFloat32Array || sics.type_proc_return_type(P, 0) == PackedFloat64Array ||
+             sics.type_proc_return_type(P, 0) == PackedStringArray || sics.type_proc_return_type(P, 0) == PackedVector2Array ||
+             sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
+             sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
+             sics.type_proc_return_type(P, 0) == PackedVector4Array {
+            Ref_Count((cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs)), (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        } else {
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
+        }
+    } else {
+        (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
+    }
+    } else {
+    when sics.type_proc_return_count(P) > 0 {
+        (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(arg0)p_instance)
+    } else {
+        func(cast(arg0)p_instance)
+    }}
+}
+
+godotVariantCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    arg_count:: sics.type_proc_parameter_count(P) - 1
+    arg0:: sics.type_proc_parameter_type(P, 0)
+    when sics.type_proc_parameter_count(P)==2{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==3{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==4{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==5{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+            arg4: sics.type_proc_parameter_type(P, 4),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==6{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+            arg4: sics.type_proc_parameter_type(P, 4),
+            arg5: sics.type_proc_parameter_type(P, 5),
+        }
+    }
+    when sics.type_proc_parameter_count(P) > 1 {
+    when sics.type_proc_return_count(P) > 0 {
+        to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs))))
+    } else {
+        (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs)))
+    }
+    multi_destructor(s_ptrs)
+    } else {
+    when sics.type_proc_return_count(P) > 0{
+        to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance))
+    } else {
+        (cast(P)method_userdata)(cast(arg0)p_instance)
+    }}
+    multi_destructor(s_ptrs)
+}
+
+
+@(private)
+variant_multi_return :: proc(vars: []^Variant, ptrs: $T) -> T {
+    for field, i in reflect.struct_fields_zipped(typeid_of(T)) {
+        field_value:= reflect.struct_field_value(ptrs, field)
+        switch field_value.id {
+        case ^Int:
+            ((field_value).(^^Int))^=cast(^Int)(variant_get_ptr(vars[i]))
+	    case ^Bool:
+            ((field_value).(^^Bool))^=cast(^Bool)(variant_get_ptr(vars[i]))
+	    case ^float:
+            ((field_value).(^^float))^=cast(^float)(variant_get_ptr(vars[i]))
+	    case ^gdstring:
+            ((field_value).(^^gdstring))^=cast(^gdstring)(variant_get_ptr(vars[i]))
+	    case ^Vector2:
+            ((field_value).(^^Vector2))^=cast(^Vector2)(variant_get_ptr(vars[i]))
+	    case ^Vector2i:
+            ((field_value).(^^Vector2i))^=cast(^Vector2i)(variant_get_ptr(vars[i]))
+	    case ^Rect2:
+            ((field_value).(^^Rect2))^=cast(^Rect2)(variant_get_ptr(vars[i]))
+	    case ^Rect2i:
+            ((field_value).(^^Rect2i))^=cast(^Rect2i)(variant_get_ptr(vars[i]))
+	    case ^Vector3:
+            ((field_value).(^^Vector3))^=cast(^Vector3)(variant_get_ptr(vars[i]))
+	    case ^Vector3i:
+            ((field_value).(^^Vector3i))^=cast(^Vector3i)(variant_get_ptr(vars[i]))
+	    case ^Transform2D:
+            ((field_value).(^^Transform2D))^=cast(^Transform2D)(variant_get_ptr(vars[i]))
+	    case ^Vector4:
+            ((field_value).(^^Vector4))^=cast(^Vector4)(variant_get_ptr(vars[i]))
+	    case ^Vector4i:
+            ((field_value).(^^Vector4i))^=cast(^Vector4i)(variant_get_ptr(vars[i]))
+	    case ^Plane:
+            ((field_value).(^^Plane))^=cast(^Plane)(variant_get_ptr(vars[i]))
+	    case ^Quaternion:
+            ((field_value).(^^Quaternion))^=cast(^Quaternion)(variant_get_ptr(vars[i]))
+	    case ^AABB:
+            ((field_value).(^^AABB))^=cast(^AABB)(variant_get_ptr(vars[i]))
+	    case ^Basis:
+            ((field_value).(^^Basis))^=cast(^Basis)(variant_get_ptr(vars[i]))
+	    case ^Transform3D:
+            ((field_value).(^^Transform3D))^=cast(^Transform3D)(variant_get_ptr(vars[i]))
+	    case ^Projection:
+            ((field_value).(^^Projection))^=cast(^Projection)(variant_get_ptr(vars[i]))
+	    case ^Color:
+            ((field_value).(^^Color))^=cast(^Color)(variant_get_ptr(vars[i]))
+	    case ^StringName:
+            ((field_value).(^^StringName))^=cast(^StringName)(variant_get_ptr(vars[i]))
+	    case ^NodePath:
+            ((field_value).(^^NodePath))^=cast(^NodePath)(variant_get_ptr(vars[i]))
+	    case ^RID:
+            ((field_value).(^^RID))^=cast(^RID)(variant_get_ptr(vars[i]))
+	    case ^Object:
+            ((field_value).(^^Object))^=cast(^Object)(variant_get_ptr(vars[i]))
+	    case ^Callable:
+            ((field_value).(^^Callable))^=cast(^Callable)(variant_get_ptr(vars[i]))
+	    case ^Signal:
+            ((field_value).(^^Signal))^=cast(^Signal)(variant_get_ptr(vars[i]))
+	    case ^Dictionary:
+            GDW.new_type_from_methods((field_value.(^^Dictionary))^, vars[i])
+	    case ^Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^Array), vars[i])
+	    case ^PackedByteArray:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_BYTE_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedByteArray), vars[i])
+	    case ^PackedInt32Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_INT32_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedInt32Array), vars[i])
+	    case ^PackedInt64Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_INT64_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedInt64Array), vars[i])
+	    case ^PackedFloat32Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_FLOAT32_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedFloat32Array), vars[i])
+	    case ^PackedFloat64Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_FLOAT64_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedFloat64Array), vars[i])
+	    case ^PackedStringArray:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_STRING_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedStringArray), vars[i])
+	    case ^PackedVector2Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_VECTOR2_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedVector2Array), vars[i])
+	    case ^PackedVector3Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_VECTOR3_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedVector3Array), vars[i])
+        case ^PackedColorArray:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_COLOR_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedColorArray), vars[i])
+	    case ^PackedVector4Array:
+            when builtin.ODIN_DEBUG {
+                check_array_type(.PACKED_VECTOR4_ARRAY, vars[i].VType)}
+            GDW.new_type_from_methods(field_value.(^PackedVector4Array), vars[i])
+        case:
+            panic("Should be impossible to reach this. Type of method parameter is not supported.")
+    }
+    }
+    return ptrs
+}
+
+@(private)
+multi_destructor :: proc(ptrs: $T) {
+    for field, i in reflect.struct_fields_zipped(typeid_of(T)) {
+        field_value:= reflect.struct_field_value(ptrs, field)
+        switch field_value.id {
+        case ^Int:
+	    case ^Bool:
+	    case ^float:
+	    case ^gdstring:
+	    case ^Vector2:
+	    case ^Vector2i:
+	    case ^Rect2:
+	    case ^Rect2i:
+	    case ^Vector3:
+	    case ^Vector3i:
+	    case ^Transform2D:
+	    case ^Vector4:
+	    case ^Vector4i:
+	    case ^Plane:
+	    case ^Quaternion:
+	    case ^AABB:
+	    case ^Basis:
+	    case ^Transform3D:
+	    case ^Projection:
+	    case ^Color:
+	    case ^StringName:
+	    case ^NodePath:
+	    case ^RID:
+	    case ^Object:
+	    case ^Callable:
+	    case ^Signal:
+	    case ^Dictionary:
+            Destroy(field_value.(^^Dictionary)^)
+	    case ^Array:
+            Destroy(field_value.(^^Array)^)
+	    case ^PackedByteArray:
+            Destroy(field_value.(^^PackedByteArray)^)
+	    case ^PackedInt32Array:
+            Destroy(field_value.(^^PackedInt32Array)^)
+	    case ^PackedInt64Array:
+            Destroy(field_value.(^^PackedInt64Array)^)
+	    case ^PackedFloat32Array:
+            Destroy(field_value.(^^PackedFloat32Array)^)
+	    case ^PackedFloat64Array:
+            Destroy(field_value.(^^PackedFloat64Array)^)
+	    case ^PackedStringArray:
+            Destroy(field_value.(^^PackedStringArray)^)
+	    case ^PackedVector2Array:
+            Destroy(field_value.(^^PackedVector2Array)^)
+	    case ^PackedVector3Array:
+            Destroy(field_value.(^^PackedVector3Array)^)
+        case ^PackedColorArray:
+            Destroy(field_value.(^^PackedColorArray)^)
+	    case ^PackedVector4Array:
+            Destroy(field_value.(^^PackedVector4Array)^)
+        case:
+            panic("Should be impossible to reach this. Type of method parameter is not supported.")
+    }
+    }
+}
+
+check_array_type :: proc(desired, actual: GDE.VariantType){
+    if desired != actual {
+        message:= fmt.caprintf("incorrect type passed as Packed%sArray, this will cause extra allocations", desired)
+        field:= fmt.caprint("")
+        gdAPI.Logging.PrintErrorWithMessage("mistyped", message, field, "", -1, true)
+        delete(message)
+        delete(field)
+    }
+}
