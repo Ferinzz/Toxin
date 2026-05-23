@@ -14,10 +14,30 @@ import "core:strconv"
 import "core:reflect"
 
 
+@(private)
+Get_Proc_Names :: #force_inline proc(function: $T) -> []string {
+    info:= type_info_of(T)
+    return info.variant.(runtime.Type_Info_Procedure).params.variant.(runtime.Type_Info_Parameters).names
+}
+@(private)
+get_arg_deets :: #force_inline proc(args: []arg_deets, function: $P, $offset: int) {
+    argcount:: sics.type_proc_parameter_count(P) - offset
+    when argcount > 0 {
+        args[0].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, offset)))
+        
+        when argcount > 1 do args[1].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 1+ offset)))
+        when argcount > 2 do args[2].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 2+ offset)))
+        when argcount > 3 do args[3].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 3+ offset)))
+        when argcount > 4 do args[4].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 4+ offset)))
+        for name, i in (Get_Proc_Names(function))[offset:] {
+            args[i].name = name
+        }
+    }
+}
 //Arguments with default values must be at the end of the function’s argument list.
 //You just have to pass arguments in order. If you have more than one, and you want to pass something for the last, you have to pass something for all the ones before. There are no named arguments when calling a function. 
 
-bind_default :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+_bind_default :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
     argcount:: sics.type_proc_parameter_count(P) - 1
 
     ptrcall:: sics.procedure_of(godotPtrCallback(function, nil, {}, nil))
@@ -36,7 +56,7 @@ bind_default :: proc(function: $P, class: ^StringName, call_info:= #caller_expre
     bind_method(class, &methodStringName, rawptr(function), call, ptrcall, ret, args[:argcount])
     Destroy(&methodStringName)
 }
-bind_static :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+_bind_static :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
     argcount:: sics.type_proc_parameter_count(P)
 
     ptrcall:: sics.procedure_of(godotPtrCallback_s(function, nil, {}, nil))
@@ -56,16 +76,28 @@ bind_static :: proc(function: $P, class: ^StringName, call_info:= #caller_expres
     Destroy(&methodStringName)
 }
 
-@(require_results)
-bind_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
-    argcount:: sics.type_proc_parameter_count(P) - 1
-    assert(argcount<=len(defaults), "default args should be less than amount of arguments")
-    binding::method_info(P)
-    method_bind:binding
-    method_bind={
-        function,
-        defaults[:],
+method_info :: struct($P: typeid) {
+    function: P,
+    default: []^Variant,
+}
+_make_method_info :: proc(function: $P, args: []^Variant) -> ^method_info(P) {
+    info:= new(method_info(P))
+    info.function = function
+    info.default = make([]^Variant, len(args))
+    for arg, i in args {
+        info.default[i]=arg
     }
+    return info
+}
+_delete_method_info :: proc(bind_info: ^$T/method_info($P)) {
+    delete(bind_info.default)
+    delete(bind_info)
+}
+@(require_results)
+_bind_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+    argcount:: sics.type_proc_parameter_count(P) - 1
+    assert(argcount>=len(defaults), "default args should be less than amount of arguments")
+
     bind_info:= _make_method_info(function, defaults[:])
     ptrcall:: sics.procedure_of(godotPtrCallback_dv(method_info(P){function, {}}, nil, {}, nil))
     call:: sics.procedure_of(godotVariantCallback_dv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
@@ -84,24 +116,7 @@ bind_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Varian
     Destroy(&methodStringName)
     return bind_info
 }
-method_info :: struct($P: typeid) {
-    function: P,
-    default: []^Variant,
-}
 
-_make_method_info :: proc(function: $P, args: []^Variant) -> ^method_info(P) {
-    info:= new(method_info(P))
-    info.function = function
-    info.default = make([]^Variant, len(args))
-    for arg, i in args {
-        info.default[i]=arg
-    }
-    return info
-}
-_delete_method_info :: proc(bind_info: ^$T/method_info($P)) {
-    delete(bind_info.default)
-    delete(bind_info)
-}
 godotPtrCallback_dv :: proc "c"  (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
     godotPtrCallback(method_userdata.function, p_instance, p_args, r_ret)
 }
@@ -122,27 +137,6 @@ godotVariantCallback_dv :: proc "c" (userdata: $T/method_info($P), p_instance: G
     call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
 }
 
-@(private)
-Get_Proc_Names :: #force_inline proc(function: $T) -> []string {
-    info:= type_info_of(T)
-    return info.variant.(runtime.Type_Info_Procedure).params.variant.(runtime.Type_Info_Parameters).names
-}
-
-@(private)
-get_arg_deets :: #force_inline proc(args: []arg_deets, function: $P, $offset: int) {
-    argcount:: sics.type_proc_parameter_count(P) - offset
-    when argcount > 0 {
-        args[0].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, offset)))
-        
-        when argcount > 1 do args[1].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 1+ offset)))
-        when argcount > 2 do args[2].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 2+ offset)))
-        when argcount > 3 do args[3].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 3+ offset)))
-        when argcount > 4 do args[4].variant_type = variant_index(sics.type_elem_type(sics.type_proc_parameter_type(P, 4+ offset)))
-        for name, i in (Get_Proc_Names(function))[offset:] {
-            args[i].name = name
-        }
-    }
-}
 
 //called by the binding methods. You should not need to call this directly yourself.
 bind_method :: proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:GDE.ClassMethodCall, ptrCallFunc: GDE.ClassMethodPtrCall, ret: GDE.VariantType, args: []arg_deets, methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, default_args: []^Variant={}) {

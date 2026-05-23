@@ -307,10 +307,10 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
     //field_vals(THIS_CLASS_NAME{}.someProperty)
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    Toxin.bind_default(somePublicFunction2, className)
+    Toxin._bind_default(somePublicFunction2, className)
     //Toxin.bind_default(somePublicFunction, className)
-    Toxin.bind_static(static_proc, className)
-    user_bind:= Toxin.bind_with_defaults(somePublicFunction, className, &var1, &var2)
+    Toxin._bind_static(static_proc, className)
+    user_bind:= Toxin._bind_with_defaults(somePublicFunction, className, &var1, &var2)
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
