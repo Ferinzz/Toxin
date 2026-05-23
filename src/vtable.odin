@@ -108,6 +108,9 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
     cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
     //texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
+
+    var1= Toxin.variant_r(Toxin.Int(34))
+    var2= Toxin.variant_r(Toxin.float(34))
 }
 
 root:^Toxin.Object
@@ -293,6 +296,8 @@ field_vals:: proc(field: $T) -> (uintptr, typeid) {
     return offset, field_type
 }
 
+var1: Toxin.Variant
+var2: Toxin.Variant
 //******************************\\
 //***********Exports************\\
 //******************************\\
@@ -303,8 +308,9 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     //field_vals(THIS_CLASS_NAME{}.someProperty)
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     Toxin.bind_default(somePublicFunction2, className)
-    Toxin.bind_default(somePublicFunction, className)
+    //Toxin.bind_default(somePublicFunction, className)
     Toxin.bind_static(static_proc, className)
+    user_bind:= Toxin.bind_with_defaults(somePublicFunction, className, &var1, &var2)
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions

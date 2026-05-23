@@ -56,6 +56,72 @@ bind_static :: proc(function: $P, class: ^StringName, call_info:= #caller_expres
     Destroy(&methodStringName)
 }
 
+@(require_results)
+bind_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+    argcount:: sics.type_proc_parameter_count(P) - 1
+    assert(argcount<=len(defaults), "default args should be less than amount of arguments")
+    binding::method_info(P)
+    method_bind:binding
+    method_bind={
+        function,
+        defaults[:],
+    }
+    bind_info:= _make_method_info(function, defaults[:])
+    ptrcall:: sics.procedure_of(godotPtrCallback_dv(method_info(P){function, {}}, nil, {}, nil))
+    call:: sics.procedure_of(godotVariantCallback_dv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    args: [5]arg_deets
+    get_arg_deets(args[:argcount], function, 1)
+
+    ret: GDE.VariantType
+    when sics.type_proc_return_count(P) > 0 {
+        ret = variant_index(sics.type_proc_return_type(P, 0))
+    }
+
+    methodStringName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
+
+    bind_method(class, &methodStringName, rawptr(bind_info), call, ptrcall, ret, args[:argcount], {.STATIC}, defaults)
+    Destroy(&methodStringName)
+    return bind_info
+}
+method_info :: struct($P: typeid) {
+    function: P,
+    default: []^Variant,
+}
+
+_make_method_info :: proc(function: $P, args: []^Variant) -> ^method_info(P) {
+    info:= new(method_info(P))
+    info.function = function
+    info.default = make([]^Variant, len(args))
+    for arg, i in args {
+        info.default[i]=arg
+    }
+    return info
+}
+_delete_method_info :: proc(bind_info: ^$T/method_info($P)) {
+    delete(bind_info.default)
+    delete(bind_info)
+}
+godotPtrCallback_dv :: proc "c"  (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
+    godotPtrCallback(method_userdata.function, p_instance, p_args, r_ret)
+}
+godotVariantCallback_dv :: proc "c" (userdata: $T/method_info($P), p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    argCount::sics.type_proc_parameter_count(P) - 1
+    args:[argCount]^Variant
+    for arg, i in p_args[:p_argument_count] {
+        args[i] = arg
+    }
+    if p_argument_count<argCount {
+        start:=len(userdata.default)-int(argCount - p_argument_count)
+        for arg, i in userdata.default[start:] {
+            args[i+int(p_argument_count)] = arg
+        }
+    }
+    call::sics.procedure_of(godotVariantCallback(userdata.function, nil, {}, 0, nil,nil))
+    call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
+}
+
 @(private)
 Get_Proc_Names :: #force_inline proc(function: $T) -> []string {
     info:= type_info_of(T)
@@ -79,7 +145,7 @@ get_arg_deets :: #force_inline proc(args: []arg_deets, function: $P, $offset: in
 }
 
 //called by the binding methods. You should not need to call this directly yourself.
-bind_method :: proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:GDE.ClassMethodCall, ptrCallFunc: GDE.ClassMethodPtrCall, ret: GDE.VariantType, args: []arg_deets, methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT) {
+bind_method :: proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:GDE.ClassMethodCall, ptrCallFunc: GDE.ClassMethodPtrCall, ret: GDE.VariantType, args: []arg_deets, methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, default_args: []^Variant={}) {
     maxargs::5
     argsInfo: [maxargs]GDE.PropertyInfo
     for arg, i in args {
@@ -103,6 +169,8 @@ bind_method :: proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:G
         has_return_value = ret != .NIL,
         return_value_info = &returnInfo,
         return_value_metadata = GDE.ClassMethodArgumentMetadata.NONE,
+        default_argument_count = u32(len(default_args)),
+        default_arguments = raw_data(default_args[:]),
     }
 
     gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, class, &methodInfo)
@@ -353,103 +421,103 @@ variant_multi_return :: proc(vars: []^Variant, ptrs: $T) -> T {
         field_value:= reflect.struct_field_value(ptrs, field)
         switch field_value.id {
         case ^Int:
-            ((field_value).(^^Int))^=cast(^Int)(variant_get_ptr(vars[i]))
+            ((^^Int)((field_value).data))^=cast(^Int)(variant_get_ptr(vars[i]))
 	    case ^Bool:
-            ((field_value).(^^Bool))^=cast(^Bool)(variant_get_ptr(vars[i]))
+            ((^^Bool)((field_value).data))^=cast(^Bool)(variant_get_ptr(vars[i]))
 	    case ^float:
-            ((field_value).(^^float))^=cast(^float)(variant_get_ptr(vars[i]))
+            ((^^float)((field_value).data))^=cast(^float)(variant_get_ptr(vars[i]))
 	    case ^gdstring:
-            ((field_value).(^^gdstring))^=cast(^gdstring)(variant_get_ptr(vars[i]))
+            ((^^gdstring)((field_value).data))^=cast(^gdstring)(variant_get_ptr(vars[i]))
 	    case ^Vector2:
-            ((field_value).(^^Vector2))^=cast(^Vector2)(variant_get_ptr(vars[i]))
+            ((^^Vector2)((field_value).data))^=cast(^Vector2)(variant_get_ptr(vars[i]))
 	    case ^Vector2i:
-            ((field_value).(^^Vector2i))^=cast(^Vector2i)(variant_get_ptr(vars[i]))
+            ((^^Vector2i)((field_value).data))^=cast(^Vector2i)(variant_get_ptr(vars[i]))
 	    case ^Rect2:
-            ((field_value).(^^Rect2))^=cast(^Rect2)(variant_get_ptr(vars[i]))
+            ((^^Rect2)((field_value).data))^=cast(^Rect2)(variant_get_ptr(vars[i]))
 	    case ^Rect2i:
-            ((field_value).(^^Rect2i))^=cast(^Rect2i)(variant_get_ptr(vars[i]))
+            ((^^Rect2i)((field_value).data))^=cast(^Rect2i)(variant_get_ptr(vars[i]))
 	    case ^Vector3:
-            ((field_value).(^^Vector3))^=cast(^Vector3)(variant_get_ptr(vars[i]))
+            ((^^Vector3)((field_value).data))^=cast(^Vector3)(variant_get_ptr(vars[i]))
 	    case ^Vector3i:
-            ((field_value).(^^Vector3i))^=cast(^Vector3i)(variant_get_ptr(vars[i]))
+            ((^^Vector3i)((field_value).data))^=cast(^Vector3i)(variant_get_ptr(vars[i]))
 	    case ^Transform2D:
-            ((field_value).(^^Transform2D))^=cast(^Transform2D)(variant_get_ptr(vars[i]))
+            ((^^Transform2D)((field_value).data))^=cast(^Transform2D)(variant_get_ptr(vars[i]))
 	    case ^Vector4:
-            ((field_value).(^^Vector4))^=cast(^Vector4)(variant_get_ptr(vars[i]))
+            ((^^Vector4)((field_value).data))^=cast(^Vector4)(variant_get_ptr(vars[i]))
 	    case ^Vector4i:
-            ((field_value).(^^Vector4i))^=cast(^Vector4i)(variant_get_ptr(vars[i]))
+            ((^^Vector4i)((field_value).data))^=cast(^Vector4i)(variant_get_ptr(vars[i]))
 	    case ^Plane:
-            ((field_value).(^^Plane))^=cast(^Plane)(variant_get_ptr(vars[i]))
+            ((^^Plane)((field_value).data))^=cast(^Plane)(variant_get_ptr(vars[i]))
 	    case ^Quaternion:
-            ((field_value).(^^Quaternion))^=cast(^Quaternion)(variant_get_ptr(vars[i]))
+            ((^^Quaternion)((field_value).data))^=cast(^Quaternion)(variant_get_ptr(vars[i]))
 	    case ^AABB:
-            ((field_value).(^^AABB))^=cast(^AABB)(variant_get_ptr(vars[i]))
+            ((^^AABB)((field_value).data))^=cast(^AABB)(variant_get_ptr(vars[i]))
 	    case ^Basis:
-            ((field_value).(^^Basis))^=cast(^Basis)(variant_get_ptr(vars[i]))
+            ((^^Basis)((field_value).data))^=cast(^Basis)(variant_get_ptr(vars[i]))
 	    case ^Transform3D:
-            ((field_value).(^^Transform3D))^=cast(^Transform3D)(variant_get_ptr(vars[i]))
+            ((^^Transform3D)((field_value).data))^=cast(^Transform3D)(variant_get_ptr(vars[i]))
 	    case ^Projection:
-            ((field_value).(^^Projection))^=cast(^Projection)(variant_get_ptr(vars[i]))
+            ((^^Projection)((field_value).data))^=cast(^Projection)(variant_get_ptr(vars[i]))
 	    case ^Color:
-            ((field_value).(^^Color))^=cast(^Color)(variant_get_ptr(vars[i]))
+            ((^^Color)((field_value).data))^=cast(^Color)(variant_get_ptr(vars[i]))
 	    case ^StringName:
-            ((field_value).(^^StringName))^=cast(^StringName)(variant_get_ptr(vars[i]))
+            ((^^StringName)((field_value).data))^=cast(^StringName)(variant_get_ptr(vars[i]))
 	    case ^NodePath:
-            ((field_value).(^^NodePath))^=cast(^NodePath)(variant_get_ptr(vars[i]))
+            ((^^NodePath)((field_value).data))^=cast(^NodePath)(variant_get_ptr(vars[i]))
 	    case ^RID:
-            ((field_value).(^^RID))^=cast(^RID)(variant_get_ptr(vars[i]))
+            ((^^RID)((field_value).data))^=cast(^RID)(variant_get_ptr(vars[i]))
 	    case ^Object:
-            ((field_value).(^^Object))^=cast(^Object)(variant_get_ptr(vars[i]))
+            ((^^Object)((field_value).data))^=cast(^Object)(variant_get_ptr(vars[i]))
 	    case ^Callable:
-            ((field_value).(^^Callable))^=cast(^Callable)(variant_get_ptr(vars[i]))
+            ((^^Callable)((field_value).data))^=cast(^Callable)(variant_get_ptr(vars[i]))
 	    case ^Signal:
-            ((field_value).(^^Signal))^=cast(^Signal)(variant_get_ptr(vars[i]))
+            ((^^Signal)((field_value).data))^=cast(^Signal)(variant_get_ptr(vars[i]))
 	    case ^Dictionary:
-            GDW.new_type_from_methods((field_value.(^^Dictionary))^, vars[i])
+            GDW.new_type_from_methods(((^^Dictionary)((field_value).data))^, vars[i])
 	    case ^Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^Array), vars[i])
+            GDW.new_type_from_methods(((^^Array)((field_value).data))^, vars[i])
 	    case ^PackedByteArray:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_BYTE_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedByteArray), vars[i])
+            GDW.new_type_from_methods(((^^PackedByteArray)((field_value).data))^, vars[i])
 	    case ^PackedInt32Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_INT32_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedInt32Array), vars[i])
+            GDW.new_type_from_methods(((^^PackedInt32Array)((field_value).data))^, vars[i])
 	    case ^PackedInt64Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_INT64_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedInt64Array), vars[i])
+            GDW.new_type_from_methods(((^^PackedInt64Array)((field_value).data))^, vars[i])
 	    case ^PackedFloat32Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_FLOAT32_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedFloat32Array), vars[i])
+            GDW.new_type_from_methods(((^^PackedFloat32Array)((field_value).data))^, vars[i])
 	    case ^PackedFloat64Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_FLOAT64_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedFloat64Array), vars[i])
+            GDW.new_type_from_methods(((^^PackedFloat64Array)((field_value).data))^, vars[i])
 	    case ^PackedStringArray:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_STRING_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedStringArray), vars[i])
+            GDW.new_type_from_methods(((^^PackedStringArray)((field_value).data))^, vars[i])
 	    case ^PackedVector2Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_VECTOR2_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedVector2Array), vars[i])
+            GDW.new_type_from_methods(((^^PackedVector2Array)((field_value).data))^, vars[i])
 	    case ^PackedVector3Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_VECTOR3_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedVector3Array), vars[i])
+            GDW.new_type_from_methods(((^^PackedVector3Array)((field_value).data))^, vars[i])
         case ^PackedColorArray:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_COLOR_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedColorArray), vars[i])
+            GDW.new_type_from_methods(((^^PackedColorArray)((field_value).data))^, vars[i])
 	    case ^PackedVector4Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_VECTOR4_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(field_value.(^PackedVector4Array), vars[i])
+            GDW.new_type_from_methods(((^^PackedVector4Array)((field_value).data))^, vars[i])
         case:
             panic("Should be impossible to reach this. Type of method parameter is not supported.")
     }

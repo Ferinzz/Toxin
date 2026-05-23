@@ -36,7 +36,7 @@ enumtotype :: proc(varType: GDE.VariantType) -> typeid {
 }
 
 
-variant_r :: proc(val: $T) -> (ret: Variant) where !sics.type_is_pointer(T) {
+variant_r :: proc "c" (val: $T) -> (ret: Variant) where !sics.type_is_pointer(T) {
     to_variant(&ret, val)
     return
 }
