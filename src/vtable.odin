@@ -308,7 +308,6 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     //field_vals(THIS_CLASS_NAME{}.someProperty)
     //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
     Toxin._bind_default(somePublicFunction2, className)
-    //Toxin.bind_default(somePublicFunction, className)
     Toxin._bind_static(static_proc, className)
     user_bind:= Toxin._bind_with_defaults(somePublicFunction, className, &var1, &var2)
 
