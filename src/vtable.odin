@@ -310,6 +310,8 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin._bind_default(somePublicFunction2, className)
     Toxin._bind_static(static_proc, className)
     user_bind:= Toxin._bind_with_defaults(somePublicFunction, className, &var1, &var2)
+    user_bind3:= Toxin._bind_with_defaults(somePublicFunction3, className, &var1)
+    user_bind2:= Toxin._bind_static_with_defaults(static_proc_defaults, className, &var1)
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
@@ -533,6 +535,11 @@ somePublicFunction2 :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_
     //do stuff
     fmt.println("I am somePublicFunction2. I am called by Godot", arg1^, arg2^)
 }
+somePublicFunction3 :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int) {
+    context = runtime.default_context()
+    //do stuff
+    fmt.println("I am somePublicFunction3. I am called by Godot", arg1^)
+}
 
 
 /*
@@ -569,4 +576,8 @@ create_a_method::proc "c" (self: ^Toxin.Object) {
 static_proc :: proc "c" () {
     context = runtime.default_context()
     fmt.println("I'm running a static proc")
+}
+static_proc_defaults :: proc "c" (arg1: ^Toxin.Int) {
+    context = runtime.default_context()
+    fmt.println("I'm running a static proc.\nMy default is", arg1^)
 }

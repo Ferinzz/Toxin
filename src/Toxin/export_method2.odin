@@ -136,6 +136,49 @@ godotVariantCallback_dv :: proc "c" (userdata: $T/method_info($P), p_instance: G
     call::sics.procedure_of(godotVariantCallback(userdata.function, nil, {}, 0, nil,nil))
     call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
 }
+@(require_results)
+_bind_static_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+    argcount:: sics.type_proc_parameter_count(P)
+    assert(argcount>=len(defaults), "default args should be less than amount of arguments")
+
+    bind_info:= _make_method_info(function, defaults[:])
+    ptrcall:: sics.procedure_of(godotPtrCallback_sdv(method_info(P){function, {}}, nil, {}, nil))
+    call:: sics.procedure_of(godotVariantCallback_sdv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    args: [5]arg_deets
+    get_arg_deets(args[:argcount], function, 0)
+
+    ret: GDE.VariantType
+    when sics.type_proc_return_count(P) > 0 {
+        ret = variant_index(sics.type_proc_return_type(P, 0))
+    }
+
+    methodStringName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
+
+    bind_method(class, &methodStringName, rawptr(bind_info), call, ptrcall, ret, args[:argcount], {.STATIC}, defaults)
+    Destroy(&methodStringName)
+    return bind_info
+}
+
+godotPtrCallback_sdv :: proc "c"  (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
+    godotPtrCallback_s(method_userdata.function, p_instance, p_args, r_ret)
+}
+godotVariantCallback_sdv :: proc "c" (userdata: $T/method_info($P), p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    argCount::sics.type_proc_parameter_count(P)
+    args:[argCount]^Variant
+    for arg, i in p_args[:p_argument_count] {
+        args[i] = arg
+    }
+    if p_argument_count<argCount {
+        start:=len(userdata.default)-int(argCount - p_argument_count)
+        for arg, i in userdata.default[start:] {
+            args[i+int(p_argument_count)] = arg
+        }
+    }
+    call::sics.procedure_of(godotVariantCallback_s(userdata.function, nil, {}, 0, nil,nil))
+    call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
+}
 
 
 //called by the binding methods. You should not need to call this directly yourself.
@@ -180,8 +223,9 @@ godotPtrCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstance
     func := cast(P)method_userdata
     arg0:: sics.type_proc_parameter_type(P, 0)
     when sics.type_proc_parameter_count(P)==2{
-    s_ptrs:=compress_values(
-    cast(sics.type_proc_parameter_type(P, 1))p_args[0])
+    s_ptrs:struct{
+    arg1:(sics.type_proc_parameter_type(P, 1))}
+    s_ptrs.arg1=cast(sics.type_proc_parameter_type(P, 1))p_args[0]
     }
     when sics.type_proc_parameter_count(P)==3{
     s_ptrs:=compress_values(
@@ -281,22 +325,25 @@ godotVariantCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInst
     when sics.type_proc_return_count(P) > 0 {
         to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs))))
     } else {
-        (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs)))
+        variant_multi_return(p_args[:p_argument_count], &s_ptrs)
+        (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
     }
-    multi_destructor(s_ptrs)
     } else {
     when sics.type_proc_return_count(P) > 0{
         to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance))
     } else {
         (cast(P)method_userdata)(cast(arg0)p_instance)
     }}
-    multi_destructor(s_ptrs)
+    when sics.type_proc_parameter_count(P) > 1 {
+        multi_destructor(&s_ptrs)
+    }
 }
 godotPtrCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
     context = runtime.default_context()
     func := cast(P)method_userdata
     when sics.type_proc_parameter_count(P)==1{
-    s_ptrs:=compress_values(cast(sics.type_proc_parameter_type(P, 0))p_args[0])
+    s_ptrs:struct{arg1:sics.type_proc_parameter_type(P, 0)}
+    s_ptrs.arg1=(cast(sics.type_proc_parameter_type(P, 0))p_args[0])
     }
     when sics.type_proc_parameter_count(P)==2{
     s_ptrs:=compress_values(
@@ -324,7 +371,7 @@ godotPtrCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstan
     cast(sics.type_proc_parameter_type(P, 3))p_args[3],
     cast(sics.type_proc_parameter_type(P, 4))p_args[4])
     }
-    when sics.type_proc_parameter_count(P) > 1 {
+    when sics.type_proc_parameter_count(P) > 0 {
         when sics.type_proc_return_count(P) > 0 {
         //Dictionary and Array need to be destroyed specifically before returning to them.
         //Others are fine so far, but better safe than sorry.
@@ -391,13 +438,13 @@ godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassIn
             arg5: sics.type_proc_parameter_type(P, 4),
         }
     }
-    when sics.type_proc_parameter_count(P) > 1 {
+    when sics.type_proc_parameter_count(P) > 0 {
     when sics.type_proc_return_count(P) > 0 {
         to_variant(r_return, (cast(P)method_userdata)(expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs))))
     } else {
-        (cast(P)method_userdata)(expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs)))
+        variant_multi_return(p_args[:p_argument_count], &s_ptrs)
+        (cast(P)method_userdata)(expand_values(s_ptrs))
     }
-    multi_destructor(s_ptrs)
     } else {
     when sics.type_proc_return_count(P) > 0{
         to_variant(r_return, (cast(P)method_userdata)())
@@ -405,14 +452,14 @@ godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassIn
         (cast(P)method_userdata)()
     }}
     when sics.type_proc_parameter_count(P) > 0 {
-        multi_destructor(s_ptrs)
+        multi_destructor(&s_ptrs)
     }
 }
 
 @(private)
-variant_multi_return :: proc(vars: []^Variant, ptrs: $T) -> T {
+variant_multi_return :: proc(vars: []^Variant, ptrs: ^$T){
     for field, i in reflect.struct_fields_zipped(typeid_of(T)) {
-        field_value:= reflect.struct_field_value(ptrs, field)
+        field_value:= reflect.struct_field_value(ptrs^, field)
         switch field_value.id {
         case ^Int:
             ((^^Int)((field_value).data))^=cast(^Int)(variant_get_ptr(vars[i]))
@@ -516,13 +563,12 @@ variant_multi_return :: proc(vars: []^Variant, ptrs: $T) -> T {
             panic("Should be impossible to reach this. Type of method parameter is not supported.")
     }
     }
-    return ptrs
 }
 
 @(private)
-multi_destructor :: proc(ptrs: $T) {
+multi_destructor :: proc(ptrs: ^$T) {
     for field, i in reflect.struct_fields_zipped(typeid_of(T)) {
-        field_value:= reflect.struct_field_value(ptrs, field)
+        field_value:= reflect.struct_field_value(ptrs^, field)
         switch field_value.id {
         case ^Int:
 	    case ^Bool:
