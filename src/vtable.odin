@@ -172,41 +172,6 @@ MainLoopFrameCallback :: proc "c" () {
         fmt.println(frame_times[:])
     }
 }
-
-MainLoopStartupCallback :: proc "c" () {
-    context = runtime.default_context()
-    /////////////////////////////////////////////////
-    //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
-    /////////////////////////////////////////////////
-    //Classes.INIT_ALL_OF_THEM()
-
-    Classes.Sprite2D_Init_(&Texture_Class)
-    Classes.Node2D_Init_(&Node2D_Class)
-    Classes.Node_Init_(&Node_Class)
-    Classes.Window_Init_(&Window_MethodBind_List)
-
-    //myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
-    //Engine.get_main_loop->m_call(Toxin.EngineObj(), nil, &scene_tree_obj)
-    //SceneTree_Class.get_root->m_call(scene_tree_obj, nil, &root)
-    scene: ^Toxin.Object
-    Toxin.SceneTree_Class.get_current_scene->m_call(scene_tree_obj, nil, &scene)
-    Classes.Window_Init_(&Window_MethodBind_List)
-
-    //Create a class. Your extension registerations should all be done and all classes available at this point.
-    //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
-
-    //Create a class. Your extension registerations should all be done and all classes available at this point.
-
-    //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
-    if scene != nil {
-        //You can add a node directly to the root.
-        //Add the class to the root of the sceneTree
-        for i in 0..<frame_count {
-            //root_node_instance = gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
-            //GDW.addChild(root, &root_node_instance)
-        }
-    }
-}
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
