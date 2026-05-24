@@ -19,6 +19,21 @@ import "base:builtin"
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
+THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
+    required = {
+        registerer = THIS_CLASS_NAME_reggy,
+        class_struct_size = size_of(THIS_CLASS_NAME),
+        name = Toxin.get_name(THIS_CLASS_NAME),
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = .Sprite2D,
+    },
+    create=constructor,
+    destroy=destructor,
+    notification = GDE.ClassNotification2(THI_CLASS_NAME_Notifications),
+    Exporter = THIS_CLASS_NAME_Export,
+    //vtable ={.Node, &THIS_CLASS_NAME_VTable},
+}
+
 //Godot will be passing us a pointer to this struct during callbacks.
 //Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
@@ -81,21 +96,6 @@ frame_times:[1000]f64
 windowSize:Toxin.Vector2i
 frame_current:int=0
 Window_MethodBind_List: Classes.Window_MethodBind_List
-
-THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
-    required = {
-        registerer = THIS_CLASS_NAME_reggy,
-        class_struct_size = size_of(THIS_CLASS_NAME),
-        name = Toxin.get_name(THIS_CLASS_NAME),
-        init_level = .INITIALIZATION_SCENE,
-        GDClass_Index = .Sprite2D,
-    },
-    create=constructor,
-    destroy=destructor,
-    notification = GDE.ClassNotification2(THI_CLASS_NAME_Notifications),
-    Exporter = THIS_CLASS_NAME_Export,
-    //vtable ={.Node, &THIS_CLASS_NAME_VTable},
-}
 
 
 THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.required_deets, init_level: Toxin.InitializationLevel) {
