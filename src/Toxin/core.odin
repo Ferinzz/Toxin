@@ -47,15 +47,15 @@ Source_Code_Location :: struct {
 	procedure:    string,
 }
 
-Core_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Servers_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Scene_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Editor_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Core_Init_Callback :: #type proc "c" (userdata: rawptr);
+Servers_Init_Callback :: #type proc "c" (userdata: rawptr);
+Scene_Init_Callback :: #type proc "c" (userdata: rawptr);
+Editor_Init_Callback :: #type proc "c" (userdata: rawptr);
 
-Core_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Servers_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Scene_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Editor_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Core_deInit_Callback :: #type proc "c" (userdata: rawptr);
+Servers_deInit_Callback :: #type proc "c" (userdata: rawptr);
+Scene_deInit_Callback :: #type proc "c" (userdata: rawptr);
+Editor_deInit_Callback :: #type proc "c" (userdata: rawptr);
 
 @(export)
 Deinits: struct {
@@ -65,10 +65,10 @@ Deinits: struct {
     editor: Editor_DeInit_Callback,
 }
 
-Core_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Scene_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Servers_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
-Editor_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Core_DeInit_Callback :: #type proc "c" (userdata: rawptr);
+Scene_DeInit_Callback :: #type proc "c" (userdata: rawptr);
+Servers_DeInit_Callback :: #type proc "c" (userdata: rawptr);
+Editor_DeInit_Callback :: #type proc "c" (userdata: rawptr);
 
 @(export)
 extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel) {

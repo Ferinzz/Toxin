@@ -314,7 +314,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions
     //as normal and call bindMethod and then bindProperty.+ offset_of(THIS_CLASS_NAME{}.nest.nested)
     //Toxin.Export(className, THIS_CLASS_NAME, "someProperty")
-    Toxin.property_group(GDW.Library, className^, "testing_group", "grp")
+    Toxin.property_group(Toxin.Library, className^, "testing_group", "grp")
     signalName:= Toxin.register_signal2(className, "test_signal", {})
     Toxin.Destroy(&signalName)
     @(rodata, static)
@@ -334,7 +334,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     }
     Toxin.Export_Default(className, &somproperty, "grp_someProperty")
 
-    Toxin.property_subgroup(GDW.Library, className^, "testing_subgroup", "sbgrp")
+    Toxin.property_subgroup(Toxin.Library, className^, "testing_subgroup", "sbgrp")
     @(rodata, static)
     rarray:= Toxin.gsetter_userdata{
         gs_type=.ARRAY,

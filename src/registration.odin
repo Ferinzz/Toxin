@@ -27,37 +27,36 @@ core_setup: Toxin.inits_deinits= {
     editor_deinit,
     {},
 }
-core_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+core_init :: proc "c" (userdata: rawptr) {
 
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
-    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
+    gdAPI.RegisterMainLoopCallbacks(Toxin.Library, &Toxin.myMainLoopCallbacks)
 }
 
-servers_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+servers_init :: proc "c" (userdata: rawptr) {
 
 }
 
-scene_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+scene_init :: proc "c" (userdata: rawptr) {
     context = runtime.default_context()
-    append(&classes.scene, &THIS_CLASS_NAME_deets)
     append(&core_setup.classes.scene, &THIS_CLASS_NAME_deets)
 }
 
-editor_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+editor_init :: proc "c" (userdata: rawptr) {
 
 }
 
-core_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+core_deinit :: proc "c" (userdata: rawptr) {
 
 }
-servers_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+servers_deinit :: proc "c" (userdata: rawptr) {
 
 }
-scene_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+scene_deinit :: proc "c" (userdata: rawptr) {
     context = runtime.default_context()
 }
-editor_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+editor_deinit :: proc "c" (userdata: rawptr) {
 
 }
 

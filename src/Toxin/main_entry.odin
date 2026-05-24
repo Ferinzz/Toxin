@@ -9,7 +9,6 @@ import Classes "../GD_Classes"
 
 
 scene_inits:[500]^Class_Deets
-custom_classes:registered_classes
 
 registered_classes::struct{
     core:[dynamic]^Class_Deets,
@@ -84,12 +83,12 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             * Register the different classes which should be considered Core to the rest of the system.
             */
             if inits.core != nil {
-                inits.core(userdata, &custom_classes)
+                inits.core(userdata)
             }
             if setup.core_init != nil {
-                setup.core_init(setup, &custom_classes)
+                setup.core_init(setup)
             }
-            register_custom_class(custom_classes.core[:], InitializationLevel(init_Level))
+            register_custom_class(setup.classes.core[:], InitializationLevel(init_Level))
             //Classes.Engine_Init_(&Engine_M_List)
             init_Node_Virtuals_Info()
             init_CanvasItem_Virtuals_Info()
@@ -104,12 +103,12 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             * Register the different classes which depend on core classes.
             */
             if inits.servers != nil {
-                inits.servers(userdata, &custom_classes)
+                inits.servers(userdata)
             }
             if setup.servers_init != nil {
-                setup.servers_init(setup, &custom_classes)
+                setup.servers_init(setup)
             }
-            register_custom_class(custom_classes.server[:], InitializationLevel(init_Level))
+            register_custom_class(setup.classes.server[:], InitializationLevel(init_Level))
             return
         case .INITIALIZATION_SCENE:
             /*
@@ -119,16 +118,16 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             Classes.SceneTree_Init_(&SceneTree_M_List)
             Classes.Object_Init_(&Object_M_methods)
             if inits.scene != nil {
-                inits.scene(userdata, &custom_classes)
+                inits.scene(userdata)
             } else {
                 fmt.println("WARNING! scene init proc was not setup.")
             }
             if setup.scene_init != nil {
-                setup.scene_init(setup, &custom_classes)
+                setup.scene_init(setup)
             } else {
                 fmt.println("WARNING! scene init proc was not setup.")
             }
-            register_custom_class(custom_classes.scene[:], InitializationLevel(init_Level))
+            register_custom_class(setup.classes.scene[:], InitializationLevel(init_Level))
             //Need to register our MainLoop callbacks at some point.
             return
         //INITIALIZATION_EDITOR should only happen if running from the editor.
@@ -137,12 +136,12 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             * Register the different classes which should be used with the Editor.
             */
             if inits.editor != nil {
-                inits.editor(userdata, &custom_classes)
+                inits.editor(userdata)
             }
             if setup.editor_init != nil {
-                setup.editor_init(setup, &custom_classes)
+                setup.editor_init(setup)
             }
-            register_custom_class(custom_classes.editor[:], InitializationLevel(init_Level))
+            register_custom_class(setup.classes.editor[:], InitializationLevel(init_Level))
             return
         //Prettys 
         case .MAX_INITIALIZATION_LEVEL:
@@ -179,12 +178,12 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
             * Free the different classes which should be considered Core to the rest of the system.
             */
             if Deinits.core != nil {
-                Deinits.core(userdata, &custom_classes)
+                Deinits.core(userdata)
             }
             if setup.core_deinit != nil {
-                setup.core_deinit(setup, &custom_classes)
+                setup.core_deinit(setup)
             }
-            unregister_custom_class(custom_classes.core[:], InitializationLevel(deinitLevel))
+            unregister_custom_class(setup.classes.core[:], InitializationLevel(deinitLevel))
             Classes.destroy_class_names()
             return
         case .INITIALIZATION_SERVERS:
@@ -192,23 +191,23 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
             * Free the different classes which depend on core classes.
             */
             if Deinits.servers != nil {
-                Deinits.servers(userdata, &custom_classes)
+                Deinits.servers(userdata)
             }
             if setup.servers_deinit != nil {
-                setup.servers_deinit(setup, &custom_classes)
-            }unregister_custom_class(custom_classes.server[:], InitializationLevel(deinitLevel))
+                setup.servers_deinit(setup)
+            }unregister_custom_class(setup.classes.server[:], InitializationLevel(deinitLevel))
             return
         case .INITIALIZATION_SCENE:
             /*
             * Free the different classes which depend on servers classes.
             */
             if Deinits.scene != nil {
-                Deinits.scene(userdata, &custom_classes)
+                Deinits.scene(userdata)
             }
             if setup.scene_deinit != nil {
-                setup.scene_deinit(setup, &custom_classes)
+                setup.scene_deinit(setup)
             }
-            unregister_custom_class(custom_classes.scene[:], InitializationLevel(deinitLevel))
+            unregister_custom_class(setup.classes.scene[:], InitializationLevel(deinitLevel))
             return
         //INITIALIZATION_EDITOR should only happen if running from the editor.
         case .INITIALIZATION_EDITOR:
@@ -216,12 +215,12 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
             * Free the different classes which should be used with the Editor.
             */
             if Deinits.editor != nil {
-                Deinits.editor(userdata, &custom_classes)
+                Deinits.editor(userdata)
             }
             if setup.editor_deinit != nil {
-                setup.editor_deinit(setup, &custom_classes)
+                setup.editor_deinit(setup)
             }
-            unregister_custom_class(custom_classes.editor[:], InitializationLevel(deinitLevel))
+            unregister_custom_class(setup.classes.editor[:], InitializationLevel(deinitLevel))
             return
         case .MAX_INITIALIZATION_LEVEL:
             /*
