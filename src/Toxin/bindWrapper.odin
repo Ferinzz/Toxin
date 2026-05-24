@@ -237,7 +237,7 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     for field, ind in info.names {
         field_SN: StringName
         GDW.StringConstruct(&field_SN, field)
-        gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
+        gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
         GDW.StringName_M_List.Destroy(&field_SN)
     }
 }
@@ -762,7 +762,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
             
             //The index of an enum represents the index of the bool in a bit_set.
             //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
             GDW.StringName_M_List.Destroy(&field_SN)
         }
 
@@ -771,7 +771,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
             field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN: StringName
             GDW.StringConstruct(&field_SN, field)
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
             delete(field)
             GDW.StringName_M_List.Destroy(&field_SN)
         }
@@ -1610,7 +1610,7 @@ Bind_Property_Prop_Info :: #force_inline proc(className: ^StringName, name: stri
     gdAPI.StringName_Utils.Utf8CharsAndLen(&getterName, raw_data(getter[:]), i64(len(getter)))
     setterName: StringName
     gdAPI.StringName_Utils.Utf8CharsAndLen(&setterName, raw_data(setter[:]), i64(len(setter)))
-    gdAPI.ClassDB.RegisterExtensionClassProperty(GDW.Library, className, prop_hint, &setterName, &getterName)
+    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
     
     fmethod_name:= GDE.Variant{VType = .STRING_NAME}
     fmethod_name.data[0] = transmute(u64)(getterName.ptr)
@@ -1634,7 +1634,7 @@ bindProperty :: #force_inline proc(className: ^StringName, name: string, type: G
     gdAPI.StringName_Utils.Latin1Chars(&getterName, getter, false)
     setterName: StringName
     gdAPI.StringName_Utils.Latin1Chars(&setterName, setter, false)
-    gdAPI.ClassDB.RegisterExtensionClassProperty(GDW.Library, className, &info, &setterName, &getterName)
+    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, &info, &setterName, &getterName)
 
     //Destructor stuff
     destructProperty(&info)
@@ -1774,7 +1774,7 @@ Bind_Set :: #force_inline proc(className: ^StringName, methodName: string,
         methodInfo.arguments_metadata = &args_metadata[0]
 
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
@@ -1811,7 +1811,7 @@ Bind_Get :: #force_inline proc(className: ^StringName, methodName: string,
         methodInfo.arguments_metadata = nil
 
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)

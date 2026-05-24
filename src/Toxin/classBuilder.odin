@@ -63,7 +63,7 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIAL
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct(&deets.SN, deets.required.name)
     deets.GDClass_StringName = Classes.GDClass_StringName_get(deets.required.GDClass_Index)
-    gdAPI.ClassDB.RegisterExtensionClass5(GDW.Library, &deets.SN, deets.GDClass_StringName, &class_info)
+    gdAPI.ClassDB.RegisterExtensionClass5(Library, &deets.SN, deets.GDClass_StringName, &class_info)
 
     if deets.Exporter != nil {
         deets.Exporter(&deets.SN)
@@ -71,7 +71,7 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIAL
 }
 
 unregister :: proc(class: ^Class_Deets) {
-    gdAPI.ClassDB.ClassdbUnregisterExtensionClass(GDW.Library, &class.SN)
+    gdAPI.ClassDB.ClassdbUnregisterExtensionClass(Library, &class.SN)
     Destroy(&class.SN)
 }
 
@@ -151,7 +151,7 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
     }
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)self)
-    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, self, &p_class_userdata.GD_Binding_Callbacks)
+    gdAPI.Object_Utils.SetInstanceBinding(object, Library, self, &p_class_userdata.GD_Binding_Callbacks)
 
     return object
 }
@@ -172,7 +172,7 @@ Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bo
     }
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)class_obj)
-    gdAPI.Object_Utils.SetInstanceBinding(object, GDW.Library, class_obj, &p_class_userdata.GD_Binding_Callbacks)
+    gdAPI.Object_Utils.SetInstanceBinding(object, Library, class_obj, &p_class_userdata.GD_Binding_Callbacks)
 
     return object
 }

@@ -107,7 +107,7 @@ Bind_Set2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
         methodInfo.arguments_metadata = &args_metadata[0]
 
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
@@ -261,7 +261,7 @@ Bind_Get2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^Strin
     methodInfo.arguments_info = nil
     methodInfo.arguments_metadata = nil
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)

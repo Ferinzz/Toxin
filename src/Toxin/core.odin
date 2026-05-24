@@ -24,6 +24,7 @@ inits_deinits :: struct {
     servers_deinit: Servers_deInit_Callback,
     scene_deinit: Scene_deInit_Callback,
     editor_deinit: Editor_deInit_Callback,
+    classes: registered_classes,
 }
 
 core_inits :: struct {
@@ -46,15 +47,15 @@ Source_Code_Location :: struct {
 	procedure:    string,
 }
 
-Core_Init_Callback :: #type proc "c" (userdata: rawptr);
-Servers_Init_Callback :: #type proc "c" (userdata: rawptr);
-Scene_Init_Callback :: #type proc "c" (userdata: rawptr);
-Editor_Init_Callback :: #type proc "c" (userdata: rawptr);
+Core_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Servers_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Scene_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Editor_Init_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
 
-Core_deInit_Callback :: #type proc "c" (userdata: rawptr);
-Servers_deInit_Callback :: #type proc "c" (userdata: rawptr);
-Scene_deInit_Callback :: #type proc "c" (userdata: rawptr);
-Editor_deInit_Callback :: #type proc "c" (userdata: rawptr);
+Core_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Servers_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Scene_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Editor_deInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
 
 @(export)
 Deinits: struct {
@@ -64,10 +65,10 @@ Deinits: struct {
     editor: Editor_DeInit_Callback,
 }
 
-Core_DeInit_Callback :: #type proc "c" (userdata: rawptr);
-Scene_DeInit_Callback :: #type proc "c" (userdata: rawptr);
-Servers_DeInit_Callback :: #type proc "c" (userdata: rawptr);
-Editor_DeInit_Callback :: #type proc "c" (userdata: rawptr);
+Core_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Scene_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Servers_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
+Editor_DeInit_Callback :: #type proc "c" (userdata: rawptr, classes: ^registered_classes);
 
 @(export)
 extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel) {
@@ -102,6 +103,8 @@ EngineObj :: proc "c" () -> ^Object {
     context = runtime.default_context()
     return _EngineObj()
 }
+
+Library : GDE.ClassDB = nil
 
 //singletons: Singletons
 

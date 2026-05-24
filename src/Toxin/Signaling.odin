@@ -27,7 +27,7 @@ register_signal2 :: proc (className: ^StringName, signalName: string, args: []ar
         signalProp[i] = make_property(arg.variant_type, arg.name)
     }
 
-    gdAPI.ClassDB.RegisterExtensionClassSignal(GDW.Library, className, &signalSName, raw_data(signalProp[:]), i64(len(args)))
+    gdAPI.ClassDB.RegisterExtensionClassSignal(Library, className, &signalSName, raw_data(signalProp[:]), i64(len(args)))
     for &prop in signalProp {
         destructProperty(&prop)
     }
@@ -76,7 +76,7 @@ Create_Callable2 :: proc(
         less_than_func:          GDE.CallableCustomLessThan = nil, //May be useful if you're sotring them in an array?
         to_string_func:          GDE.CallableCustomToString = nil, //Stringify the Callable info.
         get_argument_count_func: GDE.CallableCustomGetArgumentCount = nil, //Helper func to get arg count at runtime.
-        token:                   GDE.ClassDB = GDW.Library, //Should be the GDE's library pointer.
+        token:                   GDE.ClassDB = Library, //Should be the GDE's library pointer.
     ) -> (r_callable: Callable) {
     //
     s_call_info:GDE.CallableCustomInfo2 = {
@@ -110,7 +110,7 @@ create_callable_container :: proc(
         less_than_func:          GDE.CallableCustomLessThan = nil, //May be useful if you're sotring them in an array?
         to_string_func:          GDE.CallableCustomToString = nil, //Stringify the Callable info.
         get_argument_count_func: GDE.CallableCustomGetArgumentCount = nil, //Helper func to get arg count at runtime.
-        token:                   GDE.ClassDB = GDW.Library, //Should be the GDE's library pointer.
+        token:                   GDE.ClassDB = Library, //Should be the GDE's library pointer.
         allocator:               runtime.Allocator              = context.allocator,
         loc:= #caller_location,
     ) -> (container: ^callable_container) {

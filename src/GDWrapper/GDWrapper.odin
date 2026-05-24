@@ -10,7 +10,6 @@ import "core:fmt"
 //import Classes ".."
 //import Classes "Godot_Odin_Binds/GD_Classes"
 
-Library : GDE.ClassDB = nil
 
 @(export)
 Init_Wrapper :: proc "c" (p_get_proc_address : GDE.InterfaceGetProcAddress) {

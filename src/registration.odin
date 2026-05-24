@@ -3,6 +3,8 @@ package main
 import "Toxin"
 import "base:runtime"
 import Classes "GD_Classes"
+import "GDWrapper/gdAPI"
+import GDW "GDWrapper"
 import GDE "GDWrapper/gdAPI/gdextension"
 
 
@@ -23,35 +25,39 @@ core_setup: Toxin.inits_deinits= {
     servers_deinit,
     scene_deinit,
     editor_deinit,
+    {},
 }
-core_init :: proc "c" (userdata: rawptr) {
+core_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
+
+    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
+    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
+    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
+}
+
+servers_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
 
 }
 
-servers_init :: proc "c" (userdata: rawptr) {
-
-}
-
-scene_init :: proc "c" (userdata: rawptr) {
+scene_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
     context = runtime.default_context()
-    THIS_CLASS_NAME_deets->registerer(.INITIALIZATION_SCENE)
+    append(&classes.scene, &THIS_CLASS_NAME_deets)
+    append(&core_setup.classes.scene, &THIS_CLASS_NAME_deets)
 }
 
-editor_init :: proc "c" (userdata: rawptr) {
+editor_init :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
 
 }
 
-core_deinit :: proc "c" (userdata: rawptr) {
+core_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
 
 }
-servers_deinit :: proc "c" (userdata: rawptr) {
+servers_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
 
 }
-scene_deinit :: proc "c" (userdata: rawptr) {
+scene_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
     context = runtime.default_context()
-    Toxin.unregister(&THIS_CLASS_NAME_deets)
 }
-editor_deinit :: proc "c" (userdata: rawptr) {
+editor_deinit :: proc "c" (userdata: rawptr, classes: ^Toxin.registered_classes) {
 
 }
 

@@ -210,7 +210,7 @@ bind_method :: proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:G
         default_arguments = raw_data(default_args[:]),
     }
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, class, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, class, &methodInfo)
 
     destructProperty(&returnInfo)
     for i in 0..<len(args) {
