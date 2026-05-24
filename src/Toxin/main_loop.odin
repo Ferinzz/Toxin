@@ -55,8 +55,9 @@ MainLoopStartupCallback :: proc "c" () {
     //Classes.INIT_ALL_OF_THEM()
     _Init_Singletons(&singletons)
     Classes.SceneTree_Init_(&SceneTree_Class)
-    scene_tree_obj= _getMainLoop()
-    _getRoot()
+    scene_tree_obj = _getMainLoop()
+    root_node_instance = _getRoot()
+    Classes.Node_Init_(&Node_Class)
 
     if myMainLoopCallbacks.startup_func != nil {
         myMainLoopCallbacks.startup_func()

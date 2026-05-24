@@ -2,12 +2,11 @@ export method vararg missing
 static parameters
 test more than default signals
 --maybe other places vararg could be used instead of slice
-++cleanup init process
-++review class registration procedure (the call that triggers registration not the register proc)
+++cleanup init process.
 --smooth out variant/type operators
 --type array + dictionaries
 --classes used callback
 --fileAccess stuff
-++destroy all stringnames on exit!!
+++destroy all stringnames on exit!! Done?
 --virtual methods
-++notifications callback
+notifications callback. DONE

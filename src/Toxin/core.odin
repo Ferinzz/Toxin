@@ -70,38 +70,37 @@ Scene_DeInit_Callback :: #type proc "c" (userdata: rawptr);
 Servers_DeInit_Callback :: #type proc "c" (userdata: rawptr);
 Editor_DeInit_Callback :: #type proc "c" (userdata: rawptr);
 
-@(export)
 extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLevel) {
     _extensionInit(userdata, init_Level)
 }
 
-@(export)
 extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLevel) {
     _extensionDeinit(userdata, deinitLevel)
 }
 
-@(export)
 Init_Singletons :: proc "c" (singletons: ^Singletons) {
     context = runtime.default_context()
     _Init_Singletons(singletons)
 }
 
-@(export)
 getMainLoop :: proc "c" () -> ^Object {
     context = runtime.default_context()
     return _getMainLoop()
 }
 
-@(export)
 getRoot :: proc "c" () -> ^Object {
     context = runtime.default_context()
     return _getRoot()
 }
 
-@(export)
 EngineObj :: proc "c" () -> ^Object {
     context = runtime.default_context()
     return _EngineObj()
+}
+
+get_delta_time :: proc() -> (delta: float) {
+    Node_Class.get_process_delta_time->m_call(root_node_instance, r_ret = &delta)
+    return
 }
 
 Library : GDE.ClassDB = nil
@@ -109,6 +108,7 @@ singletons: Singletons
 scene_tree_obj: ^Object
 root_node_instance: ^Object
 SceneTree_Class: Classes.SceneTree_MethodBind_List
+Node_Class: Classes.Node_MethodBind_List
 
 //singletons: Singletons
 
@@ -241,6 +241,7 @@ Class_Deets :: struct {
         table_type: vtable_type,
         table: rawptr,
     },
+    notification: GDE.ClassNotification2,
     GDClass_StringName: ^StringName,
     SN : StringName,
     Exporter: proc(className: ^StringName),

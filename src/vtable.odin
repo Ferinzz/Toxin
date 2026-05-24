@@ -92,8 +92,9 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     },
     create=constructor,
     destroy=destructor,
+    notification = GDE.ClassNotification2(THI_CLASS_NAME_Notifications),
     Exporter = THIS_CLASS_NAME_Export,
-    vtable ={.Node, &THIS_CLASS_NAME_VTable},
+    //vtable ={.Node, &THIS_CLASS_NAME_VTable},
 }
 
 
@@ -186,10 +187,70 @@ bound_callable_test :: proc "c" (obj: ^Toxin.Object, str: ^Toxin.Int) {
     fmt.println(str^)
 }
 
+THI_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_what: i32, p_reversed: b8) {
+    
+    what2:= Classes.Object_Constants(p_what)
+    switch what2 {
+    case .NOTIFICATION_POSTINITIALIZE:
+    case .NOTIFICATION_PREDELETE:
+    case .NOTIFICATION_EXTENSION_RELOADED:
+    }
+    what:= Classes.Node_Constants(p_what)
+    #partial switch what {
+    case .NOTIFICATION_READY:
+        context = runtime.default_context()
+
+        set:=[?]rawptr{&texture}
+        Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
+        num:i64=32
+        ret:Toxin.Bool
+        GDW.PackedInt32Array_M_List.append(&self.an_array, {&num}, &ret)
+
+        self.call_container= Toxin.create_callable_container(rawptr(signal_test), 0, self.self)
+        name:= GDW.StringConstruct("test_signal")
+        err:= Toxin.connect_to(self.self, &self.call_container.callable, &name)
+
+        self.call_container2= Toxin.create_callable_container(rawptr(bound_callable_test), 1, self.self)
+        store:=self.call_container2.callable
+        self.call_container2.callable = Toxin.callable_bind(&self.call_container2.callable, Toxin.variant_r(45))
+        err = Toxin.connect_to(self.self, &self.call_container2.callable, &name)
+        Toxin.Destroy(&store)
+        Toxin.Destroy(&name)
+    case .NOTIFICATION_ENTER_TREE:
+        context = runtime.default_context()
+
+        Node_Class.get_window->m_call(self.self, nil, &wind_obj)
+        window:Toxin.Vector2i
+        Window_MethodBind_List.get_size->m_call(wind_obj, nil, &window)
+    case .NOTIFICATION_PROCESS:
+        context = runtime.default_context()
+        speed:=Toxin.Vector2{f32(self.class.speed),f32(self.class.speed)}
+        //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
+        perf: Toxin.float = Toxin.get_delta_time()
+        delta:=Toxin.Vector2{f32(perf),f32(perf)}
+        //self.class.position={Math.cos_f32(f32(self.class.angle)), Math.sin_f32(f32(self.class.angle))}
+        //self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
+        //set:=[?]rawptr{&self.class.position}
+        //Node2D_Class.set_position->m_call(self.self, {&self.class.position}, nil)
+        //last_delta = p_args.delta^
+        //if self.position.x > window.x do self.angle = Math.PI - self.angle
+        //if self.position.y > window.y do self.angle = -self.angle
+        signal:= GDW.StringConstruct("test_signal")
+        Toxin.emitSignal0(self.self, &signal)
+        Toxin.Destroy(&signal)
+    case .NOTIFICATION_EXIT_TREE:
+    }
+    what9:= Classes.CanvasItem_Constants(p_what)
+    #partial switch what9 {
+    case .NOTIFICATION_DRAW:
+    }
+}
 /*
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
 */
+/*
 THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context()
@@ -243,6 +304,8 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 
     }
 }
+*/
+
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1100, 750}
 

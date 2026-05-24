@@ -45,6 +45,7 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIAL
         class_info.free_instance_func = cast(GDE.ClassFreeInstance)bltn_Destroy
     }
     class_info.class_userdata = deets
+    class_info.notification_func = deets.notification
 
     when builtin.ODIN_DEBUG {
         if deets.vtable.table != nil {
@@ -268,6 +269,122 @@ bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassI
 * Removing from scene tree does not necessarily destroy a Node.
 */
 
+/* 
+* Prefer using these notifications over the virtuals. If you use virtuals GDScript will have higher priority over your own.
+* This is an example with 'all' of th enotification there are from the JSON.
+*/
+Notifications :: proc "c" (p_instance: GDE.ClassInstancePtr, p_what: i32, p_reversed: b8) {
+    
+    what2:= Classes.Object_Constants(p_what)
+    switch what2 {
+    case .NOTIFICATION_POSTINITIALIZE:
+    case .NOTIFICATION_PREDELETE:
+    case .NOTIFICATION_EXTENSION_RELOADED:
+    }
+    what:= Classes.Node_Constants(p_what)
+    switch what {
+    case .NOTIFICATION_ENTER_TREE:
+    case .NOTIFICATION_EXIT_TREE:
+    case .NOTIFICATION_MOVED_IN_PARENT:
+    case .NOTIFICATION_READY:
+    case .NOTIFICATION_PAUSED:
+    case .NOTIFICATION_UNPAUSED:
+    case .NOTIFICATION_PHYSICS_PROCESS:
+    case .NOTIFICATION_PROCESS:
+    case .NOTIFICATION_PARENTED:
+    case .NOTIFICATION_UNPARENTED:
+    case .NOTIFICATION_SCENE_INSTANTIATED:
+    case .NOTIFICATION_DRAG_BEGIN:
+    case .NOTIFICATION_DRAG_END:
+    case .NOTIFICATION_PATH_RENAMED:
+    case .NOTIFICATION_CHILD_ORDER_CHANGED:
+    case .NOTIFICATION_INTERNAL_PROCESS:
+    case .NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
+    case .NOTIFICATION_POST_ENTER_TREE:
+    case .NOTIFICATION_DISABLED:
+    case .NOTIFICATION_ENABLED:
+    case .NOTIFICATION_RESET_PHYSICS_INTERPOLATION:
+    case .NOTIFICATION_EDITOR_PRE_SAVE:
+    case .NOTIFICATION_EDITOR_POST_SAVE:
+    case .NOTIFICATION_WM_MOUSE_ENTER:
+    case .NOTIFICATION_WM_MOUSE_EXIT:
+    case .NOTIFICATION_WM_WINDOW_FOCUS_IN:
+    case .NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+    case .NOTIFICATION_WM_CLOSE_REQUEST:
+    case .NOTIFICATION_WM_GO_BACK_REQUEST:
+    case .NOTIFICATION_WM_SIZE_CHANGED:
+    case .NOTIFICATION_WM_DPI_CHANGE:
+    case .NOTIFICATION_VP_MOUSE_ENTER:
+    case .NOTIFICATION_VP_MOUSE_EXIT:
+    case .NOTIFICATION_WM_POSITION_CHANGED:
+    case .NOTIFICATION_OS_MEMORY_WARNING:
+    case .NOTIFICATION_TRANSLATION_CHANGED:
+    case .NOTIFICATION_WM_ABOUT:
+    case .NOTIFICATION_CRASH:
+    case .NOTIFICATION_OS_IME_UPDATE:
+    case .NOTIFICATION_APPLICATION_RESUMED:
+    case .NOTIFICATION_APPLICATION_PAUSED:
+    case .NOTIFICATION_APPLICATION_FOCUS_IN:
+    case .NOTIFICATION_APPLICATION_FOCUS_OUT:
+    case .NOTIFICATION_TEXT_SERVER_CHANGED:
+    case .NOTIFICATION_ACCESSIBILITY_UPDATE:
+    case .NOTIFICATION_ACCESSIBILITY_INVALIDATE:
+    }
+    what4:= Classes.Window_Constants(p_what)
+    switch what4 {
+    case .NOTIFICATION_VISIBILITY_CHANGED:
+    case .NOTIFICATION_THEME_CHANGED:
+    }
+    what1:= Classes.Control_Constants(p_what)
+    switch what1 {
+    case .NOTIFICATION_RESIZED:
+    case .NOTIFICATION_MOUSE_ENTER:
+    case .NOTIFICATION_MOUSE_EXIT:
+    case .NOTIFICATION_MOUSE_ENTER_SELF:
+    case .NOTIFICATION_MOUSE_EXIT_SELF:
+    case .NOTIFICATION_FOCUS_ENTER:
+    case .NOTIFICATION_FOCUS_EXIT:
+    case .NOTIFICATION_THEME_CHANGED:
+    case .NOTIFICATION_SCROLL_BEGIN:
+    case .NOTIFICATION_SCROLL_END:
+    case .NOTIFICATION_LAYOUT_DIRECTION_CHANGED: 
+    }
+    what5:= Classes.Node3D_Constants(p_what)
+    switch what5 {
+    case .NOTIFICATION_TRANSFORM_CHANGED:
+    case .NOTIFICATION_ENTER_WORLD:
+    case .NOTIFICATION_EXIT_WORLD:
+    case .NOTIFICATION_VISIBILITY_CHANGED:
+    case .NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
+    }
+    what3:= Classes.Skeleton3D_Constants(p_what)
+    switch what3 {
+    case. NOTIFICATION_UPDATE_SKELETON:
+    }
+    what8:= Classes.Container_Constants(p_what)
+    switch what8 {
+    case .NOTIFICATION_PRE_SORT_CHILDREN:
+    case .NOTIFICATION_SORT_CHILDREN:
+    }
+    what6:= Classes.MainLoop_Constants(p_what)
+    switch what6 {
+    case .NOTIFICATION_OS_MEMORY_WARNING:
+    case .NOTIFICATION_TRANSLATION_CHANGED:
+    case .NOTIFICATION_WM_ABOUT:
+    case .NOTIFICATION_CRASH:
+    case .NOTIFICATION_OS_IME_UPDATE:
+    case .NOTIFICATION_APPLICATION_RESUMED:
+    case .NOTIFICATION_APPLICATION_PAUSED:
+    case .NOTIFICATION_APPLICATION_FOCUS_IN:
+    case .NOTIFICATION_APPLICATION_FOCUS_OUT:
+    case .NOTIFICATION_TEXT_SERVER_CHANGED:
+    }
+    what7:= Classes.EditorSettings_Constants(p_what)
+    switch what7 {
+    case .NOTIFICATION_EDITOR_SETTINGS_CHANGED:
+    }
+}
+
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
@@ -281,7 +398,6 @@ bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassI
 make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type_is_pointer(T) != true {
 
     args::sics.type_has_field( sics.type_base_type(T), "vCanvasItem")
-    fmt.println(args)
     intermediate:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
         context = runtime.default_context()
         arg:= cast(^T)p_class_userdata.vtable
