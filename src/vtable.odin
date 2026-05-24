@@ -84,7 +84,7 @@ Window_MethodBind_List: Classes.Window_MethodBind_List
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
-        registerer = {self_reggy},
+        registerer = THIS_CLASS_NAME_reggy,
         class_struct_size = size_of(THIS_CLASS_NAME),
         name = Toxin.get_name(THIS_CLASS_NAME),
         init_level = .INITIALIZATION_SCENE,
@@ -97,15 +97,15 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 }
 
 
-self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
+THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.required_deets, init_level: Toxin.InitializationLevel) {
     context = runtime.default_context()
     me:=(^Toxin.Class_Deets)(self)
-
-    Toxin.Register(me, init_level, {is_exposed = true})
-
     Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
     Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
+
+    Toxin.Register(me, init_level, {is_exposed = true})
+
     cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
     //texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
 

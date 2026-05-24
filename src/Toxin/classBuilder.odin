@@ -70,6 +70,11 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIAL
     }
 }
 
+unregister :: proc(class: ^Class_Deets) {
+    gdAPI.ClassDB.ClassdbUnregisterExtensionClass(GDW.Library, &class.SN)
+    Destroy(&class.SN)
+}
+
 
 //Easily get the name of the struct you are using for your class information.
 get_name:: proc "contextless" (class: typeid) -> string {

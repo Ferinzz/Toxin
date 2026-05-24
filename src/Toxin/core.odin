@@ -14,6 +14,32 @@ inits: struct {
     editor: Editor_Init_Callback,
 }
 
+inits_deinits :: struct {
+    userdata: rawptr,
+    core_init: Core_Init_Callback,
+    servers_init: Servers_Init_Callback,
+    scene_init: Scene_Init_Callback,
+    editor_init: Editor_Init_Callback,
+    core_deinit: Core_deInit_Callback,
+    servers_deinit: Servers_deInit_Callback,
+    scene_deinit: Scene_deInit_Callback,
+    editor_deinit: Editor_deInit_Callback,
+}
+
+core_inits :: struct {
+    core_init: Core_Init_Callback,
+    servers_init: Servers_Init_Callback,
+    scene_init: Scene_Init_Callback,
+    editor_init: Editor_Init_Callback,
+}
+
+core_deinits :: struct {
+    core_deinit: Core_deInit_Callback,
+    servers_deinit: Servers_deInit_Callback,
+    scene_deinit: Scene_deInit_Callback,
+    editor_deinit: Editor_deInit_Callback,
+}
+
 Source_Code_Location :: struct {
 	file_path:    string,
 	line, column: i32,
@@ -24,6 +50,11 @@ Core_Init_Callback :: #type proc "c" (userdata: rawptr);
 Servers_Init_Callback :: #type proc "c" (userdata: rawptr);
 Scene_Init_Callback :: #type proc "c" (userdata: rawptr);
 Editor_Init_Callback :: #type proc "c" (userdata: rawptr);
+
+Core_deInit_Callback :: #type proc "c" (userdata: rawptr);
+Servers_deInit_Callback :: #type proc "c" (userdata: rawptr);
+Scene_deInit_Callback :: #type proc "c" (userdata: rawptr);
+Editor_deInit_Callback :: #type proc "c" (userdata: rawptr);
 
 @(export)
 Deinits: struct {
@@ -196,7 +227,7 @@ class_info_Default: GDE.ClassCreationInfo4 = {
 * binder: procedure to call in order to export the values you would like to expose to Godot. Variables, procedures, etc via Export; Export_Range
 */
 Class_Deets :: struct {
-    required: required_deets,
+    using required: required_deets,
     create: proc(userdata: ^Class_Deets, self: rawptr), //Cast to the Object class that your class extends.
     destroy: proc(userdata: ^Class_Deets, self: rawptr),
     vtable: struct {
@@ -220,7 +251,7 @@ vtable_type:: enum c.int {
 
 
 required_deets:: struct #all_or_none{
-    using registerer: Registerer, //Keep as first value in order to trivially cast it.
+    registerer: proc(self: ^required_deets, init_level: InitializationLevel), //Keep as first value in order to trivially cast it.
     class_struct_size: i64,
     init_level: InitializationLevel,
     GDClass_Index: Classes.ClassName_Index,
