@@ -41,13 +41,18 @@ MainLoopStartupCallback :: proc "c" () {
     //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
-
+    if myMainLoopCallbacks.startup_func != nil {
+        myMainLoopCallbacks.startup_func()
+    }
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
 };
 
 /* Called when shutting down the main loop. */
 MainLoopShutdownCallback :: proc "c" () {
     context = runtime.default_context()
+    if myMainLoopCallbacks.shutdown_func != nil {
+        myMainLoopCallbacks.shutdown_func()
+    }
 };
 
 callOnce:bool=false
@@ -63,7 +68,14 @@ MainLoopFrameCallback :: proc "c" () {
     }
 
 };
+@(private)
 myMainLoopCallbacks: GDE.MainLoopCallbacks
+register_mainloop_callbacks :: proc(mainLoopCallbacks: GDE.MainLoopCallbacks) {
+    myMainLoopCallbacks.startup_func = mainLoopCallbacks.startup_func
+    myMainLoopCallbacks.frame_func = mainLoopCallbacks.frame_func
+    myMainLoopCallbacks.shutdown_func = mainLoopCallbacks.shutdown_func
+    gdAPI.RegisterMainLoopCallbacks(Library, &myMainLoopCallbacks)
+}
 /*
 //create a GDE.MainLoopCallbacks struct which will hold the pointers to the callbacks
 myMainLoopCallbacks: GDE.MainLoopCallbacks = {

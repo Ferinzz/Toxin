@@ -28,10 +28,9 @@ core_setup: Toxin.inits_deinits= {
     {},
 }
 core_init :: proc "c" (userdata: rawptr) {
+    context = runtime.default_context()
 
-    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
-    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
-    gdAPI.RegisterMainLoopCallbacks(Toxin.Library, &Toxin.myMainLoopCallbacks)
+    Toxin.register_mainloop_callbacks({main_loop_startup, MainLoopFrameCallback, main_loop_shutdown})
 }
 
 servers_init :: proc "c" (userdata: rawptr) {
@@ -60,7 +59,8 @@ editor_deinit :: proc "c" (userdata: rawptr) {
 
 }
 
-post_init_class_init :: proc() {
+main_loop_startup :: proc "c" () {
+    context = runtime.default_context()
     Toxin._Init_Singletons(&singletons)
 
     Classes.Sprite2D_Init_(&Texture_Class)
@@ -76,6 +76,5 @@ post_init_class_init :: proc() {
     Classes.Window_Init_(&Window_MethodBind_List)
 }
 
-main_loop_startup :: proc() {
-
+main_loop_shutdown :: proc "c" () {
 }
