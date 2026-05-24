@@ -159,6 +159,7 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
             if setup.core_deinit != nil {
                 setup.core_deinit(setup)
             }
+            Classes.destroy_class_names()
             return
         case .INITIALIZATION_SERVERS:
             /*
