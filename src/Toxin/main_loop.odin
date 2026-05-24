@@ -27,8 +27,20 @@ import "core:fmt"
 */
 
 
-scene_tree_obj: ^GDW.Object
-root_node_instance: ^GDW.Object
+@(private)
+myMainLoopCallbacks: GDE.MainLoopCallbacks
+@(private)
+toxinMainLoopCallbacks: GDE.MainLoopCallbacks = {
+    MainLoopStartupCallback,
+    nil,
+    MainLoopShutdownCallback,
+}
+register_mainloop_callbacks :: proc(mainLoopCallbacks: GDE.MainLoopCallbacks) {
+    myMainLoopCallbacks.startup_func = mainLoopCallbacks.startup_func
+    toxinMainLoopCallbacks.frame_func = mainLoopCallbacks.frame_func
+    myMainLoopCallbacks.shutdown_func = mainLoopCallbacks.shutdown_func
+    gdAPI.RegisterMainLoopCallbacks(Library, &toxinMainLoopCallbacks)
+}
 
 /* Called when starting the main loop.
 * This is the point in time to grab the reference to a mainLoop. For example if you wrote your own and want to listen in on it.
@@ -41,6 +53,11 @@ MainLoopStartupCallback :: proc "c" () {
     //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
+    _Init_Singletons(&singletons)
+    Classes.SceneTree_Init_(&SceneTree_Class)
+    scene_tree_obj= _getMainLoop()
+    _getRoot()
+
     if myMainLoopCallbacks.startup_func != nil {
         myMainLoopCallbacks.startup_func()
     }
@@ -68,14 +85,6 @@ MainLoopFrameCallback :: proc "c" () {
     }
 
 };
-@(private)
-myMainLoopCallbacks: GDE.MainLoopCallbacks
-register_mainloop_callbacks :: proc(mainLoopCallbacks: GDE.MainLoopCallbacks) {
-    myMainLoopCallbacks.startup_func = mainLoopCallbacks.startup_func
-    myMainLoopCallbacks.frame_func = mainLoopCallbacks.frame_func
-    myMainLoopCallbacks.shutdown_func = mainLoopCallbacks.shutdown_func
-    gdAPI.RegisterMainLoopCallbacks(Library, &myMainLoopCallbacks)
-}
 /*
 //create a GDE.MainLoopCallbacks struct which will hold the pointers to the callbacks
 myMainLoopCallbacks: GDE.MainLoopCallbacks = {

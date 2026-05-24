@@ -7,7 +7,7 @@ import GDE "../GDWrapper/gdAPI/gdextension"
 import "base:runtime"
 import "base:builtin"
 
-_getMainLoop :: proc(singletons: Singletons) -> (mainLoop: GDE.ObjectPtr) {
+_getMainLoop :: proc() -> (mainLoop: GDE.ObjectPtr) {
     when builtin.ODIN_DEBUG {
         assertMessage:= "Need to init the Singletons before using them. Call Init_Singletons_C before calling this function"
         assert(singletons.Engine != nil, assertMessage)
@@ -17,8 +17,13 @@ _getMainLoop :: proc(singletons: Singletons) -> (mainLoop: GDE.ObjectPtr) {
     return
 }
 
-_getRoot :: proc(singletons: Singletons, scenetree_class: Classes.SceneTree_MethodBind_List) -> (root: GDE.ObjectPtr) {
-    scenetree_class.get_root->m_call(getMainLoop(singletons), nil, &root)
+_getRoot :: proc() -> (root: GDE.ObjectPtr) {
+    SceneTree_Class.get_root->m_call(_getMainLoop(), nil, &root)
+    return
+}
+
+get_current_scene :: proc() -> (scene: ^Object) {
+    SceneTree_Class.get_current_scene->m_call(scene_tree_obj, r_ret = &scene)
     return
 }
 

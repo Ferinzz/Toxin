@@ -118,14 +118,12 @@ Node_Class: Classes.Node_MethodBind_List
 Viewport_Class: Classes.Viewport_MethodBind_List
 CanvasItem_Class: Classes.CanvasItem_MethodBind_List
 CanvasGroup_Class: Classes.CanvasGroup_MethodBind_List
-SceneTree_Class: Classes.SceneTree_MethodBind_List
 
 Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
 World2D_Class: Classes.World2D_MethodBind_List
 Texture2D_Class: Classes.Texture2D_MethodBind_List
 Engine: Classes.Engine_MethodBind_List
 
-singletons: Toxin.Singletons
 
 //Constructor receive an opaque pointer which is in reality a pointer to this class's container.
 constructor :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
@@ -181,21 +179,17 @@ MainLoopStartupCallback :: proc "c" () {
     //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
-    Toxin._Init_Singletons(&singletons)
 
     Classes.Sprite2D_Init_(&Texture_Class)
     Classes.Node2D_Init_(&Node2D_Class)
     Classes.Node_Init_(&Node_Class)
     Classes.Window_Init_(&Window_MethodBind_List)
-    Classes.SceneTree_Init_(&SceneTree_Class)
 
     //myEngine:= gdAPI.GlobalGetSingleton(&ClassDB)
     //Engine.get_main_loop->m_call(Toxin.EngineObj(), nil, &scene_tree_obj)
-    scene_tree_obj= Toxin._getMainLoop(singletons)
     //SceneTree_Class.get_root->m_call(scene_tree_obj, nil, &root)
-    Toxin._getRoot(singletons, SceneTree_Class)
     scene: ^Toxin.Object
-    SceneTree_Class.get_current_scene->m_call(scene_tree_obj, nil, &scene)
+    Toxin.SceneTree_Class.get_current_scene->m_call(scene_tree_obj, nil, &scene)
     Classes.Window_Init_(&Window_MethodBind_List)
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.

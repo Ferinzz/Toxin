@@ -87,15 +87,15 @@ Init_Singletons :: proc "c" (singletons: ^Singletons) {
 }
 
 @(export)
-getMainLoop :: proc "c" (singletons: Singletons) -> ^Object {
+getMainLoop :: proc "c" () -> ^Object {
     context = runtime.default_context()
-    return _getMainLoop(singletons)
+    return _getMainLoop()
 }
 
 @(export)
-getRoot :: proc "c" (singletons: Singletons, scenetree_class: Classes.SceneTree_MethodBind_List) -> ^Object {
+getRoot :: proc "c" () -> ^Object {
     context = runtime.default_context()
-    return _getRoot(singletons, scenetree_class)
+    return _getRoot()
 }
 
 @(export)
@@ -105,6 +105,10 @@ EngineObj :: proc "c" () -> ^Object {
 }
 
 Library : GDE.ClassDB = nil
+singletons: Singletons
+scene_tree_obj: ^Object
+root_node_instance: ^Object
+SceneTree_Class: Classes.SceneTree_MethodBind_List
 
 //singletons: Singletons
 

@@ -61,19 +61,18 @@ editor_deinit :: proc "c" (userdata: rawptr) {
 
 main_loop_startup :: proc "c" () {
     context = runtime.default_context()
-    Toxin._Init_Singletons(&singletons)
 
     Classes.Sprite2D_Init_(&Texture_Class)
     Classes.Node2D_Init_(&Node2D_Class)
     Classes.Node_Init_(&Node_Class)
     Classes.Window_Init_(&Window_MethodBind_List)
-    Classes.SceneTree_Init_(&SceneTree_Class)
 
-    scene_tree_obj= Toxin._getMainLoop(singletons)
-    Toxin._getRoot(singletons, SceneTree_Class)
-    scene: ^Toxin.Object
-    SceneTree_Class.get_current_scene->m_call(scene_tree_obj, nil, &scene)
     Classes.Window_Init_(&Window_MethodBind_List)
+    scene: ^Toxin.Object = Toxin.get_current_scene()
+    
+    //A scene is not added when running editor mode first time. Check for the scene before trying to add the child to it.
+    if scene != nil {
+    }
 }
 
 main_loop_shutdown :: proc "c" () {

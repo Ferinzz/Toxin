@@ -54,6 +54,7 @@ toxin_entry :: proc(p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: 
     initialization.deinitialize = _extensionDeinit
     initialization.userdata     = setup
     initialization.minimum_initialization_level = .INITIALIZATION_SCENE
+    gdAPI.RegisterMainLoopCallbacks(Library, &toxinMainLoopCallbacks)
     return true
 }
 
