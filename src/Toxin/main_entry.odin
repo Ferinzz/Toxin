@@ -185,6 +185,7 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
                 setup.core_deinit(setup)
             }
             unregister_custom_class(setup.classes.core[:], InitializationLevel(deinitLevel))
+            delete(setup.classes.core)
             Classes.destroy_class_names()
             return
         case .INITIALIZATION_SERVERS:
@@ -196,7 +197,9 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
             }
             if setup.servers_deinit != nil {
                 setup.servers_deinit(setup)
-            }unregister_custom_class(setup.classes.server[:], InitializationLevel(deinitLevel))
+            }
+            unregister_custom_class(setup.classes.server[:], InitializationLevel(deinitLevel))
+            delete(setup.classes.server)
             return
         case .INITIALIZATION_SCENE:
             /*
@@ -209,6 +212,7 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
                 setup.scene_deinit(setup)
             }
             unregister_custom_class(setup.classes.scene[:], InitializationLevel(deinitLevel))
+            delete(setup.classes.scene)
             return
         //INITIALIZATION_EDITOR should only happen if running from the editor.
         case .INITIALIZATION_EDITOR:
@@ -222,6 +226,7 @@ _extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationL
                 setup.editor_deinit(setup)
             }
             unregister_custom_class(setup.classes.editor[:], InitializationLevel(deinitLevel))
+            delete(setup.classes.editor)
             return
         case .MAX_INITIALIZATION_LEVEL:
             /*

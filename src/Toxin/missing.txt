@@ -2,7 +2,7 @@ export method vararg missing
 static parameters
 test more than default signals
 --maybe other places vararg could be used instead of slice
-++cleanup init process.
+cleanup init process. Partial
 --smooth out variant/type operators
 --type array + dictionaries
 --classes used callback
