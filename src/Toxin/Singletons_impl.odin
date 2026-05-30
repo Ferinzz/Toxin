@@ -31,7 +31,7 @@ _EngineObj :: proc() -> ^Object {
     return gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
 }
 
-@(export)
+//@(export)
 SceneTree_M_List: Classes.SceneTree_MethodBind_List
 
 _Init_Singletons :: proc(singletons: ^Singletons) {

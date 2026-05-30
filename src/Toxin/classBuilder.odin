@@ -161,7 +161,7 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
 * Called by User, bltn_Create, TMAlloc_Create
 * bltn_Create, TMAlloc_Create will automatically call this method. If you are not owning the allocation portion you can ignore this exists.
 */
-@(export)
+//@(export)
 Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool, class_obj: ^Class_Container(CC_Dummy)) -> (^Object) {
     context = runtime.default_context()
 
@@ -180,7 +180,7 @@ Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bo
 
 //Called by Godot
 //This is the default constructor used
-@(export)
+//@(export)
 bltn_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
 
@@ -194,7 +194,7 @@ bltn_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize
 
 //Called by Godot
 //pass to register via ClassCreateInfo to override default
-@(export)
+//@(export)
 TMAlloc_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
     context = runtime.default_context()
 
@@ -236,7 +236,7 @@ Destroy_ :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInsta
 }
 
 //Called by Godot
-@(export)
+//@(export)
 TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){
@@ -250,7 +250,7 @@ TMFree_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.Clas
 
 //Called by Godot
 //This is the default destructor used
-@(export)
+//@(export)
 bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassInstancePtr) {
     context = runtime.default_context()
     if (p_instance == nil){

@@ -6,16 +6,16 @@ import "core:math"
 
 
 @(rodata)
-@(export)
+//@(export)
 Vector4i_ZERO : Vector4i= {0, 0, 0, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector4i_ONE : Vector4i= {1, 1, 1, 1}
 @(rodata)
-@(export)
+//@(export)
 Vector4i_MIN : Vector4i= {-2147483648, -2147483648, -2147483648, -2147483648}
 @(rodata)
-@(export)
+//@(export)
 Vector4i_MAX : Vector4i= {2147483647, 2147483647, 2147483647, 2147483647}
 
 Vector4i_Axis :: enum i64 {

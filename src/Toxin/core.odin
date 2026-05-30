@@ -6,7 +6,7 @@ import "base:runtime"
 import GDE "../GDWrapper/gdAPI/gdextension"
 import "core:c"
 
-@(export)
+//@(export)
 inits: struct {
     core: Core_Init_Callback,
     servers: Servers_Init_Callback,
@@ -57,7 +57,7 @@ Servers_deInit_Callback :: #type proc "c" (userdata: rawptr);
 Scene_deInit_Callback :: #type proc "c" (userdata: rawptr);
 Editor_deInit_Callback :: #type proc "c" (userdata: rawptr);
 
-@(export)
+//@(export)
 Deinits: struct {
     core: Core_DeInit_Callback,
     servers: Servers_DeInit_Callback,
@@ -201,7 +201,7 @@ Singletons :: struct {
 * init_level: the current initialization level of Godot's startup procedure.
 * class_info: the information about the class which you would like to use when customizing.
 */
-@(export)
+//@(export)
 Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, class_info: GDE.ClassCreationInfo4) {
         context = runtime.default_context()
         _Register(deets, init_level, class_info)
@@ -211,7 +211,7 @@ Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, clas
 * default for class_info would be just to expose it.
 * read definition of GDE.ClassCreationInfo4 for more details on each field.
 */
-@(export, rodata)
+//@(export, rodata)
 class_info_Default: GDE.ClassCreationInfo4 = {
     is_virtual = false,
     is_abstract = false,
@@ -248,7 +248,7 @@ Class_Deets :: struct {
     GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
 }
 
-//@(export)
+////@(export)
 vtable_type:: enum c.int {
     None,
     Node,
@@ -266,7 +266,7 @@ required_deets:: struct #all_or_none{
     name: string,
 }
 
-//@(export)
+////@(export)
 InitializationLevel :: enum c.int {
 	INITIALIZATION_CORE,
 	INITIALIZATION_SERVERS,
@@ -277,12 +277,12 @@ InitializationLevel :: enum c.int {
 
 //Optional. Toxin will default to Godot's memory if you do not provide this.
 //Pass TMAlloc_Create via classCreateInfo during Registration if you use this.
-@(export)
+//@(export)
 TMAlloc : proc "c" (p_class_user_data: ^Class_Deets, p_bytes: Int) -> rawptr
 
 //Optional. Toxin will default to Godot's memory if you do not provide this.
 //Pass TMAlloc_Destroy via classCreateInfo during Registration if you use this.
-@(export)
+//@(export)
 TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
 
 /*
@@ -299,26 +299,26 @@ Class_Container_c :: struct #packed {
 
 //Called by Godot
 //This is the default constructor used. You do not need to pass this explicitly.
-@(export)
+//@(export)
 bltn_Alloc_Create:= bltn_Create
 
 //Called by Godot
 //pass to register via ClassCreateInfo to override default.
-@(export)
+//@(export)
 cstm_Alloc_Create2 := TMAlloc_Create
 
 //Called by Godot
 //This is the default destructor used. No need to pass to Register.
-@(export)
+//@(export)
 bltn_Alloc_Destroy:= bltn_Destroy
 
 //Called by Godot
 //pass to register via ClassCreateInfo to override default.
-@(export)
+//@(export)
 cstm_Free_Destroy:= TMFree_Destroy
 
 //Pass to Register via ClassCreateInfo if your class will use any virtual methods.
-@(export)
+//@(export)
 get_virtual:= _get_virtual
 
 /*
@@ -328,7 +328,7 @@ get_virtual:= _get_virtual
 * free_callback is called whenever the object is freed. Use for destructor side-effects (all the children are dead, kill parent)
 * reference_callback called on reference. Reply if this can be destroyed.
 */
-@(export)
+//@(export)
 classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     create_callback    = nil,
     free_callback      = nil,
@@ -339,7 +339,7 @@ classBindingCallbacks: GDE.InstanceBindingCallbacks = {
 //*******Variants*******\\
 //**********************\\
 
-@(export)
+//@(export)
 _variant_get_ptr :: proc "c" (variant: ^Variant) -> rawptr {
     context = runtime.default_context()
     return _variant_get_ptr(variant)

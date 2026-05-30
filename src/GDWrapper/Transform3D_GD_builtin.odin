@@ -11,7 +11,7 @@ Transform3D_const:: enum u8 {
   FLIP_Z,
 }
 
-@(export, rodata)
+//@(export, rodata)
 Transform3D_Defaults := [Transform3D_const]Transform3D{
   .IDENTITY = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0},
   .FLIP_X = {-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0},

@@ -6,49 +6,49 @@ import "core:math"
 
 
 @(rodata)
-@(export)
+//@(export)
 Vector3_ZERO : Vector3= {0, 0, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_ONE : Vector3= {1, 1, 1}
 @(rodata)
-@(export)
+//@(export)
 Vector3_INF : Vector3= {math.INF_F32, math.INF_F32, math.INF_F32}
 @(rodata)
-@(export)
+//@(export)
 Vector3_LEFT : Vector3= {-1, 0, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_RIGHT : Vector3= {1, 0, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_UP : Vector3= {0, 1, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_DOWN : Vector3= {0, -1, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_FORWARD : Vector3= {0, 0, -1}
 @(rodata)
-@(export)
+//@(export)
 Vector3_BACK : Vector3= {0, 0, 1}
 @(rodata)
-@(export)
+//@(export)
 Vector3_MODEL_LEFT : Vector3= {1, 0, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_MODEL_RIGHT : Vector3= {-1, 0, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_MODEL_TOP : Vector3= {0, 1, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_MODEL_BOTTOM : Vector3= {0, -1, 0}
 @(rodata)
-@(export)
+//@(export)
 Vector3_MODEL_FRONT : Vector3= {0, 0, 1}
 @(rodata)
-@(export)
+//@(export)
 Vector3_MODEL_REAR : Vector3= {0, 0, -1}
 
 Vector3_Axis :: enum i64 {

@@ -1,6 +1,6 @@
 package GDWrapper
 
-@(export)
+//@(export)
 Init_Builtins :: proc "c" () {
 
 init_StringName_Methods(&StringName_M_List) //MUST be first in order to destroy the StringNames which will be created for retrieving MethodBind
@@ -42,77 +42,77 @@ init_PackedColorArray_Methods(&PackedColorArray_M_List)
 init_PackedVector4Array_Methods(&PackedVector4Array_M_List)
 }
 
-@(export)
+//@(export)
 StringName_M_List: StringName_Methods_list //StringName utilities will use this specific Method List. Make sure this is initialized before doing anything yourself.
-@(export)
+//@(export)
 Bool_M_List: Bool_Methods_list
-@(export)
+//@(export)
 Int_M_List: Int_Methods_list
-@(export)
+//@(export)
 float_M_List: float_Methods_list
-@(export)
+//@(export)
 Vector2_M_List: Vector2_Methods_list
-@(export)
+//@(export)
 Vector2i_M_List: Vector2i_Methods_list
-@(export)
+//@(export)
 Rect2_M_List: Rect2_Methods_list
-@(export)
+//@(export)
 Rect2i_M_List: Rect2i_Methods_list
-@(export)
+//@(export)
 Vector3_M_List: Vector3_Methods_list
-@(export)
+//@(export)
 Vector3i_M_List: Vector3i_Methods_list
-@(export)
+//@(export)
 Vector4_M_List: Vector4_Methods_list
-@(export)
+//@(export)
 Vector4i_M_List: Vector4i_Methods_list
-@(export)
+//@(export)
 Plane_M_List: Plane_Methods_list
-@(export)
+//@(export)
 Color_M_List: Color_Methods_list
-@(export)
+//@(export)
 Quaternion_M_List: Quaternion_Methods_list
-@(export)
+//@(export)
 gdstring_M_List: gdstring_Methods_list
-@(export)
+//@(export)
 NodePath_M_List: NodePath_Methods_list
-@(export)
+//@(export)
 RID_M_List: RID_Methods_list
-@(export)
+//@(export)
 Callable_M_List: Callable_Methods_list
-@(export)
+//@(export)
 Signal_M_List: Signal_Methods_list
-@(export)
+//@(export)
 Dictionary_M_List: Dictionary_Methods_list
-@(export)
+//@(export)
 Transform2D_M_List: Transform2D_Methods_list
-@(export)
+//@(export)
 AABB_M_List: AABB_Methods_list
-@(export)
+//@(export)
 Basis_M_List: Basis_Methods_list
-@(export)
+//@(export)
 Transform3D_M_List: Transform3D_Methods_list
-@(export)
+//@(export)
 Projection_M_List: Projection_Methods_list
-@(export)
+//@(export)
 Array_M_List: Array_Methods_list
-@(export)
+//@(export)
 PackedByteArray_M_List: PackedByteArray_Methods_list
-@(export)
+//@(export)
 PackedInt32Array_M_List: PackedInt32Array_Methods_list
-@(export)
+//@(export)
 PackedInt64Array_M_List: PackedInt64Array_Methods_list
-@(export)
+//@(export)
 PackedFloat32Array_M_List: PackedFloat32Array_Methods_list
-@(export)
+//@(export)
 PackedFloat64Array_M_List: PackedFloat64Array_Methods_list
-@(export)
+//@(export)
 PackedStringArray_M_List: PackedStringArray_Methods_list
-@(export)
+//@(export)
 PackedVector2Array_M_List: PackedVector2Array_Methods_list
-@(export)
+//@(export)
 PackedVector3Array_M_List: PackedVector3Array_Methods_list
-@(export)
+//@(export)
 PackedColorArray_M_List: PackedColorArray_Methods_list
-@(export)
+//@(export)
 PackedVector4Array_M_List: PackedVector4Array_Methods_list

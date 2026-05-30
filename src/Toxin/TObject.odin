@@ -17,7 +17,7 @@ Objectc_C :: struct {
     using methods: ^Classes.Object_MethodBind_List,
 }
 
-@(export)
+//@(export)
 Object_M_methods: Classes.Object_MethodBind_List
 /*
 Objectc_methods_list:: struct($T:typeid) {
