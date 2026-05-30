@@ -415,7 +415,8 @@ print_warning:: proc(message: string, error: os.Error) {
 
 AAAUtil_procedures :: `
 
-classDBGetMethodBind3 :: proc "c" (className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
+//MAKE SURE THIS IS NO INLINED OR SUFFER HUGE BINARY AND COMPILE TIME
+classDBGetMethodBind3 :: #force_no_inline proc "c" (className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
     native_class_name: ^GDW.StringName;
     method_name: GDW.StringName;
 
@@ -467,7 +468,8 @@ Method_Callback_Compare_Info :: `
 Method_Callback_Compare_Info :: struct {
     name: GDW.StringName,
     p_hash: u32,
-};`
+};
+`
 
 
 ClassName_Index :: `
