@@ -339,7 +339,6 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin.property_group(Toxin.Library, className^, "testing_group", "grp")
     signalName:= Toxin.register_signal2(className, "test_signal", {})
     Toxin.Destroy(&signalName)
-    @(rodata, static)
     somproperty:= Toxin.gsetter_userdata{
         gs_type=.INT,
         getter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
@@ -354,62 +353,62 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         },
         userdata= nil,
     }
-    Toxin.Export_Default(className, &somproperty, "grp_someProperty")
-
+    @(rodata, static)
+    somproperty2:Toxin.gsetter_userdata_t(Toxin.Int, THIS_CLASS_NAME)= {
+        gs_type=.INT,
+        getter_method= proc "c" (Object: ^Toxin.Class_Container(THIS_CLASS_NAME)) -> Toxin.Int {
+            return Object.class.someProperty
+        },
+        setter_method= proc "c" (Object: ^Toxin.Class_Container(THIS_CLASS_NAME), args: ^Toxin.Int) {
+            Object.class.someProperty = args^
+        },
+        fieldname = "someProperty"
+    }
+    //Toxin.Export_Default(className, &somproperty, "grp_someProperty")
+    Toxin.Export_Default2(className, &somproperty2)
     Toxin.property_subgroup(Toxin.Library, className^, "testing_subgroup", "sbgrp")
     @(rodata, static)
-    rarray:= Toxin.gsetter_userdata{
+    rarray:= Toxin.gsetter_userdata_t(Toxin.Array, THIS_CLASS_NAME){
         gs_type=.ARRAY,
-        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            r_return:=cast(^Toxin.Array)r_return
-            r_return^ = Object.rarray
+        getter_method= proc"c"(Object: ^Toxin.Class_Container(THIS_CLASS_NAME)) -> Toxin.Array{
+            return Object.rarray
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            args:= cast(^Toxin.Array)args
-            Toxin.Destroy(&Object.rarray)
-            Toxin.Ref_Count(args, &Object.rarray)
+        setter_method= proc"c"(Object: ^Toxin.Class_Container(THIS_CLASS_NAME), args: ^Toxin.Array){
+            Object.rarray = args^
         },
-        userdata= nil,
+        fieldname = "rarray",
     }
-    Toxin.Export_Default(className, &rarray, "sbgrp_rarray")
+    //Toxin.Export_Default(className, &rarray, "sbgrp_rarray")
+    Toxin.Export_Default2(className, &rarray)
     //Toxin.Export(className, THIS_CLASS_NAME, "rarray")
 
     @(rodata, static)
-    anarray:= Toxin.gsetter_userdata{
+    anarray:= Toxin.gsetter_userdata_t(Toxin.PackedInt32Array, THIS_CLASS_NAME){
         gs_type=.PACKED_INT32_ARRAY,
-        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            r_return:=cast(^Toxin.PackedInt32Array)r_return
-            r_return^= Object.an_array
+        getter_method= proc"c"(Object: ^Toxin.Class_Container(THIS_CLASS_NAME)) -> Toxin.PackedInt32Array{
+            return Object.an_array
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            args:= cast(^Toxin.PackedInt32Array)args
-            Toxin.Ref_Count(args, &Object.an_array)
+        setter_method= proc"c"(Object: ^Toxin.Class_Container(THIS_CLASS_NAME), args: ^Toxin.PackedInt32Array){
+            Toxin.Ref_Count(&Object.an_array, args)
         },
-        userdata= nil,
+        fieldname = "anarray",
     }
-    Toxin.Export_Default(className, &anarray, "anarray")
+    //Toxin.Export_Default(className, &anarray, "anarray")
+    Toxin.Export_Default2(className, &anarray)
 
     @(rodata, static)
-    dictionary_type:= Toxin.gsetter_userdata{
+    dictionary_type:= Toxin.gsetter_userdata_t(Toxin.Dictionary, THIS_CLASS_NAME){
         gs_type=.DICTIONARY,
-        getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            r_return:=cast(^Toxin.Dictionary)r_return
-            r_return^ = Object.dictionary_type
+        getter_method= proc"c"(Object: ^Toxin.Class_Container(THIS_CLASS_NAME)) -> Toxin.Dictionary{
+            return Object.dictionary_type
         },
-        setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            args:= cast(^Toxin.Dictionary)args
-            Toxin.Destroy(&Object.dictionary_type)
-            Toxin.Ref_Count(args, &Object.dictionary_type)
+        setter_method= proc"c"(Object: ^Toxin.Class_Container(THIS_CLASS_NAME), args: ^Toxin.Dictionary){
+            Toxin.Ref_Count(&Object.dictionary_type, args)
         },
-        userdata= nil,
+        fieldname = "dictionary_type",
     }
-    Toxin.Export_Default(className, &dictionary_type, "dictionary_type")
+    //Toxin.Export_Default(className, &anarray, "anarray")
+    Toxin.Export_Default2(className, &dictionary_type)
 
     @(rodata, static)
     callable:= Toxin.gsetter_userdata{
@@ -487,8 +486,8 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         gs_type=.AABB,
         getter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            r_return:=cast(^Toxin.AABB)r_return
-            r_return^ = Object.receive
+            r_return:=cast(^^Toxin.AABB)r_return
+            r_return^^ = Object.receive
         },
         setter_method= proc"c"(method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
@@ -498,8 +497,10 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         },
         userdata= nil,
     }
-    Toxin.Export_Default(className, &receive, "receive")
-
+    //Toxin.Export_Default(className, &receive, "receive")
+    typed_dick: Toxin.typed_Dictionary(Toxin.Int, Toxin.Int)
+    val:Toxin.Int
+    Toxin.typed_Dictionary_setter(&typed_dick, &val, &val)
     //Toxin.Export(className, THIS_CLASS_NAME, "receive")
     //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
     //Toxin.Export(className, THIS_CLASS_NAME, "stringname")
