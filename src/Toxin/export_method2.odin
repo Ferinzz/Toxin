@@ -266,7 +266,8 @@ godotPtrCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstance
              sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
              sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
              sics.type_proc_return_type(P, 0) == PackedVector4Array {
-            Ref_Count((cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs)), (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+                ret:= (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
+            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
         } else {
             (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
         }
@@ -275,7 +276,20 @@ godotPtrCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstance
     }
     } else {
     when sics.type_proc_return_count(P) > 0 {
-        (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(arg0)p_instance)
+        when sics.type_proc_return_type(P, 0) == Dictionary || sics.type_proc_return_type(P, 0) == Array ||
+             sics.type_proc_return_type(P, 0) == gdstring || sics.type_proc_return_type(P, 0) == StringName ||
+             sics.type_proc_return_type(P, 0) == Callable || sics.type_proc_return_type(P, 0) == PackedByteArray ||
+             sics.type_proc_return_type(P, 0) == PackedInt32Array || sics.type_proc_return_type(P, 0) == PackedInt64Array ||
+             sics.type_proc_return_type(P, 0) == PackedFloat32Array || sics.type_proc_return_type(P, 0) == PackedFloat64Array ||
+             sics.type_proc_return_type(P, 0) == PackedStringArray || sics.type_proc_return_type(P, 0) == PackedVector2Array ||
+             sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
+             sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
+             sics.type_proc_return_type(P, 0) == PackedVector4Array {
+                ret:= (cast(P)method_userdata)(cast(arg0)p_instance)
+            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        } else {
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(arg0)p_instance)
+        }
     } else {
         func(cast(arg0)p_instance)
     }}
@@ -325,7 +339,7 @@ godotVariantCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInst
     when sics.type_proc_return_count(P) > 0 {
         to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs))))
     } else {
-        variant_multi_return(p_args[:p_argument_count], &s_ptrs)
+        variant_multi_return(p_args, &s_ptrs)
         (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
     }
     } else {
@@ -384,7 +398,8 @@ godotPtrCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstan
              sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
              sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
              sics.type_proc_return_type(P, 0) == PackedVector4Array {
-            Ref_Count((cast(P)method_userdata)(expand_values(s_ptrs)), (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+            ret:= (cast(P)method_userdata)(expand_values(s_ptrs))
+            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
         } else {
             (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = (cast(P)method_userdata)(expand_values(s_ptrs))
         }
@@ -392,8 +407,20 @@ godotPtrCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstan
         (cast(P)method_userdata)(expand_values(s_ptrs))
     }
     } else {
-    when sics.type_proc_return_count(P) > 0 {
-        (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func()
+        when sics.type_proc_return_count(P) > 0 {when sics.type_proc_return_type(P, 0) == Dictionary || sics.type_proc_return_type(P, 0) == Array ||
+             sics.type_proc_return_type(P, 0) == gdstring || sics.type_proc_return_type(P, 0) == StringName ||
+             sics.type_proc_return_type(P, 0) == Callable || sics.type_proc_return_type(P, 0) == PackedByteArray ||
+             sics.type_proc_return_type(P, 0) == PackedInt32Array || sics.type_proc_return_type(P, 0) == PackedInt64Array ||
+             sics.type_proc_return_type(P, 0) == PackedFloat32Array || sics.type_proc_return_type(P, 0) == PackedFloat64Array ||
+             sics.type_proc_return_type(P, 0) == PackedStringArray || sics.type_proc_return_type(P, 0) == PackedVector2Array ||
+             sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
+             sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
+             sics.type_proc_return_type(P, 0) == PackedVector4Array {
+            ret:= (cast(P)method_userdata)()
+            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        } else {
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func()
+        }
     } else {
         func()
     }}
@@ -440,9 +467,9 @@ godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassIn
     }
     when sics.type_proc_parameter_count(P) > 0 {
     when sics.type_proc_return_count(P) > 0 {
-        to_variant(r_return, (cast(P)method_userdata)(expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs))))
+        to_variant(r_return, (cast(P)method_userdata)(expand_values(variant_multi_return(p_args, s_ptrs))))
     } else {
-        variant_multi_return(p_args[:p_argument_count], &s_ptrs)
+        variant_multi_return(p_args, &s_ptrs)
         (cast(P)method_userdata)(expand_values(s_ptrs))
     }
     } else {
@@ -457,7 +484,7 @@ godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassIn
 }
 
 @(private)
-variant_multi_return :: proc(vars: []^Variant, ptrs: ^$T){
+variant_multi_return :: proc(vars: GDE.ConstVariantPtrargs, ptrs: ^$T){
     for field, i in reflect.struct_fields_zipped(typeid_of(T)) {
         field_value:= reflect.struct_field_value(ptrs^, field)
         switch field_value.id {
@@ -514,51 +541,65 @@ variant_multi_return :: proc(vars: []^Variant, ptrs: ^$T){
 	    case ^Signal:
             ((^^Signal)((field_value).data))^=cast(^Signal)(variant_get_ptr(vars[i]))
 	    case ^Dictionary:
-            GDW.new_type_from_methods(((^^Dictionary)((field_value).data))^, vars[i])
+            when builtin.ODIN_DEBUG {
+                check_array_type(.DICTIONARY, vars[i].VType)}
+                ((^^Dictionary)((field_value).data))^ = new(Dictionary)
+                GDW.new_type_from_methods(((^^Dictionary)((field_value).data))^, vars[i])
 	    case ^Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^Array)((field_value).data))^, vars[i])
+                ((^^Array)((field_value).data))^ = new(Array)
+                GDW.new_type_from_methods(((^^Array)((field_value).data))^, vars[i])
 	    case ^PackedByteArray:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_BYTE_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedByteArray)((field_value).data))^, vars[i])
+                ((^^PackedByteArray)((field_value).data))^ = new(PackedByteArray)
+                GDW.new_type_from_methods(((^^PackedByteArray)((field_value).data))^, vars[i])
 	    case ^PackedInt32Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_INT32_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedInt32Array)((field_value).data))^, vars[i])
+                ((^^PackedInt32Array)((field_value).data))^ = new(PackedInt32Array)
+                GDW.new_type_from_methods(((^^PackedInt32Array)((field_value).data))^, vars[i])
 	    case ^PackedInt64Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_INT64_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedInt64Array)((field_value).data))^, vars[i])
+                ((^^PackedInt64Array)((field_value).data))^ = new(PackedInt64Array)
+                GDW.new_type_from_methods(((^^PackedInt64Array)((field_value).data))^, vars[i])
 	    case ^PackedFloat32Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_FLOAT32_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedFloat32Array)((field_value).data))^, vars[i])
+                ((^^PackedFloat32Array)((field_value).data))^ = new(PackedFloat32Array)
+                GDW.new_type_from_methods(((^^PackedFloat32Array)((field_value).data))^, vars[i])
 	    case ^PackedFloat64Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_FLOAT64_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedFloat64Array)((field_value).data))^, vars[i])
+                ((^^PackedFloat64Array)((field_value).data))^ = new(PackedFloat64Array)
+                GDW.new_type_from_methods(((^^PackedFloat64Array)((field_value).data))^, vars[i])
 	    case ^PackedStringArray:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_STRING_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedStringArray)((field_value).data))^, vars[i])
+                ((^^PackedStringArray)((field_value).data))^ = new(PackedStringArray)
+                GDW.new_type_from_methods(((^^PackedStringArray)((field_value).data))^, vars[i])
 	    case ^PackedVector2Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_VECTOR2_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedVector2Array)((field_value).data))^, vars[i])
+                ((^^PackedVector2Array)((field_value).data))^ = new(PackedVector2Array)
+                GDW.new_type_from_methods(((^^PackedVector2Array)((field_value).data))^, vars[i])
 	    case ^PackedVector3Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_VECTOR3_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedVector3Array)((field_value).data))^, vars[i])
+                ((^^PackedVector3Array)((field_value).data))^ = new(PackedVector3Array)
+                GDW.new_type_from_methods(((^^PackedVector3Array)((field_value).data))^, vars[i])
         case ^PackedColorArray:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_COLOR_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedColorArray)((field_value).data))^, vars[i])
+                ((^^PackedColorArray)((field_value).data))^ = new(PackedColorArray)
+                GDW.new_type_from_methods(((^^PackedColorArray)((field_value).data))^, vars[i])
 	    case ^PackedVector4Array:
             when builtin.ODIN_DEBUG {
                 check_array_type(.PACKED_VECTOR4_ARRAY, vars[i].VType)}
-            GDW.new_type_from_methods(((^^PackedVector4Array)((field_value).data))^, vars[i])
+                ((^^PackedVector4Array)((field_value).data))^ = new(PackedVector4Array)
+                GDW.new_type_from_methods(((^^PackedVector4Array)((field_value).data))^, vars[i])
         case:
             panic("Should be impossible to reach this. Type of method parameter is not supported.")
     }
@@ -597,29 +638,41 @@ multi_destructor :: proc(ptrs: ^$T) {
 	    case ^Callable:
 	    case ^Signal:
 	    case ^Dictionary:
-            Destroy(field_value.(^^Dictionary)^)
+            Destroy((cast(^^Dictionary)field_value.data)^)
+            free((cast(^^Dictionary)field_value.data)^)
 	    case ^Array:
-            Destroy(field_value.(^^Array)^)
+            Destroy((cast(^^Array)field_value.data)^)
+            free((cast(^^Array)field_value.data)^)
 	    case ^PackedByteArray:
-            Destroy(field_value.(^^PackedByteArray)^)
+            Destroy((cast(^^PackedByteArray)field_value.data)^)
+            free((cast(^^PackedByteArray)field_value.data)^)
 	    case ^PackedInt32Array:
-            Destroy(field_value.(^^PackedInt32Array)^)
+            Destroy((cast(^^PackedInt32Array)field_value.data)^)
+            free((cast(^^PackedInt32Array)field_value.data)^)
 	    case ^PackedInt64Array:
-            Destroy(field_value.(^^PackedInt64Array)^)
+            Destroy((cast(^^PackedInt64Array)field_value.data)^)
+            free((cast(^^PackedInt64Array)field_value.data)^)
 	    case ^PackedFloat32Array:
-            Destroy(field_value.(^^PackedFloat32Array)^)
+            Destroy((cast(^^PackedFloat32Array)field_value.data)^)
+            free((cast(^^PackedFloat32Array)field_value.data)^)
 	    case ^PackedFloat64Array:
-            Destroy(field_value.(^^PackedFloat64Array)^)
+            Destroy((cast(^^PackedFloat64Array)field_value.data)^)
+            free((cast(^^PackedFloat64Array)field_value.data)^)
 	    case ^PackedStringArray:
-            Destroy(field_value.(^^PackedStringArray)^)
+            Destroy((cast(^^PackedStringArray)field_value.data)^)
+            free((cast(^^PackedStringArray)field_value.data)^)
 	    case ^PackedVector2Array:
-            Destroy(field_value.(^^PackedVector2Array)^)
+            Destroy((cast(^^PackedVector2Array)field_value.data)^)
+            free((cast(^^PackedVector2Array)field_value.data)^)
 	    case ^PackedVector3Array:
-            Destroy(field_value.(^^PackedVector3Array)^)
+            Destroy((cast(^^PackedVector3Array)field_value.data)^)
+            free((cast(^^PackedVector3Array)field_value.data)^)
         case ^PackedColorArray:
-            Destroy(field_value.(^^PackedColorArray)^)
+            Destroy((cast(^^PackedColorArray)field_value.data)^)
+            free((cast(^^PackedColorArray)field_value.data)^)
 	    case ^PackedVector4Array:
-            Destroy(field_value.(^^PackedVector4Array)^)
+            Destroy((cast(^^PackedVector4Array)field_value.data)^)
+            free((cast(^^PackedVector4Array)field_value.data)^)
         case:
             panic("Should be impossible to reach this. Type of method parameter is not supported.")
     }
