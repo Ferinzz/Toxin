@@ -168,6 +168,10 @@ Signal :: GDW.Signal
 //WARNING: set id to nil during creation step. Godot allocation does not zero allocate by default.
 Dictionary :: GDW.Dictionary
 
+typed_Dictionary :: struct($K: typeid, $V: typeid) {
+	using GDW.Dictionary,
+}
+
 /*An array of Variants.
 Size changes based on Godot build config.*/
 //WARNING: set id to nil during creation step. Godot allocation does not zero allocate by default.
