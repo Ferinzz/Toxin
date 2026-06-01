@@ -77,6 +77,7 @@ Ref_Count :: proc {
     ref_count_PACKED_COLOR_ARRAY,
     ref_count_PACKED_VECTOR4_ARRAY,
     Reference,
+    safeRef_Object,
 }
 
 ref_count_AABB :: proc "c" (source: ^AABB, copy: ^AABB) {
