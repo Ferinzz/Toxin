@@ -82,7 +82,7 @@ THIS_CLASS_NAME :: struct {
     call_container2: ^Toxin.callable_container,
 }
 
-munum::enum{
+munum::enum Toxin.Int {
     a1,a2,a3,
     a7=7,
 }
@@ -365,7 +365,9 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         fieldname = "someProperty"
     }
     //Toxin.Export_Default(className, &somproperty, "grp_someProperty")
-    Toxin.Export_Default2(className, &somproperty2)
+    //Toxin.Export_Default2(className, &somproperty2)
+    range:=Toxin.Ranged_Num(Toxin.Int){0,5,0,{.none}}
+    Toxin.export_range(className, &somproperty2, range)
     Toxin.property_subgroup(Toxin.Library, className^, "testing_subgroup", "sbgrp")
     @(rodata, static)
     rarray:= Toxin.gsetter_userdata_t(Toxin.Array, THIS_CLASS_NAME){
@@ -497,10 +499,25 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         },
         userdata= nil,
     }
+
+    @(rodata, static)
+    _enum:= Toxin.gsetter_userdata_t(Toxin.Int, THIS_CLASS_NAME){
+        gs_type= .INT,
+        getter_method = proc "c" (method_userdata: ^Toxin.Class_Container(THIS_CLASS_NAME)) -> Toxin.Int {
+            return Toxin.Int(method_userdata.int_as_enum)
+        },
+        setter_method = proc "c" (method_userdata: ^Toxin.Class_Container(THIS_CLASS_NAME), arg: ^Toxin.Int) {
+            method_userdata.int_as_enum = munum(arg^)
+        },
+        fieldname = "int_as_enum",
+    }
+
+    Toxin.export_enum_as_int(className, &_enum, munum)
+
     //Toxin.Export_Default(className, &receive, "receive")
-    typed_dick: Toxin.typed_Dictionary(Toxin.Int, Toxin.Int)
-    val:Toxin.Int
-    Toxin.typed_Dictionary_setter(&typed_dick, &val, &val)
+    //typed_dick: Toxin.typed_Dictionary(Toxin.Int, Toxin.Int)
+    //val:Toxin.Int
+    //Toxin.typed_Dictionary_setter(&typed_dick, &val, &val)
     //Toxin.Export(className, THIS_CLASS_NAME, "receive")
     //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
     //Toxin.Export(className, THIS_CLASS_NAME, "stringname")

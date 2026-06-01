@@ -1,6 +1,7 @@
 package Toxin
 
 import GDW "../GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
 
 //Will likely need to make some build specific definitions since the size of things changes based on the Godot build used.
 
@@ -235,17 +236,17 @@ PackedVector4Array :: GDW.PackedVector4Array
 
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyhint
-PropertyHint :: GDW.PropertyHint
+PropertyHint :: GDE.PropertyHint
 
 
-PROPERTY_USAGE_DEFAULT :: GDW.PROPERTY_USAGE_DEFAULT
-PropertyUsageFlagsbits:: GDW.PropertyUsageFlagsbits
+PROPERTY_USAGE_DEFAULT :: GDE.PROPERTY_USAGE_DEFAULT
+PropertyUsageFlagsbits:: GDE.PropertyUsageFlagsbits
 //To know what to actually do with this flag set check docs linked below.
 //https://docs.godotengine.org/en/stable/classes/class_%40globalscope.html#enum-globalscope-propertyusageflags
 //PROPERTY_USAGE_DEFAULT = 6,
 //An export preset property with this flag contains confidential information and is stored separately from the rest of the export preset configuration.
 
-PropertyUsageFlags:: GDW.PropertyUsageFlags
+PropertyUsageFlags:: GDE.PropertyUsageFlags
 
 ConnectFlags :: GDW.ConnectFlags
 

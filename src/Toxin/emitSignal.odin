@@ -158,7 +158,7 @@ Create_Callable :: proc(r_callable: ^Callable,
         less_than_func:          GDE.CallableCustomLessThan = nil, //May be useful if you're sotring them in an array?
         to_string_func:          GDE.CallableCustomToString = nil, //Stringify the Callable info.
         get_argument_count_func: GDE.CallableCustomGetArgumentCount = nil, //Helper func to get arg count at runtime.
-        token:                   GDE.ClassDB = GDW.Library, //Should be the GDE's library pointer.
+        token:                   GDE.ClassDB = Library, //Should be the GDE's library pointer.
     ) {
     //
     s_call_info:GDE.CallableCustomInfo2 = {

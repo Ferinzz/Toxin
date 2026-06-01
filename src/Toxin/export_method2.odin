@@ -182,7 +182,7 @@ godotVariantCallback_sdv :: proc "c" (userdata: $T/method_info($P), p_instance: 
 
 
 //called by the binding methods. You should not need to call this directly yourself.
-bind_method :: proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:GDE.ClassMethodCall, ptrCallFunc: GDE.ClassMethodPtrCall, ret: GDE.VariantType, args: []arg_deets, methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, default_args: []^Variant={}) {
+bind_method :: #force_no_inline proc(class, funcname: ^StringName, user_data: rawptr, vCallFunc:GDE.ClassMethodCall, ptrCallFunc: GDE.ClassMethodPtrCall, ret: GDE.VariantType, args: []arg_deets, methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, default_args: []^Variant={}) {
     maxargs::5
     argsInfo: [maxargs]GDE.PropertyInfo
     for arg, i in args {

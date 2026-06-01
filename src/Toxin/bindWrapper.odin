@@ -349,17 +349,17 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
 * flags: additional usage information.
 * validate: Not implemented. if Odin's callback should verify the range.
 */
-Ranged_Num :: struct ($T: typeid) {
+Ranged_Num :: struct ($T: typeid) #all_or_none {
   min: T,
   max: T,
   step: T,
   flags: Range_Flags,
-  //validate: bool, //Specify if you want Odin callbacks to validate the range.
 }
 
 Range_Flags :: bit_set [Range; Int]
 
 Range :: enum {
+  none,
   or_greater, //Can exceed the max limit
   or_less, //Can go lower than the min limit
   exp, //
@@ -510,19 +510,6 @@ Export_Easing :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     Bind_Property(className_SN, fieldName, .FLOAT, &info, "get_"+fieldName, "set_"+fieldName)
 
     destructProperty(&info)
-}
-
-
-Easing_Type: [Easing_Options]string = {
-  .none = "",
-  .attenuation= "attenuation",
-  .positive_only = "positive_only",
-}
-
-Easing_Options :: enum {
-  none,
-  attenuation,
-  positive_only,
 }
 
 /*
@@ -826,29 +813,6 @@ Export_Layers :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     destructProperty(&prop_info)
 }
 
-//bit flag field for layers.
-//The widget in the Inspector dock will use the layer names defined in ProjectSettings.layer_names
-layers_2d_render:: bit_set[1..=20; u32]
-layers_3d_render:: bit_set[1..=20; u32]
-
-layers_2d_physics:: bit_set[1..=32; u32]
-layers_3d_physics:: bit_set[1..=32; u32]
-
-layers_2d_navigation:: distinct bit_set[1..=32; u32]
-layers_3d_navigation:: bit_set[1..=32; u32]
-
-layers_avoidance:: bit_set[1..=32; u32]
-
-Layer_Type :: enum {
-    LAYERS_2D_RENDER,
-    LAYERS_3D_RENDER,
-    LAYERS_2D_PHYSICS,
-    LAYERS_3D_PHYSICS,
-    LAYERS_2D_NAVIGATION,
-    LAYERS_3D_NAVIGATION,
-    LAYERS_AVOIDANCE,
-}
-
 
 /*
 * Specify the type of path that your Path is representing.
@@ -899,15 +863,6 @@ Export_Path :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName:
 //gdstring to a path to a file or directory.
 Path:: gdstring
 
-PATH_TYPES :: enum {
-  DIR, //path to a directory
-  FILE, //path to a file filters with wildcards like "*.png,*.jpg"
-  FILE_PATH, //stored as raw path instead of UID
-  GLOBAL_DIR, //absolute path to directory
-  GLOBAL_FILE, //absolute path to file
-  SAVE_FILE, //file path. can have wildcards like "*.png,*.jpg".
-  GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
-}
 
 
 /*
@@ -1475,15 +1430,6 @@ Export_proc_As_Tool_Button :: proc(className_SN: ^StringName, $classStruct: type
     return gdCallable
 }
 
-/*
-* used for Export_Tool_Button to specify the details of the button.
-* text: will be displayed in the button itself.
-* icon: the icon type to be displayed alongside the button. ex. ColorRect will show the color selector icon.
-*/
-tool_Button_Info :: struct {
-    text: string,
-    icon: string,
-}
 
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.
@@ -1547,7 +1493,7 @@ makePropertyFull_cstring :: proc(type: GDE.VariantType, name: cstring, hint: GDE
     return info
 }
 
-makePropertyFull_string :: #force_inline proc(type: GDE.VariantType, name: string, hint: GDE.PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+makePropertyFull_string :: proc(type: GDE.VariantType, name: string, hint: PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
 
     prop_name:= new(StringName)
     gdAPI.StringName_Utils.Utf8CharsAndLen(prop_name, raw_data(name), i64(len(name)))
