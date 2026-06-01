@@ -171,6 +171,14 @@ stringNameCompare_StringName :: proc "c" (l_value: ^StringName, r_value: ^String
     return ret
 }
 
+stringname_destroy :: proc(name: StringName) {
+      destruct:=GDE.Variant{
+        .STRING_NAME,
+        {transmute(u64)name,0}
+      }
+      gdAPI.Variant_Utils.Destroy(&destruct)
+}
+
 /*
 getRid :: proc "c" (ref: ^Object, r_ret: ^RID) {
     @(static)GetRID: GDE.MethodBindPtr
