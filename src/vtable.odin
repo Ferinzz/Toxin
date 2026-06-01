@@ -29,7 +29,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     },
     create=constructor,
     destroy=destructor,
-    notification = GDE.ClassNotification2(THI_CLASS_NAME_Notifications),
+    notification = GDE.ClassNotification2(THIS_CLASS_NAME_Notifications),
     Exporter = THIS_CLASS_NAME_Export,
     //vtable ={.Node, &THIS_CLASS_NAME_VTable},
 }
@@ -187,7 +187,7 @@ bound_callable_test :: proc "c" (obj: ^Toxin.Object, str: ^Toxin.Int) {
     fmt.println(str^)
 }
 
-THI_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_what: i32, p_reversed: b8) {
+THIS_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_what: i32, p_reversed: b8) {
     
     what2:= Classes.Object_Constants(p_what)
     switch what2 {
@@ -515,9 +515,16 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin.export_enum_as_int(className, &_enum, munum)
 
     //Toxin.Export_Default(className, &receive, "receive")
-    //typed_dick: Toxin.typed_Dictionary(Toxin.Int, Toxin.Int)
-    //val:Toxin.Int
-    //Toxin.typed_Dictionary_setter(&typed_dick, &val, &val)
+    typed_dick: Toxin.typed_Dictionary(Toxin.Array, Toxin.Array)
+    val:Toxin.Int=45
+    //GDW.Dictionary_M_List.Create0(&typed_dick)
+    testarrat:Toxin.Array
+    GDW.Array_M_List.Create0(&testarrat)
+    vvv:Toxin.Variant
+    //Toxin.to_variant(&vvv, testarrat)
+    Toxin.make_typed_dictionary(&typed_dick)
+    //Toxin.dictionary_set_type(&typed_dick, .INT, .INT)
+    Toxin.typed_Dictionary_setter(&typed_dick, &testarrat, &testarrat)
     //Toxin.Export(className, THIS_CLASS_NAME, "receive")
     //Toxin.Export_Enum(className, THIS_CLASS_NAME, munum)
     //Toxin.Export(className, THIS_CLASS_NAME, "stringname")
