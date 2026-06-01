@@ -2884,7 +2884,7 @@ InterfaceDictionaryOperatorIndexConst :: proc "c" (p_self: TypePtr, p_key: Varia
  * @param p_value_class_name A pointer to a StringName with the name of the object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT).
  * @param p_value_script A pointer to a Script object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT and the base class is extended by a script).
  */
-InterfaceDictionarySetTyped :: proc "c" (p_self: TypePtr, p_key_type: VariantType, p_key_class_name: ConstStringNamePtr, p_key_script: ConstVariantPtr, p_value_type: VariantType, p_value_class_name: StringNamePtr, p_value_script: ConstVariantPtr);
+InterfaceDictionarySetTyped :: proc "c" (p_self: TypePtr, p_key_type: VariantType, #by_ptr p_key_class_name: StringName, #by_ptr p_key_script: Variant, p_value_type: VariantType, #by_ptr p_value_class_name: StringName, #by_ptr p_value_script: Variant);
 
 /* INTERFACE: Object */
 
