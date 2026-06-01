@@ -184,8 +184,8 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     bltn_destructor:= `    Destroy: GDE.PtrDestructor,` //Include if Destructor true
     bltn_destructor_proc:= `    Destroy: proc "c" (p_base: ^%s),` //Include if Destructor true; builtin_type
     bltn_ptr_getter:= `    get_ptr: proc "c" (base: ^Variant) -> ^%s,` //returns the typePtr from the Variant. Mainly useful for Packed*Arrays because of how nasty their class is.
-    keyed:= `    KeyedSetter : proc "c" (p_base: %[0]s, p_key: GDE.ConstTypePtr, p_value: GDE.ConstTypePtr),
-    KeyedGetter : proc "c" (p_base: %[0]s, p_key: GDE.TypePtr, r_value: GDE.TypePtr),
+    keyed:= `    KeyedSetter : proc "c" (p_base: %[0]s, p_key: ^Variant, p_value: ^Variant),
+    KeyedGetter : proc "c" (p_base: %[0]s, p_key: ^Variant, r_value: ^Variant),
     KeyedChecker : proc "c" (#by_ptr p_base: Variant, #by_ptr p_key: Variant) -> u32,` //if the type is keyed it will have these three methods
     indexed:= `    IndxSetter : proc "c" (p_base: ^%[0]s, p_index: Int, p_value: ^%[1]s),
     IndxGetter : proc "c" (p_base: ^%[0]s, p_index: Int, r_value: ^%[1]s),` //if the type has a index return, it will have these two methods
