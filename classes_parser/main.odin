@@ -174,8 +174,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
   fmt.sbprint(&test_builder, File_Opening_Move, "\n",extension_entry, "\n", val_checker)
 
 
-  classes_init_proc:= `//DO NOT DO THIS!!!!! iT TAKES 5 MINUTES TO COMPILE IN -O:SPEED
-//speed in debug mode is still pretty fast though.
+  classes_init_proc:= `
 INIT_ALL_OF_THEM :: proc() {`
 fmt.sbprint(&test_builder, classes_init_proc)
   MB_Holder_Init:= `  Classes.%s_Init_(&%[0]s_M_Holder)` //className
@@ -578,7 +577,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   _MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
   class_name:= `  %s: struct{{
     using _%[0]s: ^GDW.MethodBind,
-    m_call: proc(_:^GDW.MethodBind, obj: %[1]s, `
+    m_call: proc "c" (_:^GDW.MethodBind, obj: %[1]s, `
   class_args_maybe:= `%s`//`struct{` //methodName
   class_args:=`%s: ^%s, `//argName, argType
   class_args_close:=`}`
