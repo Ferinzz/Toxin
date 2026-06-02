@@ -206,22 +206,22 @@ CallError :: struct #packed {
 	expected: i32,
 }
 
-VariantFromTypeConstructorFunc	:: proc "c" (UninitializedVariantPtr, TypePtr);
-TypeFromVariantConstructorFunc	:: proc "c" (UninitializedTypePtr, VariantPtr);
-VariantGetInternalPtrFunc 		:: proc "c" (VariantPtr) -> rawptr;
-PtrOperatorEvaluator 			:: proc "c" (p_left: ConstTypePtr, 		 p_right: ConstTypePtr, 	  r_result: TypePtr);
-PtrBuiltInMethod 				:: proc "c" (p_base: TypePtr, 			 p_args: ConstTypePtrargs, r_return:  TypePtr, p_argument_count: i64);
-PtrConstructor 					:: proc "c" (p_base: UninitializedTypePtr, p_args: ConstTypePtrargs);
-PtrDestructor 					:: proc "c" (p_base: TypePtr);
-PtrSetter 						:: proc "c" (p_base: TypePtr, 	 p_value: ConstTypePtr);
-PtrGetter 						:: proc "c" (p_base: ConstTypePtr, r_value:  TypePtr);
-PtrIndexedSetter 				:: proc "c" (p_base: TypePtr, 	 p_index: Int, 		  p_value: ConstTypePtr);
-PtrIndexedGetter 				:: proc "c" (p_base: ConstTypePtr, p_index:  Int, 		  r_value: VariantPtr);
-PtrKeyedSetter 					:: proc "c" (p_base: TypePtr, 	 p_key: ConstTypePtr,  p_value: ConstTypePtr);
-PtrKeyedGetter 					:: proc "c" (p_base: ConstTypePtr, p_key:  ConstTypePtr, r_value: TypePtr);
-PtrKeyedChecker 				:: proc "c" (p_base: ConstVariantPtr, p_key:  ConstVariantPtr) -> u32;
-PtrUtilityFunction 				:: proc "c" (r_return: TypePtr,    p_args: ConstTypePtrargs, p_argument_count: i64);
-ClassConstructor :: proc "c" () -> ObjectPtr;
+VariantFromTypeConstructorFunc	:: #type proc "c" (UninitializedVariantPtr, TypePtr);
+TypeFromVariantConstructorFunc	:: #type proc "c" (UninitializedTypePtr, VariantPtr);
+VariantGetInternalPtrFunc 		:: #type proc "c" (VariantPtr) -> rawptr;
+PtrOperatorEvaluator 			:: #type proc "c" (p_left: ConstTypePtr, 		 p_right: ConstTypePtr, 	  r_result: TypePtr);
+PtrBuiltInMethod 				:: #type proc "c" (p_base: TypePtr, 			 p_args: ConstTypePtrargs, r_return:  TypePtr, p_argument_count: i64);
+PtrConstructor 					:: #type proc "c" (p_base: UninitializedTypePtr, p_args: ConstTypePtrargs);
+PtrDestructor 					:: #type proc "c" (p_base: TypePtr);
+PtrSetter 						:: #type proc "c" (p_base: TypePtr, 	 p_value: ConstTypePtr);
+PtrGetter 						:: #type proc "c" (p_base: ConstTypePtr, r_value:  TypePtr);
+PtrIndexedSetter 				:: #type proc "c" (p_base: TypePtr, 	 p_index: Int, 		  p_value: ConstTypePtr);
+PtrIndexedGetter 				:: #type proc "c" (p_base: ConstTypePtr, p_index:  Int, 		  r_value: VariantPtr);
+PtrKeyedSetter 					:: #type proc "c" (p_base: TypePtr, 	 p_key: ConstTypePtr,  p_value: ConstTypePtr);
+PtrKeyedGetter 					:: #type proc "c" (p_base: ConstTypePtr, p_key:  ConstTypePtr, r_value: TypePtr);
+PtrKeyedChecker 				:: #type proc "c" (p_base: ConstVariantPtr, p_key:  ConstVariantPtr) -> u32;
+PtrUtilityFunction 				:: #type proc "c" (r_return: TypePtr,    p_args: ConstTypePtrargs, p_argument_count: i64);
+ClassConstructor :: #type proc "c" () -> ObjectPtr;
 
 ClassCreationInfo :: struct {
 	is_virtual: b8,
@@ -355,7 +355,7 @@ PackedStringArray :: struct {
     data: [^]gdstring
 }
 /* Passed a pointer to a PackedStringArray that should be filled with the classes that may be used by the GDExtension. */
-EditorGetClassesUsedCallback :: proc "c" (p_packed_string_array: ^PackedStringArray);
+EditorGetClassesUsedCallback :: #type proc "c" (p_packed_string_array: ^PackedStringArray);
 
 InstanceBindingCallbacks :: struct {
 	create_callback: 	InstanceBindingCreateCallback,
@@ -363,9 +363,9 @@ InstanceBindingCallbacks :: struct {
 	reference_callback:	InstanceBindingReferenceCallback,
 }
 
-InstanceBindingCreateCallback 	:: proc "c" (p_token: rawptr, p_instance: rawptr) -> rawptr;
-InstanceBindingFreeCallback 		:: proc "c" (p_token: rawptr, p_instance: rawptr, p_binding: rawptr);
-InstanceBindingReferenceCallback :: proc "c" (p_token: rawptr, p_binding: rawptr, p_reference: b8) -> b8;
+InstanceBindingCreateCallback 	:: #type proc "c" (p_token: rawptr, p_instance: rawptr) -> rawptr;
+InstanceBindingFreeCallback 		:: #type proc "c" (p_token: rawptr, p_instance: rawptr, p_binding: rawptr);
+InstanceBindingReferenceCallback :: #type proc "c" (p_token: rawptr, p_binding: rawptr, p_reference: b8) -> b8;
 
 
 /* EXTENSION CLASSES */
@@ -373,34 +373,34 @@ InstanceBindingReferenceCallback :: proc "c" (p_token: rawptr, p_binding: rawptr
 //p_instance is a pointer to allocated memory of our custom class's struct.
 ClassInstancePtr :: ^ObjectPtr;
 
-ClassSet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_value: ConstVariantPtr) -> b8
-ClassGet 					:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8
-ClassGetRID  				:: proc "c" (p_instance: ClassInstancePtr) -> u64
+ClassSet 					:: #type proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_value: ConstVariantPtr) -> b8
+ClassGet 					:: #type proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8
+ClassGetRID  				:: #type proc "c" (p_instance: ClassInstancePtr) -> u64
 
 //p_instance is a pointer to allocated memory of our custom class's struct.
-ClassGetPropertyList 		:: proc "c" (p_instance: ClassInstancePtr, r_count: ^u32) -> [^]PropertyInfo;
-ClassFreePropertyList 		:: proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo);
-ClassFreePropertyList2 		:: proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo , p_count: u32);
-ClassPropertyCanRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr) -> b8
-ClassPropertyGetRevert 		:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr,  r_ret: VariantPtr) -> b8
-ClassValidateProperty 		:: proc "c" (p_instance: ClassInstancePtr, p_property: ^PropertyInfo) -> b8
-ClassNotification 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32); // Deprecated. Use ClassNotification2 instead.
-ClassNotification2 			:: proc "c" (p_instance: ClassInstancePtr, p_what: i32,  p_reversed: b8);
-ClassToString 				:: proc "c" (p_instance: ClassInstancePtr, r_is_valid: ^b8, p_out: StringPtr);
-ClassReference 				:: proc "c" (p_instance: ClassInstancePtr);
-ClassUnreference 			:: proc "c" (p_instance: ClassInstancePtr);
-ClassCallVirtual 			:: proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtrargs,  r_ret: TypePtr);
+ClassGetPropertyList 		:: #type proc "c" (p_instance: ClassInstancePtr, r_count: ^u32) -> [^]PropertyInfo;
+ClassFreePropertyList 		:: #type proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo);
+ClassFreePropertyList2 		:: #type proc "c" (p_instance: ClassInstancePtr, p_list: ^PropertyInfo , p_count: u32);
+ClassPropertyCanRevert 		:: #type proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr) -> b8
+ClassPropertyGetRevert 		:: #type proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr,  r_ret: VariantPtr) -> b8
+ClassValidateProperty 		:: #type proc "c" (p_instance: ClassInstancePtr, p_property: ^PropertyInfo) -> b8
+ClassNotification 			:: #type proc "c" (p_instance: ClassInstancePtr, p_what: i32); // Deprecated. Use ClassNotification2 instead.
+ClassNotification2 			:: #type proc "c" (p_instance: ClassInstancePtr, p_what: i32,  p_reversed: b8);
+ClassToString 				:: #type proc "c" (p_instance: ClassInstancePtr, r_is_valid: ^b8, p_out: StringPtr);
+ClassReference 				:: #type proc "c" (p_instance: ClassInstancePtr);
+ClassUnreference 			:: #type proc "c" (p_instance: ClassInstancePtr);
+ClassCallVirtual 			:: #type proc "c" (p_instance: ClassInstancePtr, p_args: ConstTypePtrargs,  r_ret: TypePtr);
 //p_class_userdata is a pointer to whatever you make which should live the whole lifetime of the class.
 //I believe this is typically used to pass context in C.
-ClassCreateInstance 		:: proc "c" (p_class_userdata: rawptr) -> ObjectPtr;
-ClassCreateInstance2 		:: proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: b8) -> ObjectPtr;
-ClassFreeInstance 			:: proc "c" (p_class_userdata: rawptr, p_instance: ClassInstancePtr);
-ClassRecreateInstance 		:: proc "c" (p_class_userdata: rawptr, p_object: ObjectPtr) -> ClassInstancePtr;
-ClassGetVirtual 			:: proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr) -> ClassCallVirtual;
-ClassGetVirtual2 			:: proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr, p_hash: u32) -> ClassCallVirtual;
-ClassGetVirtualCallData 	:: proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr) -> rawptr;
-ClassGetVirtualCallData2 	:: proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr, p_hash: u32) -> rawptr;
-ClassCallVirtualWithData  	:: proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_virtual_call_userdata: rawptr, p_args: ConstTypePtrargs, r_ret: TypePtr);
+ClassCreateInstance 		:: #type proc "c" (p_class_userdata: rawptr) -> ObjectPtr;
+ClassCreateInstance2 		:: #type proc "c" (p_class_userdata: rawptr, p_notify_postinitialize: b8) -> ObjectPtr;
+ClassFreeInstance 			:: #type proc "c" (p_class_userdata: rawptr, p_instance: ClassInstancePtr);
+ClassRecreateInstance 		:: #type proc "c" (p_class_userdata: rawptr, p_object: ObjectPtr) -> ClassInstancePtr;
+ClassGetVirtual 			:: #type proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr) -> ClassCallVirtual;
+ClassGetVirtual2 			:: #type proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr, p_hash: u32) -> ClassCallVirtual;
+ClassGetVirtualCallData 	:: #type proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr) -> rawptr;
+ClassGetVirtualCallData2 	:: #type proc "c" (p_class_userdata: rawptr, p_name: ConstStringNamePtr, p_hash: u32) -> rawptr;
+ClassCallVirtualWithData  	:: #type proc "c" (p_instance: ClassInstancePtr, p_name: ConstStringNamePtr, p_virtual_call_userdata: rawptr, p_args: ConstTypePtrargs, r_ret: TypePtr);
 
 
 /*a custom property info to a property. The dictionary must contain
@@ -743,7 +743,7 @@ ClassMethodArgumentMetadata :: enum c.int {
 	INT_IS_CHAR32,
 }
 
-ClassMethodCall			:: proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
+ClassMethodCall			:: #type proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
 /*
 * Actual source code. Fun fact, there's no way to actually pass this ClassMethodValidatedCall callback to Godot meaning there is no way to even provide it.
 * It's not that it's unlikely, it's that it's Impossible.
@@ -751,8 +751,8 @@ if (validated_call_func) {
   // This is added here, but it's unlikely to be provided by most extensions.
   validated_call_func
 */
-ClassMethodValidatedCall :: proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstVariantPtrargs, r_return: VariantPtr);
-ClassMethodPtrCall		:: proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstTypePtrargs, r_ret: TypePtr);
+ClassMethodValidatedCall :: #type proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstVariantPtrargs, r_return: VariantPtr);
+ClassMethodPtrCall		:: #type proc "c" (method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstTypePtrargs, r_ret: TypePtr);
 
 
 ClassMethodInfo :: struct {
@@ -797,17 +797,17 @@ ClassVirtualMethodInfo :: struct {
 }
 
 
-CallableCustomCall		:: proc "c" (callable_userdata: rawptr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
-CallableCustomIsValid	:: proc "c" (callable_userdata: rawptr) -> b8;
-CallableCustomFree		:: proc "c" (callable_userdata: rawptr);
+CallableCustomCall		:: #type proc "c" (callable_userdata: rawptr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
+CallableCustomIsValid	:: #type proc "c" (callable_userdata: rawptr) -> b8;
+CallableCustomFree		:: #type proc "c" (callable_userdata: rawptr);
 
-CallableCustomHash		:: proc "c" (callable_userdata: rawptr) -> u32;
-CallableCustomEqual		:: proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> b8;
-CallableCustomLessThan	:: proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> b8;
+CallableCustomHash		:: #type proc "c" (callable_userdata: rawptr) -> u32;
+CallableCustomEqual		:: #type proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> b8;
+CallableCustomLessThan	:: #type proc "c" (callable_userdata_a: rawptr, callable_userdata_b: rawptr) -> b8;
 
-CallableCustomToString	:: proc "c" (callable_userdata: rawptr, r_is_valid: ^b8, r_out: StringPtr);
+CallableCustomToString	:: #type proc "c" (callable_userdata: rawptr, r_is_valid: ^b8, r_out: StringPtr);
 
-CallableCustomGetArgumentCount :: proc "c" (callable_userdata: rawptr, r_is_valid: ^b8) -> Int;
+CallableCustomGetArgumentCount :: #type proc "c" (callable_userdata: rawptr, r_is_valid: ^b8) -> Int;
 
 
 CallableCustomInfo :: struct {
@@ -876,47 +876,47 @@ CallableCustomInfo2 :: struct {
 
 ScriptInstanceDataPtr :: rawptr; // Pointer to custom ScriptInstance native implementation.
 
-ScriptInstanceSet				:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, p_value: VariantPtr) -> b8;
-ScriptInstanceGet				:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8;
-ScriptInstanceGetPropertyList	:: proc "c" (p_instance: ScriptInstanceDataPtr, r_count: ^u32) -> PropertyInfo;
-ScriptInstanceFreePropertyList	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^PropertyInfo); // Deprecated. Use ScriptInstanceFreePropertyList2 instead.
-ScriptInstanceFreePropertyList2	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^PropertyInfo, p_count: u32);
-ScriptInstanceGetClassCategory	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_class_category: ^PropertyInfo) -> b8;
+ScriptInstanceSet				:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, p_value: VariantPtr) -> b8;
+ScriptInstanceGet				:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8;
+ScriptInstanceGetPropertyList	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, r_count: ^u32) -> PropertyInfo;
+ScriptInstanceFreePropertyList	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^PropertyInfo); // Deprecated. Use ScriptInstanceFreePropertyList2 instead.
+ScriptInstanceFreePropertyList2	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^PropertyInfo, p_count: u32);
+ScriptInstanceGetClassCategory	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_class_category: ^PropertyInfo) -> b8;
 
-ScriptInstanceGetPropertyType	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^b8) -> VariantType;
-ScriptInstanceValidateProperty	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_property: ^PropertyInfo) -> b8;
+ScriptInstanceGetPropertyType	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^b8) -> VariantType;
+ScriptInstanceValidateProperty	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_property: ^PropertyInfo) -> b8;
 
-ScriptInstancePropertyCanRevert :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> b8;
-ScriptInstancePropertyGetRevert :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8;
+ScriptInstancePropertyCanRevert :: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> b8;
+ScriptInstancePropertyGetRevert :: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_ret: VariantPtr) -> b8;
 
-ScriptInstanceGetOwner			:: proc "c" (p_instance: ScriptInstanceDataPtr) -> ObjectPtr;
-ScriptInstancePropertyStateAdd	:: proc "c" (p_name: ConstStringNamePtr, p_value: ConstVariantPtr, p_userdata: rawptr);
-ScriptInstanceGetPropertyState	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_add_func: ScriptInstancePropertyStateAdd, p_userdata: rawptr);
+ScriptInstanceGetOwner			:: #type proc "c" (p_instance: ScriptInstanceDataPtr) -> ObjectPtr;
+ScriptInstancePropertyStateAdd	:: #type proc "c" (p_name: ConstStringNamePtr, p_value: ConstVariantPtr, p_userdata: rawptr);
+ScriptInstanceGetPropertyState	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_add_func: ScriptInstancePropertyStateAdd, p_userdata: rawptr);
 
-ScriptInstanceGetMethodList		:: proc "c" (p_instance: ScriptInstanceDataPtr, r_count: ^u32) -> ^MethodInfo;
-ScriptInstanceFreeMethodList	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: [^]MethodInfo); // Deprecated. Use ScriptInstanceFreeMethodList2 instead.
-ScriptInstanceFreeMethodList2	:: proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^MethodInfo, p_count: u32);
+ScriptInstanceGetMethodList		:: #type proc "c" (p_instance: ScriptInstanceDataPtr, r_count: ^u32) -> ^MethodInfo;
+ScriptInstanceFreeMethodList	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_list: [^]MethodInfo); // Deprecated. Use ScriptInstanceFreeMethodList2 instead.
+ScriptInstanceFreeMethodList2	:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_list: ^MethodInfo, p_count: u32);
 
-ScriptInstanceHasMethod			:: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> b8;
+ScriptInstanceHasMethod			:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr) -> b8;
 
-ScriptInstanceGetMethodArgumentCount :: proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^b8) -> Int;
+ScriptInstanceGetMethodArgumentCount :: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_name: ConstStringNamePtr, r_is_valid: ^b8) -> Int;
 
-ScriptInstanceCall				:: proc "c" (p_self: ScriptInstanceDataPtr, p_method: ConstStringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
-ScriptInstanceNotification		:: proc "c" (p_instance: ScriptInstanceDataPtr, p_what: i32); // Deprecated. Use ScriptInstanceNotification2 instead.
-ScriptInstanceNotification2		:: proc "c" (p_instance: ScriptInstanceDataPtr, p_what: i32, p_reversed: b8);
-ScriptInstanceToString			:: proc "c" (p_instance: ScriptInstanceDataPtr, r_is_valid: ^b8, r_out: StringPtr);
+ScriptInstanceCall				:: #type proc "c" (p_self: ScriptInstanceDataPtr, p_method: ConstStringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: VariantPtr, r_error: ^CallError);
+ScriptInstanceNotification		:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_what: i32); // Deprecated. Use ScriptInstanceNotification2 instead.
+ScriptInstanceNotification2		:: #type proc "c" (p_instance: ScriptInstanceDataPtr, p_what: i32, p_reversed: b8);
+ScriptInstanceToString			:: #type proc "c" (p_instance: ScriptInstanceDataPtr, r_is_valid: ^b8, r_out: StringPtr);
 
-ScriptInstanceRefCountIncremented :: proc "c" (p_instance: ScriptInstanceDataPtr);
-ScriptInstanceRefCountDecremented :: proc "c" (p_instance: ScriptInstanceDataPtr) -> b8;
+ScriptInstanceRefCountIncremented :: #type proc "c" (p_instance: ScriptInstanceDataPtr);
+ScriptInstanceRefCountDecremented :: #type proc "c" (p_instance: ScriptInstanceDataPtr) -> b8;
 
-ScriptInstanceGetScript			:: proc "c" (p_instance: ScriptInstanceDataPtr) -> ObjectPtr;
-ScriptInstanceIsPlaceholder		:: proc "c" (p_instance: ScriptInstanceDataPtr) -> b8;
+ScriptInstanceGetScript			:: #type proc "c" (p_instance: ScriptInstanceDataPtr) -> ObjectPtr;
+ScriptInstanceIsPlaceholder		:: #type proc "c" (p_instance: ScriptInstanceDataPtr) -> b8;
 
 ScriptLanguagePtr :: rawptr;
 
-ScriptInstanceGetLanguage		:: proc "c" (p_instance: ScriptInstanceDataPtr) -> ScriptLanguagePtr;
+ScriptInstanceGetLanguage		:: #type proc "c" (p_instance: ScriptInstanceDataPtr) -> ScriptLanguagePtr;
 
-ScriptInstanceFree				:: proc "c" (p_instance: ScriptInstanceDataPtr);
+ScriptInstanceFree				:: #type proc "c" (p_instance: ScriptInstanceDataPtr);
 
 ScriptInstancePtr :: rawptr; // Pointer to ScriptInstance.
 
@@ -1015,12 +1015,12 @@ ScriptInstanceInfo3 :: struct {
 * p_usedata will be whatever you pass into the Interface methods.
 * index would be the index of whatever you're working on. Expecting that this is an array of values.
 */
-WorkerThreadPoolGroupTask :: proc "c" (p_userdata: rawptr, index: u32);
-WorkerThreadPoolTask :: proc "c" (p_userdata: rawptr);
+WorkerThreadPoolGroupTask :: #type proc "c" (p_userdata: rawptr, index: u32);
+WorkerThreadPoolTask :: #type proc "c" (p_userdata: rawptr);
 
 
-InitializeCallback :: proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
-DeinitializeCallback :: proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
+InitializeCallback :: #type proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
+DeinitializeCallback :: #type proc "c" (p_userdata: rawptr, p_level: InitializationLevel);
 
 Initialization :: struct {
 	    /* Minimum initialization level required.
@@ -1034,8 +1034,8 @@ Initialization :: struct {
 }
 
 
-InterfaceFunctionPtr	:: proc "c" ();
-InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunctionPtr
+InterfaceFunctionPtr	:: #type proc "c" ();
+InterfaceGetProcAddress	:: #type proc "c" (p_function_name: cstring) -> InterfaceFunctionPtr
 
 /*
  * Each GDExtension should define a C function that matches the signature of InitializationFunction,
@@ -1071,7 +1071,7 @@ InterfaceGetProcAddress	:: proc "c" (p_function_name: cstring) -> InterfaceFunct
  * All of these interface functions are described below, together with the name that's used to load it,
  * and the function pointer typedef that shows its signature.
  */
-InitializationFunction :: proc "c" (p_get_proc_address: InterfaceGetProcAddress, p_library: ClassDB, r_initialization: ^Initialization) -> b8;
+InitializationFunction :: #type proc "c" (p_get_proc_address: InterfaceGetProcAddress, p_library: ClassDB, r_initialization: ^Initialization) -> b8;
 
 /* INTERFACE */
 
@@ -1105,11 +1105,11 @@ GodotVersion2 :: struct {
 //*********************************\\
 
 /* Called when starting the main loop. */
-MainLoopStartupCallback :: proc "c" ();
+MainLoopStartupCallback :: #type proc "c" ();
 /* Called when shutting down the main loop. */
-MainLoopShutdownCallback :: proc "c" ();
+MainLoopShutdownCallback :: #type proc "c" ();
 /* Called for every frame iteration of the main loop. */
-MainLoopFrameCallback :: proc "c" ();
+MainLoopFrameCallback :: #type proc "c" ();
 
 MainLoopCallbacks :: struct {
 	/* Will be called after Godot is started and is fully initialized. */
@@ -1130,7 +1130,7 @@ MainLoopCallbacks :: struct {
  *
  * @param r_godot_version A pointer to the structure to write the version information into.
  */
-InterfaceGetGodotVersion :: proc "c" (r_godot_version: ^GodotVersion);
+InterfaceGetGodotVersion :: #type proc "c" (r_godot_version: ^GodotVersion);
 
 /**
  * @name get_godot_version2
@@ -1140,7 +1140,7 @@ InterfaceGetGodotVersion :: proc "c" (r_godot_version: ^GodotVersion);
  *
  * @param r_godot_version A pointer to the structure to write the version information into.
  */
-InterfaceGetGodotVersion2 :: proc "c" (r_godot_version: ^GodotVersion2);
+InterfaceGetGodotVersion2 :: #type proc "c" (r_godot_version: ^GodotVersion2);
 
 
 /* INTERFACE: Memory */
@@ -1155,7 +1155,7 @@ InterfaceGetGodotVersion2 :: proc "c" (r_godot_version: ^GodotVersion2);
  *
  * @return A pointer to the allocated memory, or NULL if unsuccessful.
  */
-InterfaceMemAlloc :: proc "c" (p_bytes: int) -> rawptr;
+InterfaceMemAlloc :: #type proc "c" (p_bytes: int) -> rawptr;
 
 /**
  * @name mem_realloc
@@ -1168,7 +1168,7 @@ InterfaceMemAlloc :: proc "c" (p_bytes: int) -> rawptr;
  *
  * @return A pointer to the allocated memory, or NULL if unsuccessful.
  */
-InterfaceMemRealloc :: proc "c" (p_ptr: rawptr, p_bytes: int) -> rawptr;
+InterfaceMemRealloc :: #type proc "c" (p_ptr: rawptr, p_bytes: int) -> rawptr;
 
 /**
  * @name mem_free
@@ -1178,7 +1178,7 @@ InterfaceMemRealloc :: proc "c" (p_ptr: rawptr, p_bytes: int) -> rawptr;
  *
  * @param p_ptr A pointer to the previously allocated memory.
  */
-InterfaceMemFree :: proc "c" (p_ptr: rawptr)
+InterfaceMemFree :: #type proc "c" (p_ptr: rawptr)
 
 /**
  * @name mem_alloc2
@@ -1191,7 +1191,7 @@ InterfaceMemFree :: proc "c" (p_ptr: rawptr)
  *
  * @return A pointer to the allocated memory, or NULL if unsuccessful.
  */
-InterfaceMemAlloc2 :: proc "c" (p_bytes: u64, p_pad_align: b8) -> rawptr;
+InterfaceMemAlloc2 :: #type proc "c" (p_bytes: u64, p_pad_align: b8) -> rawptr;
 
 /**
  * @name mem_realloc2
@@ -1205,7 +1205,7 @@ InterfaceMemAlloc2 :: proc "c" (p_bytes: u64, p_pad_align: b8) -> rawptr;
  *
  * @return A pointer to the allocated memory, or NULL if unsuccessful.
  */
-InterfaceMemRealloc2 :: proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: b8) -> rawptr;
+InterfaceMemRealloc2 :: #type proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: b8) -> rawptr;
 
 /**
  * @name mem_free2
@@ -1216,7 +1216,7 @@ InterfaceMemRealloc2 :: proc "c" (p_ptr: rawptr, p_bytes: u64, p_pad_align: b8) 
  * @param p_ptr A pointer to the previously allocated memory.
  * @param p_pad_align If true, the given memory was allocated with prepadding.
  */
-InterfaceMemFree2 :: proc "c" (p_bytes: u64, p_pad_align: b8);
+InterfaceMemFree2 :: #type proc "c" (p_bytes: u64, p_pad_align: b8);
 
 
 /* INTERFACE: Godot Logging */
@@ -1233,7 +1233,7 @@ InterfaceMemFree2 :: proc "c" (p_bytes: u64, p_pad_align: b8);
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintError :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
+InterfacePrintError :: #type proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_error_with_message
@@ -1248,7 +1248,7 @@ InterfacePrintError :: proc "c" (p_description: cstring, p_function: cstring, p_
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintErrorWithMessage :: proc "c" (p_description: cstring, p_message: cstring,p_function: cstring, p_file: cstring,  p_line: i32, p_editor_notify: b8);
+InterfacePrintErrorWithMessage :: #type proc "c" (p_description: cstring, p_message: cstring,p_function: cstring, p_file: cstring,  p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_warning
@@ -1262,7 +1262,7 @@ InterfacePrintErrorWithMessage :: proc "c" (p_description: cstring, p_message: c
  * @param p_line The line where the warning occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintWarning :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring,  p_line: int,  p_editor_notify: b8);
+InterfacePrintWarning :: #type proc "c" (p_description: cstring, p_function: cstring, p_file: cstring,  p_line: int,  p_editor_notify: b8);
 
 /**
  * @name print_warning_with_message
@@ -1277,7 +1277,7 @@ InterfacePrintWarning :: proc "c" (p_description: cstring, p_function: cstring, 
  * @param p_line The line where the warning occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintWarningWithMessage :: proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
+InterfacePrintWarningWithMessage :: #type proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_script_error
@@ -1291,7 +1291,7 @@ InterfacePrintWarningWithMessage :: proc "c" (p_description: cstring, p_message:
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintScriptError :: proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
+InterfacePrintScriptError :: #type proc "c" (p_description: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name print_script_error_with_message
@@ -1306,7 +1306,7 @@ InterfacePrintScriptError :: proc "c" (p_description: cstring, p_function: cstri
  * @param p_line The line where the error occurred.
  * @param p_editor_notify Whether or not to notify the editor.
  */
-InterfacePrintScriptErrorWithMessage :: proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
+InterfacePrintScriptErrorWithMessage :: #type proc "c" (p_description: cstring, p_message: cstring, p_function: cstring, p_file: cstring, p_line: i32, p_editor_notify: b8);
 
 /**
  * @name get_native_struct_size
@@ -1318,7 +1318,7 @@ InterfacePrintScriptErrorWithMessage :: proc "c" (p_description: cstring, p_mess
  *
  * @return The size in bytes.
  */
-InterfaceGetNativeStructSize :: proc "c" (p_name: ConstStringNamePtr) -> i64;
+InterfaceGetNativeStructSize :: #type proc "c" (p_name: ConstStringNamePtr) -> i64;
 
 /* INTERFACE: Variant */
 
@@ -1331,7 +1331,7 @@ InterfaceGetNativeStructSize :: proc "c" (p_name: ConstStringNamePtr) -> i64;
  * @param r_dest A pointer to the destination Variant.
  * @param p_src A pointer to the source Variant.
  */
-InterfaceVariantNewCopy :: proc "c" (r_dest: UninitializedVariantPtr, p_src: VariantPtr);
+InterfaceVariantNewCopy :: #type proc "c" (r_dest: UninitializedVariantPtr, p_src: VariantPtr);
 
 /**
  * @name variant_new_nil
@@ -1341,7 +1341,7 @@ InterfaceVariantNewCopy :: proc "c" (r_dest: UninitializedVariantPtr, p_src: Var
  *
  * @param r_dest A pointer to the destination Variant.
  */
-InterfaceVariantNewNil :: proc "c" (r_dest: UninitializedVariantPtr);
+InterfaceVariantNewNil :: #type proc "c" (r_dest: UninitializedVariantPtr);
 
 /**
  * @name variant_destroy
@@ -1351,7 +1351,7 @@ InterfaceVariantNewNil :: proc "c" (r_dest: UninitializedVariantPtr);
  *
  * @param p_self A pointer to the Variant to destroy.
  */
-InterfaceVariantDestroy :: proc "c" (p_self: VariantPtr);
+InterfaceVariantDestroy :: #type proc "c" (p_self: VariantPtr);
 
 /**
  * @name variant_call
@@ -1368,7 +1368,7 @@ InterfaceVariantDestroy :: proc "c" (p_self: VariantPtr);
  *
  * @see Variant::callp()
  */
-InterfaceVariantCall :: proc "c" (p_self: VariantPtr,  p_method: StringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: UninitializedVariantPtr, r_error: ^CallError);
+InterfaceVariantCall :: #type proc "c" (p_self: VariantPtr,  p_method: StringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: UninitializedVariantPtr, r_error: ^CallError);
 
 /**
  * @name variant_call_static
@@ -1385,7 +1385,7 @@ InterfaceVariantCall :: proc "c" (p_self: VariantPtr,  p_method: StringNamePtr, 
  *
  * @see Variant::call_static()
  */
-InterfaceVariantCallStatic :: proc "c" (p_type: VariantType, p_method: StringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: UninitializedVariantPtr, r_error: ^CallError);
+InterfaceVariantCallStatic :: #type proc "c" (p_type: VariantType, p_method: StringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: UninitializedVariantPtr, r_error: ^CallError);
 
 /**
  * @name variant_evaluate
@@ -1401,7 +1401,7 @@ InterfaceVariantCallStatic :: proc "c" (p_type: VariantType, p_method: StringNam
  *
  * @see Variant::evaluate()
  */
-InterfaceVariantEvaluate :: proc "c" (p_op: VariantOperator, p_a: VariantPtr, p_b: ConstVariantPtr, r_return: UninitializedVariantPtr, r_valid: ^b8);
+InterfaceVariantEvaluate :: #type proc "c" (p_op: VariantOperator, p_a: VariantPtr, p_b: ConstVariantPtr, r_return: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set
@@ -1416,7 +1416,7 @@ InterfaceVariantEvaluate :: proc "c" (p_op: VariantOperator, p_a: VariantPtr, p_
  *
  * @see Variant::set()
  */
-InterfaceVariantSet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^b8);
+InterfaceVariantSet :: #type proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set_named
@@ -1431,7 +1431,7 @@ InterfaceVariantSet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_v
  *
  * @see Variant::set_named()
  */
-InterfaceVariantSetNamed :: proc "c" (p_self: VariantPtr, p_key: ConstStringNamePtr, p_value: ConstVariantPtr, r_valid: ^b8);
+InterfaceVariantSetNamed :: #type proc "c" (p_self: VariantPtr, p_key: ConstStringNamePtr, p_value: ConstVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set_keyed
@@ -1446,7 +1446,7 @@ InterfaceVariantSetNamed :: proc "c" (p_self: VariantPtr, p_key: ConstStringName
  *
  * @see Variant::set_keyed()
  */
-InterfaceVariantSetKeyed :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^b8);
+InterfaceVariantSetKeyed :: #type proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, p_value: ConstVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_set_indexed
@@ -1460,7 +1460,7 @@ InterfaceVariantSetKeyed :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  * @param r_oob A pointer to a boolean which will be set to true if the index is out of bounds.
  */
-InterfaceVariantSetIndexed :: proc "c" (p_self: VariantPtr, p_index: Int, p_value: ConstVariantPtr, r_valid: ^b8, r_oob: ^b8);
+InterfaceVariantSetIndexed :: #type proc "c" (p_self: VariantPtr, p_index: Int, p_value: ConstVariantPtr, r_valid: ^b8, r_oob: ^b8);
 
 /**
  * @name variant_get
@@ -1473,7 +1473,7 @@ InterfaceVariantSetIndexed :: proc "c" (p_self: VariantPtr, p_index: Int, p_valu
  * @param r_ret A pointer to a Variant which will be assigned the value.
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  */
-InterfaceVariantGet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
+InterfaceVariantGet :: #type proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_get_named
@@ -1486,7 +1486,7 @@ InterfaceVariantGet :: proc "c" (p_self: VariantPtr, p_key: ConstVariantPtr, r_r
  * @param r_ret A pointer to a Variant which will be assigned the value.
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  */
-InterfaceVariantGetNamed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstStringNamePtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
+InterfaceVariantGetNamed :: #type proc "c" (p_self: ConstVariantPtr, p_key: ConstStringNamePtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_get_keyed
@@ -1499,7 +1499,7 @@ InterfaceVariantGetNamed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstStrin
  * @param r_ret A pointer to a Variant which will be assigned the value.
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  */
-InterfaceVariantGetKeyed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
+InterfaceVariantGetKeyed :: #type proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_get_indexed
@@ -1513,7 +1513,7 @@ InterfaceVariantGetKeyed :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVaria
  * @param r_valid A pointer to a boolean which will be set to false if the operation is invalid.
  * @param r_oob A pointer to a boolean which will be set to true if the index is out of bounds.
  */
-InterfaceVariantGetIndexed :: proc "c" (p_self: ConstVariantPtr, p_index: Int, r_ret: UninitializedVariantPtr, r_valid: ^b8, r_oob: ^b8);
+InterfaceVariantGetIndexed :: #type proc "c" (p_self: ConstVariantPtr, p_index: Int, r_ret: UninitializedVariantPtr, r_valid: ^b8, r_oob: ^b8);
 
 /**
  * @name variant_iter_init
@@ -1529,7 +1529,7 @@ InterfaceVariantGetIndexed :: proc "c" (p_self: ConstVariantPtr, p_index: Int, r
  *
  * @see Variant::iter_init()
  */
-InterfaceVariantIterInit :: proc "c" (p_self: ConstVariantPtr, r_iter: UninitializedVariantPtr, r_valid: ^b8) -> b8;
+InterfaceVariantIterInit :: #type proc "c" (p_self: ConstVariantPtr, r_iter: UninitializedVariantPtr, r_valid: ^b8) -> b8;
 
 /**
  * @name variant_iter_next
@@ -1545,7 +1545,7 @@ InterfaceVariantIterInit :: proc "c" (p_self: ConstVariantPtr, r_iter: Uninitial
  *
  * @see Variant::iter_next()
  */
-InterfaceVariantIterNext :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_valid: ^b8) -> b8;
+InterfaceVariantIterNext :: #type proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_valid: ^b8) -> b8;
 
 /**
  * @name variant_iter_get
@@ -1560,7 +1560,7 @@ InterfaceVariantIterNext :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPt
  *
  * @see Variant::iter_get()
  */
-InterfaceVariantIterGet :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
+InterfaceVariantIterGet :: #type proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr, r_ret: UninitializedVariantPtr, r_valid: ^b8);
 
 /**
  * @name variant_hash
@@ -1574,7 +1574,7 @@ InterfaceVariantIterGet :: proc "c" (p_self: ConstVariantPtr, r_iter: VariantPtr
  *
  * @see Variant::hash()
  */
-InterfaceVariantHash :: proc "c" (p_self: ConstVariantPtr) -> Int
+InterfaceVariantHash :: #type proc "c" (p_self: ConstVariantPtr) -> Int
 
 /**
  * @name variant_recursive_hash
@@ -1589,7 +1589,7 @@ InterfaceVariantHash :: proc "c" (p_self: ConstVariantPtr) -> Int
  *
  * @see Variant::recursive_hash()
  */
-InterfaceVariantRecursiveHash :: proc "c" (p_self: ConstVariantPtr, p_recursion_count: Int) -> Int;
+InterfaceVariantRecursiveHash :: #type proc "c" (p_self: ConstVariantPtr, p_recursion_count: Int) -> Int;
 
 /**
  * @name variant_hash_compare
@@ -1604,7 +1604,7 @@ InterfaceVariantRecursiveHash :: proc "c" (p_self: ConstVariantPtr, p_recursion_
  *
  * @see Variant::hash_compare()
  */
-InterfaceVariantHashCompare :: proc "c" (p_self: ConstVariantPtr, p_other: ConstVariantPtr) -> b8;
+InterfaceVariantHashCompare :: #type proc "c" (p_self: ConstVariantPtr, p_other: ConstVariantPtr) -> b8;
 
 /**
  * @name variant_booleanize
@@ -1616,7 +1616,7 @@ InterfaceVariantHashCompare :: proc "c" (p_self: ConstVariantPtr, p_other: Const
  *
  * @return The boolean value of the Variant.
  */
-InterfaceVariantBooleanize :: proc "c" (p_self: ConstVariantPtr) -> b8;
+InterfaceVariantBooleanize :: #type proc "c" (p_self: ConstVariantPtr) -> b8;
 
 /**
  * @name variant_duplicate
@@ -1628,7 +1628,7 @@ InterfaceVariantBooleanize :: proc "c" (p_self: ConstVariantPtr) -> b8;
  * @param r_ret A pointer to a Variant to store the duplicated value.
  * @param p_deep Whether or not to duplicate deeply (when supported by the Variant type).
  */
-InterfaceVariantDuplicate :: proc "c" (p_self: ConstVariantPtr, r_ret: VariantPtr, p_deep: b8);
+InterfaceVariantDuplicate :: #type proc "c" (p_self: ConstVariantPtr, r_ret: VariantPtr, p_deep: b8);
 
 /**
  * @name variant_stringify
@@ -1639,7 +1639,7 @@ InterfaceVariantDuplicate :: proc "c" (p_self: ConstVariantPtr, r_ret: VariantPt
  * @param p_self A pointer to the Variant.
  * @param r_ret A pointer to a String to store the resulting value.
  */
-InterfaceVariantStringify :: proc "c" (p_self: ConstVariantPtr, r_ret: StringPtr);
+InterfaceVariantStringify :: #type proc "c" (p_self: ConstVariantPtr, r_ret: StringPtr);
 
 /**
  * @name variant_get_type
@@ -1651,7 +1651,7 @@ InterfaceVariantStringify :: proc "c" (p_self: ConstVariantPtr, r_ret: StringPtr
  *
  * @return The variant type.
  */
-InterfaceVariantGetType :: proc "c" (p_self: ConstVariantPtr) -> VariantType;
+InterfaceVariantGetType :: #type proc "c" (p_self: ConstVariantPtr) -> VariantType;
 
 /**
  * @name variant_has_method
@@ -1664,7 +1664,7 @@ InterfaceVariantGetType :: proc "c" (p_self: ConstVariantPtr) -> VariantType;
  *
  * @return
  */
-InterfaceVariantHasMethod :: proc "c" (p_self: ConstVariantPtr, p_method: ConstStringNamePtr) -> b8;
+InterfaceVariantHasMethod :: #type proc "c" (p_self: ConstVariantPtr, p_method: ConstStringNamePtr) -> b8;
 
 /**
  * @name variant_has_member
@@ -1677,7 +1677,7 @@ InterfaceVariantHasMethod :: proc "c" (p_self: ConstVariantPtr, p_method: ConstS
  *
  * @return
  */
-InterfaceVariantHasMember :: proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> b8;
+InterfaceVariantHasMember :: #type proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> b8;
 
 /**
  * @name variant_has_key
@@ -1691,7 +1691,7 @@ InterfaceVariantHasMember :: proc "c" (p_type: VariantType, p_member: ConstStrin
  *
  * @return true if the key exists; otherwise false.
  */
-InterfaceVariantHasKey :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_valid: ^b8) -> b8;
+InterfaceVariantHasKey :: #type proc "c" (p_self: ConstVariantPtr, p_key: ConstVariantPtr, r_valid: ^b8) -> b8;
 
 /**
  * @name variant_get_object_instance_id
@@ -1706,7 +1706,7 @@ InterfaceVariantHasKey :: proc "c" (p_self: ConstVariantPtr, p_key: ConstVariant
  *
  * @return The instance ID for the contained object.
  */
-InterfaceVariantGetObjectInstanceId :: proc "c" (p_self: ConstVariantPtr) -> GDObjectInstanceID;
+InterfaceVariantGetObjectInstanceId :: #type proc "c" (p_self: ConstVariantPtr) -> GDObjectInstanceID;
 
 /**
  * @name variant_get_type_name
@@ -1717,7 +1717,7 @@ InterfaceVariantGetObjectInstanceId :: proc "c" (p_self: ConstVariantPtr) -> GDO
  * @param p_type The Variant type.
  * @param r_name A pointer to a String to store the Variant type name.
  */
-InterfaceVariantGetTypeName :: proc "c" (p_type: VariantType, r_name: UninitializedStringPtr);
+InterfaceVariantGetTypeName :: #type proc "c" (p_type: VariantType, r_name: UninitializedStringPtr);
 
 /**
  * @name variant_can_convert
@@ -1730,7 +1730,7 @@ InterfaceVariantGetTypeName :: proc "c" (p_type: VariantType, r_name: Uninitiali
  *
  * @return true if the conversion is possible; otherwise false.
  */
-InterfaceVariantCanConvert :: proc "c" (p_from: VariantType, p_to: VariantType) -> b8;
+InterfaceVariantCanConvert :: #type proc "c" (p_from: VariantType, p_to: VariantType) -> b8;
 
 /**
  * @name variant_can_convert_strict
@@ -1743,7 +1743,7 @@ InterfaceVariantCanConvert :: proc "c" (p_from: VariantType, p_to: VariantType) 
  *
  * @return true if the conversion is possible; otherwise false.
  */
-InterfaceVariantCanConvertStrict :: proc "c" (p_from: VariantType, p_to: VariantType) -> b8;
+InterfaceVariantCanConvertStrict :: #type proc "c" (p_from: VariantType, p_to: VariantType) -> b8;
 
 /**
  * @name get_variant_from_type_constructor
@@ -1755,7 +1755,7 @@ InterfaceVariantCanConvertStrict :: proc "c" (p_from: VariantType, p_to: Variant
  *
  * @return A pointer to a function that can create a Variant of the given type from a raw value.
  */
-InterfaceGetVariantFromTypeConstructor :: proc "c" (p_type: VariantType) -> VariantFromTypeConstructorFunc;
+InterfaceGetVariantFromTypeConstructor :: #type proc "c" (p_type: VariantType) -> VariantFromTypeConstructorFunc;
 
 /**
  * @name get_variant_to_type_constructor
@@ -1767,7 +1767,7 @@ InterfaceGetVariantFromTypeConstructor :: proc "c" (p_type: VariantType) -> Vari
  *
  * @return A pointer to a function that can get the raw value from a Variant of the given type.
  */
-InterfaceGetVariantToTypeConstructor :: proc "c" (p_type: VariantType) -> TypeFromVariantConstructorFunc;
+InterfaceGetVariantToTypeConstructor :: #type proc "c" (p_type: VariantType) -> TypeFromVariantConstructorFunc;
 
 /**
  * @name variant_get_ptr_internal_getter
@@ -1784,7 +1784,7 @@ InterfaceGetVariantToTypeConstructor :: proc "c" (p_type: VariantType) -> TypeFr
  *
  * @return A pointer to a type-specific function that returns a pointer to the internal value of a variant. Check the implementation of this function (gdextension_variant_get_ptr_internal_getter) for pointee type info of each variant type.
  */
-InterfaceGetVariantGetInternalPtrFunc :: proc "c" (p_type: VariantType) -> VariantGetInternalPtrFunc
+InterfaceGetVariantGetInternalPtrFunc :: #type proc "c" (p_type: VariantType) -> VariantGetInternalPtrFunc
 
 /**
  * @name variant_get_ptr_operator_evaluator
@@ -1798,7 +1798,7 @@ InterfaceGetVariantGetInternalPtrFunc :: proc "c" (p_type: VariantType) -> Varia
  *
  * @return A pointer to a function that can evaluate the given Variant operator on the given Variant types.
  */
-InterfaceVariantGetPtrOperatorEvaluator :: proc "c" (p_operator: VariantOperator, p_type_a: VariantType, p_type_b: VariantType) -> PtrOperatorEvaluator;
+InterfaceVariantGetPtrOperatorEvaluator :: #type proc "c" (p_operator: VariantOperator, p_type_a: VariantType, p_type_b: VariantType) -> PtrOperatorEvaluator;
 
 /**
  * @name variant_get_ptr_builtin_method
@@ -1812,7 +1812,7 @@ InterfaceVariantGetPtrOperatorEvaluator :: proc "c" (p_operator: VariantOperator
  *
  * @return A pointer to a function that can call a builtin method on a type of Variant.
  */
-InterfaceVariantGetPtrBuiltinMethod :: proc "c" (p_type: VariantType, p_method: ConstStringNamePtr, p_hash: Int) -> PtrBuiltInMethod;
+InterfaceVariantGetPtrBuiltinMethod :: #type proc "c" (p_type: VariantType, p_method: ConstStringNamePtr, p_hash: Int) -> PtrBuiltInMethod;
 
 /**
  * @name variant_get_ptr_constructor
@@ -1825,7 +1825,7 @@ InterfaceVariantGetPtrBuiltinMethod :: proc "c" (p_type: VariantType, p_method: 
  *
  * @return A pointer to a function that can call one of the constructors for a type of Variant.
  */
- InterfaceVariantGetPtrConstructor :: proc "c" (p_type: VariantType, p_constructor: i32) -> PtrConstructor;
+ InterfaceVariantGetPtrConstructor :: #type proc "c" (p_type: VariantType, p_constructor: i32) -> PtrConstructor;
 
 /**
  * @name variant_get_ptr_destructor
@@ -1837,7 +1837,7 @@ InterfaceVariantGetPtrBuiltinMethod :: proc "c" (p_type: VariantType, p_method: 
  *
  * @return A pointer to a function than can call the destructor for a type of Variant.
  */
-InterfaceVariantGetPtrDestructor :: proc "c" (p_type: VariantType) -> PtrDestructor;
+InterfaceVariantGetPtrDestructor :: #type proc "c" (p_type: VariantType) -> PtrDestructor;
 
 /**
  * @name variant_construct
@@ -1851,7 +1851,7 @@ InterfaceVariantGetPtrDestructor :: proc "c" (p_type: VariantType) -> PtrDestruc
  * @param p_argument_count The number of arguments to pass to the constructor.
  * @param r_error A pointer the structure which will be updated with error information.
  */
-InterfaceVariantConstruct :: proc "c" (p_type: VariantType, r_base: ConstVariantPtr, p_args: ConstVariantPtrargs, p_argument_count: i32, r_error: ^CallError);
+InterfaceVariantConstruct :: #type proc "c" (p_type: VariantType, r_base: ConstVariantPtr, p_args: ConstVariantPtrargs, p_argument_count: i32, r_error: ^CallError);
 
 /**
  * @name variant_get_ptr_setter
@@ -1864,7 +1864,7 @@ InterfaceVariantConstruct :: proc "c" (p_type: VariantType, r_base: ConstVariant
  *
  * @return A pointer to a function that can call a member's setter on the given Variant type.
  */
-InterfaceVariantGetPtrSetter :: proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> PtrSetter;
+InterfaceVariantGetPtrSetter :: #type proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> PtrSetter;
 
 /**
  * @name variant_get_ptr_getter
@@ -1877,7 +1877,7 @@ InterfaceVariantGetPtrSetter :: proc "c" (p_type: VariantType, p_member: ConstSt
  *
  * @return A pointer to a function that can call a member's getter on the given Variant type.
  */
-InterfaceVariantGetPtrGetter :: proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> PtrGetter;
+InterfaceVariantGetPtrGetter :: #type proc "c" (p_type: VariantType, p_member: ConstStringNamePtr) -> PtrGetter;
 
 /**
  * @name variant_get_ptr_indexed_setter
@@ -1889,7 +1889,7 @@ InterfaceVariantGetPtrGetter :: proc "c" (p_type: VariantType, p_member: ConstSt
  *
  * @return A pointer to a function that can set an index on the given Variant type.
  */
-InterfaceVariantGetPtrIndexedSetter :: proc "c" (p_type: VariantType) -> PtrIndexedSetter;
+InterfaceVariantGetPtrIndexedSetter :: #type proc "c" (p_type: VariantType) -> PtrIndexedSetter;
 
 /**
  * @name variant_get_ptr_indexed_getter
@@ -1901,7 +1901,7 @@ InterfaceVariantGetPtrIndexedSetter :: proc "c" (p_type: VariantType) -> PtrInde
  *
  * @return A pointer to a function that can get an index on the given Variant type.
  */
-InterfaceVariantGetPtrIndexedGetter :: proc "c" (p_type: VariantType) -> PtrIndexedGetter;
+InterfaceVariantGetPtrIndexedGetter :: #type proc "c" (p_type: VariantType) -> PtrIndexedGetter;
 
 /**
  * @name variant_get_ptr_keyed_setter
@@ -1913,7 +1913,7 @@ InterfaceVariantGetPtrIndexedGetter :: proc "c" (p_type: VariantType) -> PtrInde
  *
  * @return A pointer to a function that can set a key on the given Variant type.
  */
-InterfaceVariantGetPtrKeyedSetter :: proc "c" (p_type: VariantType) -> PtrKeyedSetter;
+InterfaceVariantGetPtrKeyedSetter :: #type proc "c" (p_type: VariantType) -> PtrKeyedSetter;
 
 /**
  * @name variant_get_ptr_keyed_getter
@@ -1925,7 +1925,7 @@ InterfaceVariantGetPtrKeyedSetter :: proc "c" (p_type: VariantType) -> PtrKeyedS
  *
  * @return A pointer to a function that can get a key on the given Variant type.
  */
-InterfaceVariantGetPtrKeyedGetter :: proc "c" (p_type: VariantType) -> PtrKeyedGetter;
+InterfaceVariantGetPtrKeyedGetter :: #type proc "c" (p_type: VariantType) -> PtrKeyedGetter;
 
 /**
  * @name variant_get_ptr_keyed_checker
@@ -1937,7 +1937,7 @@ InterfaceVariantGetPtrKeyedGetter :: proc "c" (p_type: VariantType) -> PtrKeyedG
  *
  * @return A pointer to a function that can check a key on the given Variant type.
  */
-InterfaceVariantGetPtrKeyedChecker :: proc "c" (p_type: VariantType) -> PtrKeyedChecker;
+InterfaceVariantGetPtrKeyedChecker :: #type proc "c" (p_type: VariantType) -> PtrKeyedChecker;
 
 /**
  * @name variant_get_constant_value
@@ -1949,7 +1949,7 @@ InterfaceVariantGetPtrKeyedChecker :: proc "c" (p_type: VariantType) -> PtrKeyed
  * @param p_constant A pointer to a StringName with the constant name.
  * @param r_ret A pointer to a Variant to store the value.
  */
-InterfaceVariantGetConstantValue :: proc "c" (p_type: VariantType, p_constant: ConstStringNamePtr, r_ret: UninitializedVariantPtr);
+InterfaceVariantGetConstantValue :: #type proc "c" (p_type: VariantType, p_constant: ConstStringNamePtr, r_ret: UninitializedVariantPtr);
 
 /**
  * @name variant_get_ptr_utility_function
@@ -1962,7 +1962,7 @@ InterfaceVariantGetConstantValue :: proc "c" (p_type: VariantType, p_constant: C
  *
  * @return A pointer to a function that can call a Variant utility function.
  */
- InterfaceVariantGetPtrUtilityFunction :: proc "c" (p_function: ConstStringNamePtr, p_hash: Int) -> PtrUtilityFunction;
+ InterfaceVariantGetPtrUtilityFunction :: #type proc "c" (p_function: ConstStringNamePtr, p_hash: Int) -> PtrUtilityFunction;
 
 /* INTERFACE: String Utilities */
 
@@ -1976,7 +1976,7 @@ InterfaceVariantGetConstantValue :: proc "c" (p_type: VariantType, p_constant: C
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a Latin-1 encoded C string (null terminated).
  */
-InterfaceStringNewWithLatin1Chars :: proc "c" (r_dest: UninitializedVariantPtr, p_contents: cstring);
+InterfaceStringNewWithLatin1Chars :: #type proc "c" (r_dest: UninitializedVariantPtr, p_contents: cstring);
 
 /**
  * @name string_new_with_utf8_chars
@@ -1987,7 +1987,7 @@ InterfaceStringNewWithLatin1Chars :: proc "c" (r_dest: UninitializedVariantPtr, 
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-8 encoded C string (null terminated).
  */
-InterfaceStringNewWithUtf8Chars :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring);
+InterfaceStringNewWithUtf8Chars :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring);
 
 /**
  * @name string_new_with_utf16_chars
@@ -1998,7 +1998,7 @@ InterfaceStringNewWithUtf8Chars :: proc "c" (r_dest: UninitializedStringPtr, p_c
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-16 encoded C string (null terminated).
  */
-InterfaceStringNewWithUtf16Chars :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring);
+InterfaceStringNewWithUtf16Chars :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring);
 
 /**
  * @name string_new_with_utf32_chars
@@ -2009,7 +2009,7 @@ InterfaceStringNewWithUtf16Chars :: proc "c" (r_dest: UninitializedStringPtr, p_
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a UTF-32 encoded C string (null terminated).
  */
-InterfaceStringNewWithUtf32Chars :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring)
+InterfaceStringNewWithUtf32Chars :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring)
 
 /**
  * @name string_new_with_wide_chars
@@ -2020,7 +2020,7 @@ InterfaceStringNewWithUtf32Chars :: proc "c" (r_dest: UninitializedStringPtr, p_
  * @param r_dest A pointer to a Variant to hold the newly created String.
  * @param p_contents A pointer to a wide C string (null terminated).
  */
-InterfaceStringNewWithWideChars :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring)
+InterfaceStringNewWithWideChars :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring)
 
 /**
  * @name string_new_with_latin1_chars_and_len
@@ -2032,7 +2032,7 @@ InterfaceStringNewWithWideChars :: proc "c" (r_dest: UninitializedStringPtr, p_c
  * @param p_contents A pointer to a Latin-1 encoded C string.
  * @param p_size The number of characters (= number of bytes).
  */
-InterfaceStringNewWithLatin1CharsAndLen :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_size: Int);
+InterfaceStringNewWithLatin1CharsAndLen :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_size: Int);
 
 /**
  * @name string_new_with_utf8_chars_and_len
@@ -2045,7 +2045,7 @@ InterfaceStringNewWithLatin1CharsAndLen :: proc "c" (r_dest: UninitializedString
  * @param p_contents A pointer to a UTF-8 encoded C string.
  * @param p_size The number of bytes (not code units).
  */
-InterfaceStringNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStringPtr, p_contents: [^]u8, p_size: Int);
+InterfaceStringNewWithUtf8CharsAndLen :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: [^]u8, p_size: Int);
 
 /**
  * @name string_new_with_utf8_chars_and_len2
@@ -2059,7 +2059,7 @@ InterfaceStringNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStringPt
  *
  * @return Error code signifying if the operation successful.
  */
-InterfaceStringNewWithUtf8CharsAndLen2 :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_size: Int) -> Int;
+InterfaceStringNewWithUtf8CharsAndLen2 :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_size: Int) -> Int;
 
 /**
  * @name string_new_with_utf16_chars_and_len
@@ -2072,7 +2072,7 @@ InterfaceStringNewWithUtf8CharsAndLen2 :: proc "c" (r_dest: UninitializedStringP
  * @param p_contents A pointer to a UTF-16 encoded C string.
  * @param p_size The number of characters (not bytes).
  */
-InterfaceStringNewWithUtf16CharsAndLen :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int);
+InterfaceStringNewWithUtf16CharsAndLen :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int);
 
 /**
  * @name string_new_with_utf16_chars_and_len2
@@ -2087,7 +2087,7 @@ InterfaceStringNewWithUtf16CharsAndLen :: proc "c" (r_dest: UninitializedStringP
  *
  * @return Error code signifying if the operation successful.
  */
-InterfaceStringNewWithUtf16CharsAndLen2 :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int, p_default_little_endian: b8) -> Int;
+InterfaceStringNewWithUtf16CharsAndLen2 :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int, p_default_little_endian: b8) -> Int;
 
 /**
  * @name string_new_with_utf32_chars_and_len
@@ -2099,7 +2099,7 @@ InterfaceStringNewWithUtf16CharsAndLen2 :: proc "c" (r_dest: UninitializedString
  * @param p_contents A pointer to a UTF-32 encoded C string.
  * @param p_size The number of characters (not bytes).
  */
-InterfaceStringNewWithUtf32CharsAndLen :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int);
+InterfaceStringNewWithUtf32CharsAndLen :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int);
 
 /**
  * @name string_new_with_wide_chars_and_len
@@ -2111,7 +2111,7 @@ InterfaceStringNewWithUtf32CharsAndLen :: proc "c" (r_dest: UninitializedStringP
  * @param p_contents A pointer to a wide C string.
  * @param p_size The number of characters (not bytes).
  */
-InterfaceStringNewWithWideCharsAndLen :: proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int);
+InterfaceStringNewWithWideCharsAndLen :: #type proc "c" (r_dest: UninitializedStringPtr, p_contents: cstring, p_char_count: Int);
 
 /**
  * @name string_to_latin1_chars
@@ -2127,7 +2127,7 @@ InterfaceStringNewWithWideCharsAndLen :: proc "c" (r_dest: UninitializedStringPt
  *
  * @return The resulting encoded string length in characters (not bytes), not including a null terminator.
  */
-InterfaceStringToLatin1Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u8, p_max_write_length: Int) -> Int;
+InterfaceStringToLatin1Chars :: #type proc "c" (p_self: ConstStringPtr, r_text: [^]u8, p_max_write_length: Int) -> Int;
 
 /**
  * @name string_to_utf8_chars
@@ -2143,7 +2143,7 @@ InterfaceStringToLatin1Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u8,
  *
  * @return The resulting encoded string length in characters (not bytes), not including a null terminator.
  */
-InterfaceStringToUtf8Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u8, p_max_write_length: Int) -> Int;
+InterfaceStringToUtf8Chars :: #type proc "c" (p_self: ConstStringPtr, r_text: [^]u8, p_max_write_length: Int) -> Int;
 
 /**
  * @name string_to_utf16_chars
@@ -2159,7 +2159,7 @@ InterfaceStringToUtf8Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u8, p
  *
  * @return The resulting encoded string length in characters (not bytes), not including a null terminator.
  */
-InterfaceStringToUtf16Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u16, p_max_write_length: Int) -> Int;
+InterfaceStringToUtf16Chars :: #type proc "c" (p_self: ConstStringPtr, r_text: [^]u16, p_max_write_length: Int) -> Int;
 
 /**
  * @name string_to_utf32_chars
@@ -2175,7 +2175,7 @@ InterfaceStringToUtf16Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u16,
  *
  * @return The resulting encoded string length in characters (not bytes), not including a null terminator.
  */
-InterfaceStringToUtf32Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u32, p_max_write_length: Int) -> Int;
+InterfaceStringToUtf32Chars :: #type proc "c" (p_self: ConstStringPtr, r_text: [^]u32, p_max_write_length: Int) -> Int;
 
 /**
  * @name string_to_wide_chars
@@ -2191,7 +2191,7 @@ InterfaceStringToUtf32Chars :: proc "c" (p_self: ConstStringPtr, r_text: [^]u32,
  *
  * @return The resulting encoded string length in characters (not bytes), not including a null terminator.
  */
-InterfaceStringToWideChars :: proc "c" (p_self: ConstStringPtr, r_text: [^]c.wchar_t, p_max_write_length: Int) -> Int;
+InterfaceStringToWideChars :: #type proc "c" (p_self: ConstStringPtr, r_text: [^]c.wchar_t, p_max_write_length: Int) -> Int;
 
 /**
  * @name string_operator_index
@@ -2204,7 +2204,7 @@ InterfaceStringToWideChars :: proc "c" (p_self: ConstStringPtr, r_text: [^]c.wch
  *
  * @return A pointer to the requested character.
  */
-InterfaceStringOperatorIndex :: proc "c" (p_self: StringPtr, p_index: Int) -> ^u32;
+InterfaceStringOperatorIndex :: #type proc "c" (p_self: StringPtr, p_index: Int) -> ^u32;
 
 /**
  * @name string_operator_index_const
@@ -2217,7 +2217,7 @@ InterfaceStringOperatorIndex :: proc "c" (p_self: StringPtr, p_index: Int) -> ^u
  *
  * @return A const pointer to the requested character.
  */
-InterfaceStringOperatorIndexConst :: proc "c" (p_self: StringPtr, p_index: Int) -> ^u32
+InterfaceStringOperatorIndexConst :: #type proc "c" (p_self: StringPtr, p_index: Int) -> ^u32
 
 /**
  * @name string_operator_plus_eq_string
@@ -2228,7 +2228,7 @@ InterfaceStringOperatorIndexConst :: proc "c" (p_self: StringPtr, p_index: Int) 
  * @param p_self A pointer to the String.
  * @param p_b A pointer to the other String to append.
  */
-InterfaceStringOperatorPlusEqString :: proc "c" (p_self: StringPtr, p_b: ConstStringPtr);
+InterfaceStringOperatorPlusEqString :: #type proc "c" (p_self: StringPtr, p_b: ConstStringPtr);
 
 /**
  * @name string_operator_plus_eq_char
@@ -2239,7 +2239,7 @@ InterfaceStringOperatorPlusEqString :: proc "c" (p_self: StringPtr, p_b: ConstSt
  * @param p_self A pointer to the String.
  * @param p_b A pointer to the character to append.
  */
-InterfaceStringOperatorPlusEqChar :: proc "c" (p_self: StringPtr, p_b: u32);
+InterfaceStringOperatorPlusEqChar :: #type proc "c" (p_self: StringPtr, p_b: u32);
 
 /**
  * @name string_operator_plus_eq_cstr
@@ -2250,7 +2250,7 @@ InterfaceStringOperatorPlusEqChar :: proc "c" (p_self: StringPtr, p_b: u32);
  * @param p_self A pointer to the String.
  * @param p_b A pointer to a Latin-1 encoded C string (null terminated).
  */
-InterfaceStringOperatorPlusEqCstr :: proc "c" (p_self: StringPtr, p_b: cstring);
+InterfaceStringOperatorPlusEqCstr :: #type proc "c" (p_self: StringPtr, p_b: cstring);
 
 /**
  * @name string_operator_plus_eq_wcstr
@@ -2261,7 +2261,7 @@ InterfaceStringOperatorPlusEqCstr :: proc "c" (p_self: StringPtr, p_b: cstring);
  * @param p_self A pointer to the String.
  * @param p_b A pointer to a wide C string (null terminated).
  */
-InterfaceStringOperatorPlusEqWcstr :: proc "c" (p_self: StringPtr, p_b: cstring);
+InterfaceStringOperatorPlusEqWcstr :: #type proc "c" (p_self: StringPtr, p_b: cstring);
 
 /**
  * @name string_operator_plus_eq_c32str
@@ -2272,7 +2272,7 @@ InterfaceStringOperatorPlusEqWcstr :: proc "c" (p_self: StringPtr, p_b: cstring)
  * @param p_self A pointer to the String.
  * @param p_b A pointer to a UTF-32 encoded C string (null terminated).
  */
-InterfaceStringOperatorPlusEqC32str :: proc "c" (p_self: StringPtr, p_b: cstring);
+InterfaceStringOperatorPlusEqC32str :: #type proc "c" (p_self: StringPtr, p_b: cstring);
 
 /**
  * @name string_resize
@@ -2291,7 +2291,7 @@ InterfaceStringOperatorPlusEqC32str :: proc "c" (p_self: StringPtr, p_b: cstring
  *
  * @return Error code signifying if the operation successful.
  */
-InterfaceStringResize :: proc "c" (p_self: StringPtr, p_resize: Int) -> Int;
+InterfaceStringResize :: #type proc "c" (p_self: StringPtr, p_resize: Int) -> Int;
 
 /* INTERFACE: StringName Utilities */
 
@@ -2312,7 +2312,7 @@ InterfaceStringResize :: proc "c" (p_self: StringPtr, p_resize: Int) -> Int;
  * @param p_contents A pointer to a C string (null terminated and Latin-1 or ASCII encoded).
  * @param p_is_static Whether the StringName reuses the buffer directly (see above).
  */
-InterfaceStringNameNewWithLatin1Chars :: proc "c" (r_dest: UninitializedStringNamePtr, p_contents: cstring, p_is_static: b8);
+InterfaceStringNameNewWithLatin1Chars :: #type proc "c" (r_dest: UninitializedStringNamePtr, p_contents: cstring, p_is_static: b8);
 
 /**
  * @name string_name_new_with_utf8_chars
@@ -2323,7 +2323,7 @@ InterfaceStringNameNewWithLatin1Chars :: proc "c" (r_dest: UninitializedStringNa
  * @param r_dest A pointer to uninitialized storage, into which the newly created StringName is constructed.
  * @param p_contents A pointer to a C string (null terminated and UTF-8 encoded).
  */
-InterfaceStringNameNewWithUtf8Chars :: proc "c" (r_dest: UninitializedStringNamePtr, p_contents: cstring);
+InterfaceStringNameNewWithUtf8Chars :: #type proc "c" (r_dest: UninitializedStringNamePtr, p_contents: cstring);
 
 /**
  * @name string_name_new_with_utf8_chars_and_len
@@ -2335,7 +2335,7 @@ InterfaceStringNameNewWithUtf8Chars :: proc "c" (r_dest: UninitializedStringName
  * @param p_contents A pointer to a C string (null terminated and UTF-8 encoded).
  * @param p_size The number of bytes (not UTF-8 code points).
  */
-InterfaceStringNameNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStringNamePtr, p_contents: [^]u8, p_size: Int);
+InterfaceStringNameNewWithUtf8CharsAndLen :: #type proc "c" (r_dest: UninitializedStringNamePtr, p_contents: [^]u8, p_size: Int);
 
 /* INTERFACE: XMLParser Utilities */
 
@@ -2353,7 +2353,7 @@ InterfaceStringNameNewWithUtf8CharsAndLen :: proc "c" (r_dest: UninitializedStri
  *
  * @see XMLParser::open_buffer()
  */
-InterfaceXmlParserOpenBuffer :: proc "c" (p_instance: ObjectPtr, p_buffer: [^]u8, p_size: Int) -> Int;
+InterfaceXmlParserOpenBuffer :: #type proc "c" (p_instance: ObjectPtr, p_buffer: [^]u8, p_size: Int) -> Int;
 
 /**
  * @name editor_help_load_xml_from_utf8_chars
@@ -2365,7 +2365,7 @@ InterfaceXmlParserOpenBuffer :: proc "c" (p_instance: ObjectPtr, p_buffer: [^]u8
  *
  * @param p_data A pointer to a UTF-8 encoded C string (null terminated).
  */
-InterfaceEditorHelpLoadXmlFromUtf8Chars :: proc "c" (p_data: cstring);
+InterfaceEditorHelpLoadXmlFromUtf8Chars :: #type proc "c" (p_data: cstring);
 
 /**
  * @name editor_help_load_xml_from_utf8_chars_and_len
@@ -2378,7 +2378,7 @@ InterfaceEditorHelpLoadXmlFromUtf8Chars :: proc "c" (p_data: cstring);
  * @param p_data A pointer to a UTF-8 encoded C string.
  * @param p_size The number of bytes (not code units).
  */
-InterfaceEditorHelpLoadXmlFromUtf8CharsAndLen :: proc "c" (p_data: cstring, p_size: Int);
+InterfaceEditorHelpLoadXmlFromUtf8CharsAndLen :: #type proc "c" (p_data: cstring, p_size: Int);
 
 
 /**
@@ -2395,7 +2395,7 @@ InterfaceEditorHelpLoadXmlFromUtf8CharsAndLen :: proc "c" (p_data: cstring, p_si
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_callback The callback to retrieve the list of classes used.
  */
-InterfaceEditorRegisterGetClassesUsedCallback :: proc "c" (p_library: ClassDB, p_callback: EditorGetClassesUsedCallback);
+InterfaceEditorRegisterGetClassesUsedCallback :: #type proc "c" (p_library: ClassDB, p_callback: EditorGetClassesUsedCallback);
 
 /**
  * @name register_main_loop_callbacks
@@ -2406,7 +2406,7 @@ InterfaceEditorRegisterGetClassesUsedCallback :: proc "c" (p_library: ClassDB, p
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_callbacks A pointer to the structure that contains the callbacks.
  */
-InterfaceRegisterMainLoopCallbacks :: proc "c" (p_library: ClassDB, p_callbacks: ^MainLoopCallbacks);
+InterfaceRegisterMainLoopCallbacks :: #type proc "c" (p_library: ClassDB, p_callbacks: ^MainLoopCallbacks);
 
 /* INTERFACE: FileAccess Utilities */
 
@@ -2422,7 +2422,7 @@ InterfaceRegisterMainLoopCallbacks :: proc "c" (p_library: ClassDB, p_callbacks:
  *
  * @see FileAccess::store_buffer()
  */
-InterfaceFileAccessStoreBuffer :: proc "c" (p_instance: ObjectPtr, p_src: [^]u8, p_length: u64);
+InterfaceFileAccessStoreBuffer :: #type proc "c" (p_instance: ObjectPtr, p_src: [^]u8, p_length: u64);
 
 /**
  * @name file_access_get_buffer
@@ -2436,7 +2436,7 @@ InterfaceFileAccessStoreBuffer :: proc "c" (p_instance: ObjectPtr, p_src: [^]u8,
  *
  * @return The actual number of bytes read (may be less than requested).
  */
-InterfaceFileAccessGetBuffer :: proc "c" (p_instance: ConstObjectPtr, p_dst: [^]u8, p_length: u64) -> u64;
+InterfaceFileAccessGetBuffer :: #type proc "c" (p_instance: ConstObjectPtr, p_dst: [^]u8, p_length: u64) -> u64;
 
 /* INTERFACE: Image Utilities */
 
@@ -2452,7 +2452,7 @@ InterfaceFileAccessGetBuffer :: proc "c" (p_instance: ConstObjectPtr, p_dst: [^]
  *
  * @see Image::ptrw()
  */
-InterfaceImagePtrw :: proc "c" (p_instance: ObjectPtr) -> ^u8;
+InterfaceImagePtrw :: #type proc "c" (p_instance: ObjectPtr) -> ^u8;
 
 /**
  * @name image_ptr
@@ -2466,7 +2466,7 @@ InterfaceImagePtrw :: proc "c" (p_instance: ObjectPtr) -> ^u8;
  *
  * @see Image::ptr()
  */
-InterfaceImagePtr :: proc "c" (p_instance: ObjectPtr) -> ^u8;
+InterfaceImagePtr :: #type proc "c" (p_instance: ObjectPtr) -> ^u8;
 
 /* INTERFACE: WorkerThreadPool Utilities */
 
@@ -2492,7 +2492,7 @@ InterfaceImagePtr :: proc "c" (p_instance: ObjectPtr) -> ^u8;
  *
  * @see WorkerThreadPool::add_group_task()
  */
-InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, p_func : WorkerThreadPoolGroupTask, p_userdata: rawptr, p_elements: Int, p_tasks: int, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
+InterfaceWorkerThreadPoolAddNativeGroupTask :: #type proc "c" (p_instance: ObjectPtr, p_func : WorkerThreadPoolGroupTask, p_userdata: rawptr, p_elements: Int, p_tasks: int, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
 
 /**
  * @name worker_thread_pool_add_native_task
@@ -2513,7 +2513,7 @@ InterfaceWorkerThreadPoolAddNativeGroupTask :: proc "c" (p_instance: ObjectPtr, 
  *
  * @return The task ID.
  */
-InterfaceWorkerThreadPoolAddNativeTask :: proc "c" (p_instance: ObjectPtr, p_func : WorkerThreadPoolTask, p_userdata: rawptr, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
+InterfaceWorkerThreadPoolAddNativeTask :: #type proc "c" (p_instance: ObjectPtr, p_func : WorkerThreadPoolTask, p_userdata: rawptr, p_high_priority: b8, p_description: ConstStringPtr) -> i64;
 
 /* INTERFACE: Packed Array */
 
@@ -2528,7 +2528,7 @@ InterfaceWorkerThreadPoolAddNativeTask :: proc "c" (p_instance: ObjectPtr, p_fun
  *
  * @return A pointer to the requested byte.
  */
-InterfacePackedByteArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^u8;
+InterfacePackedByteArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^u8;
 
 /**
  * @name packed_byte_array_operator_index_const
@@ -2541,7 +2541,7 @@ InterfacePackedByteArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int
  *
  * @return A const pointer to the requested byte.
  */
-InterfacePackedByteArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^u8;
+InterfacePackedByteArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^u8;
 
 /**
  * @name packed_float32_array_operator_index
@@ -2554,7 +2554,7 @@ InterfacePackedByteArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index
  *
  * @return A pointer to the requested 32-bit float.
  */
-InterfacePackedFloat32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^f32;
+InterfacePackedFloat32ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^f32;
 
 /**
  * @name packed_float32_array_operator_index_const
@@ -2567,7 +2567,7 @@ InterfacePackedFloat32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  *
  * @return A const pointer to the requested 32-bit float.
  */
-InterfacePackedFloat32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^f32;
+InterfacePackedFloat32ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^f32;
 
 /**
  * @name packed_float64_array_operator_index
@@ -2580,7 +2580,7 @@ InterfacePackedFloat32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_in
  *
  * @return A pointer to the requested 64-bit float.
  */
-InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^f64;
+InterfacePackedFloat64ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^f64;
 
 /**
  * @name packed_float64_array_operator_index_const
@@ -2593,7 +2593,7 @@ InterfacePackedFloat64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  *
  * @return A const pointer to the requested 64-bit float.
  */
-InterfacePackedFloat64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^f64;
+InterfacePackedFloat64ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^f64;
 
 /**
  * @name packed_int32_array_operator_index
@@ -2606,7 +2606,7 @@ InterfacePackedFloat64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_in
  *
  * @return A pointer to the requested 32-bit integer.
  */
-InterfacePackedInt32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^i32;
+InterfacePackedInt32ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^i32;
 
 /**
  * @name packed_int32_array_operator_index_const
@@ -2619,7 +2619,7 @@ InterfacePackedInt32ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: In
  *
  * @return A const pointer to the requested 32-bit integer.
  */
-InterfacePackedInt32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^i32;
+InterfacePackedInt32ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^i32;
 
 /**
  * @name packed_int64_array_operator_index
@@ -2632,7 +2632,7 @@ InterfacePackedInt32ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_inde
  *
  * @return A pointer to the requested 64-bit integer.
  */
-InterfacePackedInt64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Int;
+InterfacePackedInt64ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^Int;
 
 /**
  * @name packed_int64_array_operator_index_const
@@ -2645,7 +2645,7 @@ InterfacePackedInt64ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: In
  *
  * @return A const pointer to the requested 64-bit integer.
  */
-InterfacePackedInt64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Int;
+InterfacePackedInt64ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^Int;
 
 /**
  * @name packed_string_array_operator_index
@@ -2658,7 +2658,7 @@ InterfacePackedInt64ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_inde
  *
  * @return A pointer to the requested String.
  */
-InterfacePackedStringArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> StringPtr;
+InterfacePackedStringArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> StringPtr;
 
 /**
  * @name packed_string_array_operator_index_const
@@ -2671,7 +2671,7 @@ InterfacePackedStringArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: I
  *
  * @return A const pointer to the requested String.
  */
-InterfacePackedStringArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> StringPtr;
+InterfacePackedStringArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> StringPtr;
 
 /**
  * @name packed_vector2_array_operator_index
@@ -2685,7 +2685,7 @@ InterfacePackedStringArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_ind
  * @return A pointer to the requested Vector2.
  * Using typePtr because the array could be holding float or int types
  */
-InterfacePackedVector2ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
+InterfacePackedVector2ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
 
 /**
  * @name packed_vector2_array_operator_index_const
@@ -2699,7 +2699,7 @@ InterfacePackedVector2ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  * @return A const pointer to the requested Vector2.
  * Using typePtr because the array could be holding float or int types
  */
-InterfacePackedVector2ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
+InterfacePackedVector2ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
 
 /**
  * @name packed_vector3_array_operator_index
@@ -2713,7 +2713,7 @@ InterfacePackedVector2ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_in
  * @return A pointer to the requested Vector3.
  * Using typePtr because the array could be holding float or int types
  */
-InterfacePackedVector3ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
+InterfacePackedVector3ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
 
 /**
  * @name packed_vector3_array_operator_index_const
@@ -2727,7 +2727,7 @@ InterfacePackedVector3ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  * @return A const pointer to the requested Vector3.
  * Using typePtr because the array could be holding float or int types
  */
-InterfacePackedVector3ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
+InterfacePackedVector3ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
 
 /**
  * @name packed_vector4_array_operator_index
@@ -2741,7 +2741,7 @@ InterfacePackedVector3ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_in
  * @return A pointer to the requested Vector4.
  * Using typePtr because the array could be holding float or int types
  */
-InterfacePackedVector4ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
+InterfacePackedVector4ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
 
 /**
  * @name packed_vector4_array_operator_index_const
@@ -2755,7 +2755,7 @@ InterfacePackedVector4ArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: 
  * @return A const pointer to the requested Vector4.
  * Using typePtr because the array could be holding float or int types
  */
-InterfacePackedVector4ArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
+InterfacePackedVector4ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
 
 Vector4 :: distinct struct{
     x: f32,
@@ -2777,7 +2777,7 @@ Color :: distinct Vector4
  *
  * @return A pointer to the requested Color.
  */
-InterfacePackedColorArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Color;
+InterfacePackedColorArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^Color;
 
 /**
  * @name packed_color_array_operator_index_const
@@ -2790,7 +2790,7 @@ InterfacePackedColorArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: In
  *
  * @return A const pointer to the requested Color.
  */
-InterfacePackedColorArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Color;
+InterfacePackedColorArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^Color;
 
 /**
  * @name array_operator_index
@@ -2803,7 +2803,7 @@ InterfacePackedColorArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_inde
  *
  * @return A pointer to the requested Variant.
  */
-InterfaceArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Variant;
+InterfaceArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^Variant;
 
 /**
  * @name array_operator_index_const
@@ -2816,7 +2816,7 @@ InterfaceArrayOperatorIndex :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Vari
  *
  * @return A const pointer to the requested Variant.
  */
-InterfaceArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> ^Variant;
+InterfaceArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> ^Variant;
 
 /**
  * @name array_ref
@@ -2827,7 +2827,7 @@ InterfaceArrayOperatorIndexConst :: proc "c" (p_self: TypePtr, p_index: Int) -> 
  * @param p_self A pointer to the Array object to update.
  * @param p_from A pointer to the Array object to reference.
  */
-InterfaceArrayRef :: proc "c" (p_self: TypePtr, p_from: TypePtr);
+InterfaceArrayRef :: #type proc "c" (p_self: TypePtr, p_from: TypePtr);
 
 /**
  * @name array_set_typed
@@ -2840,7 +2840,7 @@ InterfaceArrayRef :: proc "c" (p_self: TypePtr, p_from: TypePtr);
  * @param p_class_name A pointer to a StringName with the name of the object (if p_type is GDEXTENSION_VARIANT_TYPE_OBJECT).
  * @param p_script A pointer to a Script object (if p_type is GDEXTENSION_VARIANT_TYPE_OBJECT and the base class is extended by a script).
  */
-InterfaceArraySetTyped :: proc "c" (p_self: TypePtr, p_type: VariantType, p_class_name: ConstStringNamePtr, p_script: VariantPtr);
+InterfaceArraySetTyped :: #type proc "c" (p_self: TypePtr, p_type: VariantType, p_class_name: ConstStringNamePtr, p_script: VariantPtr);
 
 /* INTERFACE: Dictionary */
 
@@ -2855,7 +2855,7 @@ InterfaceArraySetTyped :: proc "c" (p_self: TypePtr, p_type: VariantType, p_clas
  *
  * @return A pointer to a Variant representing the value at the given key.
  */
-InterfaceDictionaryOperatorIndex :: proc "c" (p_self: TypePtr, p_key: VariantPtr) -> VariantPtr;
+InterfaceDictionaryOperatorIndex :: #type proc "c" (p_self: TypePtr, p_key: VariantPtr) -> VariantPtr;
 
 /**
  * @name dictionary_operator_index_const
@@ -2868,7 +2868,7 @@ InterfaceDictionaryOperatorIndex :: proc "c" (p_self: TypePtr, p_key: VariantPtr
  *
  * @return A const pointer to a Variant representing the value at the given key.
  */
-InterfaceDictionaryOperatorIndexConst :: proc "c" (p_self: TypePtr, p_key: VariantPtr) -> VariantPtr;
+InterfaceDictionaryOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_key: VariantPtr) -> VariantPtr;
 
 /**
  * @name dictionary_set_typed
@@ -2884,7 +2884,7 @@ InterfaceDictionaryOperatorIndexConst :: proc "c" (p_self: TypePtr, p_key: Varia
  * @param p_value_class_name A pointer to a StringName with the name of the object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT).
  * @param p_value_script A pointer to a Script object (if p_value_type is GDEXTENSION_VARIANT_TYPE_OBJECT and the base class is extended by a script).
  */
-InterfaceDictionarySetTyped :: proc "c" (p_self: TypePtr, p_key_type: VariantType, #by_ptr p_key_class_name: StringName, #by_ptr p_key_script: Variant, p_value_type: VariantType, #by_ptr p_value_class_name: StringName, #by_ptr p_value_script: Variant);
+InterfaceDictionarySetTyped :: #type proc "c" (p_self: TypePtr, p_key_type: VariantType, #by_ptr p_key_class_name: StringName, #by_ptr p_key_script: Variant, p_value_type: VariantType, #by_ptr p_value_class_name: StringName, #by_ptr p_value_script: Variant);
 
 /* INTERFACE: Object */
 
@@ -2901,7 +2901,7 @@ InterfaceDictionarySetTyped :: proc "c" (p_self: TypePtr, p_key_type: VariantTyp
  * @param r_ret A pointer to Variant which will receive the return value.
  * @param r_error A pointer to a CallError struct that will receive error information.
  */
-InterfaceObjectMethodBindCall :: proc "c" (p_method_bind: MethodBindPtr, p_instance: ObjectPtr, p_args: ConstVariantPtrargs, p_arg_count: Int, r_ret: UninitializedVariantPtr, r_error: ^CallError);
+InterfaceObjectMethodBindCall :: #type proc "c" (p_method_bind: MethodBindPtr, p_instance: ObjectPtr, p_args: ConstVariantPtrargs, p_arg_count: Int, r_ret: UninitializedVariantPtr, r_error: ^CallError);
 
 /**
  * @name object_method_bind_ptrcall
@@ -2914,7 +2914,7 @@ InterfaceObjectMethodBindCall :: proc "c" (p_method_bind: MethodBindPtr, p_insta
  * @param p_args A pointer to a C array representing the arguments.
  * @param r_ret A pointer to the Object that will receive the return value.
  */
-InterfaceObjectMethodBindPtrcall :: proc "c" (p_method_bind: MethodBindPtr, p_instance: ObjectPtr, p_args: ConstTypePtrargs, r_ret: TypePtr);
+InterfaceObjectMethodBindPtrcall :: #type proc "c" (p_method_bind: MethodBindPtr, p_instance: ObjectPtr, p_args: ConstTypePtrargs, r_ret: TypePtr);
 
 /**
  * @name object_destroy
@@ -2924,7 +2924,7 @@ InterfaceObjectMethodBindPtrcall :: proc "c" (p_method_bind: MethodBindPtr, p_in
  *
  * @param p_o A pointer to the Object.
  */
-InterfaceObjectDestroy :: proc "c" (p_o: ObjectPtr);
+InterfaceObjectDestroy :: #type proc "c" (p_o: ObjectPtr);
 
 /**
  * @name global_get_singleton
@@ -2936,7 +2936,7 @@ InterfaceObjectDestroy :: proc "c" (p_o: ObjectPtr);
  *
  * @return A pointer to the singleton Object.
  */
-InterfaceGlobalGetSingleton :: proc "c" (p_name: StringNamePtr) -> ObjectPtr;
+InterfaceGlobalGetSingleton :: #type proc "c" (p_name: StringNamePtr) -> ObjectPtr;
 
 /**
  * @name object_get_instance_binding
@@ -2950,7 +2950,7 @@ InterfaceGlobalGetSingleton :: proc "c" (p_name: StringNamePtr) -> ObjectPtr;
  *
  * @return
  */
-InterfaceObjectGetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, p_callbacks: ^InstanceBindingCallbacks) -> rawptr;
+InterfaceObjectGetInstanceBinding :: #type proc "c" (p_o: ObjectPtr, p_token: rawptr, p_callbacks: ^InstanceBindingCallbacks) -> rawptr;
 
 /**
  * @name object_set_instance_binding
@@ -2963,7 +2963,7 @@ InterfaceObjectGetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, 
  * @param p_binding A pointer to the instance binding.
  * @param p_callbacks A pointer to a InstanceBindingCallbacks struct.
  */
-InterfaceObjectSetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, p_binding: rawptr, p_callbacks: ^InstanceBindingCallbacks);
+InterfaceObjectSetInstanceBinding :: #type proc "c" (p_o: ObjectPtr, p_token: rawptr, p_binding: rawptr, p_callbacks: ^InstanceBindingCallbacks);
 
 /**
  * @name object_free_instance_binding
@@ -2974,7 +2974,7 @@ InterfaceObjectSetInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr, 
  * @param p_o A pointer to the Object.
  * @param p_library A token the library received by the GDExtension's entry point function.
  */
-InterfaceObjectFreeInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr);
+InterfaceObjectFreeInstanceBinding :: #type proc "c" (p_o: ObjectPtr, p_token: rawptr);
 
 /**
  * @name object_set_instance
@@ -2986,7 +2986,7 @@ InterfaceObjectFreeInstanceBinding :: proc "c" (p_o: ObjectPtr, p_token: rawptr)
  * @param p_classname A pointer to a StringName with the registered extension class's name.
  * @param p_instance A pointer to the extension class instance.
  */
-InterfaceObjectSetInstance :: proc "c" (p_o: ObjectPtr, p_classname: ConstStringNamePtr, p_instance: ClassInstancePtr); /* p_classname should be a registered extension class and should extend the p_o object's class. */
+InterfaceObjectSetInstance :: #type proc "c" (p_o: ObjectPtr, p_classname: ConstStringNamePtr, p_instance: ClassInstancePtr); /* p_classname should be a registered extension class and should extend the p_o object's class. */
 
 /**
  * @name object_get_class_name
@@ -3003,7 +3003,7 @@ InterfaceObjectSetInstance :: proc "c" (p_o: ObjectPtr, p_classname: ConstString
  *
  * @return true if successful in getting the class name; otherwise false.
  */
-InterfaceObjectGetClassName :: proc "c" (p_object: ConstObjectPtr, p_library: ClassDB, r_class_name: UninitializedStringNamePtr) -> b8;
+InterfaceObjectGetClassName :: #type proc "c" (p_object: ConstObjectPtr, p_library: ClassDB, r_class_name: UninitializedStringNamePtr) -> b8;
 
 /**
  * @name object_cast_to
@@ -3016,7 +3016,7 @@ InterfaceObjectGetClassName :: proc "c" (p_object: ConstObjectPtr, p_library: Cl
  *
  * @return Returns a pointer to the Object, or NULL if it can't be cast to the requested type.
  */
-InterfaceObjectCastTo :: proc "c" (p_object: ConstObjectPtr, p_class_tag: rawptr) -> ObjectPtr;
+InterfaceObjectCastTo :: #type proc "c" (p_object: ConstObjectPtr, p_class_tag: rawptr) -> ObjectPtr;
 
 /**
  * @name object_get_instance_from_id
@@ -3028,7 +3028,7 @@ InterfaceObjectCastTo :: proc "c" (p_object: ConstObjectPtr, p_class_tag: rawptr
  *
  * @return A pointer to the Object.
  */
-InterfaceObjectGetInstanceFromId :: proc "c" (p_instance_id: GDObjectInstanceID) -> ObjectPtr;
+InterfaceObjectGetInstanceFromId :: #type proc "c" (p_instance_id: GDObjectInstanceID) -> ObjectPtr;
 
 /**
  * @name object_get_instance_id
@@ -3040,7 +3040,7 @@ InterfaceObjectGetInstanceFromId :: proc "c" (p_instance_id: GDObjectInstanceID)
  *
  * @return The instance ID.
  */
-InterfaceObjectGetInstanceId :: proc "c" (p_object: ConstObjectPtr) -> GDObjectInstanceID;
+InterfaceObjectGetInstanceId :: #type proc "c" (p_object: ConstObjectPtr) -> GDObjectInstanceID;
 
 /**
  * @name object_has_script_method
@@ -3053,7 +3053,7 @@ InterfaceObjectGetInstanceId :: proc "c" (p_object: ConstObjectPtr) -> GDObjectI
  *
  * @returns true if the object has a script and that script has a method with the given name. Returns false if the object has no script.
  */
-InterfaceObjectHasScriptMethod :: proc "c" (p_object: ConstObjectPtr, p_method: ConstStringNamePtr) -> b8;
+InterfaceObjectHasScriptMethod :: #type proc "c" (p_object: ConstObjectPtr, p_method: ConstStringNamePtr) -> b8;
 
 /**
  * @name object_call_script_method
@@ -3068,7 +3068,7 @@ InterfaceObjectHasScriptMethod :: proc "c" (p_object: ConstObjectPtr, p_method: 
  * @param r_return A pointer a Variant which will be assigned the return value.
  * @param r_error A pointer the structure which will hold error information.
  */
-InterfaceObjectCallScriptMethod :: proc "c" (p_object: ObjectPtr, p_method: ConstStringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: UninitializedVariantPtr, r_error: ^CallError);
+InterfaceObjectCallScriptMethod :: #type proc "c" (p_object: ObjectPtr, p_method: ConstStringNamePtr, p_args: ConstVariantPtrargs, p_argument_count: Int, r_return: UninitializedVariantPtr, r_error: ^CallError);
 
 /* INTERFACE: Reference */
 
@@ -3082,7 +3082,7 @@ InterfaceObjectCallScriptMethod :: proc "c" (p_object: ObjectPtr, p_method: Cons
  *
  * @return A pointer to the Object from the reference or NULL.
  */
-InterfaceRefGetObject :: proc "c" (p_ref: ConstRefPtr) -> ObjectPtr;
+InterfaceRefGetObject :: #type proc "c" (p_ref: ConstRefPtr) -> ObjectPtr;
 
 /**
  * @name ref_set_object
@@ -3093,7 +3093,7 @@ InterfaceRefGetObject :: proc "c" (p_ref: ConstRefPtr) -> ObjectPtr;
  * @param p_ref A pointer to the reference.
  * @param p_object A pointer to the Object to refer to.
  */
-InterfaceRefSetObject :: proc "c" (p_ref: RefPtr, p_object: ObjectPtr);
+InterfaceRefSetObject :: #type proc "c" (p_ref: RefPtr, p_object: ObjectPtr);
 
 /* INTERFACE: Script Instance */
 
@@ -3109,7 +3109,7 @@ InterfaceRefSetObject :: proc "c" (p_ref: RefPtr, p_object: ObjectPtr);
  *
  * @return A pointer to a ScriptInstanceExtension object.
  */
-InterfaceScriptInstanceCreate :: proc "c" (p_info: ^ScriptInstanceInfo, p_instance_data: ScriptInstanceDataPtr) -> ScriptInstancePtr;
+InterfaceScriptInstanceCreate :: #type proc "c" (p_info: ^ScriptInstanceInfo, p_instance_data: ScriptInstanceDataPtr) -> ScriptInstancePtr;
 
 /**
  * @name script_instance_create2
@@ -3123,7 +3123,7 @@ InterfaceScriptInstanceCreate :: proc "c" (p_info: ^ScriptInstanceInfo, p_instan
  *
  * @return A pointer to a ScriptInstanceExtension object.
  */
-InterfaceScriptInstanceCreate2 :: proc "c" (p_info: ^ScriptInstanceInfo2, p_instance_data: ScriptInstanceDataPtr) -> ScriptInstancePtr;
+InterfaceScriptInstanceCreate2 :: #type proc "c" (p_info: ^ScriptInstanceInfo2, p_instance_data: ScriptInstanceDataPtr) -> ScriptInstancePtr;
 
 /**
  * @name script_instance_create3
@@ -3136,7 +3136,7 @@ InterfaceScriptInstanceCreate2 :: proc "c" (p_info: ^ScriptInstanceInfo2, p_inst
  *
  * @return A pointer to a ScriptInstanceExtension object.
  */
-InterfaceScriptInstanceCreate3 :: proc "c" (p_info: ScriptInstanceInfo3, p_instance_data: ScriptInstanceDataPtr) -> ScriptInstancePtr;
+InterfaceScriptInstanceCreate3 :: #type proc "c" (p_info: ScriptInstanceInfo3, p_instance_data: ScriptInstanceDataPtr) -> ScriptInstancePtr;
 
 /**
  * @name placeholder_script_instance_create
@@ -3152,7 +3152,7 @@ InterfaceScriptInstanceCreate3 :: proc "c" (p_info: ScriptInstanceInfo3, p_insta
  *
  * @return A pointer to a PlaceHolderScriptInstance object.
  */
-InterfacePlaceHolderScriptInstanceCreate :: proc "c" (p_language: ObjectPtr, p_script: ObjectPtr, p_owner: ObjectPtr) -> ScriptInstancePtr;
+InterfacePlaceHolderScriptInstanceCreate :: #type proc "c" (p_language: ObjectPtr, p_script: ObjectPtr, p_owner: ObjectPtr) -> ScriptInstancePtr;
 
 /**
  * @name placeholder_script_instance_update
@@ -3167,7 +3167,7 @@ InterfacePlaceHolderScriptInstanceCreate :: proc "c" (p_language: ObjectPtr, p_s
  * @param p_properties A pointer to an Array of Dictionary representing PropertyInfo.
  * @param p_values A pointer to a Dictionary mapping StringName to Variant values.
  */
-InterfacePlaceHolderScriptInstanceUpdate :: proc "c" (p_placeholder: ScriptInstancePtr, p_properties: TypePtr, p_values: TypePtr);
+InterfacePlaceHolderScriptInstanceUpdate :: #type proc "c" (p_placeholder: ScriptInstancePtr, p_properties: TypePtr, p_values: TypePtr);
 
 /**
  * @name object_get_script_instance
@@ -3180,7 +3180,7 @@ InterfacePlaceHolderScriptInstanceUpdate :: proc "c" (p_placeholder: ScriptInsta
  *
  * @return A ScriptInstanceDataPtr that was attached to this object as part of script_instance_create.
  */
-InterfaceObjectGetScriptInstance :: proc "c" (p_object: ObjectPtr, p_language: ObjectPtr) -> ScriptInstanceDataPtr;
+InterfaceObjectGetScriptInstance :: #type proc "c" (p_object: ObjectPtr, p_language: ObjectPtr) -> ScriptInstanceDataPtr;
 
 
 /**
@@ -3192,7 +3192,7 @@ InterfaceObjectGetScriptInstance :: proc "c" (p_object: ObjectPtr, p_language: O
  * @param p_object A pointer to the Object.
  * @param p_script_instance A pointer to the script instance data to attach to this object.
  */
-InterfaceObjectSetScriptInstance :: proc "c" (p_object: ObjectPtr, p_script_instance: ScriptInstanceDataPtr);
+InterfaceObjectSetScriptInstance :: #type proc "c" (p_object: ObjectPtr, p_script_instance: ScriptInstanceDataPtr);
 
 
 /* INTERFACE: Callable */
@@ -3209,7 +3209,7 @@ InterfaceObjectSetScriptInstance :: proc "c" (p_object: ObjectPtr, p_script_inst
  * @param r_callable A pointer that will receive the new Callable.
  * @param p_callable_custom_info The info required to construct a Callable.
  */
-InterfaceCallableCustomCreate :: proc "c" (r_callable: UninitializedTypePtr, p_callable_custom_info: CallableCustomInfo);
+InterfaceCallableCustomCreate :: #type proc "c" (r_callable: UninitializedTypePtr, p_callable_custom_info: CallableCustomInfo);
 
 /**
  * @name callable_custom_create2
@@ -3222,7 +3222,7 @@ InterfaceCallableCustomCreate :: proc "c" (r_callable: UninitializedTypePtr, p_c
  * @param r_callable A pointer that will receive the new Callable.
  * @param p_callable_custom_info The info required to construct a Callable.
  */
-InterfaceCallableCustomCreate2 :: proc "c" (r_callable: UninitializedTypePtr, p_callable_custom_info: ^CallableCustomInfo2);
+InterfaceCallableCustomCreate2 :: #type proc "c" (r_callable: UninitializedTypePtr, p_callable_custom_info: ^CallableCustomInfo2);
 
 /**
  * @name callable_custom_get_userdata
@@ -3235,7 +3235,7 @@ InterfaceCallableCustomCreate2 :: proc "c" (r_callable: UninitializedTypePtr, p_
  * @param p_callable A pointer to a Callable.
  * @param p_token A pointer to an address that uniquely identifies the GDExtension.
  */
-InterfaceCallableCustomGetUserData :: proc "c" (p_callable: ConstTypePtr, p_token: rawptr) -> rawptr;
+InterfaceCallableCustomGetUserData :: #type proc "c" (p_callable: ConstTypePtr, p_token: rawptr) -> rawptr;
 
 /* INTERFACE: ClassDB */
 
@@ -3252,7 +3252,7 @@ InterfaceCallableCustomGetUserData :: proc "c" (p_callable: ConstTypePtr, p_toke
  *
  * @return A pointer to the newly created Object.
  */
-InterfaceClassdbConstructObject :: proc "c" (p_classname: ConstStringNamePtr) -> ObjectPtr;
+InterfaceClassdbConstructObject :: #type proc "c" (p_classname: ConstStringNamePtr) -> ObjectPtr;
 
 /**
  * @name classdb_construct_object2
@@ -3268,7 +3268,7 @@ InterfaceClassdbConstructObject :: proc "c" (p_classname: ConstStringNamePtr) ->
  *
  * @return A pointer to the newly created Object.
  */
-InterfaceClassdbConstructObject2 :: proc "c" (p_classname: ConstStringNamePtr) -> ObjectPtr;
+InterfaceClassdbConstructObject2 :: #type proc "c" (p_classname: ConstStringNamePtr) -> ObjectPtr;
 
 /**
  * @name classdb_get_method_bind
@@ -3282,7 +3282,7 @@ InterfaceClassdbConstructObject2 :: proc "c" (p_classname: ConstStringNamePtr) -
  *
  * @return A pointer to the MethodBind from ClassDB.
  */
-InterfaceClassdbGetMethodBind :: proc "c" (p_classname: ConstStringNamePtr, p_methodname: ConstStringNamePtr, p_hash: Int) -> MethodBindPtr;
+InterfaceClassdbGetMethodBind :: #type proc "c" (p_classname: ConstStringNamePtr, p_methodname: ConstStringNamePtr, p_hash: Int) -> MethodBindPtr;
 
 /**
  * @name classdb_get_class_tag
@@ -3294,7 +3294,7 @@ InterfaceClassdbGetMethodBind :: proc "c" (p_classname: ConstStringNamePtr, p_me
  *
  * @return A pointer uniquely identifying the built-in class in the ClassDB.
  */
-InterfaceClassdbGetClassTag :: proc "c" (p_classname: ConstStringNamePtr) -> ClassTag;
+InterfaceClassdbGetClassTag :: #type proc "c" (p_classname: ConstStringNamePtr) -> ClassTag;
 
 /* INTERFACE: ClassDB Extension */
 
@@ -3312,7 +3312,7 @@ InterfaceClassdbGetClassTag :: proc "c" (p_classname: ConstStringNamePtr) -> Cla
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo struct.
  */
-InterfaceClassdbRegisterExtensionClass :: proc "c" (p_library: ClassDB,  p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo);
+InterfaceClassdbRegisterExtensionClass :: #type proc "c" (p_library: ClassDB,  p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo);
 
 /**
  * @name classdb_register_extension_class2
@@ -3328,7 +3328,7 @@ InterfaceClassdbRegisterExtensionClass :: proc "c" (p_library: ClassDB,  p_class
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass2 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo2);
+InterfaceClassdbRegisterExtensionClass2 :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo2);
 
 /**
  * @name classdb_register_extension_class3
@@ -3344,7 +3344,7 @@ InterfaceClassdbRegisterExtensionClass2 :: proc "c" (p_library: ClassDB, p_class
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo3);
+InterfaceClassdbRegisterExtensionClass3 :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo3);
 
 /**
  * @name classdb_register_extension_class4
@@ -3360,7 +3360,7 @@ InterfaceClassdbRegisterExtensionClass3 :: proc "c" (p_library: ClassDB, p_class
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo4);
+InterfaceClassdbRegisterExtensionClass4 :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo4);
 
 /**
  * @name classdb_register_extension_class5
@@ -3375,7 +3375,7 @@ InterfaceClassdbRegisterExtensionClass4 :: proc "c" (p_library: ClassDB, p_class
  * @param p_parent_class_name A pointer to a StringName with the parent class name.
  * @param p_extension_funcs A pointer to a ClassCreationInfo2 struct.
  */
-InterfaceClassdbRegisterExtensionClass5 :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo5);
+InterfaceClassdbRegisterExtensionClass5 :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_parent_class_name: ConstStringNamePtr, p_extension_funcs: [^]ClassCreationInfo5);
 
 /**
  * @name classdb_register_extension_class_method
@@ -3389,7 +3389,7 @@ InterfaceClassdbRegisterExtensionClass5 :: proc "c" (p_library: ClassDB, p_class
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
-InterfaceClassdbRegisterExtensionClassMethod :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassMethodInfo);
+InterfaceClassdbRegisterExtensionClassMethod :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassMethodInfo);
 
 /**
  * @name classdb_register_extension_class_virtual_method
@@ -3403,7 +3403,7 @@ InterfaceClassdbRegisterExtensionClassMethod :: proc "c" (p_library: ClassDB, p_
  * @param p_class_name A pointer to a StringName with the class name.
  * @param p_method_info A pointer to a ClassMethodInfo struct.
  */
-InterfaceClassdbRegisterExtensionClassVirtualMethod :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassVirtualMethodInfo);
+InterfaceClassdbRegisterExtensionClassVirtualMethod :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_method_info: [^]ClassVirtualMethodInfo);
 
 /**
  * @name classdb_register_extension_class_integer_constant
@@ -3422,7 +3422,7 @@ InterfaceClassdbRegisterExtensionClassVirtualMethod :: proc "c" (p_library: Clas
  * @param p_constant_value The constant value.
  * @param p_is_bitfield Whether or not this constant is part of a bitfield.
  */
-InterfaceClassdbRegisterExtensionClassIntegerConstant :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_enum_name: ConstStringNamePtr, p_constant_name: ConstStringNamePtr, p_constant_value: Int, p_is_bitfield: b8);
+InterfaceClassdbRegisterExtensionClassIntegerConstant :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_enum_name: ConstStringNamePtr, p_constant_name: ConstStringNamePtr, p_constant_value: Int, p_is_bitfield: b8);
 
 /**
  * @name classdb_register_extension_class_property
@@ -3438,7 +3438,7 @@ InterfaceClassdbRegisterExtensionClassIntegerConstant :: proc "c" (p_library: Cl
  * @param p_setter A pointer to a StringName with the name of the setter method.
  * @param p_getter A pointer to a StringName with the name of the getter method.
  */
-InterfaceClassdbRegisterExtensionClassProperty :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr);
+InterfaceClassdbRegisterExtensionClassProperty :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr);
 
 /**
  * @name classdb_register_extension_class_property_indexed
@@ -3455,7 +3455,7 @@ InterfaceClassdbRegisterExtensionClassProperty :: proc "c" (p_library: ClassDB, 
  * @param p_getter A pointer to a StringName with the name of the getter method.
  * @param p_index The index to pass as the first argument to the getter and setter methods.
  */
-InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr, p_index: Int);
+InterfaceClassdbRegisterExtensionClassPropertyIndexed :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_info: ^PropertyInfo, p_setter: ConstStringNamePtr, p_getter: ConstStringNamePtr, p_index: Int);
 
 /**
  * @name classdb_register_extension_class_property_group
@@ -3468,7 +3468,7 @@ InterfaceClassdbRegisterExtensionClassPropertyIndexed :: proc "c" (p_library: Cl
  * @param p_group_name A pointer to a String with the group name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this group.
  */
-InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: ClassDB, #by_ptr p_class_name: StringName, #by_ptr p_group_name: gdstring, #by_ptr p_prefix: gdstring);
+InterfaceClassdbRegisterExtensionClassPropertyGroup :: #type proc "c" (p_library: ClassDB, #by_ptr p_class_name: StringName, #by_ptr p_group_name: gdstring, #by_ptr p_prefix: gdstring);
 
 /**
  * @name classdb_register_extension_class_property_subgroup
@@ -3481,7 +3481,7 @@ InterfaceClassdbRegisterExtensionClassPropertyGroup :: proc "c" (p_library: Clas
  * @param p_subgroup_name A pointer to a String with the subgroup name.
  * @param p_prefix A pointer to a String with the prefix used by properties in this subgroup.
  */
-InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: ClassDB, #by_ptr p_class_name: StringName, #by_ptr p_subgroup_name: gdstring, #by_ptr p_prefix: gdstring);
+InterfaceClassdbRegisterExtensionClassPropertySubgroup :: #type proc "c" (p_library: ClassDB, #by_ptr p_class_name: StringName, #by_ptr p_subgroup_name: gdstring, #by_ptr p_prefix: gdstring);
 
 /**
  * @name classdb_register_extension_class_signal
@@ -3497,7 +3497,7 @@ InterfaceClassdbRegisterExtensionClassPropertySubgroup :: proc "c" (p_library: C
  * @param p_argument_info A pointer to a PropertyInfo struct.
  * @param p_argument_count The number of arguments the signal receives.
  */
-InterfaceClassdbRegisterExtensionClassSignal :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_signal_name: ConstStringNamePtr, p_argument_info: ^PropertyInfo, p_argument_count: Int);
+InterfaceClassdbRegisterExtensionClassSignal :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr, p_signal_name: ConstStringNamePtr, p_argument_info: ^PropertyInfo, p_argument_count: Int);
 
 /**
  * @name classdb_unregister_extension_class
@@ -3508,7 +3508,7 @@ InterfaceClassdbRegisterExtensionClassSignal :: proc "c" (p_library: ClassDB, p_
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param p_class_name A pointer to a StringName with the class name.
  */
-InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
+InterfaceClassdbUnregisterExtensionClass :: #type proc "c" (p_library: ClassDB, p_class_name: ConstStringNamePtr); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
 
 /**
  * @name get_library_path
@@ -3519,7 +3519,7 @@ InterfaceClassdbUnregisterExtensionClass :: proc "c" (p_library: ClassDB, p_clas
  * @param p_library A pointer the library received by the GDExtension's entry point function.
  * @param r_path A pointer to a String which will receive the path.
  */
-InterfaceGetLibraryPath :: proc "c" (p_library: ClassDB, r_path: UninitializedStringPtr);
+InterfaceGetLibraryPath :: #type proc "c" (p_library: ClassDB, r_path: UninitializedStringPtr);
 
 /**
  * @name editor_add_plugin
@@ -3531,7 +3531,7 @@ InterfaceGetLibraryPath :: proc "c" (p_library: ClassDB, r_path: UninitializedSt
  *
  * @param p_class_name A pointer to a StringName with the name of a class (descending from EditorPlugin) which is already registered with ClassDB.
  */
-InterfaceEditorAddPlugin :: proc "c" (p_class_name: ConstStringNamePtr);
+InterfaceEditorAddPlugin :: #type proc "c" (p_class_name: ConstStringNamePtr);
 
 /**
  * @name editor_remove_plugin
@@ -3541,4 +3541,4 @@ InterfaceEditorAddPlugin :: proc "c" (p_class_name: ConstStringNamePtr);
  *
  * @param p_class_name A pointer to a StringName with the name of a class that was previously added as an editor plugin.
  */
-InterfaceEditorRemovePlugin :: proc "c" (p_class_name: ConstStringNamePtr);
+InterfaceEditorRemovePlugin :: #type proc "c" (p_class_name: ConstStringNamePtr);
