@@ -6,25 +6,25 @@ import "core:math"
 
 
 @(rodata)
-//@(export)
+
 Vector2_ZERO : Vector2= {0, 0}
 @(rodata)
-//@(export)
+
 Vector2_ONE : Vector2= {1, 1}
 @(rodata)
-//@(export)
+
 Vector2_INF : Vector2= {math.INF_F32, math.INF_F32}
 @(rodata)
-//@(export)
+
 Vector2_LEFT : Vector2= {-1, 0}
 @(rodata)
-//@(export)
+
 Vector2_RIGHT : Vector2= {1, 0}
 @(rodata)
-//@(export)
+
 Vector2_UP : Vector2= {0, -1}
 @(rodata)
-//@(export)
+
 Vector2_DOWN : Vector2= {0, 1}
 
 Vector2_Axis :: enum i64 {

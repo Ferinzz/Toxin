@@ -6,13 +6,13 @@ import "core:math"
 
 
 @(rodata)
-@(export)
+
 Plane_PLANE_YZ : Plane= {1, 0, 0, 0}
 @(rodata)
-@(export)
+
 Plane_PLANE_XZ : Plane= {0, 1, 0, 0}
 @(rodata)
-@(export)
+
 Plane_PLANE_XY : Plane= {0, 0, 1, 0}
 Plane_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Plane, p_args: rawptr = nil),

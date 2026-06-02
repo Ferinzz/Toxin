@@ -6,34 +6,34 @@ import "core:math"
 
 
 @(rodata)
-//@(export)
+
 Vector3i_ZERO : Vector3i= {0, 0, 0}
 @(rodata)
-//@(export)
+
 Vector3i_ONE : Vector3i= {1, 1, 1}
 @(rodata)
-//@(export)
+
 Vector3i_MIN : Vector3i= {-2147483648, -2147483648, -2147483648}
 @(rodata)
-//@(export)
+
 Vector3i_MAX : Vector3i= {2147483647, 2147483647, 2147483647}
 @(rodata)
-//@(export)
+
 Vector3i_LEFT : Vector3i= {-1, 0, 0}
 @(rodata)
-//@(export)
+
 Vector3i_RIGHT : Vector3i= {1, 0, 0}
 @(rodata)
-//@(export)
+
 Vector3i_UP : Vector3i= {0, 1, 0}
 @(rodata)
-//@(export)
+
 Vector3i_DOWN : Vector3i= {0, -1, 0}
 @(rodata)
-//@(export)
+
 Vector3i_FORWARD : Vector3i= {0, 0, -1}
 @(rodata)
-//@(export)
+
 Vector3i_BACK : Vector3i= {0, 0, 1}
 
 Vector3i_Axis :: enum i64 {

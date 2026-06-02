@@ -6,16 +6,16 @@ import "core:math"
 
 
 @(rodata)
-@(export)
+
 Basis_IDENTITY : Basis= {1, 0, 0, 0, 1, 0, 0, 0, 1}
 @(rodata)
-@(export)
+
 Basis_FLIP_X : Basis= {-1, 0, 0, 0, 1, 0, 0, 0, 1}
 @(rodata)
-@(export)
+
 Basis_FLIP_Y : Basis= {1, 0, 0, 0, -1, 0, 0, 0, 1}
 @(rodata)
-@(export)
+
 Basis_FLIP_Z : Basis= {1, 0, 0, 0, 1, 0, 0, 0, -1}
 Basis_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Basis, p_args: rawptr = nil),

@@ -11,7 +11,7 @@ import "core:fmt"
 //import Classes "Godot_Odin_Binds/GD_Classes"
 
 
-@(export)
+
 Init_Wrapper :: proc "c" (p_get_proc_address : GDE.InterfaceGetProcAddress) {
     gdAPI.loadAPI(p_get_proc_address)
     Init_Builtins()
@@ -106,19 +106,19 @@ StringConstruct :: proc {
     stringNameNewString,
     stringNameNewString_r,
 }
-@(export)
+
 stringNameNewString :: proc "c" (StringName_r: ^StringName, name: string) {
         gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
     }
 
-@(export)
+
 @(require_results)
 stringNameNewString_r :: proc "c" (name: string) -> (r_ret: StringName) {
         gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
         return
 }
 
-@(export)
+
 Get_Builtin_Method :: proc "c" (variant_type: GDE.VariantType, method_name: string, hash: Int) -> GDE.PtrBuiltInMethod {
     method_name_SN: StringName
     stringNameNewString(&method_name_SN, method_name)
@@ -151,7 +151,7 @@ stringNameCompare_cstring :: proc "c" (l_value: ^StringName, r_value: cstring) -
 
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-@(export)
+
 stringNameCompare_string :: proc "c" (l_value: ^StringName, r_value: string) -> (ret: Bool) {
     r_name: StringName
     StringConstruct(&r_name, r_value)
@@ -163,7 +163,7 @@ stringNameCompare_string :: proc "c" (l_value: ^StringName, r_value: string) -> 
 }
 //TODO: make a proc group for stringName compare
 //stringName::stringName; stringName::cstring; cstring::cstring
-@(export)
+
 stringNameCompare_StringName :: proc "c" (l_value: ^StringName, r_value: ^StringName) -> (ret: Bool) {
 
     //Can't do a direct compare because sometimes maybe the stringName could be a reference to a reference to a reference to a StringName.
@@ -227,7 +227,7 @@ GDStringJoin :: proc "c" (packedString: ^PackedStringArray, r_String: ^gdstring)
 * Use with checkCast in order to verify if a GDObject received can be cast to the specific class.
 * classTagName: string representing the name of the class. ie InputEvent
 */
-@(export)
+
 get_ClassTagName :: proc "c" (classTagName: string) -> GDE.ClassTag {
     
     classTagName_SN: StringName

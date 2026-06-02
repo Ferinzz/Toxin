@@ -6,13 +6,13 @@ import "core:math"
 
 
 @(rodata)
-//@(export)
+
 Vector4_ZERO : Vector4= {0, 0, 0, 0}
 @(rodata)
-//@(export)
+
 Vector4_ONE : Vector4= {1, 1, 1, 1}
 @(rodata)
-//@(export)
+
 Vector4_INF : Vector4= {math.INF_F32, math.INF_F32, math.INF_F32, math.INF_F32}
 
 Vector4_Axis :: enum i64 {

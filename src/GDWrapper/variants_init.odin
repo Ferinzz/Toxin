@@ -123,160 +123,160 @@ new_variant_from_methods :: proc {
     PackedVec4ArrayToVariant,
 }
 
-//@(export)    
+    
 BoolFromVariant:        proc "c" (dest: ^Bool, source: ^Variant)
-//@(export)
+
 IntFromVariant:         proc "c" (dest: ^Int, source: ^Variant)
-//@(export)
+
 FloatFromVariant:       proc "c" (dest: ^float, source: ^Variant)
-//@(export)
+
 StringFromVariant:      proc "c" (dest: ^gdstring, source: ^Variant)
-//@(export)
+
 Vec2FromVariant:        proc "c" (dest: ^Vector2, source: ^Variant)
-//@(export)
+
 Vec2iFromVariant:       proc "c" (dest: ^Vector2i, source: ^Variant)
-//@(export)
+
 Recf32FromVariant:      proc "c" (dest: ^Rect2, source: ^Variant)
-//@(export)
+
 Rect2iFromVariant:       proc "c" (dest: ^Rect2i, source: ^Variant)
-//@(export)
+
 Vec3FromVariant:        proc "c" (dest: ^Vector3, source: ^Variant)
-//@(export)
+
 Vec3iFromVariant:       proc "c" (dest: ^Vector3i, source: ^Variant)
-//@(export)
+
 Transform2DFromVariant: proc "c" (dest: ^Transform2D, source: ^Variant)
-//@(export)
+
 Vec4FromVariant:        proc "c" (dest: ^Vector4, source: ^Variant)
-//@(export)
+
 Vec4iFromVariant:       proc "c" (dest: ^Vector4i, source: ^Variant)
-//@(export)
+
 PlaneFromVariant:       proc "c" (dest: ^Plane, source: ^Variant)
-//@(export)
+
 QuaternionFromVariant:  proc "c" (dest: ^Quaternion, source: ^Variant)
-//@(export)
+
 AABBFromVariant:        proc "c" (dest: ^AABB, source: ^Variant)
-//@(export)
+
 BasisFromVariant:       proc "c" (dest: ^Basis, source: ^Variant)
-//@(export)
+
 Transform3dFromVariant: proc "c" (dest: ^Transform3D, source: ^Variant)
-//@(export)
+
 ProjectionFromVariant:  proc "c" (dest: ^Projection, source: ^Variant)
-//@(export)
+
 ColorFromVariant:       proc "c" (dest: ^Color, source: ^Variant)
-//@(export)
+
 StringNameFromVariant:  proc "c" (dest: ^StringName, source: ^Variant)
-//@(export)
+
 NodePathFromVariant:    proc "c" (dest: ^NodePath, source: ^Variant)
-//@(export)
+
 RidFromVariant:         proc "c" (dest: ^RID, source: ^Variant)
-//@(export)
+
 ObjectFromVariant:      proc "c" (dest: ^Object, source: ^Variant)
-//@(export)
+
 CallableFromVariant:    proc "c" (dest: ^Callable, source: ^Variant)
-//@(export)
+
 SignalFromVariant:      proc "c" (dest: ^Signal, source: ^Variant)
-//@(export)
+
 DictionaryFromVariant:        proc "c" (dest: ^Dictionary, source: ^Variant)
-//@(export)
+
 ArrayFromVariant:             proc "c" (dest: ^Array, source: ^Variant)
-//@(export)
+
 PackedByteArrayFromVariant:   proc "c" (dest: ^PackedByteArray, source: ^Variant)
-//@(export)
+
 Packedi32ArrayFromVariant:    proc "c" (dest: ^PackedInt32Array, source: ^Variant)
-//@(export)
+
 Packedi64ArrayFromVariant:    proc "c" (dest: ^PackedInt64Array, source: ^Variant)
-//@(export)
+
 Packedf32ArrayFromVariant:    proc "c" (dest: ^PackedFloat32Array, source: ^Variant)
-//@(export)
+
 Packedf64ArrayFromVariant:    proc "c" (dest: ^PackedFloat64Array, source: ^Variant)
-//@(export)
+
 PackedStringArrayFromVariant: proc "c" (dest: ^PackedStringArray, source: ^Variant)
-//@(export)
+
 PackedVec2ArrayFromVariant:   proc "c" (dest: ^PackedVector2Array, source: ^Variant)
-//@(export)
+
 PackedVec3ArrayFromVariant:   proc "c" (dest: ^PackedVector3Array, source: ^Variant)
-//@(export)
+
 PackedColorArrayFromVariant:  proc "c" (dest: ^PackedColorArray, source: ^Variant)
-//@(export)
+
 PackedVec4ArrayFromVariant:   proc "c" (dest: ^PackedVector4Array, source: ^Variant)
 
 
-//@(export)
+
 BoolToVariant:        proc "c" (dest: ^Variant, #by_ptr source: Bool)
-//@(export)
+
 IntToVariant:         proc "c" (dest: ^Variant, #by_ptr source: Int)
-//@(export)
+
 FloatToVariant:       proc "c" (dest: ^Variant, #by_ptr source: float)
-//@(export)
+
 StringToVariant:      proc "c" (dest: ^Variant, #by_ptr source: gdstring)
-//@(export)
+
 Vec2ToVariant:        proc "c" (dest: ^Variant, #by_ptr source: Vector2)
-//@(export)
+
 Vec2iToVariant:       proc "c" (dest: ^Variant, #by_ptr source: Vector2i)
-//@(export)
+
 Recf32ToVariant:      proc "c" (dest: ^Variant, #by_ptr source: Rect2)
-//@(export)
+
 Rect2iToVariant:       proc "c" (dest: ^Variant, #by_ptr source: Rect2i)
-//@(export)
+
 Vec3ToVariant:        proc "c" (dest: ^Variant, #by_ptr source: Vector3)
-//@(export)
+
 Vec3iToVariant:       proc "c" (dest: ^Variant, #by_ptr source: Vector3i)
-//@(export)
+
 Transform2DToVariant: proc "c" (dest: ^Variant, #by_ptr source: Transform2D)
-//@(export)
+
 Vec4ToVariant:        proc "c" (dest: ^Variant, #by_ptr source: Vector4)
-//@(export)
+
 Vec4iToVariant:       proc "c" (dest: ^Variant, #by_ptr source: Vector4i)
-//@(export)
+
 PlaneToVariant:       proc "c" (dest: ^Variant, #by_ptr source: Plane)
-//@(export)
+
 QuaternionToVariant:  proc "c" (dest: ^Variant, #by_ptr source: Quaternion)
-//@(export)
+
 AABBToVariant:        proc "c" (dest: ^Variant, #by_ptr source: AABB)
-//@(export)
+
 BasisToVariant:       proc "c" (dest: ^Variant, #by_ptr source: Basis)
-//@(export)
+
 Transform3dToVariant: proc "c" (dest: ^Variant, #by_ptr source: Transform3D)
-//@(export)
+
 ProjectionToVariant:  proc "c" (dest: ^Variant, #by_ptr source: Projection)
-//@(export)
+
 ColorToVariant:       proc "c" (dest: ^Variant, #by_ptr source: Color)
 
-//@(export)
+
 StringNameToVariant: proc "c" (dest: ^Variant, #by_ptr source: StringName)
-//@(export)
+
 NodePathToVariant:   proc "c" (dest: ^Variant, #by_ptr source: NodePath)
-//@(export)
+
 RidToVariant:        proc "c" (dest: ^Variant, #by_ptr source: RID)
-//@(export)
+
 ObjectToVariant:     proc "c" (dest: ^Variant, #by_ptr source: Object)
-//@(export)
+
 CallableToVariant:   proc "c" (dest: ^Variant, #by_ptr source: Callable)
-//@(export)
+
 SignalToVariant:     proc "c" (dest: ^Variant, #by_ptr source: Signal)
-//@(export)
+
 DictionaryToVariant:        proc "c" (dest: ^Variant, #by_ptr source: Dictionary)
-//@(export)
+
 ArrayToVariant:             proc "c" (dest: ^Variant, #by_ptr source: Array)
-//@(export)
+
 PackedByteArrayToVariant:   proc "c" (dest: ^Variant, #by_ptr source: PackedByteArray)
-//@(export)
+
 Packedi32ArrayToVariant:    proc "c" (dest: ^Variant, #by_ptr source: PackedInt32Array)
-//@(export)
+
 Packedi64ArrayToVariant:    proc "c" (dest: ^Variant, #by_ptr source: PackedInt64Array)
-//@(export)
+
 Packedf32ArrayToVariant:    proc "c" (dest: ^Variant, #by_ptr source: PackedFloat32Array)
-//@(export)
+
 Packedf64ArrayToVariant:    proc "c" (dest: ^Variant, #by_ptr source: PackedFloat64Array)
-//@(export)
+
 PackedStringArrayToVariant: proc "c" (dest: ^Variant, #by_ptr source: PackedStringArray)
-//@(export)
+
 PackedVec2ArrayToVariant:   proc "c" (dest: ^Variant, #by_ptr source: PackedVector2Array)
-//@(export)
+
 PackedVec3ArrayToVariant:   proc "c" (dest: ^Variant, #by_ptr source: PackedVector3Array)
-//@(export)
+
 PackedColorArrayToVariant:  proc "c" (dest: ^Variant, #by_ptr source: PackedColorArray)
-//@(export)
+
 PackedVec4ArrayToVariant:   proc "c" (dest: ^Variant, #by_ptr source: PackedVector4Array)
 
 
