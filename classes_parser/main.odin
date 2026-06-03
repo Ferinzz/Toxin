@@ -78,12 +78,14 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 
 `,
                             classes.virtuals_list,
+                            classes.virtuals_sig,
                             classes.enums,
                             classes.constants,
                             //classes.properties,
                             classes.method_list,
                             classes.init_proc,
                             classes.virtuals_init,
+                            classes.virtuals_deinit,
                             //classes.properties_init,
                             )
       //fmt.println("wrote: ", count, write_err)
@@ -487,6 +489,7 @@ builtin:: struct {
 		name: string,
 		is_refcounted: bool,
 		is_instantiable: bool,
+    inherits: string,
     api_type: string, //Only core or editor
 		constants: []struct
 				{
@@ -551,6 +554,8 @@ builtin_set :: struct {
   enums: string,
   virtuals_init: string,
   virtuals_list: string,
+  virtuals_sig: string,
+  virtuals_deinit: string,
 };
 
 
@@ -590,14 +595,23 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   },*/
 
   Virtual_Proc_Sig:=`
-%s_Init_Virtuals_Info :: proc(info: ^%[0]s_Virtual_Info) {{`
+%s_Init_Virtuals_Info :: proc() {{
+  if %[0]s_Init_Virtuals_Info.initialized == false {{`
 //ClassName
-  Virtual_Listing:= `    info.%[0]s.p_hash = %v
-    info.%[0]s.name = GDW.StringConstruct("%[0]s")`
+  Virtual_Listing:= `    %[0]s_Virtual_Info.%[1]s = {{GDW.StringConstruct("%[1]s"), %v}`
     //VirtualName, virtualHash
-  Virtual_Struct_Sig:= `%s_Virtual_Info :: struct {{
-`//ClassName
+  Virtual_Struct_Sig:= `%s_Virtual_Info: struct {{
+    initialized:bool,`//ClassName
   Virtual_Struct_Field:= `    %s: Method_Callback_Compare_Info,`
+  Virtual_Struct_Proc_sigs:= `%s_vtable :: struct($T:typeid) {{`
+  Virtual_Sig:= `%s: proc "c" (self: ^Class_Container(T), `
+  Virtual_args_oprn:= `#by_ptr p_args: struct{{`
+  Virtual_arg_value:= `%s: ^GDW.%s, `
+  Virtual_return:= ` r_ret: %s),`
+  virtual_deinit_open:= `
+%s_deinit_virtual :: proc() {{
+  if %[0]s.initialized == true {{`
+  virtual_stringdestruct:= `    GDW.stringname_destroy(%s_V_Info.%s.name)`
 //MethodName
   ////////////////////////////
   // Convert the unmarshalled json to Odin procs and structs
@@ -611,12 +625,18 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     enum_builder:=strings.builder_make(ctx) //btw, several enums have the same name but different fields based on the class they're part of.
     virtuals_builder:=strings.builder_make(ctx)
     virtuals_list_builder:=strings.builder_make(ctx)
+    virtuals_sig_builder:=strings.builder_make(ctx)
+    virtuals_deinit:=strings.builder_make(ctx)
 
     buffer:[400]u8
     //signature and struct declaration
     strings.write_string(&init_builder, fmt.bprintf(buffer[:], init_proc_sig, BUILT_FROM.name, newline =true))
     strings.write_string(&struct_builder, fmt.bprintf(buffer[:], _MethodBind_List, BUILT_FROM.name, newline =true))
 
+    strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Virtual_Proc_Sig, BUILT_FROM.name, newline =true))
+    strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Sig, BUILT_FROM.name, newline =true))
+    fmt.sbprintf(&virtuals_sig_builder, Virtual_Struct_Proc_sigs, BUILT_FROM.name, newline =true)
+    fmt.sbprintf(&virtuals_deinit, virtual_deinit_open, BUILT_FROM.name, newline = true)
     virtual_opened:=false
     //setup Methods
     if len(BUILT_FROM.methods) > 0 {
@@ -626,6 +646,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], ptrCall_getter, BUILT_FROM.name, method.name, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, BUILT_FROM.name, newline =false))
+          virtual_opened = true
         
         if method.is_vararg {
           strings.write_string(&struct_builder, `#by_ptr args: struct{ vararg: [^]^GDW.Variant, count: ^GDE.Int, call_err: ^GDE.CallError }`)  
@@ -711,25 +732,91 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
           strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_close, method.return_value.type, newline =true))
         }
       } else {
+        /*
         if virtual_opened == false {
           //open init proc
           strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Virtual_Proc_Sig, BUILT_FROM.name, newline =true))
           strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Sig, BUILT_FROM.name, newline =true))
+           fmt.sbprintf(&virtuals_sig_builder, Virtual_Struct_Proc_sigs, BUILT_FROM.name, newline =true)
+           fmt.sbprintf(&virtuals_deinit, virtual_deinit_open, BUILT_FROM.name, newline = true)
           virtual_opened = true
-        }
+        }*/
         //write the name and hash
-        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Virtual_Listing, method.name, method.hash, newline =true))
+        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Virtual_Listing, BUILT_FROM.name, method.name, method.hash, newline =true))
         strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Field, method.name, newline =true))
-      }
+        fmt.sbprintf(&virtuals_sig_builder, Virtual_Sig, method.name, newline =false)
+        fmt.sbprintf(&virtuals_deinit, virtual_stringdestruct, BUILT_FROM.name, method.name, newline=true)
+        if len(method.arguments) == 0 {
+          strings.write_string(&virtuals_sig_builder, `args: rawptr = nil,`)
+        }
+        else
+        {
+          fmt.sbprintf(&virtuals_sig_builder, `#by_ptr args: struct{{`, newline =false)
+          for &args in method.arguments{
+            Correct_Type_String(&args.type, ctx)
+            variant_type:GDE.VariantType= Get_Variant_Type_From_String(args.type)
+            if variant_type != .NIL{
+              temp:=args.type
+              concat_err: runtime.Allocator_Error
+              if variant_type == .OBJECT {
+                args.type, concat_err = strings.concatenate({"^GDW.", args.type}, ctx)
+              } else {
+                args.type, concat_err = strings.concatenate({"GDW.", args.type}, ctx)
+              }
+              fmt.sbprintf(&virtuals_sig_builder, class_args, args.name, args.type, newline =false)
+            } else
+            {
+              fmt.sbprintf(&virtuals_sig_builder, class_args, args.name, args.type, newline =false)
+            }
+            }
+            strings.write_string(&virtuals_sig_builder, `}, `)
+          }
+          
+        if method.return_value.type == ""{
+          fmt.sbprintf(&virtuals_sig_builder, ` r_ret: rawptr = nil),`, newline = true)
+        }
+        else
+        {
+          //fmt.println(method.return_value.type)
+          Correct_Type_String(&method.return_value.type, ctx)
+          //fmt.println(method.return_value.type)
+          variant_type:GDE.VariantType= Get_Variant_Type_From_String(method.return_value.type)
+          if variant_type != .NIL {
+            temp:=method.return_value.type
+            concat_err: runtime.Allocator_Error
+            method.return_value.type, concat_err = strings.concatenate({"^GDW.", method.return_value.type}, ctx)
+            //assert(concat_err==nil, method.return_value.type)
+            //delete(temp)
+          }
+          fmt.sbprintf(&virtuals_sig_builder, Virtual_return, method.return_value.type, newline =true)
+        }
+        }
+        //fmt.sbprintf(&virtuals_sig_builder, Virtual_Sig, BUILT_FROM.name, newline =false)
+      
       //All virtuals SHOULD come before any other methods.
-      if virtual_opened && (idx == len(BUILT_FROM.methods) - 1 || method.is_virtual == false) {
-        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+      //if virtual_opened && (idx == len(BUILT_FROM.methods) - 1 || method.is_virtual == false) {
+      
+    }
+    }
+    if virtual_opened {
+        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], `    %s_V_Info.initialized = true
+  }`, BUILT_FROM.name, newline = true))
+        if BUILT_FROM.inherits != "" {
+          fmt.sbprintf(&virtuals_builder, `
+  %s_init_virtuals_info()`, BUILT_FROM.inherits, newline = true)
+        strings.write_string(&virtuals_deinit, fmt.bprintf(buffer[:], `    %s_V_Info.initialized = false
+  }`, BUILT_FROM.name, newline = true))
+        if BUILT_FROM.inherits != "" {
+          fmt.sbprintf(&virtuals_deinit, `  %s_deinit_virtual()`, BUILT_FROM.inherits, newline = true)
+        }
+        }
+        fmt.sbprint(&virtuals_builder, Closing)
         strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+        fmt.sbprintf(&virtuals_sig_builder, Closing, newline =true)
+        fmt.sbprintf(&virtuals_deinit, Closing, newline =true)
         virtual_opened = false
         //fmt.println(strings.to_string(virtuals_builder))
       }
-    }
-    }
     //pinch it off
     strings.write_string(&init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
     strings.write_string(&struct_builder, fmt.bprintf(buffer[:], Closing, newline =true))
@@ -912,7 +999,8 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
 
     //Append all the work we did to the array of classes.
     append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), \
-      strings.to_string(enum_builder), strings.to_string(virtuals_builder), strings.to_string(virtuals_list_builder)})
+      strings.to_string(enum_builder), strings.to_string(virtuals_builder), strings.to_string(virtuals_list_builder), strings.to_string(virtuals_sig_builder),\
+    strings.to_string(virtuals_deinit)})
     //strings.builder_reset(&init_builder)
     //strings.builder_reset(&struct_builder)
     //fmt.println(builtin_map[idx].init_proc)
@@ -1011,7 +1099,7 @@ Get_Variant_Type_From_String :: proc(className: string) -> GDE.VariantType {
 
 Correct_Type_String :: proc(muh_type: ^string, ctx: runtime.Allocator) {
   ok:bool
-  if muh_type^ == string("Side") do fmt.println(muh_type^)
+  //if muh_type^ == string("Side") do fmt.println(muh_type^)
   switch muh_type^ {
     case "int":
       delete(muh_type^)
