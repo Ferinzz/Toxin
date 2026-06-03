@@ -31,7 +31,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     destroy=destructor,
     notification = GDE.ClassNotification2(THIS_CLASS_NAME_Notifications),
     Exporter = THIS_CLASS_NAME_Export,
-    //vtable ={.Node, &THIS_CLASS_NAME_VTable},
+    vtable ={.Node, &THIS_CLASS_NAME_VTable},
 }
 
 //Godot will be passing us a pointer to this struct during callbacks.
@@ -250,7 +250,7 @@ THIS_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLA
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
 */
-/*
+
 THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
         context = runtime.default_context()
@@ -304,7 +304,7 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 
     }
 }
-*/
+
 
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1100, 750}

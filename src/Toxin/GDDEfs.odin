@@ -177,7 +177,9 @@ typed_Dictionary :: struct($K: typeid, $V: typeid) {
 Size changes based on Godot build config.*/
 //WARNING: set id to nil during creation step. Godot allocation does not zero allocate by default.
 Array :: GDW.Array
-
+typed_Array :: struct($T: typeid) {
+	using GDW.Array
+}
 
 /*
 * Variables here are not defined by Godot but are useful for defining Properties.

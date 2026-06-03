@@ -3,7 +3,6 @@ package Toxin
 import GDE "../GDWrapper/gdAPI/gdextension"
 import GDW "../GDWrapper"
 import "../GDWrapper/gdAPI"
-import Classes "../GD_Classes"
 
 /*
 * val: the array which will be set to a specific type
@@ -28,16 +27,24 @@ set_typed :: proc{
 append :: proc{
     array_append,
     array_append_v,
+    array_append_t,
+    array_append_typed,
 }
 
 array_append :: proc(dest: ^Array, arg: Variant) {
     arg:= arg
     GDW.Array_M_List.append(dest, {&arg})
 }
-array_append_v :: proc(dest: ^Array, arg: ^Variant) {
+array_append_v :: #force_inline proc(dest: ^Array, arg: ^Variant) {
     GDW.Array_M_List.append(dest, {arg})
 }
 array_append_t :: proc(dest: ^Array, arg: ^$T) {
+    var:= to_variant_r(arg)
+    GDW.Array_M_List.append(dest, {&var})
+    gdAPI.Variant_Utils.Destroy(&var)
+}
+
+array_append_typed :: proc(dest: ^typed_Array($T), arg: ^T) {
     var:= to_variant_r(arg)
     GDW.Array_M_List.append(dest, {&var})
     gdAPI.Variant_Utils.Destroy(&var)
@@ -64,7 +71,7 @@ make_typed_dictionary :: proc(dest: ^$T/typed_Dictionary($K, $V),
                               #by_ptr val_class: StringName = {}, #by_ptr val_script: Variant = {}) {
     key_type:= variant_index(K)
     value_type:= variant_index(V)
-
     GDW.Dictionary_M_List.Create0(dest)
     dictionary_set_type(dest, key_type, value_type, key_class, key_script, val_class, val_script)
 }
+
