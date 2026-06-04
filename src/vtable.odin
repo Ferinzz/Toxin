@@ -31,7 +31,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     destroy=destructor,
     notification = GDE.ClassNotification2(THIS_CLASS_NAME_Notifications),
     Exporter = THIS_CLASS_NAME_Export,
-    vtable ={.Node, &THIS_CLASS_NAME_VTable},
+    vtable =&THIS_CLASS_NAME_VTable,
 }
 
 //Godot will be passing us a pointer to this struct during callbacks.
@@ -251,8 +251,8 @@ THIS_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLA
 * If you want your class to tick on its own you gotta use them.
 */
 
-THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
-    _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
+THIS_CLASS_NAME_VTable: Classes.Sprite2D_vtable(THIS_CLASS_NAME) = {
+    _ready= proc "cdecl" (self: ^Classes.Class_Container(THIS_CLASS_NAME), args: rawptr, _: rawptr) {
         context = runtime.default_context()
 
         set:=[?]rawptr{&texture}
@@ -272,14 +272,14 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         Toxin.Destroy(&store)
         Toxin.Destroy(&name)
     },
-    _enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
+    _enter_tree= proc "cdecl" (self: ^Classes.Class_Container(THIS_CLASS_NAME), args: rawptr, ret: rawptr) {
         context = runtime.default_context()
 
         Node_Class.get_window->m_call(self.self, nil, &wind_obj)
         window:Toxin.Vector2i
         Window_MethodBind_List.get_size->m_call(wind_obj, nil, &window)
     },
-    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+    _process= proc "cdecl" (self: ^Classes.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct {delta: ^f64}, _: rawptr){
         context = runtime.default_context()
         speed:=Toxin.Vector2{f32(self.class.speed),f32(self.class.speed)}
         //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
@@ -296,11 +296,11 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
         Toxin.emitSignal0(self.self, &signal)
         Toxin.Destroy(&signal)
     },
-    _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
+    _draw= proc "cdecl" (self: ^Classes.Class_Container(THIS_CLASS_NAME), args: rawptr, ret: rawptr) {
         //context = runtime.default_context()
         //fmt.println("yarrr")
     },
-    _get_focused_accessibility_element= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
+    _get_focused_accessibility_element= proc "cdecl" (self: ^Classes.Class_Container(THIS_CLASS_NAME), _: rawptr, r_ret: ^Toxin.RID) {
 
     }
 }

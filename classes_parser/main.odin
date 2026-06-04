@@ -39,11 +39,22 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 
 
 `
+header2:= `package GD_Classes
+
+import GDW "../GDWrapper"
+import "../GDWrapper/gdAPI"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "core:reflect"
+import "base:runtime"
+import sics "base:intrinsics"
+
+
+`
 
   file_path:= "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAUtils_GD_Class.odin"
   file, open_err:= os.create(file_path)
   if open_err == nil {
-    os.write_strings(file, header, AAAUtil_procedures, Method_Callback_Compare_Info)
+    os.write_strings(file, header2, AAAUtil_procedures, Method_Callback_Compare_Info)
     class_n:= `  %s,`
     class_sn:= `  .%s = GDW.StringName({{nil}),`
     closer:=`
@@ -51,17 +62,56 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     buffer:[400]u8
     class_list:=strings.builder_make(context.temp_allocator)
     class_sn_list:=strings.builder_make(context.temp_allocator)
+    class_vtable_list:=strings.builder_make(context.temp_allocator)
+    class_vtable_init:=strings.builder_make(context.temp_allocator)
     strings.write_string(&class_list, ClassName_Index)
     strings.write_string(&class_sn_list, ClassName_StringNames)
+    fmt.sbprintf(&class_vtable_list, `
+v_check :: proc(rawptr, ^GDW.StringName, u32)  -> GDE.ClassCallVirtual
+virtuals_list : [ClassName_Index]proc(rawptr, ^GDW.StringName, u32) -> GDE.ClassCallVirtual = {{
+  .nil = nil,`, newline = true)
+    fmt.sbprintf(&class_vtable_init, `virtuals_init : [ClassName_Index]proc() = {{
+  .nil = nil,`, newline = true)
     for class in built_different.classes {
       strings.write_string(&class_list, fmt.bprintf(buffer[:], class_n, class.name, newline =true))
       strings.write_string(&class_sn_list, fmt.bprintf(buffer[:], class_sn, class.name, newline =true))
+      fmt.sbprintf(&class_vtable_list, `.%s = v_check(%[0]s_v_check),`, class.name, newline = true)
+      fmt.sbprintf(&class_vtable_init, `.%s = %[0]s_Init_Virtuals_Info,`, class.name, newline = true)
     }
     strings.write_string(&class_list, closer)
     strings.write_string(&class_sn_list, closer)
+    fmt.sbprintf(&class_vtable_list, `}`, newline = true)
+    fmt.sbprintf(&class_vtable_init, `}`, newline = true)
     os.write_string(file, strings.to_string(class_list))
     os.write_string(file, strings.to_string(class_sn_list))
+    os.write_string(file, strings.to_string(class_vtable_list))
+    os.write_string(file, strings.to_string(class_vtable_init))
     os.close(file)
+  }
+  
+  file_path = "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAClass_Names.odin"
+  file, open_err= os.create(file_path)
+  if open_err == nil {
+    os.write_strings(file, header2)
+    for classes in final {
+      os.write_strings(file, classes.name, ` :: ^GDW.Object
+`)
+    }
+
+  }
+  file_path = "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAVirtuals.odin"
+  file, open_err= os.create(file_path)
+  if open_err == nil {
+    os.write_strings(file, header2)
+    for classes in final {
+      os.write_strings(file, classes.virtuals_list,
+                             classes.virtuals_sig,
+                             classes.virtuals_init,
+                             classes.virtuals_deinit,
+                             classes.virtuals_check,
+                          )
+    }
+
   }
   for classes in final {
     //fmt.println(classes.method_list)
@@ -72,20 +122,16 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
     file, open_err:= os.create(file_path)
     if open_err == nil {
       //count, write_err:= os.write_strings(file, header, 
-      os.write_strings(file, header, 
-                            classes.name,
-                            ` :: ^GDW.Object
-
-`,
-                            classes.virtuals_list,
-                            classes.virtuals_sig,
+      os.write_strings(file, header2, 
                             classes.enums,
                             classes.constants,
                             //classes.properties,
                             classes.method_list,
                             classes.init_proc,
-                            classes.virtuals_init,
-                            classes.virtuals_deinit,
+                            //classes.virtuals_list,
+                            //classes.virtuals_sig,
+                            //classes.virtuals_init,
+                            //classes.virtuals_deinit,
                             //classes.properties_init,
                             )
       //fmt.println("wrote: ", count, write_err)
@@ -463,6 +509,19 @@ destroy_class_names :: proc() {
     }
   }
 }
+
+/*
+* Container type for the class Node.
+* Self: pointer to the Godot Class as instantiated by Create.
+* Will be used in Create and Destroy to allocate size and add pointer to the Godot base Node which gets created (aka Node2D)
+* Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
+*/
+Class_Container :: struct ($Class_Structure: typeid) #packed {
+    self: ^GDW.Object, //Keep as first so it can be trivially cast.
+    using class: Class_Structure,
+}
+CC_Dummy :: struct {}
+
 `
 
 Method_Callback_Compare_Info :: `
@@ -556,6 +615,7 @@ builtin_set :: struct {
   virtuals_list: string,
   virtuals_sig: string,
   virtuals_deinit: string,
+  virtuals_check: string,
 };
 
 
@@ -595,8 +655,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   },*/
 
   Virtual_Proc_Sig:=`
-%s_Init_Virtuals_Info :: proc() {{
-  if %[0]s_Init_Virtuals_Info.initialized == false {{`
+%s_Init_Virtuals_Info :: #force_no_inline proc() {{
+  if %[0]s_Virtual_Info.initialized == false {{`
 //ClassName
   Virtual_Listing:= `    %[0]s_Virtual_Info.%[1]s = {{GDW.StringConstruct("%[1]s"), %v}`
     //VirtualName, virtualHash
@@ -606,12 +666,17 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   Virtual_Struct_Proc_sigs:= `%s_vtable :: struct($T:typeid) {{`
   Virtual_Sig:= `%s: proc "c" (self: ^Class_Container(T), `
   Virtual_args_oprn:= `#by_ptr p_args: struct{{`
-  Virtual_arg_value:= `%s: ^GDW.%s, `
+  Virtual_arg_value:= `%s: %s, `
   Virtual_return:= ` r_ret: %s),`
   virtual_deinit_open:= `
-%s_deinit_virtual :: proc() {{
-  if %[0]s.initialized == true {{`
-  virtual_stringdestruct:= `    GDW.stringname_destroy(%s_V_Info.%s.name)`
+%s_deinit_virtual :: #force_no_inline proc() {{
+  if %[0]s_Virtual_Info.initialized == true {{`
+  virtual_stringdestruct:= `    GDW.stringname_destroy(%s_Virtual_Info.%s.name)`
+  virtual_check_open:= `%[0]s_v_check :: #force_no_inline proc(v_struct: ^%[0]s_vtable(CC_Dummy), SN: ^GDW.StringName, hash: u32) -> GDE.ClassCallVirtual {{
+  switch {{`
+  virtual_check_case:= `  case hash == %[0]s_Virtual_Info.%[1]s.p_hash && GDW.stringNameCompare(&%[0]s_Virtual_Info.%[1]s.name, SN) == true:
+      return GDE.ClassCallVirtual(v_struct.%[1]s)`
+  virtual_check_return:= `  return `
 //MethodName
   ////////////////////////////
   // Convert the unmarshalled json to Odin procs and structs
@@ -627,6 +692,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     virtuals_list_builder:=strings.builder_make(ctx)
     virtuals_sig_builder:=strings.builder_make(ctx)
     virtuals_deinit:=strings.builder_make(ctx)
+    virtuals_check:= strings.builder_make(ctx)
 
     buffer:[400]u8
     //signature and struct declaration
@@ -637,7 +703,8 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Sig, BUILT_FROM.name, newline =true))
     fmt.sbprintf(&virtuals_sig_builder, Virtual_Struct_Proc_sigs, BUILT_FROM.name, newline =true)
     fmt.sbprintf(&virtuals_deinit, virtual_deinit_open, BUILT_FROM.name, newline = true)
-    virtual_opened:=false
+    fmt.sbprintf(&virtuals_check, virtual_check_open, BUILT_FROM.name, newline = true)
+    virtual_opened:=true
     //setup Methods
     if len(BUILT_FROM.methods) > 0 {
     for &method, idx in BUILT_FROM.methods {
@@ -646,7 +713,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], ptrCall_getter, BUILT_FROM.name, method.name, newline =true))
         strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, BUILT_FROM.name, newline =false))
-          virtual_opened = true
+          //virtual_opened = true
         
         if method.is_vararg {
           strings.write_string(&struct_builder, `#by_ptr args: struct{ vararg: [^]^GDW.Variant, count: ^GDE.Int, call_err: ^GDE.CallError }`)  
@@ -746,6 +813,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
         strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Field, method.name, newline =true))
         fmt.sbprintf(&virtuals_sig_builder, Virtual_Sig, method.name, newline =false)
         fmt.sbprintf(&virtuals_deinit, virtual_stringdestruct, BUILT_FROM.name, method.name, newline=true)
+        fmt.sbprintf(&virtuals_check, virtual_check_case, BUILT_FROM.name, method.name, newline = true)
         if len(method.arguments) == 0 {
           strings.write_string(&virtuals_sig_builder, `args: rawptr = nil,`)
         }
@@ -754,6 +822,36 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
           fmt.sbprintf(&virtuals_sig_builder, `#by_ptr args: struct{{`, newline =false)
           for &args in method.arguments{
             Correct_Type_String(&args.type, ctx)
+            //Godot uses some param names which are reserved in Odin.
+            if args.name == "any" { 
+              delete(args.name)
+              args.name = "gdany"
+            }
+            else
+            if args.name == "map" { 
+              delete(args.name)
+              args.name = "gdmap"
+            }
+            else
+            if args.name == "enum" {
+              delete(args.name)
+              args.name = "p_enum"
+            }
+            else
+            if args.name == "context" {
+              delete(args.name)
+              args.name = "trans_context"
+            }
+            else
+            if args.name == "in" {
+              delete(args.name)
+              args.name = "point_in"
+            }
+            else
+            if args.name == "out" {
+              delete(args.name)
+              args.name = "point_out"
+            }
             variant_type:GDE.VariantType= Get_Variant_Type_From_String(args.type)
             if variant_type != .NIL{
               temp:=args.type
@@ -761,12 +859,12 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
               if variant_type == .OBJECT {
                 args.type, concat_err = strings.concatenate({"^GDW.", args.type}, ctx)
               } else {
-                args.type, concat_err = strings.concatenate({"GDW.", args.type}, ctx)
+                args.type, concat_err = strings.concatenate({"^GDW.", args.type}, ctx)
               }
-              fmt.sbprintf(&virtuals_sig_builder, class_args, args.name, args.type, newline =false)
+              fmt.sbprintf(&virtuals_sig_builder, Virtual_arg_value, args.name, args.type, newline =false)
             } else
             {
-              fmt.sbprintf(&virtuals_sig_builder, class_args, args.name, args.type, newline =false)
+              fmt.sbprintf(&virtuals_sig_builder, Virtual_arg_value, args.name, args.type, newline =false)
             }
             }
             strings.write_string(&virtuals_sig_builder, `}, `)
@@ -799,21 +897,28 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     }
     }
     if virtual_opened {
-        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], `    %s_V_Info.initialized = true
+        strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], `    %s_Virtual_Info.initialized = true
   }`, BUILT_FROM.name, newline = true))
+        fmt.sbprintf(&virtuals_deinit, `    %s_Virtual_Info.initialized = false
+  }`, BUILT_FROM.name, newline = true)
+        fmt.sbprint(&virtuals_check, `}
+  return `, )
+
         if BUILT_FROM.inherits != "" {
           fmt.sbprintf(&virtuals_builder, `
-  %s_init_virtuals_info()`, BUILT_FROM.inherits, newline = true)
-        strings.write_string(&virtuals_deinit, fmt.bprintf(buffer[:], `    %s_V_Info.initialized = false
-  }`, BUILT_FROM.name, newline = true))
-        if BUILT_FROM.inherits != "" {
+  %s_Init_Virtuals_Info()`, BUILT_FROM.inherits, newline = true)
           fmt.sbprintf(&virtuals_deinit, `  %s_deinit_virtual()`, BUILT_FROM.inherits, newline = true)
+          fmt.sbprintf(&virtuals_sig_builder, `using %s_vtable: %[0]s_vtable(T)`, BUILT_FROM.inherits, newline = true)
+          fmt.sbprintf(&virtuals_check, `%s_v_check(v_struct, SN, hash)`, BUILT_FROM.inherits, newline = true)
+        } else {
+          fmt.sbprintf(&virtuals_check, `nil`, newline = true)
         }
-        }
+
         fmt.sbprint(&virtuals_builder, Closing)
         strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Closing, newline =true))
         fmt.sbprintf(&virtuals_sig_builder, Closing, newline =true)
         fmt.sbprintf(&virtuals_deinit, Closing, newline =true)
+        fmt.sbprintf(&virtuals_check, `}`, newline = true)
         virtual_opened = false
         //fmt.println(strings.to_string(virtuals_builder))
       }
@@ -1000,7 +1105,7 @@ OpenXRActionMap_init_props :: proc(OpenXRActionMap_prop: ^OpenXRActionMap_proper
     //Append all the work we did to the array of classes.
     append(&builtin_map, builtin_set{BUILT_FROM.name, strings.to_string(init_builder), strings.to_string(struct_builder), strings.to_string(consts_builder), \
       strings.to_string(enum_builder), strings.to_string(virtuals_builder), strings.to_string(virtuals_list_builder), strings.to_string(virtuals_sig_builder),\
-    strings.to_string(virtuals_deinit)})
+    strings.to_string(virtuals_deinit), strings.to_string(virtuals_check)})
     //strings.builder_reset(&init_builder)
     //strings.builder_reset(&struct_builder)
     //fmt.println(builtin_map[idx].init_proc)
@@ -1244,11 +1349,15 @@ Correct_Type_String :: proc(muh_type: ^string, ctx: runtime.Allocator) {
     if muh_type^ == "KeyLocation" {
         delete(muh_type^)
         muh_type^ = "GDW.KeyLocation"
+    } else
+    if muh_type^ == "PropertyUsageFlags" {
+        delete(muh_type^)
+        muh_type^ = "GDE.PropertyUsageFlags"
     }
 
     return 
   }
-  if strings.contains(muh_type^, "const void") {
+  if strings.contains(muh_type^, "void") {
       delete(muh_type^)
       muh_type^ = "GDW.void"
       fmt.println(muh_type^)
@@ -1257,6 +1366,78 @@ Correct_Type_String :: proc(muh_type: ^string, ctx: runtime.Allocator) {
   if muh_type^ == "Variant_Type" {
       delete(muh_type^)
       muh_type^ = "GDE.VariantType"
+      return
+  }
+  count:= strings.count(muh_type^, "*"); 
+  if count > 0 {
+    prefix: string
+    switch count {
+      case 2:
+        prefix = "[^]"
+      case 1:
+        prefix = "^"
+    }
+    type:string=cpp_type(muh_type^)
+    type= struct_types(type)
+    delete(muh_type^)
+    muh_type^=strings.concatenate({prefix, type})
   }
   return
+}
+
+cpp_type :: proc(segment: string) -> string {
+  
+    switch {
+    case strings.contains(segment, "uint8_t"):
+      return "u8"
+    case strings.contains(segment, "uint32_t"):
+      return "u32"
+    case strings.contains(segment, "uint64_t"):
+      return "u64"
+    case strings.contains(segment, "int8_t"):
+      return "i8"
+    case strings.contains(segment, "int32_t"):
+      return "i32"
+    case strings.contains(segment, "int64_t"):
+      return "i64"
+    case strings.contains(segment, "float"):
+      return "f32"
+    case strings.contains(segment, "real_t"):
+      return "f64"
+    }
+    return segment
+}
+
+struct_types :: proc(segment: string) -> string {
+  switch {
+  case strings.contains(segment, "AudioFrame"):
+    return "GDW.AudioFrame"
+  case strings.contains(segment, "CaretInfo"):
+    return "GDW.CaretInfo"
+  case strings.contains(segment, "Glyph"):
+    return "GDW.Glyph"
+  case strings.contains(segment, "ObjectID"):
+    return "GDW.ObjectID"
+  case strings.contains(segment, "PhysicsServer2DExtensionMotionResult"):
+    return "GDW.PhysicsServer2DExtensionMotionResult"
+  case strings.contains(segment, "PhysicsServer2DExtensionRayResult"):
+    return "GDW.PhysicsServer2DExtensionRayResult"
+  case strings.contains(segment, "PhysicsServer2DExtensionShapeRestInfo"):
+    return "GDW.PhysicsServer2DExtensionShapeRestInfo"
+  case strings.contains(segment, "PhysicsServer2DExtensionShapeResult"):
+    return "GDW.PhysicsServer2DExtensionShapeResult"
+  case strings.contains(segment, "PhysicsServer3DExtensionMotionCollision"):
+    return "GDW.PhysicsServer3DExtensionMotionCollision"
+  case strings.contains(segment, "PhysicsServer3DExtensionMotionResult"):
+    return "GDW.PhysicsServer3DExtensionMotionResult"
+  case strings.contains(segment, "PhysicsServer3DExtensionRayResult"):
+    return "GDW.PhysicsServer3DExtensionRayResult"
+  case strings.contains(segment, "PhysicsServer3DExtensionShapeRestInfo"):
+    return "GDW.PhysicsServer3DExtensionShapeRestInfo"
+  case strings.contains(segment, "PhysicsServer3DExtensionShapeResult"):
+    return "GDW.PhysicsServer3DExtensionShapeResult"
+  case strings.contains(segment, "ScriptLanguageExtensionProfilingInfo"):
+    return "GDW.ScriptLanguageExtensionProfilingInfo"
+  }
+  return segment
 }

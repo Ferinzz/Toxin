@@ -237,10 +237,7 @@ Class_Deets :: struct {
     using required: required_deets,
     create: proc(userdata: ^Class_Deets, self: rawptr), //Cast to the Object class that your class extends.
     destroy: proc(userdata: ^Class_Deets, self: rawptr),
-    vtable: struct {
-        table_type: vtable_type,
-        table: rawptr,
-    },
+    vtable: rawptr,
     notification: GDE.ClassNotification2,
     GDClass_StringName: ^StringName,
     SN : StringName,

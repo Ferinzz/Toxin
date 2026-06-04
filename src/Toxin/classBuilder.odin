@@ -47,17 +47,9 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIAL
     class_info.class_userdata = deets
     class_info.notification_func = deets.notification
 
-    when builtin.ODIN_DEBUG {
-        if deets.vtable.table != nil {
-            assert(deets.vtable.table_type != .None, "Failed to set type of the vTable.")
-        }
-        if deets.vtable.table_type != nil {
-            assert(deets.vtable.table != nil, "Failed to provide vTable despite specifying type.")
-        }
-    }
-
-    if (deets.vtable.table != nil) {
-        class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)get_virtual
+    if (deets.vtable != nil) {
+        Classes.virtuals_init[deets.GDClass_Index]()
+        class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)_get_virtual
     }
     
 
@@ -428,51 +420,10 @@ make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type
 
 _get_virtual::  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
     context = runtime.default_context()
-    if p_class_userdata.vtable.table == nil {
+    if p_class_userdata.vtable == nil {
         return nil
     }
-
-    when builtin.ODIN_DEBUG {
-        if p_class_userdata.vtable.table != nil {
-            assert(p_class_userdata.vtable.table_type != .None)
-        }
-        if p_class_userdata.vtable.table_type != nil {
-            assert(p_class_userdata.vtable.table != nil)
-        }
-    }
-
-    ok:bool=false
-    virtual:rawptr=nil
-    switch p_class_userdata.vtable.table_type{
-        case .None:
-        case .Node:
-            arg:= cast(^Node_v_table(CC_Dummy))p_class_userdata.vtable.table
-            virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        case .CanvasItem:
-            arg:= cast(^vCanvasItem(CC_Dummy))p_class_userdata.vtable.table
-            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        case .CollisionObject2D:
-            arg:= cast(^vCollisionObject2D(CC_Dummy))p_class_userdata.vtable.table
-            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-            virtual, ok = Return_Collision2D_Virtuals(arg.vCollisionObject2D, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        case .Texture2D:
-            arg:= cast(^vTexture2D(CC_Dummy))p_class_userdata.vtable.table
-            virtual, ok = Return_Node_Virtuals(arg.vNode, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-            virtual, ok = Return_CanvasItem_Virtuals(arg.vCanvasItem, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-            virtual, ok = Return_texture_Virtuals(arg.vTexture, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        case:
-            assert(false, "Virtual table does not match list available.")
-    }
+    fmt.println(Classes.virtuals_list)
+    virtual:= Classes.virtuals_list[p_class_userdata.GDClass_Index](p_class_userdata.vtable, p_name, p_hash)
     return cast(GDE.ClassCallVirtual)virtual
 }

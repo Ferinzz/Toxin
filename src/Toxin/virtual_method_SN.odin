@@ -1,3 +1,4 @@
+#+ignore
 #+feature using-stmt
 package Toxin
 
@@ -191,7 +192,7 @@ AudioStreamPlayback_Virtual_Info: struct {
 }
 
 //"inherits": "Resource",
-AudioStream_Virtual_Info: Classes.AudioStream_Virtual_Info
+//AudioStream_Virtual_Info: Classes.AudioStream_Virtual_Info
 
 //"inherits": "Resource",
 AudioStream_Virtual_Info2: struct {
@@ -478,31 +479,31 @@ init_AudioStreamPlayback_Virtual_Info :: proc () {
     _get_parameter.name = GDW.StringConstruct("_get_parameter")
 }
 
-init_AudioStream_Virtual_Info :: proc () {
-    using AudioStream_Virtual_Info
-    _instantiate_playback.p_hash = 3093715447
-    _get_stream_name.p_hash = 201670096
-    _get_length.p_hash = 1740695150
-    _is_monophonic.p_hash = 36873697
-    _get_bpm.p_hash = 1740695150
-    _get_beat_count.p_hash = 3905245786
-    _get_tags.p_hash = 3102165223
-    _get_parameter_list.p_hash = 3995934104
-    _has_loop.p_hash = 36873697
-    _get_bar_beats.p_hash = 3905245786
+// init_AudioStream_Virtual_Info :: proc () {
+//     using AudioStream_Virtual_Info
+//     _instantiate_playback.p_hash = 3093715447
+//     _get_stream_name.p_hash = 201670096
+//     _get_length.p_hash = 1740695150
+//     _is_monophonic.p_hash = 36873697
+//     _get_bpm.p_hash = 1740695150
+//     _get_beat_count.p_hash = 3905245786
+//     _get_tags.p_hash = 3102165223
+//     _get_parameter_list.p_hash = 3995934104
+//     _has_loop.p_hash = 36873697
+//     _get_bar_beats.p_hash = 3905245786
 
 
-    _instantiate_playback.name = GDW.StringConstruct("_instantiate_playback")
-    _get_stream_name.name = GDW.StringConstruct("_get_stream_name")
-    _get_length.name = GDW.StringConstruct("_get_length")
-    _is_monophonic.name = GDW.StringConstruct("_is_monophonic")
-    _get_bpm.name = GDW.StringConstruct("_get_bpm")
-    _get_beat_count.name = GDW.StringConstruct("_get_beat_count")
-    _get_tags.name = GDW.StringConstruct("_get_tags")
-    _get_parameter_list.name = GDW.StringConstruct("_get_parameter_list")
-    _has_loop.name = GDW.StringConstruct("_has_loop")
-    _get_bar_beats.name = GDW.StringConstruct("_get_bar_beats")
-}
+//     _instantiate_playback.name = GDW.StringConstruct("_instantiate_playback")
+//     _get_stream_name.name = GDW.StringConstruct("_get_stream_name")
+//     _get_length.name = GDW.StringConstruct("_get_length")
+//     _is_monophonic.name = GDW.StringConstruct("_is_monophonic")
+//     _get_bpm.name = GDW.StringConstruct("_get_bpm")
+//     _get_beat_count.name = GDW.StringConstruct("_get_beat_count")
+//     _get_tags.name = GDW.StringConstruct("_get_tags")
+//     _get_parameter_list.name = GDW.StringConstruct("_get_parameter_list")
+//     _has_loop.name = GDW.StringConstruct("_has_loop")
+//     _get_bar_beats.name = GDW.StringConstruct("_get_bar_beats")
+// }
 
 init_CollisionObject2D_Virtual_Info :: proc () {
     using CollisionObject2D_Virtual_Info

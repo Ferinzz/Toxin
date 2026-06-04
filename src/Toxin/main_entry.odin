@@ -90,11 +90,6 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
                 setup.core_init(setup)
             }
             register_custom_class(setup.classes.core[:], InitializationLevel(init_Level))
-            //Classes.Engine_Init_(&Engine_M_List)
-            init_Node_Virtuals_Info()
-            init_CanvasItem_Virtuals_Info()
-            init_Texture2D_Virtuals_Info()
-            init_MainLoop_Virtual_Info()
             Classes.RefCounted_Init_(&RefCounted_Methods_list)
             refname:= GDW.StringConstruct("RefCounted")
             RefTag = gdAPI.ClassDB.GetClassTag(&refname)
