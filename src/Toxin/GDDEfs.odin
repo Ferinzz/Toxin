@@ -197,6 +197,16 @@ INPUT_NAME_STRING :: distinct gdstring
 INPUT_NAME_STRINGNAME :: distinct gdstring
 
 
+//Specifies a locale.
+//Editing will show locale dialog for picking language and country.
+Locale_ID :: gdstring
+
+//Specifies a password
+Password :: gdstring
+
+//Specifies a path to a file
+Path :: gdstring
+
 //struct holding NodePath and allowed node info.
 //Allowed Nodes is comma separated stringof valid node types
 NodePath_Hint :: GDW.NodePath_Hint

@@ -1,4 +1,5 @@
 
+#+ignore
 #+feature using-stmt
 package Toxin
 
@@ -340,34 +341,6 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
     delete(output)
     delete(flag_string)
 }
-
-/*Struct to pass data for a ranged variable.
-* Supports: float, int
-* min: lowest value allowed by the editor.
-* max: largest value allowed by the editor.
-* step: by how much it should increment. 0 will be ignored.
-* flags: additional usage information.
-* validate: Not implemented. if Odin's callback should verify the range.
-*/
-Ranged_Num :: struct ($T: typeid) #all_or_none {
-  min: T,
-  max: T,
-  step: T,
-  flags: Range_Flags,
-}
-
-Range_Flags :: bit_set [Range; Int]
-
-Range :: enum {
-  none,
-  or_greater, //Can exceed the max limit
-  or_less, //Can go lower than the min limit
-  exp, //
-  hide_slider, //Slider will not appear in editor
-  radians_as_degrees, //will represent radian values as degrees
-  degrees, //limit the range to degrees (-360 to 360)
-}
-
 //Warning untested!!
 Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Array,
@@ -895,10 +868,6 @@ Export_Locale :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     destructProperty(&info)
 }
 
-//Specifies a locale.
-//Editing will show locale dialog for picking language and country.
-Locale_ID :: gdstring
-
 /*
 * Strings exported as Passwords will hint to the editor that is should mask the actual letters with * symbols.
 * For some reason the editor still shows a tooltip which has all the text of the password.
@@ -934,8 +903,6 @@ Export_Password :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldN
     destructProperty(&info)
 }
 
-//Specifies a password
-Password :: gdstring
 
 /*
 * Export a gdstring and specify what the placeholder text should be for it.
@@ -1027,18 +994,6 @@ Export_Input_Name :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
         Bind_Property(className_SN, fieldName, .STRING_NAME, &prop_info, "get_"+fieldName, "set_"+fieldName)
     }
 
-}
-
-Input_Options :: bit_set [Input_Options_enum; u8]
-
-Input_Options_enum :: enum u8 {
-    show_builtin,
-    loose_mode,
-}
-
-Input_Option_Strings:[Input_Options_enum]string=  {
-    .show_builtin = "show_builtin",
-    .loose_mode = "loose_mode",
 }
 
 /*
@@ -1458,63 +1413,6 @@ bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^StringNam
     Bind_Property_Prop_Info(className_SN, fieldName, variant_type, prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 }
 
-make_property :: #force_inline proc(type: GDE.VariantType, name: string) -> GDE.PropertyInfo {
-    return makePropertyFull_string(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
-}
-
-Make_Property_Full :: proc {
-    makePropertyFull_cstring,
-    makePropertyFull_string,
-}
-
-//TODO : See if I really need to malloc these variables or if that's just something for C to do.
-//Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
-makePropertyFull_cstring :: proc(type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-    
-
-    prop_name:= new(StringName)
-    gdAPI.StringName_Utils.Latin1Chars(prop_name, name, false)
-
-    propHintString:= new(gdstring)
-    gdAPI.Strings_Utils.NewWithUtf8Chars(propHintString, hintString)
-
-    propClassName:= new(StringName)
-    gdAPI.StringName_Utils.Latin1Chars(propClassName, className, false)
-    
-    info: GDE.PropertyInfo = {
-        name = prop_name,
-        type = type, //is an enum specifying type. Meh.
-        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
-        hint_string = propHintString,
-        class_name = propClassName,
-        usage = usageFlags,
-    }
-
-    return info
-}
-
-makePropertyFull_string :: proc(type: GDE.VariantType, name: string, hint: PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-
-    prop_name:= new(StringName)
-    gdAPI.StringName_Utils.Utf8CharsAndLen(prop_name, raw_data(name), i64(len(name)))
-
-    propHintString:= new(gdstring)
-    gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(propHintString, raw_data(hintString), i64(len(hintString)))
-
-    propClassName:= new(StringName)
-    gdAPI.StringName_Utils.Utf8CharsAndLen(propClassName, raw_data(className), i64(len(className)))
-    
-    info: GDE.PropertyInfo = {
-        name = prop_name,
-        type = type, //is an enum specifying type. Meh.
-        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
-        hint_string = propHintString,
-        class_name = propClassName,
-        usage = usageFlags
-    }
-
-    return info
-}
 
 //MUST have these types initialized before attempting to access them. Godot will panic otherwise (Yay RAII..)
 Verify_Heap_Init :: proc {
@@ -1544,68 +1442,6 @@ if nil == p_classData.id {
 }
 };
 
-
-Bind_Property :: proc {
-    bindProperty,
-    Bind_Property_Prop_Info,
-}
-
-Bind_Property_Prop_Info :: #force_inline proc(className: ^StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: string, loc:=#caller_location) {
-
-    getterName: StringName
-    gdAPI.StringName_Utils.Utf8CharsAndLen(&getterName, raw_data(getter[:]), i64(len(getter)))
-    setterName: StringName
-    gdAPI.StringName_Utils.Utf8CharsAndLen(&setterName, raw_data(setter[:]), i64(len(setter)))
-    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
-    
-    fmethod_name:= GDE.Variant{VType = .STRING_NAME}
-    fmethod_name.data[0] = transmute(u64)(getterName.ptr)
-    gdAPI.Variant_Utils.Destroy(&fmethod_name)
-    fmethod_name.data[0] = transmute(u64)(setterName.ptr)
-    gdAPI.Variant_Utils.Destroy(&fmethod_name)
-    
-}
-
-/*
-* bindProperty is used to make your variable public.
-* Prior to calling this you should have registered the get and/or set functions with Godot.
-* Provide their names as cstrings. Check the makePublic function for a general workflow.
-* Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
-*/
-bindProperty :: #force_inline proc(className: ^StringName, name: string, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
-    
-    info: GDE.PropertyInfo = make_property(type, name)
-
-    getterName: StringName
-    gdAPI.StringName_Utils.Latin1Chars(&getterName, getter, false)
-    setterName: StringName
-    gdAPI.StringName_Utils.Latin1Chars(&setterName, setter, false)
-    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, &info, &setterName, &getterName)
-
-    //Destructor stuff
-    destructProperty(&info)
-}
-
-destructProperty :: proc(info: ^GDE.PropertyInfo) {
-    
-    if info.name != nil{
-        GDW.StringName_M_List.Destroy(info.name)
-    }
-    if info.class_name != nil {
-        GDW.StringName_M_List.Destroy(info.class_name)
-    }
-    if info.hint_string != nil {
-        GDW.gdstring_M_List.Destroy(info.hint_string)
-    }
-    
-    //See above TODO. If malloc is not needed, wouldn't need to free.
-    if info.name != nil{
-    free(info.name)}
-    if info.hint_string != nil {
-    free(info.class_name)}
-    if info.class_name != nil {
-    free(info.hint_string)}
-}
 
 /*
 * TODO: update to only pass the pointers to the getter/setter in order to simplify some of this.

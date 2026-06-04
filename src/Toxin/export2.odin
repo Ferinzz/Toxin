@@ -91,6 +91,34 @@ export_range :: proc(className_SN: ^StringName, getter_setter: ^$T/gsetter_userd
     destructProperty(&info)
 }
 
+
+/*Struct to pass data for a ranged variable.
+* Supports: float, int
+* min: lowest value allowed by the editor.
+* max: largest value allowed by the editor.
+* step: by how much it should increment. 0 will be ignored.
+* flags: additional usage information.
+* validate: Not implemented. if Odin's callback should verify the range.
+*/
+Ranged_Num :: struct ($T: typeid) #all_or_none {
+  min: T,
+  max: T,
+  step: T,
+  flags: Range_Flags,
+}
+
+Range_Flags :: bit_set [Range; Int]
+
+Range :: enum {
+  none,
+  or_greater, //Can exceed the max limit
+  or_less, //Can go lower than the min limit
+  exp, //
+  hide_slider, //Slider will not appear in editor
+  radians_as_degrees, //will represent radian values as degrees
+  degrees, //limit the range to degrees (-360 to 360)
+}
+
 enum_info :: proc($E: typeid, fieldname: string, prop_usage: PropertyUsageFlagsbits = PROPERTY_USAGE_DEFAULT) -> (prop_info: GDE.PropertyInfo) where sics.type_is_enum(E) && sics.type_core_type(E) == Int {
     info:= type_info_of(E).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
 
@@ -430,6 +458,18 @@ export_input_name :: proc(className: ^StringName, getter_setter: ^gsetter_userda
     Export5(className, getter_setter, &info)
     destructProperty(&info)
     delete(hints)
+}
+
+Input_Options :: bit_set [Input_Options_enum; u8]
+
+Input_Options_enum :: enum u8 {
+    show_builtin,
+    loose_mode,
+}
+
+Input_Option_Strings:[Input_Options_enum]string=  {
+    .show_builtin = "show_builtin",
+    .loose_mode = "loose_mode",
 }
 
 export_multiline :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t) {

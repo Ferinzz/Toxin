@@ -2,6 +2,7 @@ package Toxin
 
 import Classes "../GD_Classes"
 import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 import "base:runtime"
 import GDE "../GDWrapper/gdAPI/gdextension"
 import "core:c"
@@ -301,4 +302,126 @@ _variant_get_ptr :: proc "c" (variant: ^Variant) -> rawptr {
 get_version :: #force_inline proc() -> (version: GDE.GodotVersion2) {
     gdAPI.GD_Version_Get.GetGodotVersion2(&version)
     return 
+}
+
+make_property :: #force_inline proc(type: GDE.VariantType, name: string) -> GDE.PropertyInfo {
+    return makePropertyFull_string(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
+}
+
+Make_Property_Full :: proc {
+    makePropertyFull_cstring,
+    makePropertyFull_string,
+}
+
+//TODO : See if I really need to malloc these variables or if that's just something for C to do.
+//Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
+makePropertyFull_cstring :: proc(type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+    
+
+    prop_name:= new(StringName)
+    gdAPI.StringName_Utils.Latin1Chars(prop_name, name, false)
+
+    propHintString:= new(gdstring)
+    gdAPI.Strings_Utils.NewWithUtf8Chars(propHintString, hintString)
+
+    propClassName:= new(StringName)
+    gdAPI.StringName_Utils.Latin1Chars(propClassName, className, false)
+    
+    info: GDE.PropertyInfo = {
+        name = prop_name,
+        type = type, //is an enum specifying type. Meh.
+        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
+        hint_string = propHintString,
+        class_name = propClassName,
+        usage = usageFlags,
+    }
+
+    return info
+}
+
+makePropertyFull_string :: proc(type: GDE.VariantType, name: string, hint: PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+
+    prop_name:= new(StringName)
+    gdAPI.StringName_Utils.Utf8CharsAndLen(prop_name, raw_data(name), i64(len(name)))
+
+    propHintString:= new(gdstring)
+    gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(propHintString, raw_data(hintString), i64(len(hintString)))
+
+    propClassName:= new(StringName)
+    gdAPI.StringName_Utils.Utf8CharsAndLen(propClassName, raw_data(className), i64(len(className)))
+    
+    info: GDE.PropertyInfo = {
+        name = prop_name,
+        type = type, //is an enum specifying type. Meh.
+        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
+        hint_string = propHintString,
+        class_name = propClassName,
+        usage = usageFlags
+    }
+
+    return info
+}
+
+
+destructProperty :: proc(info: ^GDE.PropertyInfo) {
+    
+    if info.name != nil{
+        GDW.StringName_M_List.Destroy(info.name)
+    }
+    if info.class_name != nil {
+        GDW.StringName_M_List.Destroy(info.class_name)
+    }
+    if info.hint_string != nil {
+        GDW.gdstring_M_List.Destroy(info.hint_string)
+    }
+    
+    //See above TODO. If malloc is not needed, wouldn't need to free.
+    if info.name != nil{
+    free(info.name)}
+    if info.hint_string != nil {
+    free(info.class_name)}
+    if info.class_name != nil {
+    free(info.hint_string)}
+}
+
+
+Bind_Property :: proc {
+    bindProperty,
+    Bind_Property_Prop_Info,
+}
+
+Bind_Property_Prop_Info :: #force_inline proc(className: ^StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: string, loc:=#caller_location) {
+
+    getterName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&getterName, raw_data(getter[:]), i64(len(getter)))
+    setterName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&setterName, raw_data(setter[:]), i64(len(setter)))
+    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, prop_hint, &setterName, &getterName)
+    
+    fmethod_name:= GDE.Variant{VType = .STRING_NAME}
+    fmethod_name.data[0] = transmute(u64)(getterName.ptr)
+    gdAPI.Variant_Utils.Destroy(&fmethod_name)
+    fmethod_name.data[0] = transmute(u64)(setterName.ptr)
+    gdAPI.Variant_Utils.Destroy(&fmethod_name)
+    
+}
+
+/*
+* bindProperty is used to make your variable public.
+* Prior to calling this you should have registered the get and/or set functions with Godot.
+* Provide their names as cstrings. Check the makePublic function for a general workflow.
+* Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
+*/
+bindProperty :: #force_inline proc(className: ^StringName, name: string, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
+    
+    info: GDE.PropertyInfo = make_property(type, name)
+
+    getterName: StringName
+    gdAPI.StringName_Utils.Latin1Chars(&getterName, getter, false)
+    setterName: StringName
+    gdAPI.StringName_Utils.Latin1Chars(&setterName, setter, false)
+    gdAPI.ClassDB.RegisterExtensionClassProperty(Library, className, &info, &setterName, &getterName)
+
+    //Destructor stuff
+    destructProperty(&info)
 }
