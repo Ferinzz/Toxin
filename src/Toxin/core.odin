@@ -219,49 +219,6 @@ class_info_Default: GDE.ClassCreationInfo4 = {
     is_runtime = false,
 }
 
-/*
-* Details for the class. Used for registration or to create directly from Odin's side.
-* Fields populated by the user: self_register; init_level; GDClass_Index; class_struct; binder; vtable;
-* registerer: the registration procedure to use for this class
-* create: The procedure called after the memory has been allocated. This is called during the class init process, before _ready and is used to set defaults and init heap memory.
-* destroy: The procedure called before the memory is destroyed. This is called during the destruction phased and is used to delete any heap allocated memory or other cleanup as needed.
-* class_struct: the type of the struct being used as the class struct.
-* init_level: Godot's initialization level at which this class should be registered. (Some Node types are not available until a later time in Godot's initialization.)
-* GDClass_Index: the enum value representing the Godot Node to build off of. Such as .Node2D; .Object; .CharacterBody2D
-* vtable: pointer to the vtable of procedures. vtable would hold Godot class virtuals such as _process; _ready; _input.
-* GDClass_StringName: pointer to the StringName value representing the Godot Node. Will be populated by the Register procedure based on the GDClass_Index value.
-* SN: StringName representing the name of your class. Should be used to request instantiation from Godot as well as other Godot interactions. Will be populated by Register procedure.
-* binder: procedure to call in order to export the values you would like to expose to Godot. Variables, procedures, etc via Export; Export_Range
-*/
-Class_Deets :: struct {
-    using required: required_deets,
-    create: proc(userdata: ^Class_Deets, self: rawptr), //Cast to the Object class that your class extends.
-    destroy: proc(userdata: ^Class_Deets, self: rawptr),
-    vtable: rawptr,
-    notification: GDE.ClassNotification2,
-    GDClass_StringName: ^StringName,
-    SN : StringName,
-    Exporter: proc(className: ^StringName),
-    GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
-}
-
-//
-vtable_type:: enum c.int {
-    None,
-    Node,
-    CanvasItem,
-    CollisionObject2D,
-    Texture2D,
-}
-
-
-required_deets:: struct #all_or_none{
-    registerer: proc(self: ^required_deets, init_level: InitializationLevel), //Keep as first value in order to trivially cast it.
-    class_struct_size: i64,
-    init_level: InitializationLevel,
-    GDClass_Index: Classes.ClassName_Index,
-    name: string,
-}
 
 //
 InitializationLevel :: enum c.int {

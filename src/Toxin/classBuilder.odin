@@ -13,6 +13,42 @@ import "core:reflect"
 import "base:builtin"
 import "core:c"
 
+
+/*
+* Details for the class. Used for registration or to create directly from Odin's side.
+* Fields populated by the user: self_register; init_level; GDClass_Index; class_struct; binder; vtable;
+* registerer: the registration procedure to use for this class
+* create: The procedure called after the memory has been allocated. This is called during the class init process, before _ready and is used to set defaults and init heap memory.
+* destroy: The procedure called before the memory is destroyed. This is called during the destruction phased and is used to delete any heap allocated memory or other cleanup as needed.
+* class_struct: the type of the struct being used as the class struct.
+* init_level: Godot's initialization level at which this class should be registered. (Some Node types are not available until a later time in Godot's initialization.)
+* GDClass_Index: the enum value representing the Godot Node to build off of. Such as .Node2D; .Object; .CharacterBody2D
+* vtable: pointer to the vtable of procedures. vtable would hold Godot class virtuals such as _process; _ready; _input.
+* GDClass_StringName: pointer to the StringName value representing the Godot Node. Will be populated by the Register procedure based on the GDClass_Index value.
+* SN: StringName representing the name of your class. Should be used to request instantiation from Godot as well as other Godot interactions. Will be populated by Register procedure.
+* binder: procedure to call in order to export the values you would like to expose to Godot. Variables, procedures, etc via Export; Export_Range
+*/
+Class_Deets :: struct {
+    using required: required_deets,
+    create: proc(userdata: ^Class_Deets, self: rawptr), //Cast to the Object class that your class extends.
+    destroy: proc(userdata: ^Class_Deets, self: rawptr),
+    vtable: rawptr,
+    notification: GDE.ClassNotification2,
+    GDClass_StringName: ^StringName,
+    SN : StringName,
+    Exporter: proc(className: ^StringName),
+    GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
+}
+
+
+required_deets:: struct #all_or_none{
+    registerer: proc(self: ^required_deets, init_level: InitializationLevel), //Keep as first value in order to trivially cast it.
+    class_struct_size: i64,
+    init_level: InitializationLevel,
+    GDClass_Index: Classes.ClassName_Index,
+    name: string,
+}
+
 /*
 * Function used to register a custom class with Godot. This will use the information provided in class_info or default to bltn equivalents.
 * This will need to be called by you at some point during your extension's initialization. Typically this is done via the registerer method of your Class_Deets struct.
@@ -52,6 +88,12 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIAL
         class_info.get_virtual_func = cast(GDE.ClassGetVirtual2)_get_virtual
     }
     
+    if deets.destroy == nil {
+        deets.destroy = destroy_dummy
+    }
+    if deets.create == nil {
+        deets.create = create_dummy
+    }
 
     //Matching the name to the class struct is vital as it will be used in most binding helpers. If the name doesn't match things will break.
     GDW.StringConstruct(&deets.SN, deets.required.name)
@@ -73,6 +115,7 @@ unregister :: proc(class: ^Class_Deets) {
 get_name:: proc "contextless" (class: typeid) -> string {
     return type_info_of(class).variant.(runtime.Type_Info_Named).name
 }
+
 
 /*
 * Contains the registering procedure. Allows customization of procedures used for create, destroy, make_get_virtual_func
@@ -156,15 +199,14 @@ Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bo
     object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
     class_obj.self= object
 
-    if p_class_userdata.create != nil {
-        p_class_userdata.create(p_class_userdata, class_obj)
-    }
+    p_class_userdata.create(p_class_userdata, class_obj)
 
     gdAPI.Object_Utils.SetInstance(object, &p_class_userdata.SN, cast(GDE.ClassInstancePtr)class_obj)
     gdAPI.Object_Utils.SetInstanceBinding(object, Library, class_obj, &p_class_userdata.GD_Binding_Callbacks)
 
     return object
 }
+create_dummy :: proc(userdata: ^Class_Deets, self: rawptr) {}
 
 //Called by Godot
 //This is the default constructor used
@@ -244,11 +286,10 @@ bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassI
     if (p_instance == nil){
         return
     }
-    if p_class_userdata.destroy != nil {
-        p_class_userdata.destroy(p_class_userdata, p_instance)
-    }
+    p_class_userdata.destroy(p_class_userdata, p_instance)
     gdAPI.Memory_Uils.MemFree(p_instance)
 }
+destroy_dummy :: proc(userdata: ^Class_Deets, self: rawptr) {}
 
 /*
 * Examples of memory which you need to delete yourself
@@ -261,7 +302,7 @@ bltn_Destroy :: proc "c" (p_class_userdata: ^Class_Deets, p_instance: GDE.ClassI
 * Prefer using these notifications over the virtuals. If you use virtuals GDScript will have higher priority over your own.
 * This is an example with 'all' of th enotification there are from the JSON.
 */
-Notifications :: proc "c" (p_instance: GDE.ClassInstancePtr, p_what: i32, p_reversed: b8) {
+Notifications_example :: proc "c" (p_instance: GDE.ClassInstancePtr, p_what: i32, p_reversed: b8) {
     
     what2:= Classes.Object_Constants(p_what)
     switch what2 {
@@ -376,47 +417,6 @@ Notifications :: proc "c" (p_instance: GDE.ClassInstancePtr, p_what: i32, p_reve
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
-
-/*
-* Generate a procedure unique to your class which will return the virtuals your class uses.
-* Godot will not know what virtuals are configured for your class until/unless you provide it to Godot.
-* This method will fetch the pointers based on the vTable you used. See virtual_method_SN.odin for the vTable Struct types.
-* You do not need to interact with this beyond the inclusion of it in the registerer procedure.
-*/
-make_get_virtual_func :: proc(vTable: $T)-> GDE.ClassGetVirtual2 where sics.type_is_pointer(T) != true {
-
-    args::sics.type_has_field( sics.type_base_type(T), "vCanvasItem")
-    intermediate:=  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
-        context = runtime.default_context()
-        arg:= cast(^T)p_class_userdata.vtable
-        //Will exit early if there is a match on the value.
-        ok:bool=false
-        virtual:rawptr=nil
-        when sics.type_is_specialization_of(T, Node_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vNode") {
-            virtual, ok = Return_Node_Virtuals(arg^, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        }
-        when sics.type_is_specialization_of(T, CanvasItem_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vCanvasItem") {
-            virtual, ok = Return_CanvasItem_Virtuals(arg^, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        }
-        when sics.type_is_specialization_of(T, CollisionObject2D_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vCollisionObject2D") {
-            virtual, ok = GDW.Return_Collision2D_Virtuals(arg^, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        }
-        when sics.type_is_specialization_of(T, Texture2D_v_table) || 
-        sics.type_has_field( sics.type_base_type(T), "vTexture") {
-            virtual, ok = GDW.Return_texture_Virtuals(arg^, nil, p_name, p_hash)
-            if virtual != nil || ok do return cast(GDE.ClassCallVirtual)virtual
-        }
-        return cast(GDE.ClassCallVirtual)virtual
-    }
-    return cast(GDE.ClassGetVirtual2)intermediate
-}
-
 
 _get_virtual::  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p_hash: u32) -> (GDE.ClassCallVirtual) {
     context = runtime.default_context()
