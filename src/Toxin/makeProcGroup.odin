@@ -3,9 +3,6 @@ package Toxin
 import "../GDWrapper/gdAPI"
 import GDW "../GDWrapper"
 
-Maker :: proc {
-    make_Node
-}
 
 //If it isn't part of this list, it doesn't need to be destroyed.
 Destroy_Builtin :: proc {
