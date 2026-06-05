@@ -16,34 +16,26 @@ Init_Wrapper :: proc "c" (p_get_proc_address : GDE.InterfaceGetProcAddress) {
     Init_Variant_Converters()
 }
 
-InternalMode :: enum GDE.Int {
-    INTERNAL_MODE_DISABLED,
-    INTERNAL_MODE_FRONT,
-    INTERNAL_MODE_BACK,
-}
-
-
 StringConstruct :: proc {
     stringNameNewString,
     stringNameNewString_r,
 }
 
 stringNameNewString :: proc "c" (StringName_r: ^StringName, name: string) {
-        gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
-    }
+    gdAPI.StringName_Utils.Utf8CharsAndLen(StringName_r, raw_data(name[:]), i64(len(name)))
+}
 
 
 @(require_results)
 stringNameNewString_r :: proc "c" (name: string) -> (r_ret: StringName) {
-        gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
-        return
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&r_ret, raw_data(name[:]), i64(len(name)))
+    return
 }
 
 
 Get_Builtin_Method :: proc "c" (variant_type: GDE.VariantType, method_name: string, hash: Int) -> GDE.PtrBuiltInMethod {
     method_name_SN: StringName
     stringNameNewString(&method_name_SN, method_name)
-    //defer StringName_M_List.Destroy(&method_name_SN)
     defer {
         fmethod_name:= GDE.Variant{VType = .STRING_NAME}
         fmethod_name.data[0] = transmute(u64)(method_name_SN.ptr)
@@ -83,14 +75,6 @@ stringname_destroy :: proc(name: StringName) {
       gdAPI.Variant_Utils.Destroy(&destruct)
 }
 
-/*
-getRid :: proc "c" (ref: ^Object, r_ret: ^RID) {
-    @(static)GetRID: GDE.MethodBindPtr
-    if GetRID == nil do GetRID = classDBGetMethodBind3(.Resource, "get_rid", 2944877500)
-    
-    gdAPI.Object_Utils.MethodBindPtrcall(GetRID, ref, nil, r_ret)
-}
-*/
 
 Get_Method_Getter :: proc "c" (type: GDE.VariantType, name: string) -> GDE.PtrGetter {
     name_SN:StringName
