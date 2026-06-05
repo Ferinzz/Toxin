@@ -23,7 +23,6 @@ loadResource :: proc(path, hint: string, cacheMode: ^Classes.ResourceLoader_Cach
     gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&hintS, cstring(raw_data(hint)), i64(len(hint)))
     defer(GDW.gdstring_M_List.Destroy(&hintS))
 
-
     return loadResource_GDS(&pathS, &hintS, cacheMode, load_proc)
 }
 
@@ -32,7 +31,6 @@ loadResource_GDS :: proc(path, hint: ^gdstring, cacheMode: ^Classes.ResourceLoad
     load_proc.load->m_call(nil, {path, hint, cacheMode}, &r_resource)
     return r_resource
 }
-
 
 
 //https://docs.godotengine.org/en/stable/classes/class_resourceloader.html#enum-resourceloader-cachemode

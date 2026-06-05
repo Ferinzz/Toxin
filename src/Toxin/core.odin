@@ -425,3 +425,5 @@ bindProperty :: #force_inline proc(className: ^StringName, name: string, type: G
     //Destructor stuff
     destructProperty(&info)
 }
+
+Object_M_methods: Classes.Object_MethodBind_List
