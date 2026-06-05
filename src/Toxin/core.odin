@@ -212,7 +212,6 @@ Register :: proc "c" (deets: ^Class_Deets, init_level: InitializationLevel, clas
 * default for class_info would be just to expose it.
 * read definition of GDE.ClassCreationInfo4 for more details on each field.
 */
-//@(export, rodata)
 class_info_Default: GDE.ClassCreationInfo4 = {
     is_virtual = false,
     is_abstract = false,
@@ -220,9 +219,7 @@ class_info_Default: GDE.ClassCreationInfo4 = {
     is_runtime = false,
 }
 
-
-//
-InitializationLevel :: enum c.int {
+InitializationLevel :: enum {
 	INITIALIZATION_CORE,
 	INITIALIZATION_SERVERS,
 	INITIALIZATION_SCENE,
@@ -232,12 +229,10 @@ InitializationLevel :: enum c.int {
 
 //Optional. Toxin will default to Godot's memory if you do not provide this.
 //Pass TMAlloc_Create via classCreateInfo during Registration if you use this.
-
 TMAlloc : proc "c" (p_class_user_data: ^Class_Deets, p_bytes: Int) -> rawptr
 
 //Optional. Toxin will default to Godot's memory if you do not provide this.
 //Pass TMAlloc_Destroy via classCreateInfo during Registration if you use this.
-
 TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
 
 /*
@@ -253,26 +248,21 @@ Class_Container_c :: struct #packed {
 
 //Called by Godot
 //This is the default constructor used. You do not need to pass this explicitly.
-
 bltn_Alloc_Create:= bltn_Create
 
 //Called by Godot
 //pass to register via ClassCreateInfo to override default.
-
 cstm_Alloc_Create2 := TMAlloc_Create
 
 //Called by Godot
 //This is the default destructor used. No need to pass to Register.
-
 bltn_Alloc_Destroy:= bltn_Destroy
 
 //Called by Godot
 //pass to register via ClassCreateInfo to override default.
-
 cstm_Free_Destroy:= TMFree_Destroy
 
 //Pass to Register via ClassCreateInfo if your class will use any virtual methods.
-
 get_virtual:= _get_virtual
 
 /*
@@ -282,7 +272,6 @@ get_virtual:= _get_virtual
 * free_callback is called whenever the object is freed. Use for destructor side-effects (all the children are dead, kill parent)
 * reference_callback called on reference. Reply if this can be destroyed.
 */
-
 classBindingCallbacks: GDE.InstanceBindingCallbacks = {
     create_callback    = nil,
     free_callback      = nil,
@@ -316,7 +305,6 @@ Make_Property_Full :: proc {
 //TODO : See if I really need to malloc these variables or if that's just something for C to do.
 //Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
 makePropertyFull_cstring :: proc(type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-    
 
     prop_name:= new(StringName)
     gdAPI.StringName_Utils.Latin1Chars(prop_name, name, false)
