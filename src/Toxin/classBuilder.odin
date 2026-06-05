@@ -423,7 +423,6 @@ _get_virtual::  proc "c" (p_class_userdata: ^Class_Deets, p_name: ^StringName, p
     if p_class_userdata.vtable == nil {
         return nil
     }
-    fmt.println(Classes.virtuals_list)
     virtual:= Classes.virtuals_list[p_class_userdata.GDClass_Index](p_class_userdata.vtable, p_name, p_hash)
     return cast(GDE.ClassCallVirtual)virtual
 }
