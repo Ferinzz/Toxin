@@ -28,19 +28,39 @@ import "core:fmt"
 
 
 @(private)
-myMainLoopCallbacks: GDE.MainLoopCallbacks
+myMainLoopCallbacks: GDE.MainLoopCallbacks = {
+    StartupCallback_default,
+    ShutDownCallback_default,
+    FrameCallback_default
+}
 @(private)
 toxinMainLoopCallbacks: GDE.MainLoopCallbacks = {
     MainLoopStartupCallback,
-    nil,
     MainLoopShutdownCallback,
+    nil,
 }
 register_mainloop_callbacks :: proc(mainLoopCallbacks: GDE.MainLoopCallbacks) {
-    myMainLoopCallbacks.startup_func = mainLoopCallbacks.startup_func
-    toxinMainLoopCallbacks.frame_func = mainLoopCallbacks.frame_func
-    myMainLoopCallbacks.shutdown_func = mainLoopCallbacks.shutdown_func
+    if mainLoopCallbacks.startup_func != nil {
+        myMainLoopCallbacks.startup_func = mainLoopCallbacks.startup_func
+    } else if myMainLoopCallbacks.startup_func == nil {
+        myMainLoopCallbacks.startup_func = StartupCallback_default
+    }
+    if mainLoopCallbacks.frame_func != nil {
+        myMainLoopCallbacks.frame_func = mainLoopCallbacks.frame_func
+    } else if myMainLoopCallbacks.frame_func == nil {
+        myMainLoopCallbacks.frame_func = FrameCallback_default
+    }
+    if mainLoopCallbacks.shutdown_func != nil {
+        myMainLoopCallbacks.shutdown_func = mainLoopCallbacks.shutdown_func
+    } else if myMainLoopCallbacks.shutdown_func == nil {
+        myMainLoopCallbacks.shutdown_func = ShutDownCallback_default
+    }
     gdAPI.RegisterMainLoopCallbacks(Library, &toxinMainLoopCallbacks)
 }
+
+StartupCallback_default :: proc "c" () {}
+ShutDownCallback_default :: proc "c" () {}
+FrameCallback_default :: proc "c" () {}
 
 /* Called when starting the main loop.
 * This is the point in time to grab the reference to a mainLoop. For example if you wrote your own and want to listen in on it.
@@ -53,24 +73,21 @@ MainLoopStartupCallback :: proc "c" () {
     //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
-    _Init_Singletons(&singletons)
+    //_Init_Singletons(&singletons)
+    init_engine_procs()
     Classes.SceneTree_Init_(&SceneTree_Class)
     scene_tree_obj = _getMainLoop()
     root_node_instance = _getRoot()
     Classes.Node_Init_(&Node_Class)
 
-    if myMainLoopCallbacks.startup_func != nil {
-        myMainLoopCallbacks.startup_func()
-    }
+    myMainLoopCallbacks.startup_func()
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
 };
 
 /* Called when shutting down the main loop. */
 MainLoopShutdownCallback :: proc "c" () {
     context = runtime.default_context()
-    if myMainLoopCallbacks.shutdown_func != nil {
-        myMainLoopCallbacks.shutdown_func()
-    }
+    myMainLoopCallbacks.shutdown_func()
 };
 
 callOnce:bool=false
@@ -84,7 +101,6 @@ MainLoopFrameCallback :: proc "c" () {
         callOnce = false
         myMainLoopCallbacks.frame_func = nil
     }
-
 };
 /*
 //create a GDE.MainLoopCallbacks struct which will hold the pointers to the callbacks
