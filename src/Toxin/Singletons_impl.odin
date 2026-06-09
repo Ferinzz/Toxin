@@ -10,10 +10,10 @@ import "base:builtin"
 _getMainLoop :: proc() -> (mainLoop: GDE.ObjectPtr) {
     when builtin.ODIN_DEBUG {
         assertMessage:= "Need to init the Singletons before using them. Call Init_Singletons_C before calling this function"
-        assert(singletons.Engine != nil, assertMessage)
-        assert(singletons.Engine_M_List.get_main_loop._get_main_loop != nil, assertMessage)
+        assert(Engine != nil, assertMessage)
+        assert(Engine_M_List.get_main_loop._get_main_loop != nil, assertMessage)
     }
-    singletons.Engine_M_List.get_main_loop->m_call(singletons.Engine, nil, &mainLoop)
+    Engine_M_List.get_main_loop->m_call(singletons.Engine, nil, &mainLoop)
     return
 }
 
@@ -82,7 +82,6 @@ _Init_Singletons :: proc(singletons: ^Singletons) {
     Classes.TextServerManager_Init_(&singletons.TextServerManager_M_List)
     Classes.NavigationServer2D_Init_(&singletons.NavigationServer2D_M_List)
     Classes.PhysicsServer2DManager_Init_(&singletons.PhysicsServer2DManager_M_List)
-    Classes.NavigationServer3D_Init_(&singletons.NavigationServer3D_M_List)
     Classes.PhysicsServer3DManager_Init_(&singletons.PhysicsServer3DManager_M_List)
     Classes.NavigationServer2DManager_Init_(&singletons.NavigationServer2DManager_M_List)
     Classes.NavigationServer3DManager_Init_(&singletons.NavigationServer3DManager_M_List)
@@ -110,9 +109,136 @@ _Init_Singletons :: proc(singletons: ^Singletons) {
     Classes.ThemeDB_Init_(&singletons.ThemeDB_M_List)
     Classes.NativeMenu_Init_(&singletons.NativeMenu_M_List)
     Classes.RenderingServer_Init_(&singletons.RenderingServer_M_List)
-    Classes.NavigationServer2D_Init_(&singletons.NavigationServer2D_M_List)
     Classes.NavigationServer3D_Init_(&singletons.NavigationServer3D_M_List)
     Classes.PhysicsServer2D_Init_(&singletons.PhysicsServer2D_M_List)
     Classes.PhysicsServer3D_Init_(&singletons.PhysicsServer3D_M_List)
     Classes.XRServer_Init_(&singletons.XRServer_M_List)
+}
+
+_Init_Singletons2 :: proc(singletons: singleton_options) {
+    Classes.Performance_Init_(&Performance_M_List)
+    Performance = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Performance))
+    Classes.Engine_Init_(&Engine_M_List)
+    Engine = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
+    Classes.ProjectSettings_Init_(&ProjectSettings_M_List)
+    ProjectSettings = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ProjectSettings))
+    Classes.OS_Init_(&OS_M_List)
+    OS = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.OS))
+    Classes.Time_Init_(&Time_M_List)
+    Time = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Time))
+    Classes.TextServerManager_Init_(&TextServerManager_M_List)
+    TextServerManager = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.TextServerManager))
+    Classes.NavigationServer2D_Init_(&NavigationServer2D_M_List)
+    NavigationServer2D = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.NavigationServer2D))
+    Classes.PhysicsServer2DManager_Init_(&PhysicsServer2DManager_M_List)
+    PhysicsServer2DManager = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.PhysicsServer2DManager))
+    Classes.PhysicsServer3DManager_Init_(&PhysicsServer3DManager_M_List)
+    PhysicsServer3DManager = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.PhysicsServer3DManager))
+    Classes.NavigationServer2DManager_Init_(&NavigationServer2DManager_M_List)
+    NavigationServer2DManager = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.NavigationServer2DManager))
+    Classes.NavigationServer3DManager_Init_(&NavigationServer3DManager_M_List)
+    NavigationServer3DManager = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.NavigationServer3DManager))
+    Classes.NavigationMeshGenerator_Init_(&NavigationMeshGenerator_M_List)
+    NavigationMeshGenerator = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.NavigationMeshGenerator))
+    Classes.IP_Init_(&IP_M_List)
+    IP = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.IP))
+    Classes.Geometry2D_Init_(&Geometry2D_M_List)
+    Geometry2D = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Geometry2D))
+    Classes.Geometry3D_Init_(&Geometry3D_M_List)
+    Geometry3D = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Geometry3D))
+    Classes.ResourceLoader_Init_(&ResourceLoader_M_List)
+    ResourceLoader = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ResourceLoader))
+    Classes.ResourceSaver_Init_(&ResourceSaver_M_List)
+    ResourceSaver = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ResourceSaver))
+    Classes.ClassDB_Init_(&ClassDB_M_List)
+    ClassDB = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ClassDB))
+    Classes.Marshalls_Init_(&Marshalls_M_List)
+    Marshalls = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Marshalls))
+    Classes.TranslationServer_Init_(&TranslationServer_M_List)
+    TranslationServer = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.TranslationServer))
+    Classes.Input_Init_(&Input_M_List)
+    Input = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Input))
+    Classes.InputMap_Init_(&InputMap_M_List)
+    InputMap = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.InputMap))
+    Classes.EngineDebugger_Init_(&EngineDebugger_M_List)
+    EngineDebugger = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.EngineDebugger))
+    Classes.GDExtensionManager_Init_(&GDExtensionManager_M_List)
+    GDExtensionManager = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.GDExtensionManager))
+    Classes.ResourceUID_Init_(&ResourceUID_M_List)
+    ResourceUID = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ResourceUID))
+    Classes.WorkerThreadPool_Init_(&WorkerThreadPool_M_List)
+    WorkerThreadPool = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.WorkerThreadPool))
+    Classes.EditorInterface_Init_(&EditorInterface_M_List)
+    EditorInterface = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.EditorInterface))
+    Classes.JavaClassWrapper_Init_(&JavaClassWrapper_M_List)
+    JavaClassWrapper = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.JavaClassWrapper))
+    Classes.JavaScriptBridge_Init_(&JavaScriptBridge_M_List)
+    JavaScriptBridge = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.JavaScriptBridge))
+    Classes.AudioServer_Init_(&AudioServer_M_List)
+    AudioServer = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.AudioServer))
+    Classes.CameraServer_Init_(&CameraServer_M_List)
+    CameraServer = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.CameraServer))
+    Classes.DisplayServer_Init_(&DisplayServer_M_List)
+    DisplayServer = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.DisplayServer))
+    Classes.ThemeDB_Init_(&ThemeDB_M_List)
+    ThemeDB = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ThemeDB))
+    Classes.NativeMenu_Init_(&NativeMenu_M_List)
+    NativeMenu = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.NativeMenu))
+    Classes.RenderingServer_Init_(&RenderingServer_M_List)
+    RenderingServer = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.RenderingServer))
+    Classes.NavigationServer3D_Init_(&NavigationServer3D_M_List)
+    NavigationServer3D = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.NavigationServer3D))
+    Classes.PhysicsServer2D_Init_(&PhysicsServer2D_M_List)
+    PhysicsServer2D = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.PhysicsServer2D))
+    Classes.PhysicsServer3D_Init_(&PhysicsServer3D_M_List)
+    PhysicsServer3D = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.PhysicsServer3D))
+    Classes.XRServer_Init_(&XRServer_M_List)
+    XRServer = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.XRServer))
+}
+
+init_engine_procs :: proc() {
+    Classes.Engine_Init_(&singletons.Engine_M_List)
+    Engine = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
+}
+singleton_options:: bit_set[singleton_list]
+singleton_list:: enum {
+    Performance,
+    Engine,
+    ProjectSettings,
+    OS,
+    Time,
+    TextServerManager,
+    PhysicsServer2DManager,
+    NavigationServer2DManager,
+    NavigationServer3DManager,
+    PhysicsServer3DManager,
+    NavigationMeshGenerator,
+    IP,
+    Geometry2D,
+    Geometry3D,
+    ResourceLoader,
+    ResourceSaver,
+    ClassDB,
+    Marshalls,
+    TranslationServer,
+    Input,
+    InputMap,
+    EngineDebugger,
+    GDExtensionManager,
+    ResourceUID,
+    WorkerThreadPool,
+    ThemeDB,
+    EditorInterface,
+    JavaClassWrapper,
+    JavaScriptBridge,
+    AudioServer,
+    CameraServer,
+    DisplayServer,
+    NativeMenu,
+    RenderingServer,
+    NavigationServer2D,
+    NavigationServer3D,
+    PhysicsServer2D,
+    PhysicsServer3D,
+    XRServer,
 }
