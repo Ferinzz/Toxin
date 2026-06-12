@@ -1,0 +1,11 @@
+[configuration]
+
+entry_symbol = "godot_entry_init"
+compatibility_minimum = "4.5"
+
+[libraries]
+linux.debug = "C:/Odin_programs/Toxin_new_pull/unit_tests/gdAPI_tests/type_unit_test.so"
+windows.debug = "C:/Odin_programs/Toxin_new_pull/unit_tests/gdAPI_tests/type_unit_test.dll"
+windows.release = "C:/Odin_programs/Toxin_new_pull/unit_tests/gdAPI_tests/type_unit_test.dll" : "Content/Frameworks"
+macos.release = "C:/Odin_programs/Toxin_new_pull/unit_tests/gdAPI_tests/type_unit_test.dylib" : "Contents/Frameworks"
+macos.debug = "C:/Odin_programs/Toxin_new_pull/unit_tests/gdAPI_tests/type_unit_test.dylib" : "Contents/Frameworks"

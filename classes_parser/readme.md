@@ -5,3 +5,4 @@ It's not incredibly optimized, but the file it's parsing is not incredibly large
 Final result is ~4MB worth of files. 1k classes. All their enums and "constants" as enums.
 
 Locations for input and output are hardcoded for now.
+Now outputs a test for init procedures.

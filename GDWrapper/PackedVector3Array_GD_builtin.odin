@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -44,14 +44,14 @@ PackedVector3Array_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedVector3Array: proc "c" (p_left: ^PackedVector3Array, p_right: ^PackedVector3Array, r_result: ^Bool),
     VARIANT_OP_ADD_PackedVector3Array: proc "c" (p_left: ^PackedVector3Array, p_right: ^PackedVector3Array, r_result: ^PackedVector3Array),
 }
-init_PackedVector3Array_Methods :: proc(PackedVector3Array_method_store: ^PackedVector3Array_Methods_list) {
+init_PackedVector3Array_Methods :: proc "c" (PackedVector3Array_method_store: ^PackedVector3Array_Methods_list) {
   PackedVector3Array_method_store.Create0 = cast(type_of(PackedVector3Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 0)
   PackedVector3Array_method_store.Create1 = cast(type_of(PackedVector3Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 1)
   PackedVector3Array_method_store.Create2 = cast(type_of(PackedVector3Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR3_ARRAY, 2)
   PackedVector3Array_method_store.Destroy = cast(type_of(PackedVector3Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_VECTOR3_ARRAY)
     PackedVector3Array_method_store.get_ptr = cast(type_of(PackedVector3Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_VECTOR3_ARRAY)
-  PackedVector3Array_method_store.IndxGetter = cast(type_of(PackedVector3Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_VECTOR3_ARRAY)
-  PackedVector3Array_method_store.IndxSetter = cast(type_of(PackedVector3Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_VECTOR3_ARRAY)
+  PackedVector3Array_method_store.IndxGetter = cast(type_of(PackedVector3Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_VECTOR3_ARRAY)
+  PackedVector3Array_method_store.IndxSetter = cast(type_of(PackedVector3Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_VECTOR3_ARRAY)
   PackedVector3Array_method_store.get = cast(type_of(PackedVector3Array_method_store.get))Get_Builtin_Method(.PACKED_VECTOR3_ARRAY, "get", 1394941017)
   PackedVector3Array_method_store.set = cast(type_of(PackedVector3Array_method_store.set))Get_Builtin_Method(.PACKED_VECTOR3_ARRAY, "set", 3975343409)
   PackedVector3Array_method_store.size = cast(type_of(PackedVector3Array_method_store.size))Get_Builtin_Method(.PACKED_VECTOR3_ARRAY, "size", 3173160232)

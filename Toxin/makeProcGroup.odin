@@ -1,11 +1,8 @@
 package Toxin
 
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import "../GDWrapper/gdAPI"
+import GDW "../GDWrapper"
 
-Maker :: proc {
-    make_Node
-}
 
 //If it isn't part of this list, it doesn't need to be destroyed.
 Destroy_Builtin :: proc {
@@ -105,7 +102,7 @@ texture2D :: ^Object
 destroy_texture :: proc(texture: texture2D) {
     die:RID
     if texture != nil && texture.proxy != nil {
-        GDW.getRid(texture, &die)
+        //GDW.getRid(texture, &die)
         //GDW.freeRenderRID(&die)
     }
 }

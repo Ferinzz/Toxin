@@ -1,7 +1,7 @@
 package GDWrapper
 
 
-Init_Builtins :: proc() {
+Init_Builtins :: proc "c" () {
 
 init_StringName_Methods(&StringName_M_List) //MUST be first in order to destroy the StringNames which will be created for retrieving MethodBind
 init_Bool_Methods(&Bool_M_List)
@@ -44,39 +44,75 @@ init_PackedVector4Array_Methods(&PackedVector4Array_M_List)
 
 
 StringName_M_List: StringName_Methods_list //StringName utilities will use this specific Method List. Make sure this is initialized before doing anything yourself.
+
 Bool_M_List: Bool_Methods_list
+
 Int_M_List: Int_Methods_list
+
 float_M_List: float_Methods_list
+
 Vector2_M_List: Vector2_Methods_list
+
 Vector2i_M_List: Vector2i_Methods_list
+
 Rect2_M_List: Rect2_Methods_list
+
 Rect2i_M_List: Rect2i_Methods_list
+
 Vector3_M_List: Vector3_Methods_list
+
 Vector3i_M_List: Vector3i_Methods_list
+
 Vector4_M_List: Vector4_Methods_list
+
 Vector4i_M_List: Vector4i_Methods_list
+
 Plane_M_List: Plane_Methods_list
+
 Color_M_List: Color_Methods_list
+
 Quaternion_M_List: Quaternion_Methods_list
+
 gdstring_M_List: gdstring_Methods_list
+
 NodePath_M_List: NodePath_Methods_list
+
 RID_M_List: RID_Methods_list
+
 Callable_M_List: Callable_Methods_list
+
 Signal_M_List: Signal_Methods_list
+
 Dictionary_M_List: Dictionary_Methods_list
+
 Transform2D_M_List: Transform2D_Methods_list
+
 AABB_M_List: AABB_Methods_list
+
 Basis_M_List: Basis_Methods_list
+
 Transform3D_M_List: Transform3D_Methods_list
+
 Projection_M_List: Projection_Methods_list
+
 Array_M_List: Array_Methods_list
+
 PackedByteArray_M_List: PackedByteArray_Methods_list
+
 PackedInt32Array_M_List: PackedInt32Array_Methods_list
+
 PackedInt64Array_M_List: PackedInt64Array_Methods_list
+
 PackedFloat32Array_M_List: PackedFloat32Array_Methods_list
+
 PackedFloat64Array_M_List: PackedFloat64Array_Methods_list
+
 PackedStringArray_M_List: PackedStringArray_Methods_list
+
 PackedVector2Array_M_List: PackedVector2Array_Methods_list
+
 PackedVector3Array_M_List: PackedVector3Array_Methods_list
+
 PackedColorArray_M_List: PackedColorArray_Methods_list
+
 PackedVector4Array_M_List: PackedVector4Array_Methods_list

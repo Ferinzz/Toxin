@@ -16,7 +16,7 @@ init:: proc ()  {
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
 
     //Register custom class.
-    THIS_CLASS_NAME_deets.registerer->self_register(.INITIALIZATION_SCENE)
+    THIS_CLASS_NAME_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
 }
 
 @(init)
@@ -36,10 +36,13 @@ Node2D_Class: Classes.Node2D_MethodBind_List
 Viewport_Class: Classes.Viewport_MethodBind_List
 CanvasItem_Class: Classes.CanvasItem_MethodBind_List
 CanvasGroup_Class: Classes.CanvasGroup_MethodBind_List
+SceneTree_Class: Classes.SceneTree_MethodBind_List
 
 Phys2D_Server: Classes.PhysicsServer2D_MethodBind_List
 World2D_Class: Classes.World2D_MethodBind_List
 Texture2D_Class: Classes.Texture2D_MethodBind_List
+image_Class: Classes.Image_MethodBind_List
+texture_Class: Classes.ImageTexture_MethodBind_List
 
 printonce:bool=true
 frame_count_amout::2000
@@ -61,6 +64,8 @@ MainLoopFrameCallback :: proc "c" () {
         }
         fmt.println(frame_times[:])
         fmt.println(total/frame_count_amout)
+        exit_code:Toxin.Int=0
+        SceneTree_Class.quit->m_call(scene_tree_obj, {&exit_code})
     }
 }
 
@@ -80,6 +85,14 @@ MainLoopStartupCallback :: proc "c" () {
     Classes.CanvasItem_Init_(&CanvasItem_Class)
     Classes.Texture2D_Init_(&Texture2D_Class)
     Classes.CanvasGroup_Init_(&CanvasGroup_Class)
+    Classes.SceneTree_Init_(&SceneTree_Class)
+    Classes.ImageTexture_Init_(&texture_Class)
+    Classes.Image_Init_(&image_Class)
+    
+    path:Toxin.gdstring
+    gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(&path, raw_data(string("./icon.svg")), len("./icon.svg"))
+    image_Class.load_from_file->m_call(nil, {&path}, &image)
+    GDW.gdstring_M_List.Destroy(&path)
 
     //indx_ret: Variant
     //default_Array_class->GetIndex(0, &indx_ret)
@@ -102,3 +115,8 @@ MainLoopStartupCallback :: proc "c" () {
 
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
 };;
+
+MainLoopShutdownCallback :: proc "c" () {
+    context = runtime.default_context()
+    gdAPI.Object_Utils.Destroy(image)
+}

@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -50,7 +50,7 @@ Quaternion_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Quaternion, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Quaternion, p_right: ^Array, r_result: ^Bool),
 }
-init_Quaternion_Methods :: proc(Quaternion_method_store: ^Quaternion_Methods_list) {
+init_Quaternion_Methods :: proc "c" (Quaternion_method_store: ^Quaternion_Methods_list) {
   Quaternion_method_store.Create0 = cast(type_of(Quaternion_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 0)
   Quaternion_method_store.Create1 = cast(type_of(Quaternion_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 1)
   Quaternion_method_store.Create2 = cast(type_of(Quaternion_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 2)
@@ -58,8 +58,8 @@ init_Quaternion_Methods :: proc(Quaternion_method_store: ^Quaternion_Methods_lis
   Quaternion_method_store.Create4 = cast(type_of(Quaternion_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 4)
   Quaternion_method_store.Create5 = cast(type_of(Quaternion_method_store.Create5))gdAPI.Variant_Utils.GetPtrConstructor(.QUATERNION, 5)
     Quaternion_method_store.get_ptr = cast(type_of(Quaternion_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.QUATERNION)
-  Quaternion_method_store.IndxGetter = cast(type_of(Quaternion_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.QUATERNION)
-  Quaternion_method_store.IndxSetter = cast(type_of(Quaternion_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.QUATERNION)
+  Quaternion_method_store.IndxGetter = cast(type_of(Quaternion_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.QUATERNION)
+  Quaternion_method_store.IndxSetter = cast(type_of(Quaternion_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.QUATERNION)
   Quaternion_method_store.length = cast(type_of(Quaternion_method_store.length))Get_Builtin_Method(.QUATERNION, "length", 466405837)
   Quaternion_method_store.length_squared = cast(type_of(Quaternion_method_store.length_squared))Get_Builtin_Method(.QUATERNION, "length_squared", 466405837)
   Quaternion_method_store.normalized = cast(type_of(Quaternion_method_store.normalized))Get_Builtin_Method(.QUATERNION, "normalized", 4274879941)

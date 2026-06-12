@@ -1,25 +1,33 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
 @(rodata)
+
 Vector2i_ZERO : Vector2i= {0, 0}
 @(rodata)
+
 Vector2i_ONE : Vector2i= {1, 1}
 @(rodata)
+
 Vector2i_MIN : Vector2i= {-2147483648, -2147483648}
 @(rodata)
+
 Vector2i_MAX : Vector2i= {2147483647, 2147483647}
 @(rodata)
+
 Vector2i_LEFT : Vector2i= {-1, 0}
 @(rodata)
+
 Vector2i_RIGHT : Vector2i= {1, 0}
 @(rodata)
+
 Vector2i_UP : Vector2i= {0, -1}
 @(rodata)
+
 Vector2i_DOWN : Vector2i= {0, 1}
 
 Vector2i_Axis :: enum i64 {
@@ -73,14 +81,14 @@ Vector2i_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Vector2i, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Vector2i, p_right: ^Array, r_result: ^Bool),
 }
-init_Vector2i_Methods :: proc(Vector2i_method_store: ^Vector2i_Methods_list) {
+init_Vector2i_Methods :: proc "c" (Vector2i_method_store: ^Vector2i_Methods_list) {
   Vector2i_method_store.Create0 = cast(type_of(Vector2i_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 0)
   Vector2i_method_store.Create1 = cast(type_of(Vector2i_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 1)
   Vector2i_method_store.Create2 = cast(type_of(Vector2i_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 2)
   Vector2i_method_store.Create3 = cast(type_of(Vector2i_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.VECTOR2I, 3)
     Vector2i_method_store.get_ptr = cast(type_of(Vector2i_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.VECTOR2I)
-  Vector2i_method_store.IndxGetter = cast(type_of(Vector2i_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.VECTOR2I)
-  Vector2i_method_store.IndxSetter = cast(type_of(Vector2i_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.VECTOR2I)
+  Vector2i_method_store.IndxGetter = cast(type_of(Vector2i_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.VECTOR2I)
+  Vector2i_method_store.IndxSetter = cast(type_of(Vector2i_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.VECTOR2I)
   Vector2i_method_store.aspect = cast(type_of(Vector2i_method_store.aspect))Get_Builtin_Method(.VECTOR2I, "aspect", 466405837)
   Vector2i_method_store.max_axis_index = cast(type_of(Vector2i_method_store.max_axis_index))Get_Builtin_Method(.VECTOR2I, "max_axis_index", 3173160232)
   Vector2i_method_store.min_axis_index = cast(type_of(Vector2i_method_store.min_axis_index))Get_Builtin_Method(.VECTOR2I, "min_axis_index", 3173160232)

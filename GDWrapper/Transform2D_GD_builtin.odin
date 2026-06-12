@@ -1,16 +1,26 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
+Transform2D_const:: enum u8 {
+  IDENTITY,
+  FLIP_X,
+  FLIP_Y,
+}
 
-@(rodata)
+@(export, rodata)
+Transform2D_Defaults := [Transform2D_const]Transform2D{
+  .IDENTITY = {1, 0, 0, 1, 0, 0},
+  .FLIP_X = {-1, 0, 0, 1, 0, 0},
+  .FLIP_Y = {1, 0, 0, -1, 0, 0},
+}
+
 Transform2D_IDENTITY : Transform2D= {1, 0, 0, 1, 0, 0}
-@(rodata)
 Transform2D_FLIP_X : Transform2D= {-1, 0, 0, 1, 0, 0}
-@(rodata)
 Transform2D_FLIP_Y : Transform2D= {1, 0, 0, -1, 0, 0}
+
 Transform2D_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Transform2D, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^Transform2D,  #by_ptr p_args: struct{ from: ^Transform2D, }),
@@ -55,15 +65,15 @@ Transform2D_Methods_list :: struct {
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Transform2D, p_right: ^Array, r_result: ^Bool),
     VARIANT_OP_MULTIPLY_PackedVector2Array: proc "c" (p_left: ^Transform2D, p_right: ^PackedVector2Array, r_result: ^PackedVector2Array),
 }
-init_Transform2D_Methods :: proc(Transform2D_method_store: ^Transform2D_Methods_list) {
+init_Transform2D_Methods :: proc "c" (Transform2D_method_store: ^Transform2D_Methods_list) {
   Transform2D_method_store.Create0 = cast(type_of(Transform2D_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 0)
   Transform2D_method_store.Create1 = cast(type_of(Transform2D_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 1)
   Transform2D_method_store.Create2 = cast(type_of(Transform2D_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 2)
   Transform2D_method_store.Create3 = cast(type_of(Transform2D_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 3)
   Transform2D_method_store.Create4 = cast(type_of(Transform2D_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.TRANSFORM2D, 4)
     Transform2D_method_store.get_ptr = cast(type_of(Transform2D_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.TRANSFORM2D)
-  Transform2D_method_store.IndxGetter = cast(type_of(Transform2D_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.TRANSFORM2D)
-  Transform2D_method_store.IndxSetter = cast(type_of(Transform2D_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.TRANSFORM2D)
+  Transform2D_method_store.IndxGetter = cast(type_of(Transform2D_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.TRANSFORM2D)
+  Transform2D_method_store.IndxSetter = cast(type_of(Transform2D_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.TRANSFORM2D)
   Transform2D_method_store.inverse = cast(type_of(Transform2D_method_store.inverse))Get_Builtin_Method(.TRANSFORM2D, "inverse", 1420440541)
   Transform2D_method_store.affine_inverse = cast(type_of(Transform2D_method_store.affine_inverse))Get_Builtin_Method(.TRANSFORM2D, "affine_inverse", 1420440541)
   Transform2D_method_store.get_rotation = cast(type_of(Transform2D_method_store.get_rotation))Get_Builtin_Method(.TRANSFORM2D, "get_rotation", 466405837)

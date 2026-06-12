@@ -1,26 +1,59 @@
 package Toxin
 
-import GDW "shared:GDWrapper"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import GDW "../GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import Classes "../GD_Classes"
+import "base:builtin"
+import "base:runtime"
 
 
 RefCounted_Methods_list: Classes.RefCounted_MethodBind_List
-Reference :: proc(ref: ^Object, r_bool: ^Bool) {
+RefTag: GDE.ClassTag
+
+safeRef_Error :: enum {
+    NONE,
+    FAILED_TO_REF,
+    NOT_REF_COUNTED_OBJECT,
+}
+
+safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
+    when builtin.ODIN_DEBUG {
+        context = runtime.default_context()
+        assert(RefTag != nil, "Reference Tag pointer was not initialized. Cannot cast check to RefCounted. Must initialize.")
+    }
+    casted:= gdAPI.Object_Utils.CastTo(obj, RefTag)
+    if casted != nil {
+        b:Bool
+        Ref_Count(casted, &b)
+        when builtin.ODIN_DEBUG {
+            context = runtime.default_context()
+            assert(bool(b), "failed to ref count an object which is a RefCount object. This is a bug.")
+        }
+        if b {
+            return .NONE
+        } else {
+            return .FAILED_TO_REF
+        }
+    }
+    return .NOT_REF_COUNTED_OBJECT
+}
+
+//Returns true if the increment was successful, false otherwise.
+Reference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
     gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.reference.m_call, ref, nil, r_bool)
 }
 
-Unreference :: proc(ref: ^Object, r_bool: ^Bool) {
+//Returns true if the increment was successful, false otherwise.
+Unreference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
     gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.unreference.m_call, ref, nil, r_bool)
 }
 
-Reference_init :: proc(ref: ^Object, r_bool: ^Bool) {
+Reference_init :: proc "c" (ref: ^Object, r_bool: ^Bool) {
     gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.init_ref.m_call, ref, nil, r_bool)
 }
 
 Ref_Count :: proc {
-    Reference,
     ref_count_AABB,
     ref_count_BASIS,
     ref_count_TRANSFORM2D,
@@ -43,4 +76,90 @@ Ref_Count :: proc {
     ref_count_PACKED_VECTOR3_ARRAY,
     ref_count_PACKED_COLOR_ARRAY,
     ref_count_PACKED_VECTOR4_ARRAY,
+    Reference,
+    safeRef_Object,
+}
+
+ref_count_AABB :: proc "c" (source: ^AABB, copy: ^AABB) {
+    GDW.AABB_M_List.Create1(copy, {source})
+}
+ref_count_BASIS :: proc "c" (source: ^Basis, copy: ^Basis) {
+    GDW.Basis_M_List.Create1(copy, {source})
+}
+ref_count_TRANSFORM2D :: proc "c" (source: ^Transform2D, copy: ^Transform2D) {
+    GDW.Transform2D_M_List.Create1(copy, {source})
+}
+ref_count_TRANSFORM3D :: proc "c" (source: ^Transform3D, copy: ^Transform3D) {
+    GDW.Transform3D_M_List.Create1(copy, {source})
+}
+ref_count_PROJECTION :: proc "c" (source: ^Projection, copy: ^Projection) {
+    GDW.Projection_M_List.Create1(copy, {source})
+}
+ref_count_STRING :: proc "c" (source: ^gdstring, copy: ^gdstring) {
+    Destroy(copy)
+    GDW.gdstring_M_List.Create1(copy, {source})
+}
+ref_count_STRING_NAME :: proc "c" (source: ^StringName, copy: ^StringName) {
+    Destroy(copy)
+    GDW.StringName_M_List.Create1(copy, {source})
+}
+ref_count_NODE_PATH :: proc "c" (source: ^NodePath, copy: ^NodePath) {
+    Destroy(copy)
+    GDW.NodePath_M_List.Create1(copy, {source})
+}
+ref_count_SIGNAL :: proc "c" (source: ^Signal, copy: ^Signal) {
+    Destroy(copy)
+    GDW.Signal_M_List.Create1(copy, {source})
+}
+ref_count_CALLABLE :: proc "c" (source: ^Callable, copy: ^Callable) {
+    Destroy(copy)
+    GDW.Callable_M_List.Create1(copy, {source})
+}
+ref_count_DICTIONARY :: proc "c" (source: ^Dictionary, copy: ^Dictionary) {
+    Destroy(copy)
+    GDW.Dictionary_M_List.Create1(copy, {source})
+}
+//Array ref is deprecated but it ensures that if destination is already initialized it will clear it.
+ref_count_ARRAY :: proc "c" (source: ^Array, copy: ^Array) {
+    gdAPI.Packed_Array_Utils.ArrayRef(copy, source)
+}
+ref_count_PACKED_BYTE_ARRAY :: proc "c" (source: ^PackedByteArray, copy: ^PackedByteArray) {
+    Destroy(copy)
+    GDW.PackedByteArray_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_INT32_ARRAY :: proc "c" (source: ^PackedInt32Array, copy: ^PackedInt32Array) {
+    Destroy(copy)
+    GDW.PackedInt32Array_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_INT64_ARRAY :: proc "c" (source: ^PackedInt64Array, copy: ^PackedInt64Array) {
+    Destroy(copy)
+    GDW.PackedInt64Array_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_FLOAT32_ARRAY :: proc "c" (source: ^PackedFloat32Array, copy: ^PackedFloat32Array) {
+    Destroy(copy)
+    GDW.PackedFloat32Array_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_FLOAT64_ARRAY :: proc "c" (source: ^PackedFloat64Array, copy: ^PackedFloat64Array) {
+    Destroy(copy)
+    GDW.PackedFloat64Array_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_STRING_ARRAY :: proc "c" (source: ^PackedStringArray, copy: ^PackedStringArray) {
+    Destroy(copy)
+    GDW.PackedStringArray_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_VECTOR2_ARRAY :: proc "c" (source: ^PackedVector2Array, copy: ^PackedVector2Array) {
+    Destroy(copy)
+    GDW.PackedVector2Array_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_VECTOR3_ARRAY :: proc "c" (source: ^PackedVector3Array, copy: ^PackedVector3Array) {
+    Destroy(copy)
+    GDW.PackedVector3Array_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_COLOR_ARRAY :: proc "c" (source: ^PackedColorArray, copy: ^PackedColorArray) {
+    Destroy(copy)
+    GDW.PackedColorArray_M_List.Create1(copy, {source})
+}
+ref_count_PACKED_VECTOR4_ARRAY :: proc "c" (source: ^PackedVector4Array, copy: ^PackedVector4Array) {
+    Destroy(copy)
+    GDW.PackedVector4Array_M_List.Create1(copy, {source})
 }

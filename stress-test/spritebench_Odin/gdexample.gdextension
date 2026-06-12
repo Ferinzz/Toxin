@@ -4,8 +4,8 @@ entry_symbol = "godot_entry_init"
 compatibility_minimum = "4.5"
 
 [libraries]
-linux.debug = "res://bin/libgdexample.so"
-windows.debug = "res://bin/libgdexample.dll"
-windows.release = "res://bin/libgdexample.dll" : "Content/Frameworks"
-macos.release = "res://bin/libgdexample.dylib" : "Contents/Frameworks"
-macos.debug = "res://bin/libgdexample.dylib" : "Contents/Frameworks"
+linux.debug = "res://spritebench_Odin.so"
+windows.debug = "res://spritebench_Odin.dll"
+windows.release = "res://spritebench_Odin.dll" : "Content/Frameworks"
+macos.release = "res://libgdexample.dylib" : "Contents/Frameworks"
+macos.debug = "res://libgdexample.dylib" : "Contents/Frameworks"

@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -43,14 +43,14 @@ PackedStringArray_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedStringArray: proc "c" (p_left: ^PackedStringArray, p_right: ^PackedStringArray, r_result: ^Bool),
     VARIANT_OP_ADD_PackedStringArray: proc "c" (p_left: ^PackedStringArray, p_right: ^PackedStringArray, r_result: ^PackedStringArray),
 }
-init_PackedStringArray_Methods :: proc(PackedStringArray_method_store: ^PackedStringArray_Methods_list) {
+init_PackedStringArray_Methods :: proc "c" (PackedStringArray_method_store: ^PackedStringArray_Methods_list) {
   PackedStringArray_method_store.Create0 = cast(type_of(PackedStringArray_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 0)
   PackedStringArray_method_store.Create1 = cast(type_of(PackedStringArray_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 1)
   PackedStringArray_method_store.Create2 = cast(type_of(PackedStringArray_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_STRING_ARRAY, 2)
   PackedStringArray_method_store.Destroy = cast(type_of(PackedStringArray_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_STRING_ARRAY)
     PackedStringArray_method_store.get_ptr = cast(type_of(PackedStringArray_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_STRING_ARRAY)
-  PackedStringArray_method_store.IndxGetter = cast(type_of(PackedStringArray_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_STRING_ARRAY)
-  PackedStringArray_method_store.IndxSetter = cast(type_of(PackedStringArray_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_STRING_ARRAY)
+  PackedStringArray_method_store.IndxGetter = cast(type_of(PackedStringArray_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_STRING_ARRAY)
+  PackedStringArray_method_store.IndxSetter = cast(type_of(PackedStringArray_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_STRING_ARRAY)
   PackedStringArray_method_store.get = cast(type_of(PackedStringArray_method_store.get))Get_Builtin_Method(.PACKED_STRING_ARRAY, "get", 2162347432)
   PackedStringArray_method_store.set = cast(type_of(PackedStringArray_method_store.set))Get_Builtin_Method(.PACKED_STRING_ARRAY, "set", 725585539)
   PackedStringArray_method_store.size = cast(type_of(PackedStringArray_method_store.size))Get_Builtin_Method(.PACKED_STRING_ARRAY, "size", 3173160232)

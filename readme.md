@@ -4,6 +4,9 @@ This repo is to provide a wrapper and userspace in order to work with Godot's AP
 
 It may be better to work with Godot in a different manner. If you'd like to forge your own path you can start from the [GD+Classes Package](https://github.com/Ferinzz/Godot_Odin_Binds/tree/main) and the GDWrapper layer.
 
+# Warning
+This latest version is not thoroughly tested. This is available in main so that I can work on it while building an actual Godot project separately.
+
 Current features include :
 * entry point is included in Toxin package
 * MainLoop callbacks initilized and be overridden
@@ -15,12 +18,12 @@ Current features include :
 * Export class variables as Godot base types
 * Parsers to create Builtins and Class files.
 * Method Binds to all classes with their call signatures
-* stress-tests to verify performance
+~stress-tests to verify performance~
 
 Feel free to make suggestions
 
 
-Most examples will not run unless the GDWrapper they were written with is included in their folder.
+Deprecated examples will not run unless the GDWrapper they were written with is included in their folder.
 
 ## -Pre-req-
 1) Godot.
@@ -40,13 +43,14 @@ Import the GD_Classes folder into your code.
 Make sure that the version you use is up to date with the version you want to method bind to. I have setup the method binds based on version 4.6.0 There is currently no version check in this package. //TODO: Check Version.
 
 # Building
-GDExtensions are a shared library with a single exported procedure. Godot will call that procedure and you should provide the pointers to references to the init procedures as well as save the ClassLibrary pointer which Godot shares with you.
+GDExtensions are a shared library with a single exported entry procedure. Godot will call that procedure and you should provide the pointers to references to the init procedures as well as save the ClassLibrary pointer which Godot shares with you. This is handled by Toxin.
 
-* The methods DO change on version changes. If you see a message from Godot stating that there is no fallback method it means that the method's hashid does not match what Godot expects it to be. Open an issue on Godot_Odin_Binds and I will update it.
-* If you are not using Toxin you will need to setup your own init procedure. You will need to provide Godot with the name of a proc that it will use as an entry point and set that proc as @(export).
-* This you specify in the .gdextension file provided to Godot.
+* Some methods DO change on version changes. If you see a message from Godot stating that there is no fallback method it means that the method's hashid does not match what Godot expects it to be. Open an issue on Godot_Odin_Binds and I will update it.
+* You will need to setup your own init procedure. You will need to provide Godot with the name of a proc that it will use as an entry point and set that proc as @(export).
+* Entry proc is specified in the .gdextension file provided to Godot.
 * Compile your Odin code as a dynamic library. Place it somewhere in the Godot project's folder alongside the .gdextension file.
-* Make sure the name matches what you specify in the .gdextension file. build.sh and build.cmd script changes the name and then copies it to the correct godot project folder based on what I'm working on. Update as needed.
+* For exported builds you can either have the dll in the root folder or in the folder specified in the .gdextension file.
+* Make sure the name of your dll matches what you specify in the .gdextension file. build.sh and build.cmd script changes the name and then copies it to a godot project folder based on what I'm working on. Update as needed.
 
 In addition to the shared lib which you will compile, you will also need to provide Godot with the information about your shared lib in the form of a *.gdextension file. This can (apparently) be placed anywhere in the project file and must include:
 * the file name of your GDExtension lib
@@ -62,8 +66,6 @@ Sometimes it's difficult to find the exact correct page of Godot Docs you want/n
 
 ## Templates
 There is a templates folder which contains the barebones configs to get an extension up and running with a custom class. (excluding the GDWrapper package)
-If you import Toxin it will already have the main entry configured to initialize GDWrapper as well as the setup for the MainLoop callbacks.
-The stress-tests are rather simple, so it's good place to check for example code.
 
 # Debugger
 DEFINITELY get this setup if you're having bugs and don't know why. Stepping through what Godot does is a lot easier to figure out than trying to piece together the five different c++ files required to init one class or variable. Also helps when matching pointer mem locations.
@@ -73,15 +75,15 @@ https://www.reddit.com/r/godot/comments/11d56t1/gdextension_how_to_get_debugger_
 
 The project includes a .vscode folder which has the current debug launch configs I'm using. There is also build.cmd which has the compilation steps in addition to the steps to rename and move the built shared lib to a corresponding project folder which would be the Godot game project folder.
 
-Debugging will work with Raddebugger
+Debugging will work with Raddebugger if you are on Windows
 
 # Why so many packages?
 To keep myself somewhat sane. There's 1k classes in Godot. Separating those into individual files will mean nesting them all over and extra packages simply to manage the init procedures. That's not where the big work of getting Godot to play nice is.
 * gdextension is the core bindings. They don't offer much because Godot does not expose much.
 * gdAPI is an organization of those method signatures in order to fetch them. This is still barely anything because most are simply pointers to methods which fetch the correct methods.
 * GDWrapper is where things start to take off. It sets up the builtin types and a few core helper functions to allow for simpler fetching of values. StringName compares, StringName creators, a procedure to fetch method binds.
-* GD_Classes is just a list of all the classes, their constants, enums and an init procedure to generate all the methods they may or may not have.
-* Toxin will be the main userspace. Code there allows an easier way create a custom class, export types, and the entrypoint already setup.
+* GD_Classes is just a list of all the classes, their constants, enums and an init procedure to generate all the methods they may or may not have. Check there for methods and virtuals supported by a class.
+* Toxin will be the main userspace. Code there allows an easier way create a custom class, export types, signals etc.
 
 # Terminology
 Variant. A c++ class which represents a type. Examples are Float, Array, String.\
@@ -107,5 +109,38 @@ SceneTree. The main structure which Scenes and Nodes are typically attached to.\
 GDScript. Godot's own scripting language. These are not compiled unless you turn them into tools.\
 StringName. A specially hashed string which is refCounted and stored in a its own bucket of memory. Often used as an identifier for unique entities such as classes or constants. Often abreviated to SN in this package.\
 
+~
 # Tests
-There are a few stress tests in the stress-test folder. I will try and keep these up-to-date. Try running them to see if your setup is done correctly.
+``odin run odin_check``
+This will go through all the stress-test and unit_test files and do a compilation check. If this is successful, all the packages necessary to compile those projects are present in the expected path.
+This does not run the actual tests.
+~
+
+# Useful CLI Arguments
+
+run a project:
+``C:\Godot\Godot_v4.6-release.exe --path .\stress-test\spritebench_Odin``
+a project.godot file should be present in the specified folder.
+
+open a project into the editor:
+``C:\Godot\Godot_v4.6-release.exe --path .\stress-test\spritebench_Odin --editor``
+a project.godot file should be present in the specified folder.
+
+
+run a specific script:
+C:\Godot\Godot_v4.6-release.exe --path .\stress-test\spritebench_Odin -s .\node.gd
+will require that the script load the extension by referencing the .gdextension file
+relative path starts relative to the folder from --path
+
+export example command:
+C:\Godot\Godot_v4.6-release.exe --path .\TopDown --export-release "Windows Desktop"  C:\Godot\testExport\sprite_bench.exe --headless
+Godot will move the shared lib into the root of the export folder.
+If Godot is able to access your shared lib based on the filepath of the project you're building, it will move it to the export root along with the exe. Otherwise there will be an error stating that it could not find the file.
+It does not seem to create any sort of folders for you, but if you create the folder structure specified in the .gdextention file and move the shared file into the new folder this will still work. 
+* If you move the file to an unexpected location Godot will not be able to find it.
+* if you move the shared lib to a /bin folder Godot will find it even if this wasn't where you specified
+* if you move the shared lib to a folder that matches the relative path described in gdextension Godot will find it.
+* If you did a res:/../ you just went up a folder and now need to put your dll in the folder above your exe. If your path was res://../bin you need to create a bin folder in the folder above the folder containing your exe.. Just don't do this. >.>
+* with the .dll in the same folder as your .exe Godot finds and loads it.
+
+Best practice is to put your GDE binaries in a bin folder in your project's root folder. Target that folder with -out: during your build.

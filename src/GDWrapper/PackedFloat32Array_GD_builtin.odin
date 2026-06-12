@@ -1,7 +1,7 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -43,14 +43,14 @@ PackedFloat32Array_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedFloat32Array: proc "c" (p_left: ^PackedFloat32Array, p_right: ^PackedFloat32Array, r_result: ^Bool),
     VARIANT_OP_ADD_PackedFloat32Array: proc "c" (p_left: ^PackedFloat32Array, p_right: ^PackedFloat32Array, r_result: ^PackedFloat32Array),
 }
-init_PackedFloat32Array_Methods :: proc(PackedFloat32Array_method_store: ^PackedFloat32Array_Methods_list) {
+init_PackedFloat32Array_Methods :: proc "c" (PackedFloat32Array_method_store: ^PackedFloat32Array_Methods_list) {
   PackedFloat32Array_method_store.Create0 = cast(type_of(PackedFloat32Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 0)
   PackedFloat32Array_method_store.Create1 = cast(type_of(PackedFloat32Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 1)
   PackedFloat32Array_method_store.Create2 = cast(type_of(PackedFloat32Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT32_ARRAY, 2)
   PackedFloat32Array_method_store.Destroy = cast(type_of(PackedFloat32Array_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_FLOAT32_ARRAY)
     PackedFloat32Array_method_store.get_ptr = cast(type_of(PackedFloat32Array_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.PACKED_FLOAT32_ARRAY)
-  PackedFloat32Array_method_store.IndxGetter = cast(type_of(PackedFloat32Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.PACKED_FLOAT32_ARRAY)
-  PackedFloat32Array_method_store.IndxSetter = cast(type_of(PackedFloat32Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.PACKED_FLOAT32_ARRAY)
+  PackedFloat32Array_method_store.IndxGetter = cast(type_of(PackedFloat32Array_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_FLOAT32_ARRAY)
+  PackedFloat32Array_method_store.IndxSetter = cast(type_of(PackedFloat32Array_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_FLOAT32_ARRAY)
   PackedFloat32Array_method_store.get = cast(type_of(PackedFloat32Array_method_store.get))Get_Builtin_Method(.PACKED_FLOAT32_ARRAY, "get", 1401583798)
   PackedFloat32Array_method_store.set = cast(type_of(PackedFloat32Array_method_store.set))Get_Builtin_Method(.PACKED_FLOAT32_ARRAY, "set", 1113000516)
   PackedFloat32Array_method_store.size = cast(type_of(PackedFloat32Array_method_store.size))Get_Builtin_Method(.PACKED_FLOAT32_ARRAY, "size", 3173160232)

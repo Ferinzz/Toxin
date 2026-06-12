@@ -1,6 +1,6 @@
 package main
 
-import "../../src/Toxin"
+import "shared:Toxin"
 //import Classes "../../GD_Classes"
 import Classes "shared:Godot_Odin_Binds/GD_Classes"
 import GDW "shared:GDWrapper"
@@ -20,7 +20,7 @@ init:: proc ()  {
     gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
 
     //Register custom class.
-    THIS_CLASS_NAME_deets.registerer->self_register(.INITIALIZATION_SCENE)
+    THIS_CLASS_NAME_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
 }
 
 @(init)

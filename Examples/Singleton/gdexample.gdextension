@@ -1,0 +1,11 @@
+[configuration]
+
+entry_symbol = "godot_entry_init"
+compatibility_minimum = "4.5"
+
+[libraries]
+linux.debug = "res://libgdexample.so"
+windows.debug = "res://libgdexample.dll"
+windows.release = "res://libgdexample.dll" : "Content/Frameworks"
+macos.release = "res://libgdexample.dylib" : "Contents/Frameworks"
+macos.debug = "res://libgdexample.dylib" : "Contents/Frameworks"

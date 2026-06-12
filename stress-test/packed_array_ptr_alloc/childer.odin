@@ -41,11 +41,13 @@ self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel
 }
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
-    self_register = self_reggy,
-    init_level = .INITIALIZATION_SCENE,
-    GDClass_Index = .Sprite2D,
-    class_struct = THIS_CLASS_NAME,
-    binder = THIS_CLASS_NAME_Export,
+    required = {
+        registerer = {self_register = self_reggy,},
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = .Sprite2D,
+        class_struct = THIS_CLASS_NAME,
+    },
+    Exporter = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
 }
 

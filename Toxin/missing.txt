@@ -1,0 +1,12 @@
+export method vararg missing
+static parameters
+test more than default signals
+--maybe other places vararg could be used instead of slice
+cleanup init process. Partial
+--smooth out variant/type operators
+--type array + dictionaries
+--classes used callback
+--fileAccess stuff
+++destroy all stringnames on exit!! Done?
+--virtual methods
+notifications callback. DONE

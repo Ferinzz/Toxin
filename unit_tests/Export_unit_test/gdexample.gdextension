@@ -1,0 +1,11 @@
+[configuration]
+
+entry_symbol = "godot_entry_init"
+compatibility_minimum = "4.5"
+
+[libraries]
+linux.debug = "res://Export_unit_test.so"
+windows.debug = "res://Export_unit_test.dll"
+windows.release = "res://Export_unit_test.dll"
+macos.release = "res://Export_unit_test.dylib" : "Contents/Frameworks"
+macos.debug = "res://Export_unit_test.dylib" : "Contents/Frameworks"

@@ -1,17 +1,21 @@
 package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
 @(rodata)
+
 Basis_IDENTITY : Basis= {1, 0, 0, 0, 1, 0, 0, 0, 1}
 @(rodata)
+
 Basis_FLIP_X : Basis= {-1, 0, 0, 0, 1, 0, 0, 0, 1}
 @(rodata)
+
 Basis_FLIP_Y : Basis= {1, 0, 0, 0, -1, 0, 0, 0, 1}
 @(rodata)
+
 Basis_FLIP_Z : Basis= {1, 0, 0, 0, 1, 0, 0, 0, -1}
 Basis_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Basis, p_args: rawptr = nil),
@@ -54,15 +58,15 @@ Basis_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Basis, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Basis, p_right: ^Array, r_result: ^Bool),
 }
-init_Basis_Methods :: proc(Basis_method_store: ^Basis_Methods_list) {
+init_Basis_Methods :: proc "c" (Basis_method_store: ^Basis_Methods_list) {
   Basis_method_store.Create0 = cast(type_of(Basis_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 0)
   Basis_method_store.Create1 = cast(type_of(Basis_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 1)
   Basis_method_store.Create2 = cast(type_of(Basis_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 2)
   Basis_method_store.Create3 = cast(type_of(Basis_method_store.Create3))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 3)
   Basis_method_store.Create4 = cast(type_of(Basis_method_store.Create4))gdAPI.Variant_Utils.GetPtrConstructor(.BASIS, 4)
     Basis_method_store.get_ptr = cast(type_of(Basis_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.BASIS)
-  Basis_method_store.IndxGetter = cast(type_of(Basis_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.BASIS)
-  Basis_method_store.IndxSetter = cast(type_of(Basis_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.BASIS)
+  Basis_method_store.IndxGetter = cast(type_of(Basis_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.BASIS)
+  Basis_method_store.IndxSetter = cast(type_of(Basis_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.BASIS)
   Basis_method_store.inverse = cast(type_of(Basis_method_store.inverse))Get_Builtin_Method(.BASIS, "inverse", 594669093)
   Basis_method_store.transposed = cast(type_of(Basis_method_store.transposed))Get_Builtin_Method(.BASIS, "transposed", 594669093)
   Basis_method_store.orthonormalized = cast(type_of(Basis_method_store.orthonormalized))Get_Builtin_Method(.BASIS, "orthonormalized", 594669093)

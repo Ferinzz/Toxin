@@ -1,0 +1,896 @@
+#+feature using-stmt
+package Toxin
+
+import "base:builtin"
+import "base:runtime"
+import GDW "../GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
+import sics "base:intrinsics"
+import "core:fmt"
+import "core:slice"
+import "core:strings"
+import "core:strconv"
+import "core:reflect"
+import "core:time"
+import "core:sys/windows"
+
+
+export_error :: union {
+    binding_error
+}
+
+binding_error:: enum {
+    none,
+    missing_getset_ptr,
+}
+
+/*
+* This needs to be kept alive. Godot will be passing a pointer to it to each of the calls.
+* Setter does not manange the ref counting. If it is a type which needs ref counting increment it with the Ref_Count proc group.
+* Getter does increment the ref counting because there are few ways to avoid it due to how Godot stores memory of certain types.
+** Because of this, don't pass by copy with Export_Default
+** For Objects the Getter's return is a ^^Object, because you should be creating/holding ^Object
+* Buit why? Because sometimes Godot will call through the variant getter and sometimes it will call your getter directly.
+*/
+gsetter_userdata:: struct {
+    gs_type: GDE.VariantType,
+    getter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr),
+    setter_method: proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr),
+    userdata: rawptr,
+    fieldname: string,
+}
+
+//Does not support pass by copy.
+Export_Default :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata, fieldName: string) {
+    info:= make_property(getter_setter.gs_type, fieldName)
+    Export4(className_SN, getter_setter, fieldName, &info, GDE.PROPERTY_USAGE_DEFAULT, GDE.Method_Flags_DEFAULT)
+    destructProperty(&info)
+}
+
+Export4 :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata, fieldName: string,\
+    info: ^GDE.PropertyInfo, \
+    property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT, methodType:= GDE.Method_Flags_DEFAULT, loc: runtime.Source_Code_Location = #caller_location) -> export_error {
+
+    if getter_setter.getter_method == nil && getter_setter.setter_method == nil {
+        return .missing_getset_ptr
+    }
+    getbuf:[100]u8
+    setbuf:[100]u8
+    getName:= fmt.bprint(getbuf[:], "get", fieldName, sep="_")
+    setName:= fmt.bprint(setbuf[:], "set", fieldName, sep="_")
+    Bind_Set2(getter_setter.gs_type, className_SN, setName, getter_setter, fieldName, methodType = methodType, loc = loc)
+    Bind_Get2(getter_setter.gs_type, className_SN, getName, getter_setter, methodType, loc = loc)
+
+    //Register the information with Godot in order for the variable to be accessible.
+    Bind_Property(className_SN, fieldName, getter_setter.gs_type, info, getName, setName)
+    return nil
+}
+
+Bind_Set2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^StringName, \
+                methodName: string, function: ^gsetter_userdata, argNames: string, \
+                methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, loc:= #caller_location)
+{
+    methodStringName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
+
+    //callFunc:= Gen_Variant_Setter2(function, loc=loc)
+
+        argsInfo: [1]GDE.PropertyInfo
+
+        index:int = int(variant_type)
+        argsInfo[0] = make_property(GDE.VariantType(index), argNames)
+        args_metadata: [1]GDE.ClassMethodArgumentMetadata
+        args_metadata[0]= GDE.ClassMethodArgumentMetadata.NONE
+
+
+    methodInfo : GDE.ClassMethodInfo = {
+        name = &methodStringName,
+        method_userdata = cast(rawptr)function,
+        ptrcall_func = set_passthrough,
+        method_flags = (methodType),
+    }
+    #partial switch function.gs_type {
+        case .ARRAY:
+            methodInfo.call_func = Variant_Setter_Array
+        case .PACKED_BYTE_ARRAY, .PACKED_INT32_ARRAY, .PACKED_INT64_ARRAY,
+          .PACKED_FLOAT32_ARRAY, .PACKED_FLOAT64_ARRAY, .PACKED_STRING_ARRAY,
+          .PACKED_VECTOR2_ARRAY, .PACKED_VECTOR3_ARRAY, .PACKED_COLOR_ARRAY,
+          .PACKED_VECTOR4_ARRAY :
+            methodInfo.call_func = Variant_Setter_Packed
+        case:
+            methodInfo.call_func = godotVariantSetterCallback
+    }
+    
+        methodInfo.argument_count = 1
+        methodInfo.arguments_info = &argsInfo[0]
+        methodInfo.arguments_metadata = &args_metadata[0]
+
+
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
+    
+    //Destructor things.
+    GDW.StringName_M_List.Destroy(&methodStringName)
+    destructProperty(&argsInfo[0])
+}
+
+
+Bind_Get2 :: #force_inline proc(variant_type: GDE.VariantType, className: ^StringName, methodName: string,
+                        function: ^gsetter_userdata,
+                        methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, loc:= #caller_location
+                        )
+    {
+    methodStringName: StringName
+    gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(methodName), i64(len(methodName)))
+
+    returnInfo: GDE.PropertyInfo =  make_property(variant_type, "")
+    
+    methodInfo : GDE.ClassMethodInfo = {
+        name = &methodStringName,
+        method_userdata = cast(rawptr)function,
+        method_flags = (methodType),
+    }
+
+    //will use a different passthrough method based on the type that is being got.
+    switch variant_type {
+        case .NIL:
+            assert(false, "should not exportin nil as field type.")
+        case .BOOL:
+            methodInfo.call_func = Variant_Getter_Bool
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .INT:
+            methodInfo.call_func = Variant_Getter_Int
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .FLOAT:
+            methodInfo.call_func = Variant_Getter_Float
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .VECTOR2:
+            methodInfo.call_func = Variant_Getter_Vector2
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .VECTOR2I:
+            methodInfo.call_func = Variant_Getter_Vector2i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .RECT2:
+            methodInfo.call_func = Variant_Getter_Rect
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .RECT2I:
+            methodInfo.call_func = Variant_Getter_Rect2i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .VECTOR3:
+            methodInfo.call_func = Variant_Getter_Vector3
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .VECTOR3I:
+            methodInfo.call_func = Variant_Getter_Vector3i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .VECTOR4:
+            methodInfo.call_func = Variant_Getter_Vector4
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .VECTOR4I:
+            methodInfo.call_func = Variant_Getter_Vector4i
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .PLANE:
+            methodInfo.call_func = Variant_Getter_Plane
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .COLOR:
+            methodInfo.call_func = Variant_Getter_Color
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .QUATERNION:
+            methodInfo.call_func = Variant_Getter_Quaternion
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .STRING:
+            methodInfo.call_func = Variant_Getter_GDString
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_gdstring_passthrough)
+        case .STRING_NAME:
+            methodInfo.call_func = Variant_Getter_StringName
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_StringName_passthrough)
+        case .NODE_PATH:
+            methodInfo.call_func = Variant_Getter_NodePath
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_NodePath_passthrough)
+        case .RID:
+            methodInfo.call_func = Variant_Getter_RID
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_passthrough)
+        case .OBJECT:
+            methodInfo.call_func = Variant_Getter_Object
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Object_passthrough)
+        case .CALLABLE:
+            methodInfo.call_func = Variant_Getter_Callable
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Callable_passthrough)
+        case .SIGNAL:
+            methodInfo.call_func = Variant_Getter_Signal
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Signal_passthrough)
+        case .DICTIONARY:
+            methodInfo.call_func = Variant_Getter_Dictionary
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Dictionary_passthrough)
+        case .TRANSFORM2D:
+            methodInfo.call_func = Variant_Getter_Tansform2D
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Transform2D_passthrough)
+        case .AABB:
+            methodInfo.call_func = Variant_Getter_AABB
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_AABB_passthrough)
+        case .BASIS:
+            methodInfo.call_func = Variant_Getter_Basis
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Basis_passthrough)
+        case .TRANSFORM3D:
+            methodInfo.call_func = Variant_Getter_Transform3D
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Transform3D_passthrough)
+        case .PROJECTION:
+            methodInfo.call_func = Variant_Getter_Projection
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Projection_passthrough)
+        case .ARRAY:
+            methodInfo.call_func = Variant_Getter_Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_Array_passthrough)
+        case .PACKED_BYTE_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedByteArray
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedByteArray_passthrough)
+        case .PACKED_INT32_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedInt32Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedInt32Array_passthrough)
+        case .PACKED_INT64_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedInt64Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedInt64Array_passthrough)
+        case .PACKED_FLOAT32_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedFloat32Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedFloat32Array_passthrough)
+        case .PACKED_FLOAT64_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedFloat64Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedFloat64Array_passthrough)
+        case .PACKED_STRING_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedStringArray
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedStringArray_passthrough)
+        case .PACKED_VECTOR2_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedVector2Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedVector2Array_passthrough)
+        case .PACKED_VECTOR3_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedVector3Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedVector3Array_passthrough)
+        case .PACKED_COLOR_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedColorArray
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedColorArray_passthrough)
+        case .PACKED_VECTOR4_ARRAY:
+            methodInfo.call_func = Variant_Getter_PackedVector4Array
+            methodInfo.ptrcall_func = GDE.ClassMethodPtrCall(get_tPtr_PackedVector4Array_passthrough)
+        case .VARIANT_MAX:
+            assert(false, "attempted to bind export a variant type outside the VariantType range.")
+        case:
+            assert(false, "attempted to bind export a variant type outside the VariantType range.")
+    }
+    
+    methodInfo.argument_count = 0
+    methodInfo.return_value_info = &returnInfo
+    methodInfo.has_return_value = true
+    methodInfo.arguments_info = nil
+    methodInfo.arguments_metadata = nil
+
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
+    
+    //Destructor things.
+    GDW.StringName_M_List.Destroy(&methodStringName)
+    destructProperty(&returnInfo)
+}
+
+
+godotVariantSetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,\
+            p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context= runtime.default_context()
+    if p_argument_count != 1 {
+        r_error^= {
+            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+            argument= i32(p_argument_count),
+            expected = 1,
+        }
+    }
+    //inlined for speed. Return should not be accessed so is nil.
+    if (cast(^gsetter_userdata)method_userdata).setter_method == nil {
+        assert(false, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
+    }
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]))
+    r_error^={}
+}
+
+//Godot calls with an uninitialized variant.
+godotVariantGetterCallback :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    context= runtime.default_context()
+    if p_argument_count != 0 {
+        r_error^= {
+            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+            argument= i32(p_argument_count),
+            expected = 0,
+        }
+        return
+    }
+    if (cast(^gsetter_userdata)method_userdata).getter_method == nil {
+        assert(false, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
+    }
+    method_userdata:= cast(^gsetter_userdata)method_userdata
+    tr_return: variant_union_raw
+    method_userdata.getter_method(method_userdata, p_instance, nil, &tr_return)
+    r_error^ = {}
+    r_return.VType = method_userdata.gs_type
+    insert_variant_data(r_return, &tr_return)
+}
+
+Variant_Setter_Packed :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    if p_args[0].VType == .ARRAY {
+        context = runtime.default_context()
+        when builtin.ODIN_DEBUG {
+            message:= fmt.caprintf("incorrect type passed as Packed%sArray, this will cause extra allocations", (cast(^gsetter_userdata)method_userdata).gs_type)
+            field:= fmt.caprint((cast(^gsetter_userdata)method_userdata).fieldname)
+            gdAPI.Logging.PrintErrorWithMessage("mistyped", message, field, "", -1, true)
+            delete(message)
+            delete(field)
+        }
+        Transform_Array_Call_Setter(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+        return
+    }
+    when builtin.ODIN_DEBUG{
+        context = runtime.default_context()
+        assert((cast(^gsetter_userdata)method_userdata).setter_method != nil, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
+    }
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]))
+}
+
+Variant_Setter_Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    if p_args[0].VType != .ARRAY {
+        context = runtime.default_context()
+        when builtin.ODIN_DEBUG {
+            message:= fmt.caprintf("incorrect type passed as Packed%sArray, this will cause extra allocations", (cast(^gsetter_userdata)method_userdata).gs_type)
+            field:= fmt.caprint((cast(^gsetter_userdata)method_userdata).fieldname)
+            gdAPI.Logging.PrintErrorWithMessage("mistyped", message, field, "", -1, true)
+            delete(message)
+            delete(field)
+        }
+        an_array: Array
+        GDW.new_type_from_methods(&an_array, p_args[0])
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, &an_array)
+        Destroy(&an_array)
+        return
+    }
+    when builtin.ODIN_DEBUG{
+        context = runtime.default_context()
+        assert((cast(^gsetter_userdata)method_userdata).setter_method != nil, fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname))
+    }
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, variant_get_ptr(p_args[0]))
+}
+
+/*
+* This exists to support Godot passing an array as if it were a packed array.
+*/
+Transform_Array_Call_Setter :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, \
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    
+    marray:= cast(^Array)variant_get_ptr(p_args[0])
+    #partial switch (cast(^gsetter_userdata)method_userdata).gs_type {
+    case .PACKED_BYTE_ARRAY:
+        parray: PackedByteArray
+        GDW.PackedByteArray_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedByteArray_M_List.Destroy(&parray)
+    case .PACKED_INT32_ARRAY:
+        parray: PackedInt32Array
+        GDW.PackedInt32Array_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedInt32Array_M_List.Destroy(&parray)
+    case .PACKED_INT64_ARRAY:
+        parray: PackedInt64Array
+        GDW.PackedInt64Array_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedInt64Array_M_List.Destroy(&parray)
+    case .PACKED_FLOAT32_ARRAY:
+        parray: PackedFloat32Array
+        GDW.PackedFloat32Array_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedFloat32Array_M_List.Destroy(&parray)
+    case .PACKED_FLOAT64_ARRAY:
+        parray: PackedFloat64Array
+        GDW.PackedFloat64Array_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedFloat64Array_M_List.Destroy(&parray)
+    case .PACKED_STRING_ARRAY:
+        parray: PackedStringArray
+        GDW.PackedStringArray_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedStringArray_M_List.Destroy(&parray)
+    case .PACKED_VECTOR2_ARRAY:
+        parray: PackedVector2Array
+        GDW.PackedVector2Array_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedVector2Array_M_List.Destroy(&parray)
+    case .PACKED_VECTOR3_ARRAY:
+        parray: PackedVector3Array
+        GDW.PackedVector3Array_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedVector3Array_M_List.Destroy(&parray)
+    case .PACKED_COLOR_ARRAY:
+        parray: PackedColorArray
+        GDW.PackedColorArray_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedColorArray_M_List.Destroy(&parray)
+    case .PACKED_VECTOR4_ARRAY:
+        parray: PackedVector4Array
+        GDW.PackedVector4Array_M_List.Create2(&parray, {marray})
+        (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, raw_data([]rawptr{&parray}))
+        GDW.PackedVector4Array_M_List.Destroy(&parray)
+    }
+    when builtin.ODIN_DEBUG {
+        context = runtime.default_context()
+        method_userdata:= cast(^gsetter_userdata)method_userdata
+        message:= fmt.caprintf("Do not use an Array for a packed*array, this causes additional allocations and refCounting", method_userdata.fieldname)
+        procedure:= fmt.caprint(#procedure)
+        file:= fmt.caprint(#file)
+        line:= i32(#line)
+        gdAPI.Logging.PrintWarningWithMessage("Packed array helper", message, \
+            procedure, file, line, true)
+        delete(message)
+        delete(file)
+        delete(procedure)
+    }
+}
+
+set_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
+    when builtin.ODIN_DEBUG{
+        context = runtime.default_context()
+        if (cast(^gsetter_userdata)method_userdata).setter_method == nil{
+            warning:= fmt.aprintf("attempted to call setter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname)
+            assert(false, warning)
+            delete(warning)
+        }
+    }
+    (cast(^gsetter_userdata)method_userdata).setter_method(method_userdata, p_instance, p_args[0])
+}
+
+//Warning, this is not an return uninitialized pointer, this an initialized pointer -> Will pass an empty initialized array in return.
+get_passthrough :: #force_inline proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr) {
+    when builtin.ODIN_DEBUG{
+        context = runtime.default_context()
+        if (cast(^gsetter_userdata)method_userdata).getter_method == nil{
+            warning:= fmt.aprintf("attempted to call getter method which is nil for", (cast(^gsetter_userdata)method_userdata).fieldname)
+            assert(false, warning)
+            delete(warning)
+        }
+    }
+    (cast(^gsetter_userdata)method_userdata).getter_method(method_userdata, p_instance, p_args[0], r_ret)
+}
+
+//tPtr stands for typePointer ie an opaque pointer to the actual type.
+get_tPtr_Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Array) {
+    ret: Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    gdAPI.Packed_Array_Utils.ArrayRef(r_return, &ret)
+}
+
+//Objects are initialized as nullpoiter in the ObjData struct, can return directly.
+get_tPtr_Object_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^^Object) {
+    ret: ^Object
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    safeRef_Object(ret)
+    r_return^ = ret
+}
+
+//Not strictly necessary, I thought at first that Godot was passing uninitialized memory.
+get_tPtr_AABB_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^AABB) {
+    ret: AABB
+    get_passthrough(method_userdata, p_instance, args, r_return)
+}
+
+get_tPtr_Basis_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Basis) {
+    ret: Basis
+    get_passthrough(method_userdata, p_instance, args, r_return)
+}
+
+get_tPtr_Transform2D_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Transform2D) {
+    ret: Transform2D
+    get_passthrough(method_userdata, p_instance, args, r_return)
+}
+
+get_tPtr_Transform3D_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Transform3D) {
+    ret: Transform3D
+    get_passthrough(method_userdata, p_instance, args, r_return)
+
+}
+
+get_tPtr_Projection_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Projection) {
+    ret: Projection
+    get_passthrough(method_userdata, p_instance, args, r_return)
+}
+
+get_tPtr_gdstring_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^gdstring) {
+    ret: gdstring
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^gdstring)r_return)
+}
+
+get_tPtr_StringName_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^StringName) {
+    ret: StringName
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^StringName)r_return)
+}
+
+get_tPtr_NodePath_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^NodePath) {
+    ret: NodePath
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^NodePath)r_return)
+}
+
+get_tPtr_Signal_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Signal) {
+    ret: Signal
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
+    Ref_Count(&ret, cast(^Signal)r_return)
+}
+
+get_tPtr_Callable_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Callable) {
+    ret: Callable
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^Callable)r_return)
+}
+
+get_tPtr_Dictionary_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^Dictionary) {
+    ret: Dictionary
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    Destroy(r_return)
+    Ref_Count(&ret, cast(^Dictionary)r_return)
+}
+
+get_tPtr_PackedByteArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedByteArray) {
+    ret: PackedByteArray
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedByteArray)r_return)
+}
+
+get_tPtr_PackedInt32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedInt32Array) {
+    ret: PackedInt32Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(cast(^PackedInt32Array)r_return)
+    Ref_Count(&ret, cast(^PackedInt32Array)r_return)
+}
+
+get_tPtr_PackedInt64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedInt64Array) {
+    ret: PackedInt64Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedInt64Array)r_return)
+}
+
+get_tPtr_PackedFloat32Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedFloat32Array) {
+    ret: PackedFloat32Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedFloat32Array)r_return)
+}
+
+get_tPtr_PackedFloat64Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedFloat64Array) {
+    ret: PackedFloat64Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedFloat64Array)r_return)
+}
+
+get_tPtr_PackedStringArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedStringArray) {
+    ret: PackedStringArray
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedStringArray)r_return)
+}
+
+get_tPtr_PackedVector2Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedVector2Array) {
+    ret: PackedVector2Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedVector2Array)r_return)
+}
+
+get_tPtr_PackedVector3Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedVector3Array) {
+    ret: PackedVector3Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedVector3Array)r_return)
+}
+
+get_tPtr_PackedColorArray_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedColorArray) {
+    ret: PackedColorArray
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedColorArray)r_return)
+}
+
+get_tPtr_PackedVector4Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^PackedVector4Array) {
+    ret: PackedVector4Array
+    get_passthrough(method_userdata, p_instance, args, &ret)
+    //Destroy(r_return)
+    Ref_Count(&ret, cast(^PackedVector4Array)r_return)
+}
+
+
+insert_variant_data :: proc "c" (container: ^Variant, source: ^variant_union_raw) {
+    switch container.VType {
+    case .NIL,
+    /*  atomic types */
+	.BOOL, .INT, .FLOAT,
+	/* math types */
+	.VECTOR2, .VECTOR2I, .RECT2, .RECT2I, .VECTOR3, .VECTOR3I,
+	.VECTOR4, .VECTOR4I, .PLANE, .QUATERNION,
+	/* misc types */
+	.COLOR, .RID:
+        container.data = transmute([2]u64)(source.Vector4)
+    case .OBJECT:
+        ObjecttoVariant(container, (cast(^Object)source)^)
+    case  .STRING:
+        StringtoVariant(container, (cast(^gdstring)source)^)
+    case .STRING_NAME:
+        StringNametoVariant(container, (cast(^StringName)source)^)
+    case .NODE_PATH:
+        NodePathtoVariant(container, (cast(^NodePath)source)^)
+    case .CALLABLE:
+        CallabletoVariant(container, (cast(^Callable)source)^)
+    case .SIGNAL:
+        SignaltoVariant(container, (cast(^Signal)source)^)
+    case .DICTIONARY:
+        DictionarytoVariant(container, (cast(^Dictionary)source)^)
+    case .ARRAY:
+        ArraytoVariant(container, (cast(^Array)source)^)
+    //Godot sets these in its own bucket of memory. Need to assign this way so that it can cleanup appropriately.
+	case .AABB:
+        AABBtoVariant(container, (cast(^AABB)source)^)
+    case .BASIS:
+        BasistoVariant(container, (cast(^Basis)source)^)
+    case .TRANSFORM3D:
+        Transform3dtoVariant(container, (cast(^Transform3D)source)^)
+    case .TRANSFORM2D:
+        Transform2DtoVariant(container, (cast(^Transform2D)source)^)
+    case .PROJECTION:
+        ProjectiontoVariant(container, (cast(^Projection)source)^)
+
+	/* typed arrays */
+	case .PACKED_BYTE_ARRAY:
+        PackedByteArraytoVariant(container, (cast(^PackedByteArray)source)^)//.get_ptr(variant)
+	case .PACKED_INT32_ARRAY:
+         GDW.Packedi32ArrayToVariant(container, source.PackedInt32Array)
+	case .PACKED_INT64_ARRAY:
+         GDW.Packedi64ArrayToVariant(container, source.PackedInt64Array)
+	case .PACKED_FLOAT32_ARRAY:
+         GDW.Packedf32ArrayToVariant(container, source.PackedFloat32Array)
+	case .PACKED_FLOAT64_ARRAY:
+         GDW.Packedf64ArrayToVariant(container, source.PackedFloat64Array)
+	case .PACKED_STRING_ARRAY:
+         GDW.PackedStringArrayToVariant(container, source.PackedStringArray)
+	case .PACKED_VECTOR2_ARRAY:
+         GDW.PackedVec2ArrayToVariant(container, source.PackedVector2Array)
+	case .PACKED_VECTOR3_ARRAY:
+         GDW.PackedVec3ArrayToVariant(container, source.PackedVector3Array)
+	case .PACKED_COLOR_ARRAY:
+         GDW.PackedColorArrayToVariant(container, source.PackedColorArray)
+	case .PACKED_VECTOR4_ARRAY:
+         GDW.PackedVec4ArrayToVariant(container, source.PackedVector4Array)
+
+	case .VARIANT_MAX:
+        context = runtime.default_context()
+        panic("Variant without a correct type provided!")
+    case:
+        context = runtime.default_context()
+        panic("Variant without a correct type provided!")
+    }
+}
+
+//I wouldn't need any of this if Godot set the type of the return type before calling out variant function.
+Variant_Getter_Bool :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .BOOL
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Int :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .INT
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Float :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .FLOAT
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Vector2 :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .VECTOR2
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Vector2i :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .VECTOR2I
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Rect :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .RECT2
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Rect2i :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .RECT2I
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Vector3 :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .VECTOR3
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Vector3i :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .VECTOR3I
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Vector4 :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .VECTOR4
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Vector4i :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .VECTOR4I
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Plane :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PLANE
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Color :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .COLOR
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Quaternion :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .QUATERNION
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_GDString :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .STRING
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_StringName :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .STRING_NAME
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_NodePath :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .NODE_PATH
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_RID :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .RID
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Object :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .OBJECT
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Callable :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .CALLABLE
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Signal :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .SIGNAL
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Dictionary :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .DICTIONARY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Tansform2D :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .TRANSFORM2D
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_AABB :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .AABB
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Basis :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .BASIS
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Transform3D :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .TRANSFORM3D
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Projection :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PROJECTION
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedByteArray :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_BYTE_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedInt32Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_INT32_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedInt64Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_INT64_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedFloat32Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_FLOAT32_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedFloat64Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_FLOAT64_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedStringArray :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_STRING_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedVector2Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_VECTOR2_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedVector3Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_VECTOR3_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedColorArray :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_COLOR_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+Variant_Getter_PackedVector4Array :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: ^GDE.Variant, r_error: ^GDE.CallError) {
+    r_return.VType = .PACKED_VECTOR4_ARRAY
+    godotVariantGetterCallback(method_userdata, p_instance, p_args, p_argument_count, r_return, r_error)
+}
+
+
+//*********************\\
+//********Groups*******\\
+//*********************\\
+
+property_group :: proc(lib: GDE.ClassDB, class_name: StringName, group_name, prefix: string) {
+    name: gdstring
+    pref: gdstring
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&name, cstring(raw_data(group_name)), i64(len(group_name)))
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&pref, cstring(raw_data(prefix)), i64(len(prefix)))
+    gdAPI.ClassDB.RegisterExtensionClassPropertyGroup(lib, class_name, name, pref)
+    Destroy(&name)
+    Destroy(&pref)
+}
+property_subgroup :: proc(lib: GDE.ClassDB, class_name: StringName, group_name, prefix: string) {
+    name: gdstring
+    pref: gdstring
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&name, cstring(raw_data(group_name)), i64(len(group_name)))
+    gdAPI.Strings_Utils.NewWithLatin1CharsAndLen(&pref, cstring(raw_data(prefix)), i64(len(prefix)))
+    gdAPI.ClassDB.RegisterExtensionClassPropertySubgroup(lib, class_name, name, pref)
+    Destroy(&name)
+    Destroy(&pref)
+}

@@ -10,7 +10,17 @@ import GDE "shared:GDWrapper/gdAPI/gdextension"
 import "core:bytes"
 //import "../builtins"
 
-//TODO!! keyed getter/setter
+/*
+TODO!
+Projection_Constants := [Projection_Const_names]Projection {
+  .IDENTITY = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
+  .ZERO = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+}
+Projection_Const_names :: enum {
+  Projection_ZERO,
+  Projection_IDENTITY,
+}
+*/
 
 main :: proc() {
     root, error := os.get_absolute_path("builtin_parser\\example.json", context.allocator)
@@ -37,8 +47,8 @@ main :: proc() {
     
     header:=`package GDWrapper
 
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "gdAPI"
+import GDE "gdAPI/gdextension"
 import "core:math"
 
 
@@ -156,9 +166,9 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     Ptr_Getter:= `    %s_method_store.get_ptr = cast(type_of(%[0]s_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.%v)`
     op_eval:= `  %s_method_store.%s_%s = cast(type_of(%[0]s_method_store.%[1]s_%[2]s))gdAPI.Variant_Utils.GetPtrOperatorEvaluator(.%[1]v, .%v, .%v)`
     //name, eval_enum, variant_type
-    Meth_Getter:=`  %s_method_store.%[2]s = cast(type_of(%[0]s_method_store.%[2]s))Get_Builtin_Method(.%[1]v, "%[2]s", %v)`
-    Index_Getter:=`  %s_method_store.IndxGetter = cast(type_of(%[0]s_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrKeyedGetter(.%[1]v)
-  %[0]s_method_store.IndxSetter = cast(type_of(%[0]s_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)`
+    Meth_Getter:=`  %s_method_store.%[2]s = cast(type_of(%[0]s_method_store.%[2]s))Get_Builtin_Method(.%[1]v, "%[3]s", %v)`
+    Index_Getter:=`  %s_method_store.IndxGetter = cast(type_of(%[0]s_method_store.IndxGetter))gdAPI.Variant_Utils.GetPtrIndexedGetter(.%[1]v)
+  %[0]s_method_store.IndxSetter = cast(type_of(%[0]s_method_store.IndxSetter))gdAPI.Variant_Utils.GetPtrIndexedSetter(.%[1]v)`
     Keyed_Getter:=`  %s_method_store.KeyedSetter = cast(type_of(%[0]s_method_store.KeyedSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)
   %[0]s_method_store.KeyedGetter = cast(type_of(%[0]s_method_store.KeyedGetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)
   %[0]s_method_store.KeyedChecker = cast(type_of(%[0]s_method_store.KeyedChecker))gdAPI.Variant_Utils.GetPtrKeyedSetter(.%[1]v)`
@@ -174,8 +184,8 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
     bltn_destructor:= `    Destroy: GDE.PtrDestructor,` //Include if Destructor true
     bltn_destructor_proc:= `    Destroy: proc "c" (p_base: ^%s),` //Include if Destructor true; builtin_type
     bltn_ptr_getter:= `    get_ptr: proc "c" (base: ^Variant) -> ^%s,` //returns the typePtr from the Variant. Mainly useful for Packed*Arrays because of how nasty their class is.
-    keyed:= `    KeyedSetter : proc "c" (p_base: %[0]s, p_key: GDE.ConstTypePtr, p_value: GDE.ConstTypePtr),
-    KeyedGetter : proc "c" (p_base: %[0]s, p_key: GDE.TypePtr, r_value: GDE.TypePtr),
+    keyed:= `    KeyedSetter : proc "c" (p_base: %[0]s, p_key: ^Variant, p_value: ^Variant),
+    KeyedGetter : proc "c" (p_base: %[0]s, p_key: ^Variant, r_value: ^Variant),
     KeyedChecker : proc "c" (#by_ptr p_base: Variant, #by_ptr p_key: Variant) -> u32,` //if the type is keyed it will have these three methods
     indexed:= `    IndxSetter : proc "c" (p_base: ^%[0]s, p_index: Int, p_value: ^%[1]s),
     IndxGetter : proc "c" (p_base: ^%[0]s, p_index: Int, r_value: ^%[1]s),` //if the type has a index return, it will have these two methods
@@ -270,6 +280,7 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
 
         //setup Methods
         for &method, idx in BUILT_FROM.methods {
+            method_gdstring:= strings.clone(method.name, ctx)
             if method.name == "any" { 
                 delete(method.name)
                 method.name = "gdany"
@@ -279,8 +290,9 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
                 method.name = "gdmap"
             }
 
-            fmt.sbprintf(&init_builder, Meth_Getter, BUILT_FROM.name, variant_type, method.name, method.hash, newline =true)
+            fmt.sbprintf(&init_builder, Meth_Getter, BUILT_FROM.name, variant_type, method.name, method_gdstring, method.hash, newline =true)
             fmt.sbprintf(&struct_builder, bltn_method_proc, method.name, BUILT_FROM.name)
+            delete(method_gdstring)
             if len(method.arguments) == 0 {
                 fmt.sbprintf(&struct_builder, " p_args: rawptr = nil,", newline = false)
             }
@@ -366,7 +378,13 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
         //Constants only exist for compound types such as vec2, basis etc.
         consts:= `@(rodata)
 %s_%s : %s`
+        consts2:= `    %s,`
+        consts3:= `    .%s = %s,`
+        const_enum_name:= `%s_consts :: enum c.int {{`
+        const_impl:= `@(export, rodata)
+%s_Defaults := [%s_consts]%s {{`
         if len(BUILT_FROM.constants) > 0 && BUILT_FROM.name != "Quaternion" {
+            fmt.sbprintf(&consts_builder, const_enum_name, BUILT_FROM.name, newline =true)
             for constants in BUILT_FROM.constants {
                 inf:bool
                 inf_replacement:string
@@ -378,9 +396,36 @@ build_init_proc :: proc(json_data: builtin, glob_data: global_enums, ctx: runtim
                 if inf do delete(inf_replacement)
                 outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
                 delete(outoput)
-                fmt.sbprintf(&consts_builder, consts, BUILT_FROM.name, constants.name, outoput2, newline =true)
+                //fmt.sbprintf(&consts_builder, consts, BUILT_FROM.name, constants.name, outoput2, newline =true)
+                fmt.sbprintf(&consts_builder, consts2, constants.name, newline =true)
                 delete(outoput2)
             }
+            fmt.sbprintf(&consts_builder, `}`, newline =true)
+        }
+
+        //need to use a special find proc in order to find where the open brackets starts.
+	    find :: proc(r: rune) -> bool {
+	    	return r != '{'
+	    }
+        if len(BUILT_FROM.constants) > 0 && BUILT_FROM.name != "Quaternion" {
+            fmt.sbprintf(&consts_builder, const_impl, BUILT_FROM.name, BUILT_FROM.name, BUILT_FROM.name, newline =true)
+            for constants in BUILT_FROM.constants {
+                inf:bool
+                inf_replacement:string
+                if strings.contains(constants.value, "inf"){
+                    inf_replacement, inf = strings.replace_all(constants.value, "inf", "math.INF_F32")
+                } else {inf_replacement=constants.value}
+                
+                outoput, did_alloc:=strings.replace_all(inf_replacement, "(", " {")
+                outoput2, did_alloc2:=strings.replace_all(outoput, ")", "}")
+                if inf do delete(inf_replacement)
+                trunc:= strings.trim_left_proc(outoput2, find)
+                fmt.println(strings.trim_left_proc(outoput2, find))
+                //delete(outoput)
+                fmt.sbprintf(&consts_builder, consts3, constants.name, trunc[:], newline =true)
+                delete(outoput2)
+            }
+            fmt.sbprintf(&consts_builder, `}`, newline =true)
         }
 
         //fmt.println(strings.to_string(init_builder))

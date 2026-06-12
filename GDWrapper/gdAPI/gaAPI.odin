@@ -8,33 +8,36 @@ import GDE "gdextension"
 //******Utility Functions******\\
 //*****************************\\
 
+
 Function_Pointer : struct {
     FunctionPtr: GDE.InterfaceFunctionPtr,
     GetProcAddress: GDE.InterfaceGetProcAddress,
 }
+
 
 GD_Version_Get : struct {
     GetGodotVersion: GDE.InterfaceGetGodotVersion,
     GetGodotVersion2: GDE.InterfaceGetGodotVersion2,
 }
 
+
 GlobalGetSingleton: GDE.InterfaceGlobalGetSingleton
+
 RegisterMainLoopCallbacks: GDE.InterfaceRegisterMainLoopCallbacks
 
 //*************\\
 //**Threading**\\
 //*************\\
 
-Threading : struct {
-    WorkerThreadPoolGroupTask: GDE.WorkerThreadPoolGroupTask,
-    WorkerThreadPoolTask: GDE.WorkerThreadPoolTask,
 
+Threading : struct {
     /* GDE.Interface: WorkerThreadPool Utilities */
     WorkerThreadPoolAddNativeGroupTask: GDE.InterfaceWorkerThreadPoolAddNativeGroupTask,
     WorkerThreadPoolAddNativeTask: GDE.InterfaceWorkerThreadPoolAddNativeTask,
 }
 
 /* GDE.Interface: Memory */
+
 Memory_Uils : struct {
     MemAlloc: GDE.InterfaceMemAlloc,
     MemRealloc: GDE.InterfaceMemRealloc,
@@ -46,6 +49,7 @@ Memory_Uils : struct {
 }
 
 /* GDE.Interface: Godot Logging */
+
 Logging : struct {
     PrintError: GDE.InterfacePrintError,
     PrintErrorWithMessage: GDE.InterfacePrintErrorWithMessage,
@@ -56,6 +60,7 @@ Logging : struct {
 }
 
 /* GDE.Interface: Variant */
+
 Variant_Utils : struct {
     NewCopy: GDE.InterfaceVariantNewCopy,
     NewNil: GDE.InterfaceVariantNewNil,
@@ -108,6 +113,7 @@ Variant_Utils : struct {
 }
 
 /* GDE.Interface: String Utilities */
+
 Strings_Utils : struct {
     NewWithLatin1Chars: GDE.InterfaceStringNewWithLatin1Chars,
     NewWithUtf8Chars: GDE.InterfaceStringNewWithUtf8Chars,
@@ -137,6 +143,7 @@ Strings_Utils : struct {
 }
 
 /* GDE.Interface: StringName Utilities */
+
 StringName_Utils : struct {
     Latin1Chars: GDE.InterfaceStringNameNewWithLatin1Chars,
     Utf8Chars: GDE.InterfaceStringNameNewWithUtf8Chars,
@@ -144,6 +151,7 @@ StringName_Utils : struct {
 }
 
 /* GDE.Interface: XMLParser Utilities */
+
 XMLParse_Utils : struct {
     XmlParserOpenBuffer: GDE.InterfaceXmlParserOpenBuffer,
     EditorHelpLoadXmlFromUtf8Chars: GDE.InterfaceEditorHelpLoadXmlFromUtf8Chars,
@@ -152,16 +160,19 @@ XMLParse_Utils : struct {
 }
 
 /* GDE.Interface: FileAccess Utilities */
+
 FileAccess_Utils : struct {
     StoreBuffer: GDE.InterfaceFileAccessStoreBuffer,
     GetBuffer: GDE.InterfaceFileAccessGetBuffer,
 }
 /* GDE.Interface: Image Utilities */
+
 Image_Utils : struct {
     ImagePtrw: GDE.InterfaceImagePtrw,
     ImagePtr: GDE.InterfaceImagePtr,
 }
 /* GDE.Interface: Packed Array */
+
 Packed_Array_Utils : struct {
     ByteArrayOperatorIndex: GDE.InterfacePackedByteArrayOperatorIndex,
     ByteArrayOperatorIndexConst: GDE.InterfacePackedByteArrayOperatorIndexConst,
@@ -190,6 +201,7 @@ Packed_Array_Utils : struct {
 }
 
 /* GDE.Interface: Dictionary */
+
 Dictionary_Utils : struct {
     OperatorIndex: GDE.InterfaceDictionaryOperatorIndex,
     OperatorIndexConst: GDE.InterfaceDictionaryOperatorIndexConst,
@@ -197,6 +209,7 @@ Dictionary_Utils : struct {
 }
 
 /* GDE.Interface: Object */
+
 Object_Utils : struct {
     MethodBindCall: GDE.InterfaceObjectMethodBindCall,
     MethodBindPtrcall: GDE.InterfaceObjectMethodBindPtrcall,
@@ -214,12 +227,14 @@ Object_Utils : struct {
 }
 
 /* GDE.Interface: Reference */
+
 Reference_Utils : struct {
     RefGetObject: GDE.InterfaceRefGetObject,
     RefSetObject: GDE.InterfaceRefSetObject,
 }
 
 /* GDE.Interface: Script Instance */
+
 Script_Utils : struct {
     ScriptInstanceCreate: GDE.InterfaceScriptInstanceCreate,
     ScriptInstanceCreate2: GDE.InterfaceScriptInstanceCreate2,
@@ -231,6 +246,7 @@ Script_Utils : struct {
 }
 
 /* GDE.Interface: Callable */
+
 Callable_Utils : struct {
     CustomCreate: GDE.InterfaceCallableCustomCreate,
     CustomCreate2: GDE.InterfaceCallableCustomCreate2,
@@ -238,6 +254,7 @@ Callable_Utils : struct {
 }
 
 /* GDE.Interface: ClassDB */
+
 ClassDB : struct {
     ConstructObject: GDE.InterfaceClassdbConstructObject,
     ConstructObject2: GDE.InterfaceClassdbConstructObject2,
@@ -259,6 +276,8 @@ ClassDB : struct {
     ClassdbUnregisterExtensionClass: GDE.InterfaceClassdbUnregisterExtensionClass,
     GetLibraryPath: GDE.InterfaceGetLibraryPath,
 }
+
+/* GDE.Interface: Plugin */
 
 Plugin : struct {
     EditorAddPlugin: GDE.InterfaceEditorAddPlugin,
