@@ -46,21 +46,6 @@ classDBGetMethodBind2 :: proc "c" (className: ^StringName, methodName: cstring, 
     return methodBind
 }
 
-classDBGetMethodBind3 :: proc "c" (className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
-    native_class_name: ^StringName;
-    method_name: StringName;
-
-    //native_class_name = GDClass_StringName_get(className)
-    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
-
-    methodBind = gdAPI.ClassDB.GetMethodBind(&method_name, &method_name, hash)
-    //assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
-
-    StringName_M_List.Destroy(&method_name)
-
-    return methodBind
-}
-
 //Do not use. Used for padding where necessary. Container for Godot's Vector class.
 cowData :: struct {
     _ptr: rawptr,
