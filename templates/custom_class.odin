@@ -26,6 +26,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 //Godot will be passing us a pointer to this struct during callbacks.
 THIS_CLASS_NAME :: struct {
     speed: Toxin.Int,
+    int_as_enum: munum,
 }
 
 munum::enum Toxin.Int {
@@ -38,6 +39,10 @@ THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.required_deets, init_level: Toxin.Init
     context = runtime.default_context()
     me:=(^Toxin.Class_Deets)(self)
     Toxin._Register(me, init_level)
+
+    //for default values in function binding
+    var1= Toxin.variant_r(Toxin.Int(34))
+    var2= Toxin.variant_r(Toxin.float(34))
 }
 
 
@@ -103,7 +108,9 @@ THIS_CLASS_NAME_VTable: Classes.Sprite2D_vtable(THIS_CLASS_NAME) = {
 //******************************\\
 //***********Exports************\\
 //******************************\\
-
+//for default values
+var1: Toxin.Variant
+var2: Toxin.Variant
 //make some function public to Godot's scripts.
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
@@ -130,12 +137,12 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         getter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             r_return:=cast(^Toxin.Int)r_return
-            r_return^= Object.someProperty
+            r_return^= Object.speed
         },
         setter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
             args:= cast(^Toxin.Int)args
-            Object.someProperty = args^
+            Object.speed = args^
         },
         userdata= nil,
     }
