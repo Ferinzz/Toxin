@@ -3,8 +3,6 @@ package main
 import "Toxin"
 import "base:runtime"
 import Classes "GD_Classes"
-import "GDWrapper/gdAPI"
-import GDW "GDWrapper"
 import GDE "GDWrapper/gdAPI/gdextension"
 
 

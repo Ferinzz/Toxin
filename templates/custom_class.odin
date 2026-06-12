@@ -1,21 +1,12 @@
 package main
 
-import "core:flags"
-import "core:reflect"
-//import GDW "GDWrapper"
 import "Toxin"
 import "base:runtime"
 import "core:fmt"
-import GDW "GDWrapper"
-import sics "base:intrinsics"
-//import "../GD_Classes"
 import Classes "GD_Classes"
-import "GDWrapper/gdAPI"
 import GDE "GDWrapper/gdAPI/gdextension"
-import Math "core:math"
-import rand "core:math/rand"
 import "GD_Classes"
-import "base:builtin"
+
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 //Find and Replace Godot_Class_Name with the name of the class from Godot.
 
