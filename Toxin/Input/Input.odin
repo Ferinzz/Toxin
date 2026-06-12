@@ -1,21 +1,23 @@
 package Input
 
-import GDW "shared:GDWrapper"
+import GDW "../../GDWrapper"
+import GDE "../../GDWrapper/gdAPI/gdextension"
+import sics "base:intrinsics"
+import reflect "core:reflect"
 
 DEVICE_ID_EMULATION : GDW.Int : -1
 InputEvent :: GDW.Object
 InputEvent_SN : GDW.StringName
 
-get_All_ClassTag :: proc {
-    get_All_ClassTag_struct,
-    get_All_ClassTag_array,
-}
 
-get_All_ClassTag_struct :: proc "c" (classtypes: ^$T) where sics.type_is_struct(T){
-    pos:^T = classtypes
-    for field, i in reflect.struct_fields_zipped(T) {
-        field_pos:^ClassTag=cast(^ClassTag)(uintptr(pos) + field.offset)
-        field_pos^ = get_ClassTagName(field.name)
+/*
+* Populate an array with the ClassTag(s).
+* See Input.odin for an example InputEvent_get_ClassTag of its usage.
+* classtypes: a pointer to an enumerated array of ClassTags.
+*/
+get_All_ClassTag_array :: proc(classtypes: ^$T/[$E]GDE.ClassTag) where sics.type_is_enum(E){
+    for name, i in reflect.enum_field_names(E) {
+        classtypes[E(i)] = GDW.get_ClassTagName(name)
     }
 };
 
@@ -24,46 +26,31 @@ init_InputEvent :: proc() {
         InputEvent_SN = GDW.StringConstruct("InputEvent")
     }
 
-    GDW.get_All_ClassTag_array(&InputEvent_Tags)
+    get_All_ClassTag_array(&InputEvent_Tags)
 };
-
-classDBGetMethodBind3 :: proc "c" (className: ClassName_Index, methodName: cstring, hash: i64, loc := #caller_location) -> (methodBind: GDE.MethodBindPtr) {
-    native_class_name: ^StringName;
-    method_name: StringName;
-
-    native_class_name = GDClass_StringName_get(className)
-    gdAPI.StringName_Utils.Latin1Chars(&method_name, methodName, false)
-
-    methodBind = gdAPI.ClassDB.GetMethodBind(native_class_name, &method_name, hash)
-    //assert(methodBind != nil, "Oh no. Looks like Godot couldn't find your method. \nThis could be because it doesn't exist or doesn't exist at the time it was requested.", loc)
-
-    StringName_M_List.Destroy(&method_name)
-
-    return methodBind
-}
 
 
 InputEvent_Types: struct {
-    InputEvent: GDW.ClassTag,
-    InputEventAction: GDW.ClassTag,
-    InputEventFromWindow: GDW.ClassTag,
-    InputEventGesture: GDW.ClassTag,
-    InputEventJoypadButton: GDW.ClassTag,
-    InputEventJoypadMotion: GDW.ClassTag,
-    InputEventKey: GDW.ClassTag,
-    InputEventMIDI: GDW.ClassTag,
-    InputEventMagnifyGesture: GDW.ClassTag,
-    InputEventMouse: GDW.ClassTag,
-    InputEventMouseButton: GDW.ClassTag,
-    InputEventMouseMotion: GDW.ClassTag,
-    InputEventPanGesture: GDW.ClassTag,
-    InputEventScreenDrag: GDW.ClassTag,
-    InputEventScreenTouch: GDW.ClassTag,
-    InputEventShortcut: GDW.ClassTag,
-    InputEventWithModifiers: GDW.ClassTag,
+    InputEvent: GDE.ClassTag,
+    InputEventAction: GDE.ClassTag,
+    InputEventFromWindow: GDE.ClassTag,
+    InputEventGesture: GDE.ClassTag,
+    InputEventJoypadButton: GDE.ClassTag,
+    InputEventJoypadMotion: GDE.ClassTag,
+    InputEventKey: GDE.ClassTag,
+    InputEventMIDI: GDE.ClassTag,
+    InputEventMagnifyGesture: GDE.ClassTag,
+    InputEventMouse: GDE.ClassTag,
+    InputEventMouseButton: GDE.ClassTag,
+    InputEventMouseMotion: GDE.ClassTag,
+    InputEventPanGesture: GDE.ClassTag,
+    InputEventScreenDrag: GDE.ClassTag,
+    InputEventScreenTouch: GDE.ClassTag,
+    InputEventShortcut: GDE.ClassTag,
+    InputEventWithModifiers: GDE.ClassTag,
 };
 
-InputEvent_Tags: [InputEvent_Options]GDW.ClassTag
+InputEvent_Tags: [InputEvent_Options]GDE.ClassTag
 
 InputEvent_Set: bit_set[InputEvent_Options];
 InputEvent_Options :: enum {

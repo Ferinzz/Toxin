@@ -11,8 +11,8 @@ Dictionary_Methods_list :: struct {
     Create2: proc "c" (p_base: ^Dictionary,  #by_ptr p_args: struct{ base: ^Dictionary, key_type: ^Int, key_class_name: ^StringName, key_script: ^Variant, value_type: ^Int, value_class_name: ^StringName, value_script: ^Variant, }),
     Destroy: proc "c" (p_base: ^Dictionary),
     get_ptr: proc "c" (base: ^Variant) -> ^Dictionary,
-    KeyedSetter : proc "c" (p_base: Dictionary, p_key: GDE.ConstTypePtr, p_value: GDE.ConstTypePtr),
-    KeyedGetter : proc "c" (p_base: Dictionary, p_key: GDE.TypePtr, r_value: GDE.TypePtr),
+    KeyedSetter : proc "c" (p_base: ^Dictionary, p_key: ^Variant, p_value: ^Variant),
+    KeyedGetter : proc "c" (p_base: ^Dictionary, p_key: ^Variant, r_value: ^Variant),
     KeyedChecker : proc "c" (#by_ptr p_base: Variant, #by_ptr p_key: Variant) -> u32,
     IndxSetter : proc "c" (p_base: ^Dictionary, p_index: Int, p_value: ^Variant),
     IndxGetter : proc "c" (p_base: ^Dictionary, p_index: Int, r_value: ^Variant),
@@ -56,12 +56,12 @@ Dictionary_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Dictionary, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Dictionary, p_right: ^Array, r_result: ^Bool),
 }
-init_Dictionary_Methods :: proc(Dictionary_method_store: ^Dictionary_Methods_list) {
+init_Dictionary_Methods :: proc "c" (Dictionary_method_store: ^Dictionary_Methods_list) {
   Dictionary_method_store.Create0 = cast(type_of(Dictionary_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 0)
   Dictionary_method_store.Create1 = cast(type_of(Dictionary_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 1)
   Dictionary_method_store.Create2 = cast(type_of(Dictionary_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.DICTIONARY, 2)
   Dictionary_method_store.Destroy = cast(type_of(Dictionary_method_store.Destroy))gdAPI.Variant_Utils.GetPtrDestructor(.DICTIONARY)
-    Dictionary_method_store.get_ptr = cast(type_of(Dictionary_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.DICTIONARY)
+  Dictionary_method_store.get_ptr = cast(type_of(Dictionary_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.DICTIONARY)
   Dictionary_method_store.KeyedSetter = cast(type_of(Dictionary_method_store.KeyedSetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
   Dictionary_method_store.KeyedGetter = cast(type_of(Dictionary_method_store.KeyedGetter))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)
   Dictionary_method_store.KeyedChecker = cast(type_of(Dictionary_method_store.KeyedChecker))gdAPI.Variant_Utils.GetPtrKeyedSetter(.DICTIONARY)

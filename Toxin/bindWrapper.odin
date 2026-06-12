@@ -1,12 +1,13 @@
 
+#+ignore
 #+feature using-stmt
 package Toxin
 
 import "base:builtin"
 import "base:runtime"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
-import "shared:GDWrapper/gdAPI"
-import GDW "shared:GDWrapper"
+import GDW "../GDWrapper"
+import GDE "../GDWrapper/gdAPI/gdextension"
+import "../GDWrapper/gdAPI"
 import sics "base:intrinsics"
 import "core:fmt"
 import "core:slice"
@@ -36,6 +37,7 @@ import "core:reflect"
 * classStruct: the class struct which holds your variable.
 * fieldName: the name that matches the field in the struct as you've named it.
 */
+//offset, stringname, string field name, usage
 Export :: proc(className_SN: ^StringName, $classStruct: typeid,  $fieldName: string,
                         property_usage: GDE.PropertyUsageFlagsbits = GDE.PROPERTY_USAGE_DEFAULT,
                         methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT,
@@ -60,6 +62,29 @@ Export :: proc(className_SN: ^StringName, $classStruct: typeid,  $fieldName: str
     Bind_Property(className_SN, fieldName, variant_type, &info, "get_"+fieldName, "set_"+fieldName)
     //bind_export(classStruct, &className_SN, fieldName, variant_type, Field_Type, methodType, &info, loc)
     destructProperty(&info)
+}
+
+Export2 :: proc(classname_sn: ^StringName, fieldname: ^StringName, getter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(CC_Dummy), godotValue: rawptr, r_ret: rawptr), \
+    setter: proc "c" (method_userdata: rawptr, p_classData: ^Class_Container(CC_Dummy), godotValue: ^struct{self:rawptr}, r_ret: GDE.TypePtr)) {
+setter_passthrough(nil, nil, {&{.INT, {32, 0}}}, 1, nil, &{})
+}
+
+setter_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr,
+        #by_ptr p_args: struct{var: ^Variant}, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context= runtime.default_context()
+    if p_argument_count != 1 {
+        r_error^= {
+            error=.CALL_ERROR_TOO_MANY_ARGUMENTS,
+            argument= i32(p_argument_count),
+            expected = 1,
+        }
+    }
+    call:=cast(proc(a: rawptr, b: rawptr, #by_ptr c: struct{_: rawptr}, d: rawptr))method_userdata
+    //If it is a type which needs to be destroyed, Ref_count new source then destroy old.
+    val: Int
+    copy_from_variant(&val, p_args.var)
+    call(method_userdata, p_instance, {&val}, r_return)
+    r_error^={}
 }
 
 /*
@@ -213,7 +238,7 @@ Export_Enum :: #force_inline proc(className_SN: ^StringName, $classStruct: typei
     for field, ind in info.names {
         field_SN: StringName
         GDW.StringConstruct(&field_SN, field)
-        gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
+        gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &enumName_SN, &field_SN, Int(info.values[ind]), false)
         GDW.StringName_M_List.Destroy(&field_SN)
     }
 }
@@ -290,7 +315,7 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
     else if FIELD_TYPE == float {
         field_type = .FLOAT
     } else {
-        GDW.failureProc("", "unsupported type in Export_Range", loc)
+        failureProc("", "unsupported type in Export_Range", loc)
     }
     if len(flag_string) > 0{
         output = strings.concatenate({min,",",max,",",step,",",string(flag_string[:])})
@@ -316,34 +341,6 @@ Export_Range :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName
     delete(output)
     delete(flag_string)
 }
-
-/*Struct to pass data for a ranged variable.
-* Supports: float, int
-* min: lowest value allowed by the editor.
-* max: largest value allowed by the editor.
-* step: by how much it should increment. 0 will be ignored.
-* flags: additional usage information.
-* validate: Not implemented. if Odin's callback should verify the range.
-*/
-Ranged_Num :: struct ($T: typeid) {
-  min: T,
-  max: T,
-  step: T,
-  flags: Range_Flags,
-  //validate: bool, //Specify if you want Odin callbacks to validate the range.
-}
-
-Range_Flags :: bit_set [Range; Int]
-
-Range :: enum {
-  or_greater, //Can exceed the max limit
-  or_less, //Can go lower than the min limit
-  exp, //
-  hide_slider, //Slider will not appear in editor
-  radians_as_degrees, //will represent radian values as degrees
-  degrees, //limit the range to degrees (-360 to 360)
-}
-
 //Warning untested!!
 Export_Ranged_Array :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName: string,
                         range_info: $T/Ranged_Array,
@@ -486,19 +483,6 @@ Export_Easing :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     Bind_Property(className_SN, fieldName, .FLOAT, &info, "get_"+fieldName, "set_"+fieldName)
 
     destructProperty(&info)
-}
-
-
-Easing_Type: [Easing_Options]string = {
-  .none = "",
-  .attenuation= "attenuation",
-  .positive_only = "positive_only",
-}
-
-Easing_Options :: enum {
-  none,
-  attenuation,
-  positive_only,
 }
 
 /*
@@ -738,7 +722,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
             
             //The index of an enum represents the index of the bool in a bit_set.
             //Quickest way to convert to a bit position is to bitshift an amount equal to the value.
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(1<<u64(flag_enum.values[index])), true)
             GDW.StringName_M_List.Destroy(&field_SN)
         }
 
@@ -747,7 +731,7 @@ Export_Flags :: proc(className_SN: ^StringName, $classStruct: typeid, $outbit_se
             field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN: StringName
             GDW.StringConstruct(&field_SN, field)
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(GDW.Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
             delete(field)
             GDW.StringName_M_List.Destroy(&field_SN)
         }
@@ -802,29 +786,6 @@ Export_Layers :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     destructProperty(&prop_info)
 }
 
-//bit flag field for layers.
-//The widget in the Inspector dock will use the layer names defined in ProjectSettings.layer_names
-layers_2d_render:: bit_set[1..=20; u32]
-layers_3d_render:: bit_set[1..=20; u32]
-
-layers_2d_physics:: bit_set[1..=32; u32]
-layers_3d_physics:: bit_set[1..=32; u32]
-
-layers_2d_navigation:: distinct bit_set[1..=32; u32]
-layers_3d_navigation:: bit_set[1..=32; u32]
-
-layers_avoidance:: bit_set[1..=32; u32]
-
-Layer_Type :: enum {
-    LAYERS_2D_RENDER,
-    LAYERS_3D_RENDER,
-    LAYERS_2D_PHYSICS,
-    LAYERS_3D_PHYSICS,
-    LAYERS_2D_NAVIGATION,
-    LAYERS_3D_NAVIGATION,
-    LAYERS_AVOIDANCE,
-}
-
 
 /*
 * Specify the type of path that your Path is representing.
@@ -875,15 +836,6 @@ Export_Path :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldName:
 //gdstring to a path to a file or directory.
 Path:: gdstring
 
-PATH_TYPES :: enum {
-  DIR, //path to a directory
-  FILE, //path to a file filters with wildcards like "*.png,*.jpg"
-  FILE_PATH, //stored as raw path instead of UID
-  GLOBAL_DIR, //absolute path to directory
-  GLOBAL_FILE, //absolute path to file
-  SAVE_FILE, //file path. can have wildcards like "*.png,*.jpg".
-  GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
-}
 
 
 /*
@@ -915,10 +867,6 @@ Export_Locale :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldNam
     Bind_Property(className_SN, string(fieldName), .STRING, &info, "get_"+fieldName, "set_"+fieldName)
     destructProperty(&info)
 }
-
-//Specifies a locale.
-//Editing will show locale dialog for picking language and country.
-Locale_ID :: gdstring
 
 /*
 * Strings exported as Passwords will hint to the editor that is should mask the actual letters with * symbols.
@@ -955,8 +903,6 @@ Export_Password :: proc(className_SN: ^StringName, $classStruct: typeid, $fieldN
     destructProperty(&info)
 }
 
-//Specifies a password
-Password :: gdstring
 
 /*
 * Export a gdstring and specify what the placeholder text should be for it.
@@ -1048,18 +994,6 @@ Export_Input_Name :: proc(className_SN: ^StringName, $classStruct: typeid, $fiel
         Bind_Property(className_SN, fieldName, .STRING_NAME, &prop_info, "get_"+fieldName, "set_"+fieldName)
     }
 
-}
-
-Input_Options :: bit_set [Input_Options_enum; u8]
-
-Input_Options_enum :: enum u8 {
-    show_builtin,
-    loose_mode,
-}
-
-Input_Option_Strings:[Input_Options_enum]string=  {
-    .show_builtin = "show_builtin",
-    .loose_mode = "loose_mode",
 }
 
 /*
@@ -1451,15 +1385,6 @@ Export_proc_As_Tool_Button :: proc(className_SN: ^StringName, $classStruct: type
     return gdCallable
 }
 
-/*
-* used for Export_Tool_Button to specify the details of the button.
-* text: will be displayed in the button itself.
-* icon: the icon type to be displayed alongside the button. ex. ColorRect will show the color selector icon.
-*/
-tool_Button_Info :: struct {
-    text: string,
-    icon: string,
-}
 
 /*
 * Helper function to run the standard functions needed to create getter, setter, and bind them to Godot.
@@ -1488,63 +1413,6 @@ bind_export :: #force_inline proc($classStruct: typeid, className_SN: ^StringNam
     Bind_Property_Prop_Info(className_SN, fieldName, variant_type, prop_info, "get_"+fieldName, "set_"+fieldName, loc)
 }
 
-make_property :: #force_inline proc(type: GDE.VariantType, name: string) -> GDE.PropertyInfo {
-    return makePropertyFull_string(type, name, GDE.PropertyHint.NONE, "", "", GDE.PROPERTY_USAGE_DEFAULT)
-}
-
-Make_Property_Full :: proc {
-    makePropertyFull_cstring,
-    makePropertyFull_string,
-}
-
-//TODO : See if I really need to malloc these variables or if that's just something for C to do.
-//Odin has a bunch of memory management. If all we need is to malloc memory to heap we can do that with new().
-makePropertyFull_cstring :: proc(type: GDE.VariantType, name: cstring, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-    
-
-    prop_name:= new(StringName)
-    gdAPI.StringName_Utils.Latin1Chars(prop_name, name, false)
-
-    propHintString:= new(gdstring)
-    gdAPI.Strings_Utils.NewWithUtf8Chars(propHintString, hintString)
-
-    propClassName:= new(StringName)
-    gdAPI.StringName_Utils.Latin1Chars(propClassName, className, false)
-    
-    info: GDE.PropertyInfo = {
-        name = prop_name,
-        type = type, //is an enum specifying type. Meh.
-        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
-        hint_string = propHintString,
-        class_name = propClassName,
-        usage = usageFlags,
-    }
-
-    return info
-}
-
-makePropertyFull_string :: #force_inline proc(type: GDE.VariantType, name: string, hint: GDE.PropertyHint, hintString: string, className: string, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
-
-    prop_name:= new(StringName)
-    gdAPI.StringName_Utils.Utf8CharsAndLen(prop_name, raw_data(name), i64(len(name)))
-
-    propHintString:= new(gdstring)
-    gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(propHintString, raw_data(hintString), i64(len(hintString)))
-
-    propClassName:= new(StringName)
-    gdAPI.StringName_Utils.Utf8CharsAndLen(propClassName, raw_data(className), i64(len(className)))
-    
-    info: GDE.PropertyInfo = {
-        name = prop_name,
-        type = type, //is an enum specifying type. Meh.
-        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
-        hint_string = propHintString,
-        class_name = propClassName,
-        usage = usageFlags
-    }
-
-    return info
-}
 
 //MUST have these types initialized before attempting to access them. Godot will panic otherwise (Yay RAII..)
 Verify_Heap_Init :: proc {
@@ -1575,62 +1443,6 @@ if nil == p_classData.id {
 };
 
 
-Bind_Property :: proc {
-    bindProperty,
-    Bind_Property_Prop_Info,
-}
-
-Bind_Property_Prop_Info :: #force_inline proc(className: ^StringName, name: string, type: GDE.VariantType, prop_hint: ^GDE.PropertyInfo, getter, setter: string, loc:=#caller_location) {
-
-    getterName: StringName
-    gdAPI.StringName_Utils.Utf8CharsAndLen(&getterName, raw_data(getter[:]), i64(len(getter)))
-    setterName: StringName
-    gdAPI.StringName_Utils.Utf8CharsAndLen(&setterName, raw_data(setter[:]), i64(len(setter)))
-    gdAPI.ClassDB.RegisterExtensionClassProperty(GDW.Library, className, prop_hint, &setterName, &getterName)
-    
-}
-
-/*
-* bindProperty is used to make your variable public.
-* Prior to calling this you should have registered the get and/or set functions with Godot.
-* Provide their names as cstrings. Check the makePublic function for a general workflow.
-* Use makePublic to auto-gen basic get/set functions for simple variables. (I haven't tested with arrays.)
-*/
-bindProperty :: #force_inline proc(className: ^StringName, name: string, type: GDE.VariantType, getter, setter: cstring, loc:=#caller_location) {
-    
-    info: GDE.PropertyInfo = make_property(type, name)
-
-    getterName: StringName
-    gdAPI.StringName_Utils.Latin1Chars(&getterName, getter, false)
-    setterName: StringName
-    gdAPI.StringName_Utils.Latin1Chars(&setterName, setter, false)
-    gdAPI.ClassDB.RegisterExtensionClassProperty(GDW.Library, className, &info, &setterName, &getterName)
-
-    //Destructor stuff
-    destructProperty(&info)
-}
-
-destructProperty :: proc(info: ^GDE.PropertyInfo) {
-    
-    if info.name != nil{
-        GDW.StringName_M_List.Destroy(info.name)
-    }
-    if info.class_name != nil {
-        GDW.StringName_M_List.Destroy(info.class_name)
-    }
-    if info.hint_string != nil {
-        GDW.gdstring_M_List.Destroy(info.hint_string)
-    }
-    
-    //See above TODO. If malloc is not needed, wouldn't need to free.
-    if info.name != nil{
-    free(info.name)}
-    if info.hint_string != nil {
-    free(info.class_name)}
-    if info.class_name != nil {
-    free(info.hint_string)}
-}
-
 /*
 * TODO: update to only pass the pointers to the getter/setter in order to simplify some of this.
 ** Return will still need specific types.
@@ -1650,6 +1462,7 @@ Gen_Variant_Setter ::  proc(function: $P, loc:=#caller_location) -> (GDE.ClassMe
                 expected = 1,
             }
         }
+        fmt.println((cast(^Variant)p_args[0])^)
 
         //gdTypeList:= [1]GDE.VariantType {.INT}
         //variantTypeCheck(gdTypeList[:], p_args, r_error)
@@ -1725,7 +1538,6 @@ Bind_Set :: #force_inline proc(className: ^StringName, methodName: string,
         index:int
         index, _ = slice.linear_search(GDW.GDTypes[:], sics.type_elem_type(sics.type_field_type(sics.type_proc_parameter_type(T, 2), "self")))
         argsInfo[0] = make_property(GDE.VariantType(index), argNames)
-
         args_metadata: [1]GDE.ClassMethodArgumentMetadata
         args_metadata[0]= GDE.ClassMethodArgumentMetadata.NONE
 
@@ -1744,10 +1556,11 @@ Bind_Set :: #force_inline proc(className: ^StringName, methodName: string,
         methodInfo.arguments_metadata = &args_metadata[0]
 
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
+    destructProperty(&argsInfo[0])
 }
 
 Bind_Get :: #force_inline proc(className: ^StringName, methodName: string,
@@ -1780,7 +1593,7 @@ Bind_Get :: #force_inline proc(className: ^StringName, methodName: string,
         methodInfo.arguments_metadata = nil
 
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
@@ -1823,6 +1636,7 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $FIELD
         FIELD_TYPE == Signal 
         {
             r_sn: FIELD_TYPE
+            
             Ref_Count(godotValue.self, &r_sn)
             Destroy_Builtin((^FIELD_TYPE)((^FIELD_TYPE)(uintptr(p_classData) + FIELD_OFFSET)))
             (cast(^FIELD_TYPE)(uintptr(p_classData)+FIELD_OFFSET))^ = (r_sn)
@@ -1850,6 +1664,20 @@ make_getter_and_setter2 :: proc($classStruct: typeid, $fieldName: string, $FIELD
         context = runtime.default_context()
         //~fmt.println(FIELD_OFFSET)
         //~fmt.println(fieldName)
+        when FIELD_TYPE == Array ||
+        sics.type_is_specialization_of(FIELD_TYPE, GDW.packedArray) ||
+        FIELD_TYPE == PackedStringArray ||
+        FIELD_TYPE == Dictionary ||
+        FIELD_TYPE == StringName ||
+        FIELD_TYPE == gdstring ||
+        FIELD_TYPE == NodePath ||
+        FIELD_TYPE == Callable ||
+        FIELD_TYPE == Signal {
+            r_sn: FIELD_TYPE
+            Ref_Count((cast(^FIELD_TYPE)(uintptr(p_classData)+FIELD_OFFSET)), &r_sn)
+            r_ret^ = r_sn
+            //return
+        }
         when FIELD_TYPE == Array ||
         FIELD_TYPE == Dictionary {
             Verify_Heap_Init((cast(^FIELD_TYPE)(rawptr(uintptr(p_classData)+FIELD_OFFSET))),\

@@ -1,7 +1,7 @@
 package Input
 
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDW "../../GDWrapper"
+import "../../GDWrapper/gdAPI"
 
 make_Input :: proc(Input: ^Input_C) {
     Input.methods = &Input_methods
@@ -27,7 +27,7 @@ Input_methods_list:: struct {
 Input_methods: Input_methods_list
 
 Input: Input_C = {
-    methods = &Input_methods
+    methods = &Input_methods,
 }
 
 

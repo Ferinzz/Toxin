@@ -21,7 +21,7 @@ RID_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^RID, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^RID, p_right: ^Array, r_result: ^Bool),
 }
-init_RID_Methods :: proc(RID_method_store: ^RID_Methods_list) {
+init_RID_Methods :: proc "c" (RID_method_store: ^RID_Methods_list) {
   RID_method_store.Create0 = cast(type_of(RID_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.RID, 0)
   RID_method_store.Create1 = cast(type_of(RID_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.RID, 1)
     RID_method_store.get_ptr = cast(type_of(RID_method_store.get_ptr))gdAPI.Variant_Utils.GetVariantGetInternalPtrFunc(.RID)

@@ -177,7 +177,7 @@ StringName_Methods_list :: struct {
     VARIANT_OP_MODULE_PackedColorArray: proc "c" (p_left: ^StringName, p_right: ^PackedColorArray, r_result: ^gdstring),
     VARIANT_OP_MODULE_PackedVector4Array: proc "c" (p_left: ^StringName, p_right: ^PackedVector4Array, r_result: ^gdstring),
 }
-init_StringName_Methods :: proc(StringName_method_store: ^StringName_Methods_list) {
+init_StringName_Methods :: proc "c" (StringName_method_store: ^StringName_Methods_list) {
   StringName_method_store.Create0 = cast(type_of(StringName_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.STRING_NAME, 0)
   StringName_method_store.Create1 = cast(type_of(StringName_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.STRING_NAME, 1)
   StringName_method_store.Create2 = cast(type_of(StringName_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.STRING_NAME, 2)

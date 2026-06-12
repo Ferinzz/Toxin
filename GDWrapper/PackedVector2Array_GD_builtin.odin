@@ -44,7 +44,7 @@ PackedVector2Array_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedVector2Array: proc "c" (p_left: ^PackedVector2Array, p_right: ^PackedVector2Array, r_result: ^Bool),
     VARIANT_OP_ADD_PackedVector2Array: proc "c" (p_left: ^PackedVector2Array, p_right: ^PackedVector2Array, r_result: ^PackedVector2Array),
 }
-init_PackedVector2Array_Methods :: proc(PackedVector2Array_method_store: ^PackedVector2Array_Methods_list) {
+init_PackedVector2Array_Methods :: proc "c" (PackedVector2Array_method_store: ^PackedVector2Array_Methods_list) {
   PackedVector2Array_method_store.Create0 = cast(type_of(PackedVector2Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR2_ARRAY, 0)
   PackedVector2Array_method_store.Create1 = cast(type_of(PackedVector2Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR2_ARRAY, 1)
   PackedVector2Array_method_store.Create2 = cast(type_of(PackedVector2Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_VECTOR2_ARRAY, 2)

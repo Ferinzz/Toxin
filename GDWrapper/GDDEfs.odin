@@ -61,7 +61,7 @@ void :: struct {
 //The use 16 bytes if your Godot version was built with double precision support, which is not the default.
 //else use 8 bytes
 //Doesn't have to be x,y pos. Also used in Godot as width height. They use a union to be able to switch between..
-Vector2 :: distinct struct{
+Vector2 :: distinct struct #simple {
     x: f32,
     y: f32,
 }
@@ -182,7 +182,7 @@ RID :: distinct struct{
 Object :: GDE.Object
 
 //a pointer uniquely identifying the given built-in class in the ClassDB.
-ClassTag:: rawptr
+ClassTag:: GDE.ClassTag
 
 /*Represents a function. It can either be a method within an Object instance,
 or a custom callable used for different purposes.

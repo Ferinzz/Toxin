@@ -43,7 +43,7 @@ PackedFloat64Array_Methods_list :: struct {
     VARIANT_OP_NOT_EQUAL_PackedFloat64Array: proc "c" (p_left: ^PackedFloat64Array, p_right: ^PackedFloat64Array, r_result: ^Bool),
     VARIANT_OP_ADD_PackedFloat64Array: proc "c" (p_left: ^PackedFloat64Array, p_right: ^PackedFloat64Array, r_result: ^PackedFloat64Array),
 }
-init_PackedFloat64Array_Methods :: proc(PackedFloat64Array_method_store: ^PackedFloat64Array_Methods_list) {
+init_PackedFloat64Array_Methods :: proc "c" (PackedFloat64Array_method_store: ^PackedFloat64Array_Methods_list) {
   PackedFloat64Array_method_store.Create0 = cast(type_of(PackedFloat64Array_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT64_ARRAY, 0)
   PackedFloat64Array_method_store.Create1 = cast(type_of(PackedFloat64Array_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT64_ARRAY, 1)
   PackedFloat64Array_method_store.Create2 = cast(type_of(PackedFloat64Array_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.PACKED_FLOAT64_ARRAY, 2)

@@ -31,7 +31,7 @@ Rect2i_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Rect2i, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Rect2i, p_right: ^Array, r_result: ^Bool),
 }
-init_Rect2i_Methods :: proc(Rect2i_method_store: ^Rect2i_Methods_list) {
+init_Rect2i_Methods :: proc "c" (Rect2i_method_store: ^Rect2i_Methods_list) {
   Rect2i_method_store.Create0 = cast(type_of(Rect2i_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.RECT2I, 0)
   Rect2i_method_store.Create1 = cast(type_of(Rect2i_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.RECT2I, 1)
   Rect2i_method_store.Create2 = cast(type_of(Rect2i_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.RECT2I, 2)

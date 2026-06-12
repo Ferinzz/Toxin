@@ -42,7 +42,7 @@ AABB_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^AABB, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^AABB, p_right: ^Array, r_result: ^Bool),
 }
-init_AABB_Methods :: proc(AABB_method_store: ^AABB_Methods_list) {
+init_AABB_Methods :: proc "c" (AABB_method_store: ^AABB_Methods_list) {
   AABB_method_store.Create0 = cast(type_of(AABB_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.AABB, 0)
   AABB_method_store.Create1 = cast(type_of(AABB_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.AABB, 1)
   AABB_method_store.Create2 = cast(type_of(AABB_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.AABB, 2)

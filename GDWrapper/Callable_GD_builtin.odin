@@ -38,7 +38,7 @@ Callable_Methods_list :: struct {
     VARIANT_OP_IN_Dictionary: proc "c" (p_left: ^Callable, p_right: ^Dictionary, r_result: ^Bool),
     VARIANT_OP_IN_Array: proc "c" (p_left: ^Callable, p_right: ^Array, r_result: ^Bool),
 }
-init_Callable_Methods :: proc(Callable_method_store: ^Callable_Methods_list) {
+init_Callable_Methods :: proc "c" (Callable_method_store: ^Callable_Methods_list) {
   Callable_method_store.Create0 = cast(type_of(Callable_method_store.Create0))gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 0)
   Callable_method_store.Create1 = cast(type_of(Callable_method_store.Create1))gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 1)
   Callable_method_store.Create2 = cast(type_of(Callable_method_store.Create2))gdAPI.Variant_Utils.GetPtrConstructor(.CALLABLE, 2)

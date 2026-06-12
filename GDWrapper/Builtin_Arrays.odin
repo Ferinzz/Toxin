@@ -6,7 +6,7 @@ import "gdAPI"
 
 //WARNING: if Exported you must initialize arrays them with at least create0 at some point.
 
-init_array_types:: proc(GDArray_Methods: ^GDArray_Methods_list,
+init_array_types:: proc "c" (GDArray_Methods: ^GDArray_Methods_list,
 PackedByteArray_Methods: ^PackedByteArray_Methods_list,
 PackedInt32Array_Methods: ^PackedInt32Array_Methods_list,
 PackedInt64Array_Methods: ^PackedInt64Array_Methods_list,
@@ -22,7 +22,7 @@ GDDictionary_Methods: ^GDDictionary_Methods_list,) {
     arrayClass: StringName
     arraySize: StringName
 
-    PackedStringArray_Methods.GetIndex = cast(proc(p_base: ^PackedStringArray, index: Int, r_ret: ^Variant))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_STRING_ARRAY)
+    PackedStringArray_Methods.GetIndex = cast(proc "c" (p_base: ^PackedStringArray, index: Int, r_ret: ^Variant))gdAPI.Variant_Utils.GetPtrIndexedGetter(.PACKED_STRING_ARRAY)
     PackedStringArray_Methods.SetIndex = gdAPI.Variant_Utils.GetPtrIndexedSetter(.PACKED_STRING_ARRAY)
     PackedStringArray_Methods.Destroy = cast(#type proc "c" (dest: ^PackedStringArray))gdAPI.Variant_Utils.GetPtrDestructor(.PACKED_STRING_ARRAY)
     gdAPI.StringName_Utils.Latin1Chars(&arraySize, "size", false)
@@ -88,7 +88,7 @@ GDDictionary_Methods: ^GDDictionary_Methods_list,) {
     GDArray_Methods.Create11 = gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 11)
     GDArray_Methods.Create11 = gdAPI.Variant_Utils.GetPtrConstructor(.ARRAY, 12)
     
-    GDArray_Methods.GetIndex = cast(proc(p_base: ^Class_Array, index: Int, r_ret: ^Variant))gdAPI.Variant_Utils.GetPtrIndexedGetter(.ARRAY)
+    GDArray_Methods.GetIndex = cast(proc "c" (p_base: ^Class_Array, index: Int, r_ret: ^Variant))gdAPI.Variant_Utils.GetPtrIndexedGetter(.ARRAY)
     GDArray_Methods.SetIndex = gdAPI.Variant_Utils.GetPtrIndexedSetter(.ARRAY)
     GDArray_Methods.Destroy = cast(#type proc "c" (p_base: ^Array))gdAPI.Variant_Utils.GetPtrDestructor(.ARRAY)
     
@@ -827,7 +827,7 @@ PackedStringArray_Methods_list :: struct {
     Append: GDE.PtrBuiltInMethod,
     Get: GDE.PtrBuiltInMethod,
     Set: GDE.PtrBuiltInMethod,
-    GetIndex: proc(p_base: ^PackedStringArray, index: Int, r_ret: ^Variant),
+    GetIndex: proc "c" (p_base: ^PackedStringArray, index: Int, r_ret: ^Variant),
     SetIndex: GDE.PtrIndexedSetter,
     Destroy: #type proc "c" (dest: ^PackedStringArray),
 }
@@ -856,7 +856,7 @@ GDArray_Methods_list :: struct {
 
     Destroy: #type proc "c" (p_base: ^Array),
 
-    GetIndex: proc(p_base: ^Class_Array, index: Int, r_ret: ^Variant),
+    GetIndex: proc "c" (p_base: ^Class_Array, index: Int, r_ret: ^Variant),
     SetIndex: GDE.PtrIndexedSetter,
 
     Size: GDE.PtrBuiltInMethod,
