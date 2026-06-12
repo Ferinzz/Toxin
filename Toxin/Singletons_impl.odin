@@ -197,7 +197,7 @@ _Init_Singletons2 :: proc(singletons: singleton_options) {
 }
 
 init_engine_procs :: proc() {
-    Classes.Engine_Init_(&singletons.Engine_M_List)
+    Classes.Engine_Init_(&Engine_M_List)
     Engine = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
 }
 singleton_options:: bit_set[singleton_list]
