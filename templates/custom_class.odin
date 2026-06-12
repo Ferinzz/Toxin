@@ -8,8 +8,6 @@ import GDE "GDWrapper/gdAPI/gdextension"
 import "GD_Classes"
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
-//Find and Replace Godot_Class_Name with the name of the class from Godot.
-
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
         registerer = THIS_CLASS_NAME_reggy,
@@ -26,7 +24,6 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 }
 
 //Godot will be passing us a pointer to this struct during callbacks.
-//Name of the strict MUST match what is used in the init function used to name our class. THIS_CLASS_NAME_SN
 THIS_CLASS_NAME :: struct {
     speed: Toxin.Int,
 }
@@ -59,16 +56,6 @@ destructor :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
 //******************************\\
 //*******VIRTUAL METHODS********\\
 //******************************\\
-
-signal_test :: proc "c" (obj: ^Toxin.Object) {
-    context = runtime.default_context()
-    fmt.println("connected signal")
-}
-
-bound_callable_test :: proc "c" (obj: ^Toxin.Object, str: ^Toxin.Int) {
-    context = runtime.default_context()
-    fmt.println(str^)
-}
 
 //Use this to setup your _process _ready etc instead of the virtuals. Virtuals will prioritize GDScript over your own virtuals.
 THIS_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_what: i32, p_reversed: b8) {
@@ -168,6 +155,9 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin.export_enum_as_int(className, &_enum, munum)
 }
 
+//***************************\\
+//****Exported functions*****\\
+//***************************\\
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
 somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int, arg2: ^Toxin.float) {
@@ -195,4 +185,18 @@ static_proc :: proc "c" () {
 static_proc_defaults :: proc "c" (arg1: ^Toxin.Int) {
     context = runtime.default_context()
     fmt.println("I'm running a static proc.\nMy default is", arg1^)
+}
+
+//************************\\
+//****Signal Callables****\\
+//************************\\
+
+signal_test :: proc "c" (obj: ^Toxin.Object) {
+    context = runtime.default_context()
+    fmt.println("connected signal")
+}
+
+bound_callable_test :: proc "c" (obj: ^Toxin.Object, str: ^Toxin.Int) {
+    context = runtime.default_context()
+    fmt.println(str^)
 }
