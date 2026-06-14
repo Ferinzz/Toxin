@@ -61,59 +61,25 @@ void :: struct {
 //The use 16 bytes if your Godot version was built with double precision support, which is not the default.
 //else use 8 bytes
 //Doesn't have to be x,y pos. Also used in Godot as width height. They use a union to be able to switch between..
-Vector2 :: distinct struct #simple {
-    x: f32,
-    y: f32,
-}
+Vector2 :: distinct [2]f32
 
-Vector2i :: distinct struct {
-    x: i32,
-    y: i32,
-}
+Vector2i :: distinct [2]i32
 
 //Original has 2 Vector2
-Rect2 :: distinct struct {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
-}
+Rect2 :: distinct [2]f32
 
 
 //Original has 2 Vector2i
-Rect2i :: distinct struct {
-    x: i32,
-    y: i32,
-    width:  i32,
-    height: i32,
-}
+Rect2i :: distinct [2]i32
 
-Vector3 :: distinct struct{
-    x: f32,
-    y: f32,
-    z: f32,
-}
+Vector3 :: distinct [3]f32
 
-Vector3i :: distinct struct{
-    x: i32,
-    y: i32,
-    z: i32,
-}
+Vector3i :: distinct [3]i32
 
 
-Vector4 :: distinct struct{
-    x: f32,
-    y: f32,
-    z: f32,
-    w: f32,
-}
+Vector4 :: distinct [4]f32
 
-Vector4i :: distinct struct #packed{
-    x: i32,
-    y: i32,
-    z: i32,
-    w: i32,
-}
+Vector4i :: distinct [4]i32
 
 //Vector3 + d
 Plane :: distinct [4]f32
