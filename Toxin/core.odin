@@ -493,3 +493,8 @@ bindProperty :: #force_inline proc(className: ^StringName, name: string, type: G
 }
 
 Object_M_methods: Classes.Object_MethodBind_List
+
+gdstring_new :: proc(text: string) -> (ret: gdstring) {
+    gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(&ret, raw_data(text), Int(len(text)))
+    return
+}
