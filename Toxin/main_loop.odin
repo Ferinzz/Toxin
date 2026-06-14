@@ -46,9 +46,9 @@ register_mainloop_callbacks :: proc(mainLoopCallbacks: GDE.MainLoopCallbacks) {
         myMainLoopCallbacks.startup_func = StartupCallback_default
     }
     if mainLoopCallbacks.frame_func != nil {
-        myMainLoopCallbacks.frame_func = mainLoopCallbacks.frame_func
+        toxinMainLoopCallbacks.frame_func = mainLoopCallbacks.frame_func
     } else if myMainLoopCallbacks.frame_func == nil {
-        myMainLoopCallbacks.frame_func = FrameCallback_default
+        toxinMainLoopCallbacks.frame_func = FrameCallback_default
     }
     if mainLoopCallbacks.shutdown_func != nil {
         myMainLoopCallbacks.shutdown_func = mainLoopCallbacks.shutdown_func
@@ -75,6 +75,7 @@ MainLoopStartupCallback :: proc "c" () {
     //Classes.INIT_ALL_OF_THEM()
     //_Init_Singletons(&singletons)
     init_engine_procs()
+    init_input_procs()
     Classes.SceneTree_Init_(&SceneTree_Class)
     scene_tree_obj = _getMainLoop()
     root_node_instance = _getRoot()
