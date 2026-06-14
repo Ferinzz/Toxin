@@ -2757,12 +2757,7 @@ InterfacePackedVector4ArrayOperatorIndex :: #type proc "c" (p_self: TypePtr, p_i
  */
 InterfacePackedVector4ArrayOperatorIndexConst :: #type proc "c" (p_self: TypePtr, p_index: Int) -> TypePtr;
 
-Vector4 :: distinct struct{
-    x: f32,
-    y: f32,
-    z: f32,
-    w: f32,
-}
+Vector4 :: distinct [4]f32
 //Color represented in RGBA
 Color :: distinct Vector4
 

@@ -77,7 +77,7 @@ Vector3 :: distinct [3]f32
 Vector3i :: distinct [3]i32
 
 
-Vector4 :: distinct [4]f32
+Vector4 :: GDE.Vector4
 
 Vector4i :: distinct [4]i32
 
