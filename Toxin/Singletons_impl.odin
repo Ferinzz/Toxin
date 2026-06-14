@@ -200,6 +200,23 @@ init_engine_procs :: proc() {
     Classes.Engine_Init_(&Engine_M_List)
     Engine = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
 }
+init_renderserver_procs :: proc() {
+    Classes.RenderingServer_Init_(&RenderingServer_M_List)
+    RenderingServer = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.RenderingServer))
+}
+
+init_input_procs :: proc() {
+    Classes.Input_Init_(&Input_M_List)
+    Input = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Input))
+}
+init_textservermanager_procs :: proc() {
+    Classes.TextServerManager_Init_(&TextServerManager_M_List)
+    TextServerManager = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.TextServerManager))
+}
+init_ThemeDB_procs :: proc() {
+    Classes.ThemeDB_Init_(&ThemeDB_M_List)
+    ThemeDB = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ThemeDB))
+}
 singleton_options:: bit_set[singleton_list]
 singleton_list:: enum {
     Performance,
