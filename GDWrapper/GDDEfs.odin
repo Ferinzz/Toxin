@@ -66,11 +66,11 @@ Vector2 :: distinct [2]f32
 Vector2i :: distinct [2]i32
 
 //Original has 2 Vector2
-Rect2 :: distinct [2]f32
+Rect2 :: distinct [4]f32
 
 
 //Original has 2 Vector2i
-Rect2i :: distinct [2]i32
+Rect2i :: distinct [4]i32
 
 Vector3 :: distinct [3]f32
 
