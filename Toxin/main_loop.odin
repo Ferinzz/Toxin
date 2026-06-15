@@ -76,10 +76,10 @@ MainLoopStartupCallback :: proc "c" () {
     //_Init_Singletons(&singletons)
     init_engine_procs()
     init_input_procs()
-    Classes.SceneTree_Init_(&SceneTree_Class)
+    Classes.SceneTree_Init_()
     scene_tree_obj = _getMainLoop()
     root_node_instance = _getRoot()
-    Classes.Node_Init_(&Node_Class)
+    Classes.Node_Init_()
 
     myMainLoopCallbacks.startup_func()
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.

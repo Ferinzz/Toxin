@@ -42,7 +42,7 @@ register_signal2 :: proc (className: ^StringName, signalName: string, args: []ar
 @(require_results)
 connect_to :: proc(object: ^Object, callback: ^Callable, signal_name: ^StringName, flags: ConnectFlags = nil) -> (ret_err: GDW.Error) {
     flags:i64=i64(transmute(u32)flags)
-    Object_M_methods.connect->m_call(object, {signal_name, callback, &flags}, &ret_err)
+    Classes.Object_connect->m_call(object, {signal_name, callback, &flags}, &ret_err)
     return
 }
 
@@ -143,7 +143,7 @@ create_callable_container :: proc(
 //called automatically by emit_signal procs
 emit_signal_variant :: proc(p_instance: ^Object, args: []^Variant) -> GDW.Error {
     ret: GDE.Variant
-    gdAPI.Object_Utils.MethodBindCall(cast(GDE.MethodBindPtr)(Object_M_methods.emit_signal._emit_signal), p_instance, raw_data(args[:]), i64(len(args)), &ret, nil)
+    gdAPI.Object_Utils.MethodBindCall(cast(GDE.MethodBindPtr)(Classes.Object_emit_signal._emit_signal), p_instance, raw_data(args[:]), i64(len(args)), &ret, nil)
     when builtin.ODIN_DEBUG {
         assert(ret.VType == .INT, "signals should not have a return value.")
     }

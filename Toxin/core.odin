@@ -100,7 +100,7 @@ EngineObj :: proc "c" () -> ^Object {
 }
 
 get_delta_time :: proc() -> (delta: float) {
-    Node_Class.get_process_delta_time->m_call(root_node_instance, r_ret = &delta)
+    Classes.Node_get_process_delta_time->m_call(root_node_instance, r_ret = &delta)
     return
 }
 
@@ -108,170 +108,149 @@ Library : GDE.ClassDB = nil
 singletons: Singletons
 scene_tree_obj: ^Object
 root_node_instance: ^Object
-SceneTree_Class: Classes.SceneTree_MethodBind_List
-Node_Class: Classes.Node_MethodBind_List
+
+
 
 //singletons: Singletons
 
 Singletons :: struct {
     Performance: ^Object,
-    Performance_M_List: Classes.Performance_MethodBind_List,
     Engine: ^Object,
-    Engine_M_List: Classes.Engine_MethodBind_List,
     ProjectSettings: ^Object,
-    ProjectSettings_M_List: Classes.ProjectSettings_MethodBind_List,
     OS: ^Object,
-    OS_M_List: Classes.OS_MethodBind_List,
+
     Time: ^Object,
-    Time_M_List: Classes.Time_MethodBind_List,
     TextServerManager: ^Object,
-    TextServerManager_M_List: Classes.TextServerManager_MethodBind_List,
     PhysicsServer2DManager: ^Object,
-    PhysicsServer2DManager_M_List: Classes.PhysicsServer2DManager_MethodBind_List,
     PhysicsServer3DManager: ^Object,
-    PhysicsServer3DManager_M_List: Classes.PhysicsServer3DManager_MethodBind_List,
-    NavigationServer2DManager_M_List: Classes.NavigationServer2DManager_MethodBind_List,
     NavigationServer2DManager: ^Object,
-    NavigationServer3DManager_M_List: Classes.NavigationServer3DManager_MethodBind_List,
     NavigationServer3DManager: ^Object,
     NavigationMeshGenerator: ^Object,
-    NavigationMeshGenerator_M_List: Classes.NavigationMeshGenerator_MethodBind_List,
     IP: ^Object,
-    IP_M_List: Classes.IP_MethodBind_List,
     Geometry2D: ^Object,
-    Geometry2D_M_List: Classes.Geometry2D_MethodBind_List,
     Geometry3D: ^Object,
-    Geometry3D_M_List: Classes.Geometry3D_MethodBind_List,
     ResourceLoader: ^Object,
-    ResourceLoader_M_List: Classes.ResourceLoader_MethodBind_List,
     ResourceSaver: ^Object,
-    ResourceSaver_M_List: Classes.ResourceSaver_MethodBind_List,
     ClassDB: ^Object,
-    ClassDB_M_List: Classes.ClassDB_MethodBind_List,
     Marshalls: ^Object,
-    Marshalls_M_List: Classes.Marshalls_MethodBind_List,
     TranslationServer: ^Object,
-    TranslationServer_M_List: Classes.TranslationServer_MethodBind_List,
     Input: ^Object,
-    Input_M_List: Classes.Input_MethodBind_List,
     InputMap: ^Object,
-    InputMap_M_List: Classes.InputMap_MethodBind_List,
     EngineDebugger: ^Object,
-    EngineDebugger_M_List: Classes.EngineDebugger_MethodBind_List,
     GDExtensionManager: ^Object,
-    GDExtensionManager_M_List: Classes.GDExtensionManager_MethodBind_List,
+
     ResourceUID: ^Object,
-    ResourceUID_M_List: Classes.ResourceUID_MethodBind_List,
+
     WorkerThreadPool: ^Object,
-    WorkerThreadPool_M_List: Classes.WorkerThreadPool_MethodBind_List,
+
     ThemeDB: ^Object,
-    ThemeDB_M_List: Classes.ThemeDB_MethodBind_List,
+
     EditorInterface: ^Object,
-    EditorInterface_M_List: Classes.EditorInterface_MethodBind_List,
+
     JavaClassWrapper: ^Object,
-    JavaClassWrapper_M_List: Classes.JavaClassWrapper_MethodBind_List,
+
     JavaScriptBridge: ^Object,
-    JavaScriptBridge_M_List: Classes.JavaScriptBridge_MethodBind_List,
+
     AudioServer: ^Object,
-    AudioServer_M_List: Classes.AudioServer_MethodBind_List,
+
     CameraServer: ^Object,
-    CameraServer_M_List: Classes.CameraServer_MethodBind_List,
+
     DisplayServer: ^Object,
-    DisplayServer_M_List: Classes.DisplayServer_MethodBind_List,
+
     NativeMenu: ^Object,
-    NativeMenu_M_List: Classes.NativeMenu_MethodBind_List,
+
     RenderingServer: ^Object,
-    RenderingServer_M_List: Classes.RenderingServer_MethodBind_List,
+
     NavigationServer2D: ^Object,
-    NavigationServer2D_M_List: Classes.NavigationServer2D_MethodBind_List,
+
     NavigationServer3D: ^Object,
-    NavigationServer3D_M_List: Classes.NavigationServer3D_MethodBind_List,
+
     PhysicsServer2D: ^Object,
-    PhysicsServer2D_M_List: Classes.PhysicsServer2D_MethodBind_List,
+
     PhysicsServer3D: ^Object,
-    PhysicsServer3D_M_List: Classes.PhysicsServer3D_MethodBind_List,
+
     XRServer: ^Object,
-    XRServer_M_List: Classes.XRServer_MethodBind_List,
+
 }
 
 Performance: ^Object
-Performance_M_List: Classes.Performance_MethodBind_List
+
 Engine: ^Object
-Engine_M_List: Classes.Engine_MethodBind_List
+
 ProjectSettings: ^Object
-ProjectSettings_M_List: Classes.ProjectSettings_MethodBind_List
+
 OS: ^Object
-OS_M_List: Classes.OS_MethodBind_List
+
 Time: ^Object
-Time_M_List: Classes.Time_MethodBind_List
+
 TextServerManager: ^Object
-TextServerManager_M_List: Classes.TextServerManager_MethodBind_List
+
 PhysicsServer2DManager: ^Object
-PhysicsServer2DManager_M_List: Classes.PhysicsServer2DManager_MethodBind_List
+
 PhysicsServer3DManager: ^Object
-PhysicsServer3DManager_M_List: Classes.PhysicsServer3DManager_MethodBind_List
-NavigationServer2DManager_M_List: Classes.NavigationServer2DManager_MethodBind_List
+
+
 NavigationServer2DManager: ^Object
-NavigationServer3DManager_M_List: Classes.NavigationServer3DManager_MethodBind_List
+
 NavigationServer3DManager: ^Object
 NavigationMeshGenerator: ^Object
-NavigationMeshGenerator_M_List: Classes.NavigationMeshGenerator_MethodBind_List
+
 IP: ^Object
-IP_M_List: Classes.IP_MethodBind_List
+
 Geometry2D: ^Object
-Geometry2D_M_List: Classes.Geometry2D_MethodBind_List
+
 Geometry3D: ^Object
-Geometry3D_M_List: Classes.Geometry3D_MethodBind_List
+
 ResourceLoader: ^Object
-ResourceLoader_M_List: Classes.ResourceLoader_MethodBind_List
+
 ResourceSaver: ^Object
-ResourceSaver_M_List: Classes.ResourceSaver_MethodBind_List
+
 ClassDB: ^Object
-ClassDB_M_List: Classes.ClassDB_MethodBind_List
+
 Marshalls: ^Object
-Marshalls_M_List: Classes.Marshalls_MethodBind_List
+
 TranslationServer: ^Object
-TranslationServer_M_List: Classes.TranslationServer_MethodBind_List
+
 Input: ^Object
-Input_M_List: Classes.Input_MethodBind_List
+
 InputMap: ^Object
-InputMap_M_List: Classes.InputMap_MethodBind_List
+
 EngineDebugger: ^Object
-EngineDebugger_M_List: Classes.EngineDebugger_MethodBind_List
+
 GDExtensionManager: ^Object
-GDExtensionManager_M_List: Classes.GDExtensionManager_MethodBind_List
+
 ResourceUID: ^Object
-ResourceUID_M_List: Classes.ResourceUID_MethodBind_List
+
 WorkerThreadPool: ^Object
-WorkerThreadPool_M_List: Classes.WorkerThreadPool_MethodBind_List
+
 ThemeDB: ^Object
-ThemeDB_M_List: Classes.ThemeDB_MethodBind_List
+
 EditorInterface: ^Object
-EditorInterface_M_List: Classes.EditorInterface_MethodBind_List
+
 JavaClassWrapper: ^Object
-JavaClassWrapper_M_List: Classes.JavaClassWrapper_MethodBind_List
+
 JavaScriptBridge: ^Object
-JavaScriptBridge_M_List: Classes.JavaScriptBridge_MethodBind_List
+
 AudioServer: ^Object
-AudioServer_M_List: Classes.AudioServer_MethodBind_List
+
 CameraServer: ^Object
-CameraServer_M_List: Classes.CameraServer_MethodBind_List
+
 DisplayServer: ^Object
-DisplayServer_M_List: Classes.DisplayServer_MethodBind_List
+
 NativeMenu: ^Object
-NativeMenu_M_List: Classes.NativeMenu_MethodBind_List
+
 RenderingServer: ^Object
-RenderingServer_M_List: Classes.RenderingServer_MethodBind_List
+
 NavigationServer2D: ^Object
-NavigationServer2D_M_List: Classes.NavigationServer2D_MethodBind_List
+
 NavigationServer3D: ^Object
-NavigationServer3D_M_List: Classes.NavigationServer3D_MethodBind_List
+
 PhysicsServer2D: ^Object
-PhysicsServer2D_M_List: Classes.PhysicsServer2D_MethodBind_List
+
 PhysicsServer3D: ^Object
-PhysicsServer3D_M_List: Classes.PhysicsServer3D_MethodBind_List
+
 XRServer: ^Object
-XRServer_M_List: Classes.XRServer_MethodBind_List
+
 
 /*
 * Function used to register a custom class with Godot. This will use the information provided in class_info or default to bltn equivalents.
@@ -492,7 +471,7 @@ bindProperty :: #force_inline proc(className: ^StringName, name: string, type: G
     destructProperty(&info)
 }
 
-Object_M_methods: Classes.Object_MethodBind_List
+
 
 gdstring_new :: proc(text: string) -> (ret: gdstring) {
     gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(&ret, raw_data(text), Int(len(text)))

@@ -8,7 +8,6 @@ import "base:builtin"
 import "base:runtime"
 
 
-RefCounted_Methods_list: Classes.RefCounted_MethodBind_List
 RefTag: GDE.ClassTag
 
 safeRef_Error :: enum {
@@ -41,16 +40,16 @@ safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
 
 //Returns true if the increment was successful, false otherwise.
 Reference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.reference.m_call, ref, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Classes.RefCounted_reference.m_call, ref, nil, r_bool)
 }
 
 //Returns true if the increment was successful, false otherwise.
 Unreference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.unreference.m_call, ref, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Classes.RefCounted_unreference.m_call, ref, nil, r_bool)
 }
 
 Reference_init :: proc "c" (ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)RefCounted_Methods_list.init_ref.m_call, ref, nil, r_bool)
+    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Classes.RefCounted_init_ref.m_call, ref, nil, r_bool)
 }
 
 Ref_Count :: proc {

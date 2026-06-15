@@ -90,7 +90,7 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
                 setup.core_init(setup)
             }
             register_custom_class(setup.classes.core[:], InitializationLevel(init_Level))
-            Classes.RefCounted_Init_(&RefCounted_Methods_list)
+            Classes.RefCounted_Init_()
             refname:= GDW.StringConstruct("RefCounted")
             RefTag = gdAPI.ClassDB.GetClassTag(&refname)
             return
@@ -111,8 +111,8 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             * Register the different classes which depend on servers classes.
             */
             //THIS_CLASS_NAME_deets->self_register(init_Level)
-            Classes.SceneTree_Init_(&SceneTree_M_List)
-            Classes.Object_Init_(&Object_M_methods)
+            Classes.SceneTree_Init_()
+            Classes.Object_Init_()
             if inits.scene != nil {
                 inits.scene(userdata)
             } else {
