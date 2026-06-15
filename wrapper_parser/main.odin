@@ -6,7 +6,7 @@ import "core:os"
 import "core:fmt"
 import "base:runtime"
 import "core:strings"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import GDE "../GDWrapper/gdAPI/gdextension"
 
 main :: proc() {
 
