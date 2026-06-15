@@ -17,10 +17,17 @@ main :: proc() {
   }
   fmt.println(root)
   //data, err := os.read_entire_file(root, context.allocator)
-  data, err := os.read_entire_file("C:\\Odin_programs\\toxin_new_pull\\extension_api.json", context.allocator)
+  data, err := os.read_entire_file("extension_api.json", context.allocator)
+  os.make_directory("GD_Classes")
+  make_err:= os.set_working_directory("GD_Classes")
+  if make_err != nil && make_err != .Exist {
+    print_warning("make directory error:", make_err)
+    return
+  }
   
   if err != nil {
     print_warning("file could not be read: ", err)
+    return
   }
   val:=json.make_parser(data)
   built_different: builtin
@@ -50,8 +57,7 @@ import sics "base:intrinsics"
 
 
 `
-
-  file_path:= "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAUtils_GD_Class.odin"
+  file_path:= "AAAUtils_GD_Class.odin"
   file, open_err:= os.create(file_path)
   if open_err == nil {
     os.write_strings(file, header2, AAAUtil_procedures, Method_Callback_Compare_Info)
@@ -89,7 +95,7 @@ virtuals_list : [ClassName_Index]proc(rawptr, ^GDW.StringName, u32) -> GDE.Class
     os.close(file)
   }
   
-  file_path = "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAClass_Names.odin"
+  file_path = "AAAClass_Names.odin"
   file, open_err= os.create(file_path)
   if open_err == nil {
     os.write_strings(file, header2)
@@ -99,7 +105,7 @@ virtuals_list : [ClassName_Index]proc(rawptr, ^GDW.StringName, u32) -> GDE.Class
     }
 
   }
-  file_path = "C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\AAAVirtuals.odin"
+  file_path = "AAAVirtuals.odin"
   file, open_err= os.create(file_path)
   if open_err == nil {
     os.write_strings(file, header2)
@@ -117,8 +123,7 @@ virtuals_list : [ClassName_Index]proc(rawptr, ^GDW.StringName, u32) -> GDE.Class
     //fmt.println(classes.method_list)
     //fmt.println(classes.init_proc)
     //fmt.println(classes.constants)
-
-    file_path:= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\GD_Classes\\%s_GD_Class.odin", classes.name)
+    file_path:= fmt.aprintf("%s_GD_Class.odin", classes.name)
     file, open_err:= os.create(file_path)
     if open_err == nil {
       //count, write_err:= os.write_strings(file, header, 
@@ -340,6 +345,7 @@ extensionDeinit :: proc "c" (userdata: rawptr, deinitLevel: GDE.InitializationLe
   GDScript_file: ^os.File
   classes_create_err: os.Error
 
+  os.set_working_directory("../")
   test_dir_err:= os.make_directory("Classes_init_test")
   if test_dir_err != nil && test_dir_err != .Exist{
     print_warning("could not create classes test folder.", test_dir_err)
@@ -627,27 +633,31 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   // Structure of the init proc
   ///////////////////////////////
   class_decl:=`%s :: ^Object`
-  init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{
+  //init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{
+  init_proc_sig:=`%s_Init_ :: proc (loc:= #caller_location) {{
   MB_ptr_call:=gdAPI.get_Interface_Address("object_method_bind_ptrcall")`
   //name, name, name
-  Meth_Getter:=`  %s_methods.%s._%[1]s = (cast(^GDW.MethodBind)classDBGetMethodBind3(.%s, "%s", %v, loc))`
+  Meth_Getter:=`  %s_%s._%[1]s = (cast(^GDW.MethodBind)classDBGetMethodBind3(.%s, "%s", %v, loc))`
   //name, method.name, variant_type, method.name, hash
-  ptrCall_getter:=`  %s_methods.%s.m_call = cast(type_of(%[0]s_methods.%[1]s.m_call))MB_ptr_call`
+  ptrCall_getter:=`  %s_%s.m_call = cast(type_of(%[0]s_%[1]s.m_call))MB_ptr_call`
   //name, method.name, variant_type, method.name, hash
   Closing:=`};`
 
   /////////////////////////////
   // Structure of the builtin struct
   /////////////////////////////
-  _MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
-  class_name:= `  %s: struct{{
+  //_MethodBind_List:= `%s_MethodBind_List :: struct {{` //name
+  /*class_name:= `  %s: struct{{
     using _%[0]s: ^GDW.MethodBind,
-    m_call: proc "c" (_:^GDW.MethodBind, obj: %[1]s, `
+    m_call: proc "c" (_:^GDW.MethodBind, obj: %[1]s, `*/
+  class_name:= `  %s_%s: struct{{
+    using _%[1]s: ^GDW.MethodBind,
+    m_call: proc "c" (_:^GDW.MethodBind, obj: %[0]s, `
   class_args_maybe:= `%s`//`struct{` //methodName
   class_args:=`%s: ^%s, `//argName, argType
   class_args_close:=`}`
   class_close:=`, r_ret: ^%s)
-  },` //method.name
+  }` //method.name
   /*
   is_relative_: struct{
     using _is_relative: ^GDW.MethodBind,
@@ -697,7 +707,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
     buffer:[400]u8
     //signature and struct declaration
     strings.write_string(&init_builder, fmt.bprintf(buffer[:], init_proc_sig, BUILT_FROM.name, newline =true))
-    strings.write_string(&struct_builder, fmt.bprintf(buffer[:], _MethodBind_List, BUILT_FROM.name, newline =true))
+    //strings.write_string(&struct_builder, fmt.bprintf(buffer[:], _MethodBind_List, BUILT_FROM.name, newline =true))
 
     strings.write_string(&virtuals_builder, fmt.bprintf(buffer[:], Virtual_Proc_Sig, BUILT_FROM.name, newline =true))
     strings.write_string(&virtuals_list_builder, fmt.bprintf(buffer[:], Virtual_Struct_Sig, BUILT_FROM.name, newline =true))
@@ -712,7 +722,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
       if !method.is_virtual {
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], Meth_Getter, BUILT_FROM.name, method.name, BUILT_FROM.name, method.name, method.hash, newline =true))
         strings.write_string(&init_builder, fmt.bprintf(buffer[:], ptrCall_getter, BUILT_FROM.name, method.name, newline =true))
-        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, method.name, BUILT_FROM.name, newline =false))
+        strings.write_string(&struct_builder, fmt.bprintf(buffer[:], class_name, BUILT_FROM.name, method.name, newline =false))
           //virtual_opened = true
         
         if method.is_vararg {
@@ -780,7 +790,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
 
         if method.return_value.type == ""{
           strings.write_string(&struct_builder, `, r_ret: rawptr = nil)
-  },
+  }
   `)
         }
         else
@@ -924,7 +934,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
       }
     //pinch it off
     strings.write_string(&init_builder, fmt.bprintf(buffer[:], Closing, newline =true))
-    strings.write_string(&struct_builder, fmt.bprintf(buffer[:], Closing, newline =true))
+    //strings.write_string(&struct_builder, fmt.bprintf(buffer[:], Closing, newline =true))
 
 
     //Constants are just floating around
