@@ -11,7 +11,7 @@ import GDE "../GDWrapper/gdAPI/gdextension"
 main :: proc() {
 
   //data, err := os.read_entire_file(root, context.allocator)
-  data, err := os.read_entire_file("C:\\Odin_programs\\toxin_new_pull\\extension_api.json", context.allocator)
+  data, err := os.read_entire_file("extension_api.json", context.allocator)
   
   if err != nil {
     print_warning("file could not be read: ", err)
@@ -23,19 +23,47 @@ main :: proc() {
   if err_buildem != nil {
     print_warning("failed to create builder", err_buildem)
   }
-  create_class_files(built_different)
+  file_data:= create_class_files(built_different)
+  os.set_working_directory("Toxin")
+  os.make_directory("classes")
+  os.set_working_directory("classes")
+  for class, i in built_different.classes {
+    file_name:= fmt.aprintf(`%s.odin`, class.name)
+    file, err:= os.create(file_name)
+    delete(file_name)
+    //fmt.println(file_data[i])
+    os.write(file, transmute([]u8)(string(`package classes_wrapped
+
+import GDW "../../GDWrapper"
+import Classes "../../GD_Classes"
+import GDE "../../GDWrapper/gdAPI/gdextension"
+
+`)))
+    init_string:= fmt.aprintf(`%s_Init :: proc() {{
+      Classes.%[0]s_Init_()
+}
+
+`, class.name)
+    os.write(file, transmute([]u8)(init_string))
+    os.write(file, transmute([]u8)(file_data[i]))
+    delete(init_string)
+  }
 }
 
 create_class_files :: proc(data: builtin) -> (classes_wrapped: [dynamic]string) {
 
     for &class in data.classes {
+      class_methods:strings.Builder
+      strings.builder_init(&class_methods)
         for &method in class.methods {
-            if method.is_virtual == true {continue}
+            if method.is_virtual == true || method.is_vararg {continue}
             class_file:= create_class_string(class.name, &method)
-            append(&classes_wrapped, class_file)
+            strings.write_string(&class_methods, class_file)
+            delete(class_file)
         }
+        append(&classes_wrapped, strings.to_string(class_methods))
     }
-    return {}
+    return
 }
 
 create_class_string :: proc(class_name: string, class_method: ^methods) -> string {
@@ -80,16 +108,21 @@ create_class_string :: proc(class_name: string, class_method: ^methods) -> strin
               concat_err: runtime.Allocator_Error
               if variant_type == .OBJECT {
                 //args.type, concat_err = strings.concatenate({"^GDW.", args.type})
+                args.type, concat_err = strings.concatenate({"^GDW.", args.type})
               } else {
-                //args.type, concat_err = strings.concatenate({"GDW.", args.type})
+                args.type, concat_err = strings.concatenate({"GDW.", args.type})
               }
               //assert(concat_err==nil, args.type)
               //delete(temp)
               fmt.sbprintf(&method_wrapped, arg, args.name, args.type, newline =false)
             } else
             {
-                fmt.println(args.type)
-              fmt.sbprintf(&method_wrapped, class_arg, args.name, args.type, newline =false)
+                //fmt.println(args.type)
+                if strings.contains(args.type, "GDW") || strings.contains(args.type, "GDE") {
+                  fmt.sbprintf(&method_wrapped, arg, args.name, args.type, newline = false)
+                } else {
+                    fmt.sbprintf(&method_wrapped, class_arg, args.name, args.type, newline =false)
+                }
             }
         //fmt.sbprintf(&method_wrapped, arg, args.name, args.type)
     }
@@ -101,14 +134,20 @@ create_class_string :: proc(class_name: string, class_method: ^methods) -> strin
         if variant_type != .NIL {
           temp:=class_method.return_value.type
           concat_err: runtime.Allocator_Error
-          //class_method.return_value.type, concat_err = strings.concatenate({"GDW.", class_method.return_value.type})
+          class_method.return_value.type, concat_err = strings.concatenate({"GDW.", class_method.return_value.type})
           //assert(concat_err==nil, method.return_value.type)
           //delete(temp)
-            fmt.sbprintf(&method_wrapped, ret, class_method.return_value.type)
+          fmt.sbprintf(&method_wrapped, ret, class_method.return_value.type)
         }else
         {
-            //fmt.println(class_method.return_value.type)
-          fmt.sbprintf(&method_wrapped, class_ret, class_method.return_value.type, newline =false)
+          //fmt.println(class_method.return_value.type)
+          //fmt.println(class_method.return_value.type)
+          if strings.contains(class_method.return_value.type, "GDW") || strings.contains(class_method.return_value.type, "GDE")\
+          && !strings.contains(class_method.return_value.type, "GDExtension") {
+            fmt.sbprintf(&method_wrapped, ret, class_method.return_value.type)
+          } else {
+            fmt.sbprintf(&method_wrapped, class_ret, class_method.return_value.type, newline =false)
+          }
         }
     }
     fmt.sbprintf(&method_wrapped, `) {{`, newline = true)
@@ -127,7 +166,7 @@ create_class_string :: proc(class_name: string, class_method: ^methods) -> strin
     fmt.sbprintf(&method_wrapped, `)`, newline = true)
     fmt.sbprintf(&method_wrapped, call_close, newline = true)
     if class_method.return_value.type != "" {
-        fmt.println(strings.to_string(method_wrapped))
+        //fmt.println(strings.to_string(method_wrapped))
     }
     return strings.to_string(method_wrapped)
 }
