@@ -28,7 +28,7 @@ core_setup: Toxin.inits_deinits= {
 core_init :: proc "c" (userdata: rawptr) {
     context = runtime.default_context()
 
-    Toxin.register_mainloop_callbacks({main_loop_startup, MainLoopFrameCallback, main_loop_shutdown})
+    Toxin.register_mainloop_callbacks({main_loop_startup, main_loop_shutdown, MainLoopFrameCallback,})
 }
 
 servers_init :: proc "c" (userdata: rawptr) {
@@ -55,13 +55,12 @@ editor_deinit :: proc "c" (userdata: rawptr) {
 
 }
 
-Node_Class: Classes.Node_MethodBind_List
 //This is the best time to initialize the class methods as it will consistently be called after all classes have been added to the classDB
 //Exception: if you're doing extension reloading this would not trigger
 main_loop_startup :: proc "c" () {
     context = runtime.default_context()
 
-    Classes.Node_Init_(&Node_Class)
+    Classes.Node_Init_()
     scene: ^Toxin.Object = Toxin.get_current_scene()
     
     //A scene is not added when running editor mode first time. Check for the scene before trying to add the child to it.
