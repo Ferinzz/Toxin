@@ -5,6 +5,7 @@ import "../GDWrapper/gdAPI"
 import GDW "../GDWrapper"
 import "base:runtime"
 import GDE "../GDWrapper/gdAPI/gdextension"
+import class "classes"
 import "core:c"
 
 
@@ -476,4 +477,14 @@ bindProperty :: #force_inline proc(className: ^StringName, name: string, type: G
 gdstring_new :: proc(text: string) -> (ret: gdstring) {
     gdAPI.Strings_Utils.NewWithUtf8CharsAndLen(&ret, raw_data(text), Int(len(text)))
     return
+}
+
+//Godot will run your nodes regardless of whether you're in the editor or not.
+//Use the process_guard proc in order to simply tell Godot to NOT call the process virtuals or send the notifications.
+process_guard :: proc(obj: ^Object) {
+    if class.Engine_is_editor_hint(Engine) {
+        enabled:Bool= false
+        class.Node_set_process(obj, &enabled)
+        class.Node_set_physics_process(obj, &enabled)
+    }
 }
