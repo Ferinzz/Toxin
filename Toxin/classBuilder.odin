@@ -33,13 +33,13 @@ Class_Deets :: struct {
     create: proc(userdata: ^Class_Deets, self: rawptr), //Cast to the Object class that your class extends.
     destroy: proc(userdata: ^Class_Deets, self: rawptr),
     vtable: rawptr,
-    notification: GDE.ClassNotification2,
+    notification: ClassNotification2,
     GDClass_StringName: ^StringName,
     SN : StringName,
     Exporter: proc(className: ^StringName),
     GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
 }
-
+ClassNotification2 :: GDE.ClassNotification2
 
 required_deets:: struct #all_or_none{
     registerer: proc(self: ^required_deets, init_level: InitializationLevel), //Keep as first value in order to trivially cast it.
