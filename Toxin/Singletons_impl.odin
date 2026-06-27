@@ -216,6 +216,10 @@ init_ThemeDB_procs :: proc() {
     Classes.ThemeDB_Init_()
     ThemeDB = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.ThemeDB))
 }
+init_Time_procs :: proc() {
+    Classes.Time_Init_()
+    Time = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Time))
+}
 singleton_options:: bit_set[singleton_list]
 singleton_list:: enum {
     Performance,
