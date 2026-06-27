@@ -5,6 +5,7 @@ import "../GDWrapper/gdAPI"
 import "core:reflect"
 import "base:builtin"
 import "base:runtime"
+import Class "../GD_Classes"
 
 Destroy_Callable :: proc "c" (base: ^Callable) {
     when builtin.ODIN_DEBUG {
@@ -126,6 +127,10 @@ Destroy_PackedVector4Array :: proc "c" (base: ^PackedVector4Array){
     GDW.PackedVector4Array_M_List.Destroy(base)
 }
 
+Destroy_obj :: proc(base: ^Object) {
+    gdAPI.Object_Utils.Destroy(base)
+}
+
 Destroy :: proc {
     Destroy_Callable,
     Destroy_Dictionary,
@@ -134,6 +139,7 @@ Destroy :: proc {
     Destroy_Signal,
     Destroy_StringName,
     Destroy_Array,
+    Destroy_obj,
     Destroy_PackedByteArray,
     Destroy_PackedColorArray,
     Destroy_PackedFloat32Array,
@@ -145,3 +151,10 @@ Destroy :: proc {
     Destroy_PackedVector3Array,
     Destroy_PackedVector4Array,
 }
+
+@(require_results)
+create_obj :: proc(obj: Class.ClassName_Index) -> ^Object {
+    return gdAPI.ClassDB.ConstructObject(Class.GDClass_StringName_get(obj))
+}
+
+instantiate :: create_obj
