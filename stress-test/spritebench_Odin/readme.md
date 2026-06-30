@@ -25,7 +25,7 @@ Build time should be no more than 5 seconds.
 
 ```
 #cd into the spritebench_Odin director
-odin build . -build-mode:dll -out:libgdexample.dll -o:speed
+odin build . -build-mode:dll -out:spritebench_Odin.dll -o:speed
 C:\\Godot\\Godot_v4.6-release.exe --path . -s node.gd
 ```
 node.gd will import the gdextension which will add all the children to the root.
