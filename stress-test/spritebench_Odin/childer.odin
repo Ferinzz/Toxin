@@ -86,14 +86,9 @@ THIS_CLASS_NAME_VTable: Classes.Node2D_vtable(THIS_CLASS_NAME) = {
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct{delta: ^Toxin.float},  r_ret: rawptr = nil){
         context = runtime.default_context();
-        //self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        //self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
-        //Node2D_Class.get_position->m_call(self.self, r_ret=&self.class.position)
         if self.class.position.y < size_half.y || self.position.y > (f32(self.window.y) - size_half.y) do self.angle = -self.class.angle
         if self.class.position.x < size_half.x || self.position.x > (f32(self.window.x) - size_half.x) do self.angle = Math.PI - self.class.angle
-        offset:Toxin.Vector2
-        offset={Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed), Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)}
-        self.class.position += offset
+        self.class.position += {Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed), Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)}
         class.Node2D_set_position(self.self, &self.class.position)
     },
 }
