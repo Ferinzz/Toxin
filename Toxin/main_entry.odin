@@ -83,6 +83,7 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             /*
             * Register the different classes which should be considered Core to the rest of the system.
             */
+            init_engine_procs()
             if inits.core != nil {
                 inits.core(userdata)
             }
