@@ -156,5 +156,12 @@ Destroy :: proc {
 create_obj :: proc(obj: Class.ClassName_Index) -> ^Object {
     return gdAPI.ClassDB.ConstructObject(Class.GDClass_StringName_get(obj))
 }
+@(require_results)
+create_obj_custom :: proc(obj: ^StringName) -> ^Object {
+    return gdAPI.ClassDB.ConstructObject(obj)
+}
 
-instantiate :: create_obj
+instantiate :: proc{
+    create_obj,
+    create_obj_custom,
+}
