@@ -39,9 +39,9 @@ Export_Default2 :: proc(className_SN: ^StringName, getter_setter: ^$T/gsetter_us
 
 //Does not support pass by copy.
 Export_default_static :: proc(className_SN: ^StringName, getter_setter: ^$T/gsetter_userdata_static) {
-    if getter_setter.getter_method == nil && getter_setter.setter_method == nil {
-        return .missing_getset_ptr
-    }
+    //if getter_setter.getter_method == nil && getter_setter.setter_method == nil {
+    //    return .missing_getset_ptr
+    //}
     info:= make_property(getter_setter.gs_type, getter_setter.fieldname)
     Export_static(className_SN, getter_setter, &info)
     destructProperty(&info)
@@ -178,7 +178,7 @@ export_tool_button_static :: proc(className: ^StringName, getter_setter: ^gsette
 export_dictionary_localizable_string :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     prop_info:= Make_Property_Full(.DICTIONARY, getter_setter.fieldname, .LOCALIZABLE_STRING, "", "", prop_usage)
     Export5(className, getter_setter, &prop_info)
@@ -201,7 +201,7 @@ Easing_Options :: enum {
 export_easing :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), easing: Easing_Options) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], "", prop_usage)
     Export5(className, getter_setter, &info)
@@ -211,7 +211,7 @@ export_easing :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t
 export_easing_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static($T), easing: Easing_Options) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], "", prop_usage)
     Export_static(className, getter_setter, &info)
@@ -234,7 +234,7 @@ export_int_as_pointer_static :: proc(className: ^StringName, getter_setter: ^gse
 export_color_noalpha :: proc(clasName: ^StringName, getter_setter: ^gsetter_userdata_t) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", prop_usage)
     Export5(className, getter_setter, &info)
@@ -244,7 +244,7 @@ export_color_noalpha :: proc(clasName: ^StringName, getter_setter: ^gsetter_user
 export_color_noalpha_static :: proc(clasName: ^StringName, getter_setter: ^gsetter_userdata_static) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", prop_usage)
     export_static(className, getter_setter, &info)
@@ -254,16 +254,16 @@ export_color_noalpha_static :: proc(clasName: ^StringName, getter_setter: ^gsett
 export_int_as_flag :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), $F: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     hint_string:= strings.builder_make()
-    when sics.type_is_enum(sics.type_bit_set_elem_type($F)) {
-        flag_enum:= type_info_of(F).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
+    when sics.type_is_enum(sics.type_bit_set_elem_type(F)) {
+        flag_enum:= type_info_of(F).variant.(runtime.Type_Info_Bit_Set).elem.variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum)
         for name, idx in flag_enum.names {
             if idx > 0 {
-                strings.write_byte(&build, ',')
+                strings.write_byte(&hint_string, ',')
             }
-            fmt.sbprintf(&build, "%s:%d", name, i64(info.values[idx]))
+            fmt.sbprintf(&hint_string, "%s", name)
         }
     } else {
         fmt.sbprint(&hint_string, type_info_of(F).variant.(runtime.Type_Info_Bit_Set).lower)
@@ -280,7 +280,7 @@ export_int_as_flag :: proc(className: ^StringName, getter_setter: ^gsetter_userd
 export_int_as_flag_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static($T), $F: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     hint_string:= strings.builder_make()
     when sics.type_is_enum(sics.type_bit_set_elem_type(F)) {
@@ -348,20 +348,20 @@ Layer_Type :: enum {
     LAYERS_3D_NAVIGATION,
     LAYERS_AVOIDANCE,
 }
-export_int_as_layers :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t, $layer: typeid) {
+export_int_as_layers :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), $layer: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     hint:GDE.PropertyHint
-    switch layer {
-        case layers_2d_navigation: hint = .LAYERS_2D_NAVIGATION
-        case layers_2d_physics: hint = .LAYERS_2D_PHYSICS
-        case layers_2d_render: hint = .LAYERS_2D_RENDER
-        case layers_3d_navigation: hint =.LAYERS_3D_NAVIGATION
-        case layers_3d_physics: hint = .LAYERS_3D_PHYSICS
-        case layers_3d_render: hint = .LAYERS_3D_RENDER
-        case layers_avoidance: hint = .LAYERS_AVOIDANCE
+    switch typeid_of(layer) {
+        case typeid_of(layers_2d_navigation): hint = .LAYERS_2D_NAVIGATION
+        case typeid_of(layers_2d_physics): hint = .LAYERS_2D_PHYSICS
+        case typeid_of(layers_2d_render): hint = .LAYERS_2D_RENDER
+        case typeid_of(layers_3d_navigation): hint =.LAYERS_3D_NAVIGATION
+        case typeid_of(layers_3d_physics): hint = .LAYERS_3D_PHYSICS
+        case typeid_of(layers_3d_render): hint = .LAYERS_3D_RENDER
+        case typeid_of(layers_avoidance): hint = .LAYERS_AVOIDANCE
     }
     prop_info:= Make_Property_Full(.INT, getter_setter.fieldname, hint, "" , "", prop_usage)
     Export5(className, getter_setter, &prop_info)
@@ -371,17 +371,17 @@ export_int_as_layers :: proc(className: ^StringName, getter_setter: ^gsetter_use
 export_int_as_layers_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static, $layer: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
-        prop_usage+=.READ_ONLY
+        prop_usage+={.READ_ONLY}
     }
     hint:GDE.PropertyHint
-    switch layer {
-        case layers_2d_navigation: hint = .LAYERS_2D_NAVIGATION
-        case layers_2d_physics: hint = .LAYERS_2D_PHYSICS
-        case layers_2d_render: hint = .LAYERS_2D_RENDER
-        case layers_3d_navigation: hint =.LAYERS_3D_NAVIGATION
-        case layers_3d_physics: hint = .LAYERS_3D_PHYSICS
-        case layers_3d_render: hint = .LAYERS_3D_RENDER
-        case layers_avoidance: hint = .LAYERS_AVOIDANCE
+    switch typeid_of(layer) {
+        case typeid_of(layers_2d_navigation): hint = .LAYERS_2D_NAVIGATION
+        case typeid_of(layers_2d_physics): hint = .LAYERS_2D_PHYSICS
+        case typeid_of(layers_2d_render): hint = .LAYERS_2D_RENDER
+        case typeid_of(layers_3d_navigation): hint =.LAYERS_3D_NAVIGATION
+        case typeid_of(layers_3d_physics): hint = .LAYERS_3D_PHYSICS
+        case typeid_of(layers_3d_render): hint = .LAYERS_3D_RENDER
+        case typeid_of(layers_avoidance): hint = .LAYERS_AVOIDANCE
     }
     prop_info:= Make_Property_Full(.INT, getter_setter.fieldname, hint, "" , "", prop_usage)
     Export_static(className, getter_setter, &prop_info)
@@ -509,16 +509,17 @@ Export5 :: proc(className_SN: ^StringName, getter_setter: ^$T/gsetter_userdata_t
 }
 
 //Does not support pass by copy.
+@private
 Export_static :: proc(className_SN: ^StringName, getter_setter: ^$T/gsetter_userdata_static, info: ^GDE.PropertyInfo) {
-    if getter_setter.getter_method == nil && getter_setter.setter_method == nil {
-        return .missing_getset_ptr
-    }
+    //if getter_setter.getter_method == nil && getter_setter.setter_method == nil {
+    //    return .missing_getset_ptr
+    //}
 
     getName, setName:= make_gs_name(getter_setter.fieldname, &getbuf, &setbuf)
     _bind_static(getter_setter.setter_method, className_SN, setName)
     _bind_static(getter_setter.getter_method, className_SN, getName)
     //Register the information with Godot in order for the variable to be accessible.
-    Bind_Property(className_SN, getter_setter.fieldname, getter_setter.gs_type, info^, getName, setName)
+    Bind_Property(className_SN, getter_setter.fieldname, getter_setter.gs_type, info, getName, setName)
 }
 
 Bind_Set3 :: #force_inline proc(className: ^StringName, \
