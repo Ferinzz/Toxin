@@ -1,35 +1,22 @@
 # spritebench_Odin
 
 ## Goal
-Test how impactful the FFI is on a basic parameter and redraw update.
+Test how impactful the FFI is on a basic set parameter and virtual callback.
 
 ## Dependencies
-Godot Class details.
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
-[GD_Classes](https://github.com/Ferinzz/Godot_Odin_Binds)
-
-Basic API, helper procedures, and builtin types
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
-[GDWrapper](https://github.com/Ferinzz/Toxin/GDWrapper)
-
-Entry, Class Exporter, etc
-import "shared:Toxin"
-[Toxin](https://github.com/Ferinzz/Toxin/Toxin)
-
-Package imports are expected to be in Odin's shared folder. Import headers are already setup in this package's headers.
+Are contained within Toxin itself. Be sure to run the parsers before attempting to build this code. 
 
 ## Run
-Benchmarks were performed by running the following commands to export to a project called TopDown and run from Godot's exectuable. Adjust as needed.
+Benchmarks were performed by running the following commands. Adjust godot path as needed.
 Build time should be no more than 5 seconds.
 
 ```
-#cd into the spritebench_Odin director
-odin build . -build-mode:dll -out:spritebench_Odin.dll -o:speed
+#cd into the spritebench_Odin directory
+odin build . -build-mode:dll -out:spritebench_Odin.dll -o:aggressive
 C:\\Godot\\Godot_v4.6-release.exe --path . -s node.gd
 ```
 node.gd will import the gdextension which will add all the children to the root.
-(Or whatever your Path call to Godot is)
+The path to godot is a direct path to my .exe; can replace with your godot path. For performance testing be sure to use a release build of godot and not a debug build. 
 
 ## Observation
 On a Intel a770 Intel 13700k the benchmark runs at an average of 0.0058 to 0.0061 which is ~172 fps.
