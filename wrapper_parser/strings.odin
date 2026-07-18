@@ -1,6 +1,6 @@
 package main
 
-proc_sig:= `%s_%s :: #force_inline proc(`
+proc_sig:= `%s_%s :: #force_inline proc "contextless" (`
 object:=`%s: Classes.%[0]s, `
 arg:= `%s: ^%s, `
 class_arg:= `%s: ^Classes.%s, `
