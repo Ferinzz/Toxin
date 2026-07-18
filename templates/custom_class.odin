@@ -4,7 +4,6 @@ import "Toxin"
 import "base:runtime"
 import "core:fmt"
 import Classes "GD_Classes"
-import GDE "GDWrapper/gdAPI/gdextension"
 import "GD_Classes"
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
@@ -18,7 +17,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     },
     create=constructor,
     destroy=destructor,
-    notification = GDE.ClassNotification2(THIS_CLASS_NAME_Notifications),
+    notification = Toxin.ClassNotification2(THIS_CLASS_NAME_Notifications),
     Exporter = THIS_CLASS_NAME_Export,
     vtable =&THIS_CLASS_NAME_VTable,
 }
