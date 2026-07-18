@@ -358,6 +358,7 @@ make_property :: #force_inline proc(type: GDE.VariantType, name: string) -> GDE.
 Make_Property_Full :: proc {
     makePropertyFull_cstring,
     makePropertyFull_string,
+    makePropertyFull_SN,
 }
 
 //TODO : See if I really need to malloc these variables or if that's just something for C to do.
@@ -375,6 +376,26 @@ makePropertyFull_cstring :: proc(type: GDE.VariantType, name: cstring, hint: GDE
     
     info: GDE.PropertyInfo = {
         name = prop_name,
+        type = type, //is an enum specifying type. Meh.
+        hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
+        hint_string = propHintString,
+        class_name = propClassName,
+        usage = usageFlags,
+    }
+
+    return info
+}
+
+makePropertyFull_SN :: proc(type: GDE.VariantType, name: ^StringName, hint: GDE.PropertyHint, hintString: cstring, className: cstring, usageFlags: GDE.PropertyUsageFlagsbits) -> GDE.PropertyInfo {
+
+    propHintString:= new(gdstring)
+    gdAPI.Strings_Utils.NewWithUtf8Chars(propHintString, hintString)
+
+    propClassName:= new(StringName)
+    gdAPI.StringName_Utils.Latin1Chars(propClassName, className, false)
+    
+    info: GDE.PropertyInfo = {
+        name = name,
         type = type, //is an enum specifying type. Meh.
         hint = hint, //Hints are hints for the Editor. GDScript doesn't always respect them.
         hint_string = propHintString,
@@ -409,10 +430,11 @@ makePropertyFull_string :: proc(type: GDE.VariantType, name: string, hint: Prope
 }
 
 
-destructProperty :: proc(info: ^GDE.PropertyInfo) {
-    
-    if info.name != nil{
-        GDW.StringName_M_List.Destroy(info.name)
+destructProperty :: proc(info: ^GDE.PropertyInfo, destroy_sn:bool=true) {
+    if destroy_sn {
+        if info.name != nil{
+            GDW.StringName_M_List.Destroy(info.name)
+        }
     }
     if info.class_name != nil {
         GDW.StringName_M_List.Destroy(info.class_name)
