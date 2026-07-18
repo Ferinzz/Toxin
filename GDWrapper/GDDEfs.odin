@@ -600,7 +600,7 @@ GDTypes := [?]typeid {
   typeid_of(PackedColorArray),
   typeid_of(PackedVector4Array),
 }
-
+/*
 GDTypes_strings := [GDE.VariantType]string {
   .NIL = "nil",
   .BOOL = "bool",
@@ -644,3 +644,4 @@ GDTypes_strings := [GDE.VariantType]string {
   .VARIANT_MAX = "Variant",
 }
 
+*/

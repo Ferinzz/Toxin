@@ -267,4 +267,6 @@ Connect:: GDW.Connect
 //WARNING: if the order of the variantType enum changes, this needs to be updated as well.
 GDTypes := GDW.GDTypes
 
+/*
 GDTypes_strings := GDW.GDTypes_strings
+*/
