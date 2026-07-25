@@ -157,11 +157,16 @@ _instantiate :: proc(obj: Class.ClassName_Index) -> ^Object {
     return gdAPI.ClassDB.ConstructObject(Class.GDClass_StringName_get(obj))
 }
 @(require_results)
-instantiate_custom :: proc(obj: ^StringName) -> ^Object {
+instantiate_SN :: proc(obj: ^StringName) -> ^Object {
     return gdAPI.ClassDB.ConstructObject(obj)
+}
+@(require_results)
+instantiate_custom :: proc(obj: ^Class_Deets) -> ^Object {
+    return gdAPI.ClassDB.ConstructObject(&obj.SN)
 }
 
 instantiate :: proc{
     _instantiate,
+    instantiate_SN,
     instantiate_custom,
 }
