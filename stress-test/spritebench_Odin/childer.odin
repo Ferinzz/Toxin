@@ -22,10 +22,6 @@ THIS_CLASS_NAME :: struct {
     size: Toxin.Vector2i,
 }
 
-
-windowSize:Toxin.Vector2i
-wind_obj:^Toxin.Object
-size:Toxin.Vector2={64,64}
 size_half:Toxin.Vector2={32,32}
 
 
@@ -56,15 +52,10 @@ THIS_CLASS_NAME_Init :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
 
     self.class.angle=rand.float64_range(0, Math.PI*2)
     self.class.speed=rand.float32_range(100, 600)
-    //win_size: Toxin.Vector2i
-    //window_Class.get_size->m_call(root, r_ret=&win_size)
-    //tex_size:Toxin.Vector2i
-    //image_Class.get_size->m_call(texture, r_ret=&tex_size)
     self.class.window = w_size
     self.class.position = {f32(w_size.x)/2, f32(w_size.y)/2}
     self.class.size = tex_size
     size_half = {f32(tex_size.x)/2, f32(tex_size.y)/2}
-    //fmt.println("ïnit")
 }
 
 //******************************\\
@@ -78,11 +69,8 @@ THIS_CLASS_NAME_Init :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
 THIS_CLASS_NAME_VTable: Classes.Node2D_vtable(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), args: rawptr = nil, r_ret: rawptr = nil) {
         context = runtime.default_context();
-        //fmt.println(texture)
         class.Sprite2D_set_texture(self.self, &texture)
         class.Node2D_set_position(self.self, &self.class.position)
-        //size: Toxin.Vector2i
-        //Window_MethodBind_List.get_size->m_call(root, r_ret=&self.class.window)
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct{delta: ^Toxin.float},  r_ret: rawptr = nil){
         context = runtime.default_context();
