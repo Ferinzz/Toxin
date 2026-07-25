@@ -25,17 +25,8 @@ THIS_CLASS_NAME :: struct {
 size_half:Toxin.Vector2={32,32}
 
 
-self_reggy:: proc(self: ^Toxin.required_deets, init_level: Toxin.InitializationLevel) {
-    me:=(^Toxin.Class_Deets)(self)
-
-    Toxin._Register(me, init_level)
-
-    fmt.println("!!special stress test!!")
-}
-
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
-    registerer = self_reggy,
     init_level = .INITIALIZATION_SCENE,
     GDClass_Index = .Sprite2D,
     class_struct_size = size_of(THIS_CLASS_NAME),

@@ -38,11 +38,11 @@ Class_Deets :: struct {
     SN : StringName,
     Exporter: proc(className: ^StringName),
     GD_Binding_Callbacks: GDE.InstanceBindingCallbacks, //see classBindingCallbacks for details
+    registerer: proc(self: ^required_deets, init_level: InitializationLevel),
 }
 ClassNotification2 :: GDE.ClassNotification2
 
 required_deets:: struct #all_or_none{
-    registerer: proc(self: ^required_deets, init_level: InitializationLevel), //Keep as first value in order to trivially cast it.
     class_struct_size: i64,
     init_level: InitializationLevel,
     GDClass_Index: Classes.ClassName_Index,
@@ -56,14 +56,16 @@ required_deets:: struct #all_or_none{
 * init_level: the current initialization level of Godot's startup procedure.
 * class_info: the information about the class which you would like to use when customizing.
 */
-_Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel= .INITIALIZATION_SCENE, \
+_Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel, \
     class_info: GDE.ClassCreationInfo4 = class_info_Default) {
     
     assert(deets != nil, "Register procedure received a nil value for deets. This should never happen.")
     // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
     assert(deets.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", deets.required.name))
 
-
+    if deets.registerer == nil {
+        deets.registerer = example_self_reggy
+    }
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
     class_info: GDE.ClassCreationInfo4 = class_info
 
@@ -131,9 +133,8 @@ Registerer:: struct #all_or_none{
 * self: pointer to the registerer field of the Class_Deets for this class. Should be a pointer to itself.
 * init_level: The current level of Godot's initialization. Should be passed in based on the value from your entry procedure. See extensionInit
 */
-example_self_reggy:: proc(self: ^Registerer, init_level: InitializationLevel) {
-    me:=(^Class_Deets)(self)
-    _Register(me, init_level, {})
+example_self_reggy:: proc(self: ^Class_Deets, init_level: InitializationLevel) {
+    _Register(self, init_level)
 }
 
 //Implementation details. For a simple implementation you should only need to use the above structs and call the self referenced register proc.

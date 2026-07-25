@@ -142,6 +142,7 @@ MainLoopFrameCallback2 :: proc "c" () {
             }
             fmt.println(frame_times[:])
             fmt.println(total/frame_count_amout)
+            fmt.println(1.0/(total/frame_count_amout))
             exit_code:Toxin.Int=0
             class.SceneTree_quit(scene_tree_obj, &exit_code)
         }

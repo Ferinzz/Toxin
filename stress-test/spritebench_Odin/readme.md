@@ -19,4 +19,4 @@ node.gd will import the gdextension which will add all the children to the root.
 The path to godot is a direct path to my .exe; can replace with your godot path. For performance testing be sure to use a release build of godot and not a debug build. 
 
 ## Observation
-On a Intel a770 Intel 13700k the benchmark runs at an average of 0.0058 to 0.0061 which is ~172 fps.
+On the Intel Arc a770, Intel 13700k the benchmark runs at an average of 0.00553 Frame Time and 180.64 FPS

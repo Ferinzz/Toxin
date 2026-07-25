@@ -60,7 +60,11 @@ toxin_entry :: proc(p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: 
 
 register_custom_class :: proc(list: []^Class_Deets, init_level: InitializationLevel) {
     for class in list {
-        class->registerer(init_level)
+        if class.registerer == nil {
+            example_self_reggy(class, init_level)
+        } else {
+            class.registerer(class, init_level)
+        }
     }
 }
 
@@ -117,12 +121,12 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             if inits.scene != nil {
                 inits.scene(userdata)
             } else {
-                fmt.println("WARNING! scene init proc was not setup.")
+                //fmt.println("WARNING! scene init proc was not setup.")
             }
             if setup.scene_init != nil {
                 setup.scene_init(setup)
             } else {
-                fmt.println("WARNING! scene init proc was not setup.")
+                //fmt.println("WARNING! scene init proc was not setup.")
             }
             register_custom_class(setup.classes.scene[:], InitializationLevel(init_Level))
             //Need to register our MainLoop callbacks at some point.
