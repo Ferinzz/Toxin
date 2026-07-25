@@ -68,12 +68,10 @@ THIS_CLASS_NAME_Init :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
 */
 THIS_CLASS_NAME_VTable: Classes.Node2D_vtable(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), args: rawptr = nil, r_ret: rawptr = nil) {
-        context = runtime.default_context();
         class.Sprite2D_set_texture(self.self, &texture)
         class.Node2D_set_position(self.self, &self.class.position)
     },
     _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct{delta: ^Toxin.float},  r_ret: rawptr = nil){
-        context = runtime.default_context();
         if self.class.position.y < size_half.y || self.position.y > (f32(self.window.y) - size_half.y) do self.angle = -self.class.angle
         if self.class.position.x < size_half.x || self.position.x > (f32(self.window.x) - size_half.x) do self.angle = Math.PI - self.class.angle
         self.class.position += {(Math.cos_f32(f32(self.class.angle))), (Math.sin_f32(f32(self.class.angle)))}*f32(p_args.delta^)*self.class.speed
