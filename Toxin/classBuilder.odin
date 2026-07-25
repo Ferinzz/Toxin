@@ -63,9 +63,6 @@ _Register :: proc(deets: ^Class_Deets, init_level: InitializationLevel, \
     // If this check fails, then you did not put the registration call in the correct init level of the extensionInit proc.
     assert(deets.required.init_level == init_level, fmt.aprintf("Class %s init function called at a different level than was expected.", deets.required.name))
 
-    if deets.registerer == nil {
-        deets.registerer = example_self_reggy
-    }
     //review definition of GDE.ClassCreationInfo4 for more details on each field.
     class_info: GDE.ClassCreationInfo4 = class_info
 
