@@ -9,12 +9,12 @@ import "GD_Classes"
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
-        registerer = THIS_CLASS_NAME_reggy,
         class_struct_size = size_of(THIS_CLASS_NAME),
         name = Toxin.get_name(THIS_CLASS_NAME),
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Sprite2D,
     },
+    registerer = THIS_CLASS_NAME_reggy,
     create=constructor,
     destroy=destructor,
     notification = Toxin.ClassNotification2(THIS_CLASS_NAME_Notifications),
@@ -34,9 +34,8 @@ munum::enum Toxin.Int {
 }
 
 
-THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.required_deets, init_level: Toxin.InitializationLevel) {
+THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.Class_Deets, init_level: Toxin.InitializationLevel) {
     context = runtime.default_context()
-    me:=(^Toxin.Class_Deets)(self)
     Toxin._Register(me, init_level)
 
     //for default values in function binding
