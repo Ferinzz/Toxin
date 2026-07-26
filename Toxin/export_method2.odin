@@ -61,7 +61,7 @@ _bind_default :: proc(function: $P, class: ^StringName, $need_ref: bool, call_in
     bind_method(class, &methodStringName, rawptr(function), call, ptrcall, ret, args[:argcount])
     Destroy(&methodStringName)
 }
-_bind_static :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function),  $need_ref: bool,) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+_bind_static :: proc(function: $P, class: ^StringName,  $need_ref: bool, call_info:= #caller_expression(function), ) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
     argcount:: sics.type_proc_parameter_count(P)
 
     when need_ref {
@@ -179,9 +179,10 @@ _bind_static_with_defaults :: proc(function: $P, class: ^StringName, $need_ref: 
     when need_ref {
         ptrcall:: sics.procedure_of(godotPtrCallback_sdvref(method_info(P){function, {}}, nil, {}, nil))
         call:: sics.procedure_of(godotVariantCallback_sdvref(method_info(P){function, {}}, nil, {}, 0, nil, nil))
-    }
+    } else {
         ptrcall:: sics.procedure_of(godotPtrCallback_sdv(method_info(P){function, {}}, nil, {}, nil))
         call:: sics.procedure_of(godotVariantCallback_sdv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    }
     args: [5]arg_deets
     get_arg_deets(args[:argcount], function, 0)
 
