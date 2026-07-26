@@ -155,7 +155,7 @@ tool_Button_Info :: struct {
 * Callable needs to be returned to Godot via a getter. The getter is called at button press.
 * Set the callback of the callable to one which will only need to exist when the editor is running (unless this will be used in scripting or signals as well.)
 */
-export_tool_button :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), button_props: tool_Button_Info, $need_ref: bool) where T == Callable {
+export_tool_button :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), button_props: tool_Button_Info, $need_ref: bool) where T == Callable {
     hint_string:= strings.builder_make()
     strings.write_string(&hint_string, button_props.text)
     if len(button_props.text) > 0 && len(button_props.icon) > 0 {
@@ -166,18 +166,18 @@ export_tool_button :: proc(className: ^StringName, getter_setter: ^gsetter_userd
     destructProperty(&prop_info)
 }
 
-export_tool_button_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static($T), button_props: tool_Button_Info, $need_ref: bool) where T == Callable {
+export_tool_button_static :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static($T), button_props: tool_Button_Info, $need_ref: bool) where T == Callable {
     hint_string:= strings.builder_make()
     strings.write_string(&hint_string, button_props.text)
     if len(button_props.text) > 0 && len(button_props.icon) > 0 {
         fmt.sbprint(&hint_string, ',', button_props.icon, sep="")
     }
     prop_info:= Make_Property_Full(.CALLABLE, getter_setter.fieldname, .TOOL_BUTTON, strings.to_string(hint_string), "", {.EDITOR, .READ_ONLY})
-    Export_static(className, getter_setter, &prop_info, need_ref)
+    Export_static(className_SN, getter_setter, &prop_info, need_ref)
     destructProperty(&prop_info)
 }
 
-export_dictionary_localizable_string :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t, $need_ref: bool) {
+export_dictionary_localizable_string :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t, $need_ref: bool) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
@@ -200,7 +200,7 @@ Easing_Options :: enum {
   positive_only,
 }
 
-export_easing :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), easing: Easing_Options) {
+export_easing :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), easing: Easing_Options) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
@@ -210,26 +210,26 @@ export_easing :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t
     destructProperty(&info)
 }
 
-export_easing_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static($T), easing: Easing_Options) {
+export_easing_static :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static($T), easing: Easing_Options) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
     }
     info: GDE.PropertyInfo = Make_Property_Full(.FLOAT, fieldName, .EXP_EASING, Easing_Type[easing], "", prop_usage)
-    Export_static(className, getter_setter, &info, false)
+    Export_static(className_SN, getter_setter, &info, false)
     destructProperty(&info)
 }
 
-export_int_as_pointer :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS)) where sics.type_is_pointer(T) {
+export_int_as_pointer :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS)) where sics.type_is_pointer(T) {
     prop_usage:= {PROPERTY_USAGE_DEFAULT, .READ_ONLY}
     info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_AS_POINTER, "", prop_usage)
     Export5(className_SN, getter_setter, false, &info)
     destructProperty(&info)
 }
-export_int_as_pointer_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static($T)) where sics.type_is_pointer(T) {
+export_int_as_pointer_static :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static($T)) where sics.type_is_pointer(T) {
     prop_usage:= {PROPERTY_USAGE_DEFAULT, .READ_ONLY}
     info: GDE.PropertyInfo = Make_Property_Full(.INT, fieldName, .INT_AS_POINTER, "", prop_usage)
-    Export_static(className, getter_setter, &info, false)
+    Export_static(className_SN, getter_setter, &info, false)
     destructProperty(&info)
 }
 
@@ -243,17 +243,17 @@ export_color_noalpha :: proc(clasName: ^StringName, getter_setter: ^gsetter_user
     destructProperty(&info)
 }
 
-export_color_noalpha_static :: proc(clasName: ^StringName, getter_setter: ^gsetter_userdata_static) {
+export_color_noalpha_static :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
     }
     info: GDE.PropertyInfo = Make_Property_Full(.COLOR, fieldName, .COLOR_NO_ALPHA, "", prop_usage)
-    export_static(className, getter_setter, &info, false)
+    export_static(className_SN, getter_setter, &info, false)
     destructProperty(&info)
 }
 
-export_int_as_flag :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), $F: typeid) {
+export_int_as_flag :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), $F: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
@@ -274,12 +274,12 @@ export_int_as_flag :: proc(className: ^StringName, getter_setter: ^gsetter_userd
         }
     }
     prop_info:= Make_Property_Full(.INT, getter_setter.fieldname, .FLAGS, strings.to_string(hint_string), "", prop_usage)
-    Export5(className_SN, getter_setter, false, &info)
+    Export5(className_SN, getter_setter, false, &prop_info)
     strings.builder_destroy(&hint_string)
     destructProperty(&prop_info)
 }
 
-export_int_as_flag_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static($T), $F: typeid) {
+export_int_as_flag_static :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static($T), $F: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
@@ -300,26 +300,26 @@ export_int_as_flag_static :: proc(className: ^StringName, getter_setter: ^gsette
         }
     }
     prop_info:= Make_Property_Full(.INT, getter_setter.fieldname, .FLAGS, strings.to_string(hint_string), "", prop_usage)
-    Export_static(className, getter_setter, &prop_info, false)
+    Export_static(className_SN, getter_setter, &prop_info, false)
     strings.builder_destroy(&hint_string)
     destructProperty(&prop_info)
 }
 
-export_flags :: proc(className: ^StringName, $F: typeid) where sics.type_is_bit_set(outbit_set) && sics.type_is_named(outbit_set) {
+export_flags :: proc(className_SN: ^StringName, $F: typeid) where sics.type_is_bit_set(outbit_set) && sics.type_is_named(outbit_set) {
     bsname:= type_info_of(F).variant.(runtime.Type_Info_Named).name
     bsname_SN:= GDW.StringConstruct(bsname)
     when sics.type_is_enum(sics.type_bit_set_elem_type((F))) {
         flag_fields:= (type_info_of(sics.type_bit_set_elem_type(F)).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Enum))
         for name, idx in flag_fields.names {
             name_SN:= GDW.StringConstruct(name)
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className, &bsname_SN, &name_SN, Int(1<<flag_fields.values[idx]), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &name_SN, Int(1<<flag_fields.values[idx]), true)
             destroy(&name_SN)
         }
     } else {
         for i:= type_info_of(F).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).lower; i< type_info_of(F).variant.(runtime.Type_Info_Named).base.variant.(runtime.Type_Info_Bit_Set).upper+1; i+=1 {
             field:= fmt.aprintf("%s_%v", bsname, i)
             field_SN:= GDW.StringConstruct(field)
-            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className, &bsname_SN, &field_SN, Int(i), true)
+            gdAPI.ClassDB.RegisterExtensionClassIntegerConstant(Library, className_SN, &bsname_SN, &field_SN, Int(i), true)
             delete(field)
             destroy(&field_SN)
         }
@@ -350,7 +350,7 @@ Layer_Type :: enum {
     LAYERS_3D_NAVIGATION,
     LAYERS_AVOIDANCE,
 }
-export_int_as_layers :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), $layer: typeid) {
+export_int_as_layers :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t($T, $CS), $layer: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
@@ -370,7 +370,7 @@ export_int_as_layers :: proc(className: ^StringName, getter_setter: ^gsetter_use
     destructProperty(&prop_info)
 }
 
-export_int_as_layers_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static, $layer: typeid) {
+export_int_as_layers_static :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static, $layer: typeid) {
     prop_usage:= PROPERTY_USAGE_DEFAULT
     if getter_setter.setter_method == nil {
         prop_usage+={.READ_ONLY}
@@ -386,7 +386,7 @@ export_int_as_layers_static :: proc(className: ^StringName, getter_setter: ^gset
         case typeid_of(layers_avoidance): hint = .LAYERS_AVOIDANCE
     }
     prop_info:= Make_Property_Full(.INT, getter_setter.fieldname, hint, "" , "", prop_usage)
-    Export_static(className, getter_setter, &prop_info, false)
+    Export_static(className_SN, getter_setter, &prop_info, false)
     destructProperty(&prop_info)
 }
 
@@ -399,7 +399,7 @@ PATH_TYPES :: enum {
   SAVE_FILE, //file path. can have wildcards like "*.png,*.jpg".
   GLOBAL_SAVE_FILE, //absoulte file path. can have wildcards like "*.png,*.jpg".
 }
-export_path :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t, type: PATH_TYPES, $need_ref: bool) {
+export_path :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t, type: PATH_TYPES, $need_ref: bool) {
     hint: GDE.PropertyHint
     switch  type {
         case .DIR: hint = .DIR
@@ -410,11 +410,11 @@ export_path :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t, 
         case .GLOBAL_SAVE_FILE: hint = .GLOBAL_SAVE_FILE
         case .SAVE_FILE: hint = .SAVE_FILE
     }
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, className, property_usage)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, "", property_usage)
     Export5(className_SN, getter_setter, need_ref, &info)
     destructProperty(&info)
 }
-export_path_static :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static, type: PATH_TYPES, $need_ref: bool) {
+export_path_static :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static, type: PATH_TYPES, $need_ref: bool) {
     hint: GDE.PropertyHint
     switch  type {
         case .DIR: hint = .DIR
@@ -425,30 +425,30 @@ export_path_static :: proc(className: ^StringName, getter_setter: ^gsetter_userd
         case .GLOBAL_SAVE_FILE: hint = .GLOBAL_SAVE_FILE
         case .SAVE_FILE: hint = .SAVE_FILE
     }
-    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, className, property_usage)
-    export_static(className, getter_setter, &info, need_ref)
+    info: GDE.PropertyInfo = makePropertyFull_string(.STRING, fieldName, hint, filters, "", property_usage)
+    export_static(className_SN, getter_setter, &info, need_ref)
     destructProperty(&info)
 }
 
-export_locale :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static, $need_ref: bool) {
+export_locale :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static, $need_ref: bool) {
     info:= Make_Property_Full(.STRING, getter_setter.fieldname, .LOCALE_ID, "", "", PROPERTY_USAGE_DEFAULT,)
     Export5(className_SN, getter_setter, need_ref, &info)
     destructProperty(&info)
 }
 
-export_password :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static, $need_ref: bool) {
+export_password :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static, $need_ref: bool) {
     info:= Make_Property_Full(.STRING, getter_setter.fieldname, .PASSWORD, "", "", PROPERTY_USAGE_DEFAULT,)
     Export5(className_SN, getter_setter, need_ref, &info)
     destructProperty(&info)
 }
 
-export_with_placeholder_text :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static, placeholder_text: string, $need_ref: bool) {
+export_with_placeholder_text :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static, placeholder_text: string, $need_ref: bool) {
     info:= Make_Property_Full(.STRING, getter_setter.fieldname, .PLACEHOLDER_TEXT, placeholder_text, "", PROPERTY_USAGE_DEFAULT,)
     Export5(className_SN, getter_setter, need_ref, &info)
     destructProperty(&info)
 }
 
-export_input_name :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_static, options: Input_Options, $need_ref: bool) {
+export_input_name :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_static, options: Input_Options, $need_ref: bool) {
     hints:= strings.builder_make()
     if .loose_mode in options {
         strings.write_string(&hints, Input_Option_Strings[.loose_mode])
@@ -474,14 +474,14 @@ Input_Option_Strings:[Input_Options_enum]string=  {
     .loose_mode = "loose_mode",
 }
 
-export_multiline :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t, $need_ref: bool) {
+export_multiline :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t, $need_ref: bool) {
     info:= Make_Property_Full(.STRING, getter_setter.fieldname, .MULTILINE_TEXT, "", "", PROPERTY_USAGE_DEFAULT,)
     Export5(className_SN, getter_setter, need_ref, &info)
     destructProperty(&info)
 }
 
 
-export_nodepath_type :: proc(className: ^StringName, getter_setter: ^gsetter_userdata_t, node_type: string, $need_ref: bool) {
+export_nodepath_type :: proc(className_SN: ^StringName, getter_setter: ^gsetter_userdata_t, node_type: string, $need_ref: bool) {
     info:= Make_Property_Full(.NODE_PATH, getter_setter.fieldname, .NODE_PATH_VALID_TYPES, node_type, "", PROPERTY_USAGE_DEFAULT,)
     Export5(className_SN, getter_setter, need_ref, &info)
     destructProperty(&info)
@@ -518,13 +518,13 @@ Export_static :: proc(className_SN: ^StringName, getter_setter: ^$T/gsetter_user
     //}
 
     getName, setName:= make_gs_name(getter_setter.fieldname, &getbuf, &setbuf)
-    _bind_static(getter_setter.setter_method, className_SN, setName, need_ref)
-    _bind_static(getter_setter.getter_method, className_SN, getName, need_ref)
+    _bind_static(getter_setter.setter_method, className_SN, need_ref, setName)
+    _bind_static(getter_setter.getter_method, className_SN, need_ref, getName)
     //Register the information with Godot in order for the variable to be accessible.
     Bind_Property(className_SN, getter_setter.fieldname, getter_setter.gs_type, info, getName, setName)
 }
 
-Bind_Set3 :: #force_inline proc(className: ^StringName, \
+Bind_Set3 :: #force_inline proc(className_SN: ^StringName, \
                 methodName: string, function: ^gsetter_userdata, argNames: string, \
                 methodType: GDE.ClassMethodFlags = GDE.Method_Flags_DEFAULT, loc:= #caller_location)
 {
@@ -562,7 +562,7 @@ Bind_Set3 :: #force_inline proc(className: ^StringName, \
         methodInfo.arguments_metadata = &args_metadata[0]
 
 
-    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className, &methodInfo)
+    gdAPI.ClassDB.RegisterExtensionClassMethod(Library, className_SN, &methodInfo)
     
     //Destructor things.
     GDW.StringName_M_List.Destroy(&methodStringName)
