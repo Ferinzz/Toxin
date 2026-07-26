@@ -1,9 +1,9 @@
 package main
 
-import "shared:Toxin_New_Pull/Toxin"
+import "shared:Toxin/Toxin"
 import "base:runtime"
 import "core:fmt"
-import Classes "shared:Toxin_New_Pull/GD_Classes"
+import Classes "shared:Toxin/GD_Classes"
 
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
@@ -114,11 +114,11 @@ var2: Toxin.Variant
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
 
-    Toxin._bind_default(somePublicFunction2, className)
-    Toxin._bind_static(static_proc, className)
-    user_bind:= Toxin._bind_with_defaults(somePublicFunction, className, &var1, &var2)
-    user_bind3:= Toxin._bind_with_defaults(somePublicFunction3, className, &var1)
-    user_bind2:= Toxin._bind_static_with_defaults(static_proc_defaults, className, &var1)
+    Toxin._bind_default(somePublicFunction2, className, false)
+    Toxin._bind_static(static_proc, className, false)
+    user_bind:= Toxin._bind_with_defaults(somePublicFunction, className, false, &var1, &var2)
+    user_bind3:= Toxin._bind_with_defaults(somePublicFunction3, className, false, &var1)
+    user_bind2:= Toxin._bind_static_with_defaults(static_proc_defaults, className, false, &var1)
 
     //Same with this. It creates 4 extra functions. Getter, Setter, variant callback, and pointer callback.
     //If you only need part of this or want to do more specific actions during a 'get' or 'set' you can always write the functions

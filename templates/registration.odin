@@ -1,9 +1,9 @@
 package main
 
-import "Toxin"
+import "shared:Toxin/Toxin"
 import "base:runtime"
-import Classes "GD_Classes"
-import GDE "GDWrapper/gdAPI/gdextension"
+import Classes "shared:Toxin/GD_Classes"
+import GDE "shared:Toxin/GDWrapper/gdAPI/gdextension"
 
 
 @export
