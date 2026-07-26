@@ -1,10 +1,10 @@
 package main
 
-import "Toxin"
+import "shared:Toxin_New_Pull/Toxin"
 import "base:runtime"
 import "core:fmt"
-import Classes "GD_Classes"
-import "GD_Classes"
+import Classes "shared:Toxin_New_Pull/GD_Classes"
+
 
 //Find and Replace THIS_CLASS_NAME with the name that you will be giving to the GDE class.
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
@@ -130,7 +130,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     Toxin.Destroy(&signalName)
 
     @static
-    somproperty:= Toxin.gsetter_userdata{
+    somproperty:= Toxin.gsetter_userdata_t(Toxin.Int, THIS_CLASS_NAME) {
         gs_type=.INT,
         getter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
             Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
@@ -144,6 +144,7 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
         },
         userdata= nil,
     }
+    Toxin.Export_Default2(className, &somproperty, false)
 
     @(rodata, static)
     _enum:= Toxin.gsetter_userdata_t(Toxin.Int, THIS_CLASS_NAME){

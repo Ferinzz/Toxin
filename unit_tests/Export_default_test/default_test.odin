@@ -1,21 +1,25 @@
 package default_test
 
-import "shared:Toxin"
+import "../../Toxin"
 import "core:fmt"
 import "base:runtime"
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDW "../../GDWrapper"
+import GDE "../../GDWrapper/gdAPI/gdextension"
+import "../../GDWrapper/gdAPI"
 
 init:: proc ()  {
     //Register custom class.
-    type_test_defaults_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
-    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
-    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
+    //type_test_defaults_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
+    myCallbacks: GDE.MainLoopCallbacks
+    myCallbacks.frame_func = MainLoopFrameCallback
+    Toxin.register_mainloop_callbacks({})
+
+    //gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
 }
 
 @(init)
 asdf :: proc "contextless" () {
-    Toxin.inits.scene = init
+    //Toxin.inits.scene = init
 }
 
 scene_tree_obj: ^GDW.Object
@@ -26,20 +30,20 @@ MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
 
     //Setup an object to hold the MainLoop object.
-    scene_tree_obj = GDW.getMainLoop()
+    //scene_tree_obj = GDW.getMainLoop()
     //Fetch the root of the current sceneTree
-    root= GDW.getRoot()
-    scene:= GDW.get_current_scene()
+    //root= GDW.getRoot()
+    //scene:= GDW.get_current_scene()
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //A scene is not added when running editor mode unless there is already a default scene. Check for the scene before trying to add the child to it.
     //if scene != nil {
-            root_node_instance = gdAPI.ClassDB.ConstructObject(&type_test_defaults_deets.SN)
-            GDW.addChild(root, &root_node_instance)
+            //root_node_instance = gdAPI.ClassDB.ConstructObject(&type_test_defaults_deets.SN)
+            //GDW.addChild(root, &root_node_instance)
         //}
 
-    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback2
-    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
+    //Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback2
+    //gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
     
 }
 MainLoopFrameCallback2 :: proc "c" () {
@@ -49,7 +53,7 @@ MainLoopFrameCallback2 :: proc "c" () {
 type_test_defaults_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
     fmt.println("11!!special stress test!!")
-    class:= cast(^Toxin.Class_Container(type_test_defaults))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    class:= cast(^Toxin.Class_Container(type_test_defaults))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)
     //If these are not 'created' before Godot attempts to use them the engine will panic.
         fmt.println("Iinit classsssss")
     GDW.Array_M_List.Create0(&class.class.Array)
@@ -63,6 +67,7 @@ type_test_defaults_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_no
     return class.self
 }
 
+/*
 type_test_defaults_vtable:= Toxin.Node_v_table(type_test_defaults) {
     _ready = proc "c" (self: ^Toxin.Class_Container(type_test_defaults)) {
         context = runtime.default_context()
@@ -203,7 +208,7 @@ type_test_defaults_vtable:= Toxin.Node_v_table(type_test_defaults) {
         //fmt.println("error")
 
     }
-}
+}*/
 
 type_test_defaults :: struct {
     Bool: Toxin.Bool,
@@ -248,23 +253,42 @@ type_test_defaults :: struct {
 
 type_test_defaults_deets: Toxin.Class_Deets = {
     required = {
-        class_struct = type_test_defaults,
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Node,
-        registerer = {self_register = type_test_registration,},
+        name = Toxin.get_name(type_test_defaults),
+        class_struct_size = size_of(type_test_defaults),
     },
-    vtable = &type_test_defaults_vtable,
+    //vtable = &type_test_defaults_vtable,
     Exporter = type_test_defaults_Export,
 }
 
-type_test_registration :: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
-    myself:= cast(^Toxin.Class_Deets)self
-    Toxin.Register(myself, init_level, Toxin.make_get_virtual_func(type_test_defaults_vtable), type_test_defaults_Init)
-    fmt.println("11!!special stress test!!")
-    fmt.println(myself.SN)
-}
-
 type_test_defaults_Export :: proc(className: ^Toxin.StringName) {
+    
+    _array:= Toxin.gsetter_userdata_t(Toxin.Array, type_test_defaults) {
+        getter_method= proc "c" (object: ^Toxin.Class_Container(type_test_defaults)) -> Toxin.Array {
+            return object.Array
+        },
+        setter_method = proc "c" (object: ^Toxin.Class_Container(type_test_defaults), arg: ^Toxin.Array ){
+            Toxin.Ref_Count(arg, &object.Array)
+        },
+        fieldname= "gdarray_ref"
+    }
+    Toxin.Export_Default2(className, &_array, true)
+    _array_copy:= Toxin.gsetter_userdata_t(Toxin.Array, type_test_defaults) {
+        getter_method= proc "c" (object: ^Toxin.Class_Container(type_test_defaults)) -> (ret: Toxin.Array) {
+            deep: Toxin.Bool = false
+            GDW.Array_M_List.duplicate(&object.Array, {&deep}, &ret)
+            return
+        },
+        setter_method = proc "c" (object: ^Toxin.Class_Container(type_test_defaults), arg: ^Toxin.Array ){
+            Toxin.Ref_Count(arg, &object.Array)
+        },
+        fieldname= "gdarray_copy"
+    }
+    Toxin.Export_Default2(className, &_array_copy, false)
+
+    /*
+    Toxin.Export_Default2(className, )
     Toxin.Export(className, type_test_defaults, "RID")
     Toxin.Export(className, type_test_defaults, "Object")
     Toxin.Export(className, type_test_defaults, "Callable")
@@ -303,4 +327,5 @@ type_test_defaults_Export :: proc(className: ^Toxin.StringName) {
     Toxin.Export(className, type_test_defaults, "gdstring")
     Toxin.Export(className, type_test_defaults, "StringName")
     Toxin.Export(className, type_test_defaults, "NodePath")
+    */
 }

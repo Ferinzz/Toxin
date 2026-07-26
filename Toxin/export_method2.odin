@@ -37,11 +37,16 @@ get_arg_deets :: #force_inline proc(args: []arg_deets, function: $P, $offset: in
 //Arguments with default values must be at the end of the function’s argument list.
 //You just have to pass arguments in order. If you have more than one, and you want to pass something for the last, you have to pass something for all the ones before. There are no named arguments when calling a function. 
 
-_bind_default :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+_bind_default :: proc(function: $P, class: ^StringName, $need_ref: bool, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
     argcount:: sics.type_proc_parameter_count(P) - 1
 
-    ptrcall:: sics.procedure_of(godotPtrCallback(function, nil, {}, nil))
-    call:: sics.procedure_of(godotVariantCallback(function, nil, {}, 0, nil, nil))
+    when need_ref {
+        ptrcall:: sics.procedure_of(godotPtrCallback_ref(function, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_ref(function, nil, {}, 0, nil, nil))
+    } else {
+        ptrcall:: sics.procedure_of(godotPtrCallback_ref(function, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_ref(function, nil, {}, 0, nil, nil))
+    }
     args: [5]arg_deets
     get_arg_deets(args[:argcount], function, 1)
 
@@ -56,11 +61,16 @@ _bind_default :: proc(function: $P, class: ^StringName, call_info:= #caller_expr
     bind_method(class, &methodStringName, rawptr(function), call, ptrcall, ret, args[:argcount])
     Destroy(&methodStringName)
 }
-_bind_static :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+_bind_static :: proc(function: $P, class: ^StringName, call_info:= #caller_expression(function),  $need_ref: bool,) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
     argcount:: sics.type_proc_parameter_count(P)
 
-    ptrcall:: sics.procedure_of(godotPtrCallback_s(function, nil, {}, nil))
-    call:: sics.procedure_of(godotVariantCallback_s(function, nil, {}, 0, nil, nil))
+    when need_ref {
+        ptrcall:: sics.procedure_of(godotPtrCallback_sref(function, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_sref(function, nil, {}, 0, nil, nil))
+    } else {
+        ptrcall:: sics.procedure_of(godotPtrCallback_s(function, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_s(function, nil, {}, 0, nil, nil))
+    }
     args: [5]arg_deets
     get_arg_deets(args[:argcount], function, 0)
 
@@ -94,13 +104,18 @@ _delete_method_info :: proc(bind_info: ^$T/method_info($P)) {
     delete(bind_info)
 }
 @(require_results)
-_bind_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+_bind_with_defaults :: proc(function: $P, class: ^StringName, $need_ref: bool, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
     argcount:: sics.type_proc_parameter_count(P) - 1
     assert(argcount>=len(defaults), "default args should be less than amount of arguments")
 
     bind_info:= _make_method_info(function, defaults[:])
-    ptrcall:: sics.procedure_of(godotPtrCallback_dv(method_info(P){function, {}}, nil, {}, nil))
-    call:: sics.procedure_of(godotVariantCallback_dv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    when need_ref {
+        ptrcall:: sics.procedure_of(godotPtrCallback_dvref(method_info(P){function, {}}, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_dvref(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    } else {
+        ptrcall:: sics.procedure_of(godotPtrCallback_dv(method_info(P){function, {}}, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_dv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    }
     args: [5]arg_deets
     get_arg_deets(args[:argcount], function, 1)
 
@@ -120,6 +135,9 @@ _bind_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Varia
 godotPtrCallback_dv :: proc "c"  (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
     godotPtrCallback(method_userdata.function, p_instance, p_args, r_ret)
 }
+godotPtrCallback_dvref :: proc "c"  (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
+    godotPtrCallback_ref(method_userdata.function, p_instance, p_args, r_ret)
+}
 godotVariantCallback_dv :: proc "c" (userdata: $T/method_info($P), p_instance: GDE.ClassInstancePtr,
     p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     argCount::sics.type_proc_parameter_count(P) - 1
@@ -136,14 +154,34 @@ godotVariantCallback_dv :: proc "c" (userdata: $T/method_info($P), p_instance: G
     call::sics.procedure_of(godotVariantCallback(userdata.function, nil, {}, 0, nil,nil))
     call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
 }
+godotVariantCallback_dvref :: proc "c" (userdata: $T/method_info($P), p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    argCount::sics.type_proc_parameter_count(P) - 1
+    args:[argCount]^Variant
+    for arg, i in p_args[:p_argument_count] {
+        args[i] = arg
+    }
+    if p_argument_count<argCount {
+        start:=len(userdata.default)-int(argCount - p_argument_count)
+        for arg, i in userdata.default[start:] {
+            args[i+int(p_argument_count)] = arg
+        }
+    }
+    call::sics.procedure_of(godotVariantCallback_ref(userdata.function, nil, {}, 0, nil,nil))
+    call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
+}
 @(require_results)
-_bind_static_with_defaults :: proc(function: $P, class: ^StringName, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
+_bind_static_with_defaults :: proc(function: $P, class: ^StringName, $need_ref: bool, defaults: ..^Variant, call_info:= #caller_expression(function)) -> (^method_info(P)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= 6) {
     argcount:: sics.type_proc_parameter_count(P)
     assert(argcount>=len(defaults), "default args should be less than amount of arguments")
 
     bind_info:= _make_method_info(function, defaults[:])
-    ptrcall:: sics.procedure_of(godotPtrCallback_sdv(method_info(P){function, {}}, nil, {}, nil))
-    call:: sics.procedure_of(godotVariantCallback_sdv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    when need_ref {
+        ptrcall:: sics.procedure_of(godotPtrCallback_sdvref(method_info(P){function, {}}, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_sdvref(method_info(P){function, {}}, nil, {}, 0, nil, nil))
+    }
+        ptrcall:: sics.procedure_of(godotPtrCallback_sdv(method_info(P){function, {}}, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback_sdv(method_info(P){function, {}}, nil, {}, 0, nil, nil))
     args: [5]arg_deets
     get_arg_deets(args[:argcount], function, 0)
 
@@ -163,6 +201,9 @@ _bind_static_with_defaults :: proc(function: $P, class: ^StringName, defaults: .
 godotPtrCallback_sdv :: proc "c"  (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
     godotPtrCallback_s(method_userdata.function, p_instance, p_args, r_ret)
 }
+godotPtrCallback_sdvref :: proc "c"  (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
+    godotPtrCallback_sref(method_userdata.function, p_instance, p_args, r_ret)
+}
 godotVariantCallback_sdv :: proc "c" (userdata: $T/method_info($P), p_instance: GDE.ClassInstancePtr,
     p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     argCount::sics.type_proc_parameter_count(P)
@@ -177,6 +218,22 @@ godotVariantCallback_sdv :: proc "c" (userdata: $T/method_info($P), p_instance: 
         }
     }
     call::sics.procedure_of(godotVariantCallback_s(userdata.function, nil, {}, 0, nil,nil))
+    call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
+}
+godotVariantCallback_sdvref :: proc "c" (userdata: $T/method_info($P), p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    argCount::sics.type_proc_parameter_count(P)
+    args:[argCount]^Variant
+    for arg, i in p_args[:p_argument_count] {
+        args[i] = arg
+    }
+    if p_argument_count<argCount {
+        start:=len(userdata.default)-int(argCount - p_argument_count)
+        for arg, i in userdata.default[start:] {
+            args[i+int(p_argument_count)] = arg
+        }
+    }
+    call::sics.procedure_of(godotVariantCallback_sref(userdata.function, nil, {}, 0, nil,nil))
     call(userdata.function, p_instance, raw_data(args[:]), argCount, r_return, r_error)
 }
 
@@ -223,70 +280,107 @@ godotPtrCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstance
     func := cast(P)method_userdata
     arg0:: sics.type_proc_parameter_type(P, 0)
     when sics.type_proc_parameter_count(P)==2{
-    s_ptrs:struct{
-    arg1:(sics.type_proc_parameter_type(P, 1))}
-    s_ptrs.arg1=cast(sics.type_proc_parameter_type(P, 1))p_args[0]
+    s_ptrs:=make_arg_struct1(sics.type_proc_parameter_type(P, 1), p_args[:1])
     }
     when sics.type_proc_parameter_count(P)==3{
-    s_ptrs:=compress_values(
-    cast(sics.type_proc_parameter_type(P, 1))p_args[0],
-    cast(sics.type_proc_parameter_type(P, 2))p_args[1])
+    s_ptrs:=make_arg_struct2(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),p_args[:2])
     }
     when sics.type_proc_parameter_count(P)==4{
-    s_ptrs:=compress_values(
-    cast(sics.type_proc_parameter_type(P, 1))p_args[0],
-    cast(sics.type_proc_parameter_type(P, 2))p_args[1],
-    cast(sics.type_proc_parameter_type(P, 3))p_args[2])
+    s_ptrs:=make_arg_struct3(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),
+    sics.type_proc_parameter_type(P, 3), p_args[:3])
     }
     when sics.type_proc_parameter_count(P)==5{
-    s_ptrs:=compress_values(
-    cast(sics.type_proc_parameter_type(P, 1))p_args[0],
-    cast(sics.type_proc_parameter_type(P, 2))p_args[1],
-    cast(sics.type_proc_parameter_type(P, 3))p_args[2],
-    cast(sics.type_proc_parameter_type(P, 4))p_args[3])
+    s_ptrs:=make_arg_struct4(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),
+    sics.type_proc_parameter_type(P, 3),
+    sics.type_proc_parameter_type(P, 4), p_args[:4])
     }
     when sics.type_proc_parameter_count(P)==6{
-    s_ptrs:=compress_values(
-    cast(sics.type_proc_parameter_type(P, 1))p_args[0],
-    cast(sics.type_proc_parameter_type(P, 2))p_args[1],
-    cast(sics.type_proc_parameter_type(P, 3))p_args[2],
-    cast(sics.type_proc_parameter_type(P, 4))p_args[3],
-    cast(sics.type_proc_parameter_type(P, 5))p_args[4])
+    s_ptrs:=make_arg_struct5(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),
+    sics.type_proc_parameter_type(P, 3),
+    sics.type_proc_parameter_type(P, 4),
+    sics.type_proc_parameter_type(P, 5), p_args[:5])
     }
     when sics.type_proc_parameter_count(P) > 1 {
         when sics.type_proc_return_count(P) > 0 {
         //Dictionary and Array need to be destroyed specifically before returning to them.
         //Others are fine so far, but better safe than sorry.
-        when sics.type_proc_return_type(P, 0) == Dictionary || sics.type_proc_return_type(P, 0) == Array ||
-             sics.type_proc_return_type(P, 0) == gdstring || sics.type_proc_return_type(P, 0) == StringName ||
-             sics.type_proc_return_type(P, 0) == Callable || sics.type_proc_return_type(P, 0) == PackedByteArray ||
-             sics.type_proc_return_type(P, 0) == PackedInt32Array || sics.type_proc_return_type(P, 0) == PackedInt64Array ||
-             sics.type_proc_return_type(P, 0) == PackedFloat32Array || sics.type_proc_return_type(P, 0) == PackedFloat64Array ||
-             sics.type_proc_return_type(P, 0) == PackedStringArray || sics.type_proc_return_type(P, 0) == PackedVector2Array ||
-             sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
-             sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
-             sics.type_proc_return_type(P, 0) == PackedVector4Array {
-                ret:= (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
-            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
-        } else {
-            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            Destroy(cast(^(sics.type_proc_return_type(P, 0)))r_ret)
         }
+        (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(arg0)p_instance, expand_values(s_ptrs))
     } else {
-        (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
+        func(cast(arg0)p_instance, expand_values(s_ptrs))
     }
     } else {
     when sics.type_proc_return_count(P) > 0 {
-        when sics.type_proc_return_type(P, 0) == Dictionary || sics.type_proc_return_type(P, 0) == Array ||
-             sics.type_proc_return_type(P, 0) == gdstring || sics.type_proc_return_type(P, 0) == StringName ||
-             sics.type_proc_return_type(P, 0) == Callable || sics.type_proc_return_type(P, 0) == PackedByteArray ||
-             sics.type_proc_return_type(P, 0) == PackedInt32Array || sics.type_proc_return_type(P, 0) == PackedInt64Array ||
-             sics.type_proc_return_type(P, 0) == PackedFloat32Array || sics.type_proc_return_type(P, 0) == PackedFloat64Array ||
-             sics.type_proc_return_type(P, 0) == PackedStringArray || sics.type_proc_return_type(P, 0) == PackedVector2Array ||
-             sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
-             sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
-             sics.type_proc_return_type(P, 0) == PackedVector4Array {
-                ret:= (cast(P)method_userdata)(cast(arg0)p_instance)
-            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            Destroy((cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        }
+        (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(arg0)p_instance)
+        
+    } else {
+        func(cast(arg0)p_instance)
+    }}
+}
+godotPtrCallback_ref :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
+    context = runtime.default_context()
+    func := cast(P)method_userdata
+    arg0:: sics.type_proc_parameter_type(P, 0)
+    when sics.type_proc_parameter_count(P)==2{
+    s_ptrs:=make_arg_struct1(sics.type_proc_parameter_type(P, 1), p_args[:1])
+    }
+    when sics.type_proc_parameter_count(P)==3{
+    s_ptrs:=make_arg_struct2(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),p_args[:2])
+    }
+    when sics.type_proc_parameter_count(P)==4{
+    s_ptrs:=make_arg_struct3(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),
+    sics.type_proc_parameter_type(P, 3), p_args[:3])
+    }
+    when sics.type_proc_parameter_count(P)==5{
+    s_ptrs:=make_arg_struct4(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),
+    sics.type_proc_parameter_type(P, 3),
+    sics.type_proc_parameter_type(P, 4), p_args[:4])
+    }
+    when sics.type_proc_parameter_count(P)==6{
+    s_ptrs:=make_arg_struct5(
+    sics.type_proc_parameter_type(P, 1),
+    sics.type_proc_parameter_type(P, 2),
+    sics.type_proc_parameter_type(P, 3),
+    sics.type_proc_parameter_type(P, 4),
+    sics.type_proc_parameter_type(P, 5), p_args[:5])
+    }
+    when sics.type_proc_parameter_count(P) > 1 {
+        when sics.type_proc_return_count(P) > 0 {
+        //Dictionary and Array need to be destroyed specifically before returning to them.
+        //Others are fine so far, but better safe than sorry.
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+                ret:= func(cast(arg0)p_instance, expand_values(s_ptrs))
+                Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        } else {
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(arg0)p_instance, expand_values(s_ptrs))
+        }
+    } else {
+        func(cast(arg0)p_instance, expand_values(s_ptrs))
+    }
+    } else {
+    when sics.type_proc_return_count(P) > 0 {
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+                ret:= func(cast(arg0)p_instance)
+                Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
         } else {
             (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(cast(arg0)p_instance)
         }
@@ -295,7 +389,29 @@ godotPtrCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstance
     }}
 }
 
-godotVariantCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr,
+RefCount_Types :: union {
+    Dictionary,
+    Array,
+    gdstring,
+    StringName,
+    Callable,
+    PackedByteArray,
+    PackedInt32Array,
+    PackedInt64Array,
+    PackedFloat32Array,
+    PackedFloat64Array,
+    PackedStringArray,
+    PackedVector2Array,
+    PackedVector3Array,
+    PackedColorArray,
+    NodePath,
+    Signal,
+    PackedVector4Array,
+}
+
+refcountedType :: sics.type_is_variant_of
+
+godotVariantCallback_ref :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr,
     p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     context = runtime.default_context()
     arg_count:: sics.type_proc_parameter_count(P) - 1
@@ -352,10 +468,155 @@ godotVariantCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInst
         multi_destructor(&s_ptrs)
     }
 }
+godotVariantCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    arg_count:: sics.type_proc_parameter_count(P) - 1
+    arg0:: sics.type_proc_parameter_type(P, 0)
+    when sics.type_proc_parameter_count(P)==2{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==3{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==4{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==5{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+            arg4: sics.type_proc_parameter_type(P, 4),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==6{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 1),
+            arg2: sics.type_proc_parameter_type(P, 2),
+            arg3: sics.type_proc_parameter_type(P, 3),
+            arg4: sics.type_proc_parameter_type(P, 4),
+            arg5: sics.type_proc_parameter_type(P, 5),
+        }
+    }
+    when sics.type_proc_parameter_count(P) > 1 {
+    when sics.type_proc_return_count(P) > 0 {
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            defer(variant_Destroy(r_return))
+        }
+        to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(variant_multi_return(p_args[:p_argument_count], s_ptrs))))
+    } else {
+        variant_multi_return(p_args, &s_ptrs)
+        (cast(P)method_userdata)(cast(arg0)p_instance, expand_values(s_ptrs))
+    }
+    } else {
+    when sics.type_proc_return_count(P) > 0{
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            defer(variant_Destroy(r_return))
+        }
+        to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance))
+    } else {
+        (cast(P)method_userdata)(cast(arg0)p_instance)
+    }}
+    when sics.type_proc_parameter_count(P) > 1 {
+        multi_destructor(&s_ptrs)
+    }
+}
+godotPtrCallback_sref :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
+    context = runtime.default_context()
+    func := cast(P)method_userdata
+    when sics.type_proc_parameter_count(P)==1{
+    s_ptrs:=make_arg_struct1(sics.type_proc_parameter_type(P, 0), p_args[:1])
+    }
+    when sics.type_proc_parameter_count(P)==2{
+    s_ptrs:=make_arg_struct2(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), p_args[:2])
+    }
+    when sics.type_proc_parameter_count(P)==3{
+    s_ptrs:=make_arg_struct3(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), sics.type_proc_parameter_type(P, 2), p_args[:3])
+    }
+    when sics.type_proc_parameter_count(P)==4{
+    s_ptrs:=make_arg_struct4(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), sics.type_proc_parameter_type(P, 2), sics.type_proc_parameter_type(P, 3), p_args[:4])
+    }
+    when sics.type_proc_parameter_count(P)==5{
+    s_ptrs:=make_arg_struct5(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), sics.type_proc_parameter_type(P, 2), sics.type_proc_parameter_type(P, 3), sics.type_proc_parameter_type(P, 4), p_args[:5])
+    }
+    when sics.type_proc_parameter_count(P) > 0 {
+        when sics.type_proc_return_count(P) > 0 {
+        //Dictionary and Array need to be destroyed specifically before returning to them.
+        //Others are fine so far, but better safe than sorry.
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            ret:= (cast(P)method_userdata)(expand_values(s_ptrs))
+            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        } else {
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(expand_values(s_ptrs))
+        }
+    } else {
+        func(expand_values(s_ptrs))
+    }
+    } else {
+        when sics.type_proc_return_count(P) > 0 {
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            ret:= (cast(P)method_userdata)()
+            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+        } else {
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func()
+        }
+    } else {
+        func()
+    }}
+}
 godotPtrCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr, p_args: GDE.ConstTypePtrargs, r_ret: GDE.TypePtr){
     context = runtime.default_context()
     func := cast(P)method_userdata
     when sics.type_proc_parameter_count(P)==1{
+    s_ptrs:=make_arg_struct1(sics.type_proc_parameter_type(P, 0), p_args[:1])
+    }
+    when sics.type_proc_parameter_count(P)==2{
+    s_ptrs:=make_arg_struct2(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), p_args[:2])
+    }
+    when sics.type_proc_parameter_count(P)==3{
+    s_ptrs:=make_arg_struct3(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), sics.type_proc_parameter_type(P, 2), p_args[:3])
+    }
+    when sics.type_proc_parameter_count(P)==4{
+    s_ptrs:=make_arg_struct4(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), sics.type_proc_parameter_type(P, 2), sics.type_proc_parameter_type(P, 3), p_args[:4])
+    }
+    when sics.type_proc_parameter_count(P)==5{
+    s_ptrs:=make_arg_struct5(sics.type_proc_parameter_type(P, 0), sics.type_proc_parameter_type(P, 1), sics.type_proc_parameter_type(P, 2), sics.type_proc_parameter_type(P, 3), sics.type_proc_parameter_type(P, 4), p_args[:5])
+    }
+    when sics.type_proc_parameter_count(P) > 0 {
+        when sics.type_proc_return_count(P) > 0 {
+        //Dictionary and Array need to be destroyed specifically before returning to them.
+        //Others are fine so far, but better safe than sorry.
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            Destroy(cast(^(sics.type_proc_return_type(P, 0)))r_ret)
+        }
+        (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func(expand_values(s_ptrs))
+    } else {
+        func(expand_values(s_ptrs))
+    }
+    } else {
+        when sics.type_proc_return_count(P) > 0 {
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            Destroy((cast(^(sics.type_proc_return_type(P, 0)))r_ret))
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func()
+        } else {
+            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func()
+        }
+    } else {
+        func()
+    }}
+}
+
+/*
     s_ptrs:struct{arg1:sics.type_proc_parameter_type(P, 0)}
     s_ptrs.arg1=(cast(sics.type_proc_parameter_type(P, 0))p_args[0])
     }
@@ -376,57 +637,48 @@ godotPtrCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstan
     cast(sics.type_proc_parameter_type(P, 1))p_args[1],
     cast(sics.type_proc_parameter_type(P, 2))p_args[2],
     cast(sics.type_proc_parameter_type(P, 3))p_args[3])
-    }
-    when sics.type_proc_parameter_count(P)==5{
-    s_ptrs:=compress_values(
-    cast(sics.type_proc_parameter_type(P, 0))p_args[0],
-    cast(sics.type_proc_parameter_type(P, 1))p_args[1],
-    cast(sics.type_proc_parameter_type(P, 2))p_args[2],
-    cast(sics.type_proc_parameter_type(P, 3))p_args[3],
-    cast(sics.type_proc_parameter_type(P, 4))p_args[4])
-    }
-    when sics.type_proc_parameter_count(P) > 0 {
-        when sics.type_proc_return_count(P) > 0 {
-        //Dictionary and Array need to be destroyed specifically before returning to them.
-        //Others are fine so far, but better safe than sorry.
-        when sics.type_proc_return_type(P, 0) == Dictionary || sics.type_proc_return_type(P, 0) == Array ||
-             sics.type_proc_return_type(P, 0) == gdstring || sics.type_proc_return_type(P, 0) == StringName ||
-             sics.type_proc_return_type(P, 0) == Callable || sics.type_proc_return_type(P, 0) == PackedByteArray ||
-             sics.type_proc_return_type(P, 0) == PackedInt32Array || sics.type_proc_return_type(P, 0) == PackedInt64Array ||
-             sics.type_proc_return_type(P, 0) == PackedFloat32Array || sics.type_proc_return_type(P, 0) == PackedFloat64Array ||
-             sics.type_proc_return_type(P, 0) == PackedStringArray || sics.type_proc_return_type(P, 0) == PackedVector2Array ||
-             sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
-             sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
-             sics.type_proc_return_type(P, 0) == PackedVector4Array {
-            ret:= (cast(P)method_userdata)(expand_values(s_ptrs))
-            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
-        } else {
-            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = (cast(P)method_userdata)(expand_values(s_ptrs))
-        }
-    } else {
-        (cast(P)method_userdata)(expand_values(s_ptrs))
-    }
-    } else {
-        when sics.type_proc_return_count(P) > 0 {when sics.type_proc_return_type(P, 0) == Dictionary || sics.type_proc_return_type(P, 0) == Array ||
-             sics.type_proc_return_type(P, 0) == gdstring || sics.type_proc_return_type(P, 0) == StringName ||
-             sics.type_proc_return_type(P, 0) == Callable || sics.type_proc_return_type(P, 0) == PackedByteArray ||
-             sics.type_proc_return_type(P, 0) == PackedInt32Array || sics.type_proc_return_type(P, 0) == PackedInt64Array ||
-             sics.type_proc_return_type(P, 0) == PackedFloat32Array || sics.type_proc_return_type(P, 0) == PackedFloat64Array ||
-             sics.type_proc_return_type(P, 0) == PackedStringArray || sics.type_proc_return_type(P, 0) == PackedVector2Array ||
-             sics.type_proc_return_type(P, 0) == PackedVector3Array || sics.type_proc_return_type(P, 0) == PackedColorArray ||
-             sics.type_proc_return_type(P, 0) == NodePath || sics.type_proc_return_type(P, 0) == Signal ||
-             sics.type_proc_return_type(P, 0) == PackedVector4Array {
-            ret:= (cast(P)method_userdata)()
-            Ref_Count(&ret, (cast(^(sics.type_proc_return_type(P, 0)))r_ret))
-        } else {
-            (cast(^(sics.type_proc_return_type(P, 0)))r_ret)^ = func()
-        }
-    } else {
-        func()
-    }}
+    } */
+make_arg_struct1 :: proc "c" ($argT1: typeid, p_args:[]rawptr) -> struct{a: argT1,
+    } {
+    return {cast(argT1)p_args[0],}
 }
-
-godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr,
+make_arg_struct2 :: proc "c" ($argT1: typeid, $argT2: typeid, p_args:[]rawptr) -> struct{a: argT1,
+    _: argT2,} {
+    return compress_values(
+    cast(argT1)p_args[0],
+    cast(argT2)p_args[1],)
+}
+make_arg_struct3 :: proc "c" ($argT1: typeid, $argT2: typeid, $argT3: typeid, p_args:[]rawptr) -> struct{a: argT1,
+    _: argT2,
+    _: argT3,} {
+    return compress_values(
+    cast(argT1)p_args[0],
+    cast(argT2)p_args[1],
+    cast(argT3)p_args[2],)
+}
+make_arg_struct4 :: proc "c" ($argT1: typeid, $argT2: typeid, $argT3: typeid, $argT4: typeid, p_args:[]rawptr) -> struct{a: argT1,
+    _: argT2,
+    _: argT3,
+    _: argT4,} {
+    return compress_values(
+    cast(argT1)p_args[0],
+    cast(argT2)p_args[1],
+    cast(argT3)p_args[2],
+    cast(argT4)p_args[3])
+}
+make_arg_struct5 :: proc "c" ($argT1: typeid, $argT2: typeid, $argT3: typeid, $argT4: typeid, $argT5: typeid, p_args:[]rawptr) -> struct{a: argT1,
+    _: argT2,
+    _: argT3,
+    _: argT4,
+    _: argT5,} {
+    return compress_values(
+    cast(argT1)p_args[0],
+    cast(argT2)p_args[1],
+    cast(argT3)p_args[2],
+    cast(argT4)p_args[3],
+    cast(argT5)p_args[4])
+}
+godotVariantCallback_sref :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr,
     p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
     context = runtime.default_context()
     arg_count:: sics.type_proc_parameter_count(P)
@@ -474,6 +726,68 @@ godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassIn
     }
     } else {
     when sics.type_proc_return_count(P) > 0{
+        to_variant(r_return, (cast(P)method_userdata)())
+    } else {
+        (cast(P)method_userdata)()
+    }}
+    when sics.type_proc_parameter_count(P) > 0 {
+        multi_destructor(&s_ptrs)
+    }
+}
+godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstancePtr,
+    p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
+    context = runtime.default_context()
+    arg_count:: sics.type_proc_parameter_count(P)
+    when sics.type_proc_parameter_count(P)==1{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 0),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==2{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 0),
+            arg2: sics.type_proc_parameter_type(P, 1),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==3{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 0),
+            arg2: sics.type_proc_parameter_type(P, 1),
+            arg3: sics.type_proc_parameter_type(P, 2),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==4{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 0),
+            arg2: sics.type_proc_parameter_type(P, 1),
+            arg3: sics.type_proc_parameter_type(P, 2),
+            arg4: sics.type_proc_parameter_type(P, 3),
+        }
+    }
+    when sics.type_proc_parameter_count(P)==5{
+    s_ptrs: struct {
+            arg1: sics.type_proc_parameter_type(P, 0),
+            arg2: sics.type_proc_parameter_type(P, 1),
+            arg3: sics.type_proc_parameter_type(P, 2),
+            arg4: sics.type_proc_parameter_type(P, 3),
+            arg5: sics.type_proc_parameter_type(P, 4),
+        }
+    }
+    when sics.type_proc_parameter_count(P) > 0 {
+    when sics.type_proc_return_count(P) > 0 {
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            defer(variant_Destroy(r_return))
+        }
+        to_variant(r_return, (cast(P)method_userdata)(expand_values(variant_multi_return(p_args, s_ptrs))))
+    } else {
+        variant_multi_return(p_args, &s_ptrs)
+        (cast(P)method_userdata)(expand_values(s_ptrs))
+    }
+    } else {
+    when sics.type_proc_return_count(P) > 0{
+        when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
+            defer(variant_Destroy(r_return))
+        }
         to_variant(r_return, (cast(P)method_userdata)())
     } else {
         (cast(P)method_userdata)()
