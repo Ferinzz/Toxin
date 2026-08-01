@@ -76,8 +76,8 @@ tex_size: Toxin.Vector2i
 texture: Classes.Texture2D
 
 printonce:bool=true
-sprite_count::20000
-frame_count_amout::1000
+sprite_count :: 20000
+frame_count_amout :: 1000
 frame_times:[frame_count_amout]f64
 frame_current:int=0
 
@@ -131,7 +131,7 @@ MainLoopFrameCallback2 :: proc "c" () {
     context = runtime.default_context()
     perf:Toxin.float=0
     perf=class.Node_get_process_delta_time(root,)
-    if frame_current > 1000 {
+    if frame_current > 999 {
         if frame_current < frame_count_amout + 1000 {
             frame_times[frame_current-1000]=class.Node_get_process_delta_time(root)
         } else if printonce {
