@@ -71,7 +71,8 @@ variant_get_ptr :: proc "c" (variant: ^Variant) -> rawptr {
     .CALLABLE, .SIGNAL:
         return raw_data(variant.data[:])
     case .OBJECT:
-        return &(cast(^ObjData)(&variant.data)).obj
+        return GDW.Object_get_ptr(variant)
+        //return &(cast(^ObjData)(&variant.data)).obj
     //These are passed by pointer from a bucket in Godot's memory. Owner cleans it up.
     //Remember to copy!
 	case .AABB, .BASIS, .TRANSFORM3D, .TRANSFORM2D, .PROJECTION, .DICTIONARY, .ARRAY:
