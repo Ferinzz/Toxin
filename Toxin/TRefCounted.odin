@@ -17,11 +17,12 @@ safeRef_Error :: enum u8 {
     NIL_OBJECT,
 }
 
+
+/*
+* Godot will verify if the object needs to be ref counted and return false if it does not need to be ref counted.
+* Godot can pass an Object containing a nil obj.proxy, particularly when the editor calls set. Need to verify that this is correct.
+*/
 safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
-    when builtin.ODIN_DEBUG {
-        context = runtime.default_context()
-        assert(RefTag != nil, "Reference Tag pointer was not initialized. Cannot cast check to RefCounted. Must initialize.")
-    }
     if obj == nil || obj.proxy == nil {
         return .NIL_OBJECT
     }
