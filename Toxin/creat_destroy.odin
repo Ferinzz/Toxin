@@ -127,7 +127,7 @@ Destroy_PackedVector4Array :: proc "c" (base: ^PackedVector4Array){
     GDW.PackedVector4Array_M_List.Destroy(base)
 }
 
-Destroy_obj :: proc(base: ^Object) {
+Destroy_obj :: proc "c" (base: ^Object) {
     gdAPI.Object_Utils.Destroy(base)
 }
 
