@@ -195,7 +195,11 @@ variant_union_raw :: struct #raw_union {
 }
 
 variant_index :: proc($field: typeid, loc:=#caller_location) -> GDE.VariantType {
-    index :: GDE.VariantType(sics.type_variant_index_of(variant_union, field))
+    when field == ^Object {
+        index :: GDE.VariantType.OBJECT
+    } else {
+        index :: GDE.VariantType(sics.type_variant_index_of(variant_union, field))
+    }
     return index
 }
 
