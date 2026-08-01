@@ -98,6 +98,7 @@ _extensionInit :: proc "c" (userdata: rawptr, init_Level: GDE.InitializationLeve
             Classes.RefCounted_Init_()
             refname:= GDW.StringConstruct("RefCounted")
             RefTag = gdAPI.ClassDB.GetClassTag(&refname)
+            Destroy(&refname)
             return
         case .INITIALIZATION_SERVERS:
             /*
