@@ -40,6 +40,7 @@ init_PackedVector2Array_Methods(&PackedVector2Array_M_List)
 init_PackedVector3Array_Methods(&PackedVector3Array_M_List)
 init_PackedColorArray_Methods(&PackedColorArray_M_List)
 init_PackedVector4Array_Methods(&PackedVector4Array_M_List)
+init_Object_Methods()
 }
 
 
