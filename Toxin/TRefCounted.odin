@@ -10,10 +10,11 @@ import "base:runtime"
 
 RefTag: GDE.ClassTag
 
-safeRef_Error :: enum {
+safeRef_Error :: enum u8 {
     NONE,
     FAILED_TO_REF,
     NOT_REF_COUNTED_OBJECT,
+    NIL_OBJECT,
 }
 
 safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
@@ -21,35 +22,26 @@ safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
         context = runtime.default_context()
         assert(RefTag != nil, "Reference Tag pointer was not initialized. Cannot cast check to RefCounted. Must initialize.")
     }
-    casted:= gdAPI.Object_Utils.CastTo(obj, RefTag)
-    if casted != nil {
-        b:Bool
-        Ref_Count(casted, &b)
-        when builtin.ODIN_DEBUG {
-            context = runtime.default_context()
-            assert(bool(b), "failed to ref count an object which is a RefCount object. This is a bug.")
-        }
-        if b {
-            return .NONE
-        } else {
-            return .FAILED_TO_REF
-        }
+    if obj == nil || obj.proxy == nil {
+        return .NIL_OBJECT
     }
-    return .NOT_REF_COUNTED_OBJECT
+    b:Bool
+    Ref_Count(obj, &b)
+    return safeRef_Error(!b)
 }
 
 //Returns true if the increment was successful, false otherwise.
 Reference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Classes.RefCounted_reference.m_call, ref, nil, r_bool)
+    Classes.RefCounted_reference->m_call(ref, nil, r_bool)
 }
 
 //Returns true if the increment was successful, false otherwise.
 Unreference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Classes.RefCounted_unreference.m_call, ref, nil, r_bool)
+    Classes.RefCounted_unreference->m_call(ref, nil, r_bool)
 }
 
 Reference_init :: proc "c" (ref: ^Object, r_bool: ^Bool) {
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Classes.RefCounted_init_ref.m_call, ref, nil, r_bool)
+    Classes.RefCounted_init_ref->m_call(ref, nil, r_bool)
 }
 
 Ref_Count :: proc {
