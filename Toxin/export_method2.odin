@@ -44,14 +44,13 @@ get_arg_deets :: #force_inline proc(args: []arg_deets, function: $P, $offset: in
 //You just have to pass arguments in order. If you have more than one, and you want to pass something for the last, you have to pass something for all the ones before. There are no named arguments when calling a function. 
 
 _bind_default :: proc(function: $P, class: ^StringName, $need_ref: bool, call_info:= #caller_expression(function)) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= maxargs+1) {
-    
 
     when need_ref {
         ptrcall:: sics.procedure_of(godotPtrCallback_ref(function, nil, {}, nil))
         call:: sics.procedure_of(godotVariantCallback_ref(function, nil, {}, 0, nil, nil))
     } else {
-        ptrcall:: sics.procedure_of(godotPtrCallback_ref(function, nil, {}, nil))
-        call:: sics.procedure_of(godotVariantCallback_ref(function, nil, {}, 0, nil, nil))
+        ptrcall:: sics.procedure_of(godotPtrCallback(function, nil, {}, nil))
+        call:: sics.procedure_of(godotVariantCallback(function, nil, {}, 0, nil, nil))
     }
     argcount:: sics.type_proc_parameter_count(P) - 1
     args: [10]arg_deets
@@ -65,7 +64,7 @@ _bind_default :: proc(function: $P, class: ^StringName, $need_ref: bool, call_in
     methodStringName: StringName
     gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
 
-    bind_method(class, &methodStringName, rawptr(function), call, ptrcall, ret, args[:argcount])
+    bind_method(class, &methodStringName, rawptr(function), GDE.ClassMethodCall(call), GDE.ClassMethodPtrCall(ptrcall), ret, args[:argcount])
     Destroy(&methodStringName)
 }
 _bind_static :: proc(function: $P, class: ^StringName,  $need_ref: bool, call_info:= #caller_expression(function), ) where (sics.type_is_proc(P) && sics.type_proc_parameter_count(P) <= maxargs) {
