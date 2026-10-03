@@ -30,32 +30,21 @@ wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1150, 750}
 size:Toxin.Vector2={64,64}
 
-self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
-    me:=(^Toxin.Class_Deets)(self)
-
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
-
-        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-        texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
-        fmt.println("!!special stress test!!")
-}
-
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
-        registerer = {self_register = self_reggy,},
+        name = Toxin.get_name( THIS_CLASS_NAME ),
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Sprite2D,
-        class_struct = THIS_CLASS_NAME,
+        class_struct_size = size_of( THIS_CLASS_NAME ),
     },
     Exporter = THIS_CLASS_NAME_Export,
-    vtable = &THIS_CLASS_NAME_VTable,
 }
 
 //If there's nothing that is heap allocated, you can use Toxin.Class_Init instead.
 //This runs before any virtuals.
 THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
-    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)
 
     class.class.angle=rand.float64_range(0, Math.PI*2)
     class.class.speed=rand.int64_range(100, 600)
@@ -69,37 +58,6 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
     return class.self
 }
 
-//******************************\\
-//*******VIRTUAL METHODS********\\
-//******************************\\
-
-/*
-* virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
-* If you want your class to tick on its own you gotta use them.
-*/
-THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
-    _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
-        context = runtime.default_context();
-        set:=[?]rawptr{&texture}
-        gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Texture_Class.set_texture._set_texture, self.self, raw_data(set[:]), nil)
-    },
-    //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
-    //    context = runtime.default_context()
-    //    
-    //    //wind_obj:^Toxin.Object
-    //    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_Class.get_window, self.self, nil, &wind_obj)
-    //    //window:Toxin.Vector2
-    //    //gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Window_MethodBind_List.get_size, wind_obj, nil, &window)
-    //    //fmt.println(window)
-    //},
-    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
-
-    },
-    //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
-    //    //context = runtime.default_context()
-    //    //fmt.println("yarrr")
-    //},
-}
 
 //******************************\\
 //***********Exports************\\
@@ -108,40 +66,13 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 //Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
-    //This function does a lot. I recommend looking at it to understand the steps needed to register a class's function.
-    //Toxin.bindMethod(&THIS_CLASS_NAME_deets.SN, "Some_method_name", somePublicFunction, "arg1")
-
-        argsInfo: [1]GDE.PropertyInfo
-        argsInfo[0] = Toxin.make_property(.PACKED_VECTOR4_ARRAY, "arg1")
-        
-        args_metadata: [1]GDE.ClassMethodArgumentMetadata
-        args_metadata[0]= GDE.ClassMethodArgumentMetadata.NONE
-        returnType:= 0
-            returnInfo: GDE.PropertyInfo = Toxin.make_property(GDE.VariantType(returnType), "")
-
-    methodStringName: GDE.StringName
-    GDW.StringConstruct(&methodStringName, "Some_method_name")
-
-    methodInfo : GDE.ClassMethodInfo = {
-        name = &methodStringName,
-        method_userdata = cast(rawptr)somePublicFunction,
-
-        call_func = cast(GDE.ClassMethodCall)somePublicFunctioncallthrough,
-        ptrcall_func = cast(GDE.ClassMethodPtrCall)somePublicFunction,
-        method_flags = (GDE.Method_Flags_DEFAULT),
-    }
-
-        methodInfo.argument_count = u32(1)
-        methodInfo.arguments_info = raw_data(argsInfo[:])
-        methodInfo.arguments_metadata = &args_metadata[0]
-    gdAPI.ClassDB.RegisterExtensionClassMethod(GDW.Library, className, &methodInfo)
+    Toxin._bind_default(somePublicFunction, className, false)
     fmt.println("gone.")
 }
 
-//Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
-//(method_userdata: rawptr, p_instance: ClassInstancePtr, p_args: ConstTypePtrargs, r_ret: TypePtr)
+// Need to revisit. There was an issue where I wasn't handling Godot passing a basic array in place of a packed array. Because fuck you I guess.
 @(require)
-somePublicFunction :: proc "c" (ethod_userdata: rawptr, classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), call: ^struct{arg1: ^Toxin.packedHolder(Toxin.PackedVector4Array)}, r_ret:rawptr=nil) {
+somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), call: ^Toxin.PackedVector4Array) {
     //do stuff
     context = runtime.default_context()
 
@@ -159,17 +90,17 @@ somePublicFunction :: proc "c" (ethod_userdata: rawptr, classStruct: ^Toxin.Clas
     barl: Toxin.Bool
     varintttt:Toxin.Variant
     arg:=[?]rawptr{&indx}
-    actually:^Toxin.PackedVector4Array=cast(^Toxin.PackedVector4Array)(uintptr(call.arg1))
+    actually:^Toxin.PackedVector4Array=cast(^Toxin.PackedVector4Array)(uintptr(call))
     //arg1:=arg1
     //fmt.println("murray: ", actually)
-    //fmt.println("address holder: ", call.arg1)
-    //fmt.println("address packed: ", call.arg1.ptr)
-    //fmt.println("address packed: ", call.arg1.ptr.array)
-    //fmt.println("address packed: ", call.arg1.array.data[0])
-    //GDW.PackedInt64Array_M_List.append(&call.arg1.ptr.array, raw_data(arg[:]),&r_ret, 1)
-    //GDW.PackedInt64Array_M_List.append(&call.arg1.ptr.array, raw_data(arg[:]),&r_ret, 1)
-    //fmt.println("address holder: ", call.arg1)
-    //fmt.println("address packed: ", call.arg1.ptr.array)
+    //fmt.println("address holder: ", call)
+    //fmt.println("address packed: ", call.ptr)
+    //fmt.println("address packed: ", call.ptr.array)
+    //fmt.println("address packed: ", call.array.data[0])
+    //GDW.PackedInt64Array_M_List.append(&call.ptr.array, raw_data(arg[:]),&r_ret, 1)
+    //GDW.PackedInt64Array_M_List.append(&call.ptr.array, raw_data(arg[:]),&r_ret, 1)
+    //fmt.println("address holder: ", call)
+    //fmt.println("address packed: ", call.ptr.array)
     //GDW.PackedInt64_Array_M_List.get(actually, raw_data(args[:]), &r_ret, 1)
     //GDW.PackedInt64_Array_M_List.set(actually, raw_data(args[:]),&r_ret, 2)
     //GDW.PackedInt64_Array_M_List.get(actually, raw_data(args[:]),&r_ret, 1)
@@ -177,8 +108,8 @@ somePublicFunction :: proc "c" (ethod_userdata: rawptr, classStruct: ^Toxin.Clas
     GDW.PackedVector4Array_M_List.set(actually, {&indx, &vec4})
     GDW.PackedVector4Array_M_List.get(actually, {&indx}, &r_ret2)
     //fmt.println("get, got after set: ", r_ret)
-    //fmt.println("address holder: ", call.arg1)
-    //fmt.println("address packed: ", call.arg1.ptr.array)
+    //fmt.println("address holder: ", call)
+    //fmt.println("address packed: ", call.ptr.array)
     //odinray:=make([dynamic]GDE.Int)
     odinray:=make([dynamic]Toxin.Vector4)
     for i in 0..<1_000_000 {
@@ -187,20 +118,13 @@ somePublicFunction :: proc "c" (ethod_userdata: rawptr, classStruct: ^Toxin.Clas
         //_=1+1
     }
     delete(odinray)
-    //GDW.PackedInt64Array_M_List.append(&call.arg1.ptr.array, raw_data(arg[:]),&r_ret, 1)
-    //GDW.PackedInt64Array_M_List.append(&call.arg1.ptr.array, raw_data(arg[:]),&r_ret, 1)
+    //GDW.PackedInt64Array_M_List.append(&call.ptr.array, raw_data(arg[:]),&r_ret, 1)
+    //GDW.PackedInt64Array_M_List.append(&call.ptr.array, raw_data(arg[:]),&r_ret, 1)
     //fmt.println("address after appendss: ", actually)
     //fmt.println("get, got: ", r_ret)
     //fmt.println("address holder: ", call.arg1)
     //fmt.println("address packed: ", call.arg1.ptr.array)
     //fmt.println("gone.")
-}
-
-somePublicFunctioncallthrough :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^struct{a:^Toxin.Variant}) {
-    context = runtime.default_context()
-    fmt.println("Through variants.")
-    p_args:struct{arg1: ^Toxin.packedHolder(Toxin.PackedVector4Array)}={transmute(^Toxin.packedHolder(Toxin.PackedVector4Array))(arg1.a.data[0])}
-    //somePublicFunction(classStruct, &p_args)
 }
 
 appendcount::proc(actually: ^Toxin.PackedVector4Array){

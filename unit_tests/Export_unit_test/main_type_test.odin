@@ -1,11 +1,12 @@
 package type_tests
 
-import "shared:GDWrapper/gdAPI"
-import "shared:Toxin"
+import "../../GDWrapper/gdAPI"
+import "../../Toxin"
 import "base:runtime"
 import sics "base:intrinsics"
-import GDW "shared:GDWrapper"
+import GDW "../../GDWrapper"
 import "core:fmt"
+import Classes "../../GD_Classes"
 
 type_test :: struct {
     Bool: Toxin.Bool,
@@ -50,23 +51,24 @@ type_test :: struct {
 
 type_test_deets: Toxin.Class_Deets = {
     required = {
-        class_struct = type_test,
+        class_struct_size = size_of(type_test),
+        name = Toxin.get_name(type_test),
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Node,
-        registerer = {self_register = type_test_registration,},
     },
+    //registerer = {self_register = type_test_registration,},
     vtable = &type_test_vtable,
     Exporter = type_test_Export,
 }
 
-type_test_registration :: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
-    myself:= cast(^Toxin.Class_Deets)self
-    Toxin.Register(myself, init_level, Toxin.make_get_virtual_func(type_test_vtable), type_test_Init)
-}
+// type_test_registration :: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
+//     myself:= cast(^Toxin.Class_Deets)self
+//     Toxin.Register(myself, init_level, Toxin.make_get_virtual_func(type_test_vtable), type_test_Init)
+// }
 
 type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
-    class:= cast(^Toxin.Class_Container(type_test))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    class:= cast(^Toxin.Class_Container(type_test))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)
     //If these are not 'created' before Godot attempts to use them the engine will panic.
     GDW.Array_M_List.Create0(&class.class.Array)
     GDW.Dictionary_M_List.Create0(&class.class.Dictionary)
@@ -76,53 +78,124 @@ type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_post
     return class.self
 }
 
-type_test_vtable:= Toxin.Node_v_table(type_test) {
-    _ready = proc "c" (self: ^Toxin.Class_Container(type_test)) {
+type_test_vtable: Classes.Node_vtable(type_test) = {
+    _ready = proc "c" (self: ^Toxin.Class_Container(type_test), args: rawptr, _: rawptr) {
         context = runtime.default_context()
         fmt.println("I'm ready!!")
     },
-    _process = proc "c" (self: ^Toxin.Class_Container(type_test), p_args: ^struct{delta: ^Toxin.float}) {
+    _process = proc "c" (self: ^Toxin.Class_Container(type_test), #by_ptr p_args: struct {delta: ^f64}, _: rawptr) {
 
     }
 }
 
 type_test_Export :: proc(className: ^Toxin.StringName) {
-    Toxin.Export(className, type_test, "RID")
-    Toxin.Export(className, type_test, "Object")
-    Toxin.Export(className, type_test, "Callable")
-    Toxin.Export(className, type_test, "Signal")
-    Toxin.Export(className, type_test, "PackedByteArray")
-    Toxin.Export(className, type_test, "PackedInt32Array")
-    Toxin.Export(className, type_test, "PackedInt64Array")
-    Toxin.Export(className, type_test, "PackedFloat32Array")
-    Toxin.Export(className, type_test, "PackedFloat64Array")
-    Toxin.Export(className, type_test, "PackedStringArray")
-    Toxin.Export(className, type_test, "PackedVector2Array")
-    Toxin.Export(className, type_test, "PackedVector3Array")
-    Toxin.Export(className, type_test, "PackedColorArray")
-    Toxin.Export(className, type_test, "PackedVector4Array")
-    Toxin.Export(className, type_test, "Dictionary")
-    Toxin.Export(className, type_test, "Array")
-    Toxin.Export(className, type_test, "Bool")
-    Toxin.Export(className, type_test, "Int")
-    Toxin.Export(className, type_test, "float")
-    Toxin.Export(className, type_test, "Vector2")
-    Toxin.Export(className, type_test, "Vector2i")
-    Toxin.Export(className, type_test, "Rect2")
-    Toxin.Export(className, type_test, "Rect2i")
-    Toxin.Export(className, type_test, "Vector3")
-    Toxin.Export(className, type_test, "Vector3i")
-    Toxin.Export(className, type_test, "Vector4")
-    Toxin.Export(className, type_test, "Vector4i")
-    Toxin.Export(className, type_test, "Color")
-    Toxin.Export(className, type_test, "Plane")
-    Toxin.Export(className, type_test, "Quaternion")
-    Toxin.Export(className, type_test, "Transform2D")
-    Toxin.Export(className, type_test, "AABB")
-    Toxin.Export(className, type_test, "Basis")
-    Toxin.Export(className, type_test, "Transform3D")
-    Toxin.Export(className, type_test, "Projection")
-    Toxin.Export(className, type_test, "gdstring")
-    Toxin.Export(className, type_test, "StringName")
-    Toxin.Export(className, type_test, "NodePath")
+    @static
+    type_test_RID := Toxin.gsetter_userdata_t(Toxin.RID, type_test) {
+        gs_type = .INT,
+        getter_method = proc "c" (Object: (^Toxin.Class_Container(type_test))) -> Toxin.RID{
+            return Object.RID
+        },
+        setter_method = proc "c" (Object: (^Toxin.Class_Container(type_test)), args: ^Toxin.RID){
+            Object.RID = args^
+        },
+        fieldname = "RID"
+    }
+    Toxin.Export_Default2(className, &type_test_RID, true)
+
+    @static
+    type_test_Object := Toxin.gsetter_userdata_t(Toxin.Object, type_test) {
+        gs_type = .OBJECT,
+        getter_method = proc "c" (Object: (^Toxin.Class_Container(type_test))) -> Toxin.Object {
+            return Object.Object
+        },
+        setter_method = proc "c" (Object: (^Toxin.Class_Container(type_test)), args: ^Toxin.Object){
+            Object.Object = args^
+        },
+        fieldname = "Object"
+    }
+    Toxin.Export_Default2(className, &type_test_Object, true)
+
+    @static
+    type_test_Callable := Toxin.gsetter_userdata_t(Toxin.Callable, type_test) {
+        gs_type = .CALLABLE,
+        getter_method = proc "c" (Object: (^Toxin.Class_Container(type_test))) -> Toxin.Callable {
+            return Object.Callable
+        },
+        setter_method = proc "c" (Object: (^Toxin.Class_Container(type_test)), args: ^Toxin.Callable){
+            Object.Callable = args^
+        },
+        fieldname = "Callable"
+    }
+    Toxin.Export_Default2(className, &type_test_Callable, true)
+
+    @static
+    type_test_Signal := Toxin.gsetter_userdata_t(Toxin.Signal, type_test) {
+        gs_type = .SIGNAL,
+        getter_method = proc "c" (Object: (^Toxin.Class_Container(type_test))) -> Toxin.Signal {
+            return Object.Signal
+        },
+        setter_method = proc "c" (Object: (^Toxin.Class_Container(type_test)), args: ^Toxin.Signal){
+            Object.Signal = args^
+        },
+        fieldname = "Signal"
+    }
+    Toxin.Export_Default2(className, &type_test_Signal, true)
+
+    @static
+    type_test_PackedByteArray := Toxin.gsetter_userdata_t(Toxin.PackedByteArray, type_test) {
+        gs_type = .PACKED_BYTE_ARRAY,
+        getter_method = proc "c" (Object: (^Toxin.Class_Container(type_test))) -> Toxin.PackedByteArray {
+            return Object.PackedByteArray
+        },
+        setter_method = proc "c" (Object: (^Toxin.Class_Container(type_test)), args: ^Toxin.PackedByteArray){
+            Object.PackedByteArray = args^
+        },
+        fieldname = "PackedByteArray"
+    }
+    Toxin.Export_Default2(className, &type_test_PackedByteArray, true)
+
+    @static
+    type_test_PackedInt32Array := Toxin.gsetter_userdata_t(Toxin.PackedInt32Array, type_test) {
+        gs_type = .PACKED_INT32_ARRAY,
+        getter_method = proc "c" (Object: (^Toxin.Class_Container(type_test))) -> Toxin.PackedInt32Array {
+            return Object.PackedInt32Array
+        },
+        setter_method = proc "c" (Object: (^Toxin.Class_Container(type_test)), args: ^Toxin.PackedInt32Array){
+            Object.PackedInt32Array = args^
+        },
+        fieldname = "PackedInt32Array"
+    }
+    Toxin.Export_Default2(className, &type_test_PackedInt32Array, true)
+    //Toxin.Export_Default2(className, type_test, "PackedInt64Array")
+    //Toxin.Export_Default2(className, type_test, "PackedFloat32Array")
+    //Toxin.Export_Default2(className, type_test, "PackedFloat64Array")
+    //Toxin.Export_Default2(className, type_test, "PackedStringArray")
+    //Toxin.Export_Default2(className, type_test, "PackedVector2Array")
+    //Toxin.Export_Default2(className, type_test, "PackedVector3Array")
+    //Toxin.Export_Default2(className, type_test, "PackedColorArray")
+    //Toxin.Export_Default2(className, type_test, "PackedVector4Array")
+    //Toxin.Export_Default2(className, type_test, "Dictionary")
+    //Toxin.Export_Default2(className, type_test, "Array")
+    //Toxin.Export_Default2(className, type_test, "Bool")
+    //Toxin.Export_Default2(className, type_test, "Int")
+    //Toxin.Export_Default2(className, type_test, "float")
+    //Toxin.Export_Default2(className, type_test, "Vector2")
+    //Toxin.Export_Default2(className, type_test, "Vector2i")
+    //Toxin.Export_Default2(className, type_test, "Rect2")
+    //Toxin.Export_Default2(className, type_test, "Rect2i")
+    //Toxin.Export_Default2(className, type_test, "Vector3")
+    //Toxin.Export_Default2(className, type_test, "Vector3i")
+    //Toxin.Export_Default2(className, type_test, "Vector4")
+    //Toxin.Export_Default2(className, type_test, "Vector4i")
+    //Toxin.Export_Default2(className, type_test, "Color")
+    //Toxin.Export_Default2(className, type_test, "Plane")
+    //Toxin.Export_Default2(className, type_test, "Quaternion")
+    //Toxin.Export_Default2(className, type_test, "Transform2D")
+    //Toxin.Export_Default2(className, type_test, "AABB")
+    //Toxin.Export_Default2(className, type_test, "Basis")
+    //Toxin.Export_Default2(className, type_test, "Transform3D")
+    //Toxin.Export_Default2(className, type_test, "Projection")
+    //Toxin.Export_Default2(className, type_test, "gdstring")
+    //Toxin.Export_Default2(className, type_test, "StringName")
+    //Toxin.Export_Default2(className, type_test, "NodePath")
 }

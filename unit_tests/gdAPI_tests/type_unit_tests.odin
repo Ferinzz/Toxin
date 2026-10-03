@@ -132,7 +132,7 @@ godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p
     //GDW.initGodotContext()
     context = runtime.default_context()
     fmt.println("running")
-    GDW.Library = p_library
+    //GDW.Library = p_library
     GDW.Init_Wrapper(p_get_proc_address)
     verify_gdAPI()
     verify_builtin_procs()

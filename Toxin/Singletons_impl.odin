@@ -220,6 +220,11 @@ init_Time_procs :: proc() {
     Classes.Time_Init_()
     Time = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Time))
 }
+init_PhysicsServer2D_procs :: proc() {
+    Classes.PhysicsServer2D_Init_()
+    PhysicsServer2D = gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.PhysicsServer2D))
+}
+
 singleton_options:: bit_set[singleton_list]
 singleton_list:: enum {
     Performance,

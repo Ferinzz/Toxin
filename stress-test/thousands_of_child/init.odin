@@ -1,7 +1,7 @@
 package main
 
 import "../../Toxin"
-//import Classes "../../GD_Classes"
+import "../../Toxin/classes"
 import Classes "../../GD_Classes"
 import GDW "../../GDWrapper"
 import GDE "../../GDWrapper/gdAPI/gdextension"
@@ -11,35 +11,63 @@ import "base:runtime"
 import Math "core:math"
 import rand "core:math/rand"
 
-init:: proc ()  {
-    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
-
-
-    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
-    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
-    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
-
-    //Register custom class.
-    THIS_CLASS_NAME_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
+@export
+godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassDB, initialization: ^GDE.Initialization) -> b8 {
+    context = runtime.default_context()
+    return Toxin.toxin_entry(p_get_proc_address, p_library, initialization, &core_setup)
 }
 
-@(init)
-asdf :: proc "contextless" () {
-    Toxin.inits.scene = init
-    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
+//@(rodata)
+core_setup: Toxin.inits_deinits= {
+    nil,
+    core_init,
+    servers_init,
+    scene_init,
+    editor_init,
+    core_deinit,
+    servers_deinit,
+    scene_deinit,
+    editor_deinit,
+    {},
 }
+core_init :: proc "c" (userdata: rawptr) {
+    context = runtime.default_context()
+
+    Toxin.register_mainloop_callbacks({main_loop_startup, main_loop_shutdown, MainLoopFrameCallback,})
+}
+
+servers_init :: proc "c" (userdata: rawptr) {
+
+}
+
+scene_init :: proc "c" (userdata: rawptr) {
+    context = runtime.default_context()
+    append(&core_setup.classes.scene, &THIS_CLASS_NAME_deets)
+}
+editor_init :: proc "c" (userdata: rawptr) {
+
+}
+core_deinit :: proc "c" (userdata: rawptr) {
+
+}
+servers_deinit :: proc "c" (userdata: rawptr) {
+
+}
+scene_deinit :: proc "c" (userdata: rawptr) {
+    context = runtime.default_context()
+}
+editor_deinit :: proc "c" (userdata: rawptr) {
+
+}
+
+main_loop_shutdown :: proc "c" () {
+}
+
 
 scene_tree_obj: ^GDW.Object
 root_node_instance: ^GDW.Object
 
-//Using these class methods.
-texture: Classes.Texture2D
-Texture_Class: Classes.Sprite2D_MethodBind_List
-Node2D_Class: Classes.Node2D_MethodBind_List
-Node_Class: Classes.Node_MethodBind_List
-
 Performance: ^Toxin.Object
-Performance_Class: Classes.Performance_MethodBind_List
 
 printonce:bool=true
 sprite_count::20000
@@ -49,8 +77,7 @@ frame_current:int=0
 
 MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
-    perf:Toxin.float=0
-    Node_Class.get_process_delta_time->m_call(root, r_ret = &perf)
+    perf:Toxin.float = classes.Node_get_process_delta_time( root )
 /*
     is_centered:Toxin.Bool=true
     for class in class_list {
@@ -79,17 +106,17 @@ MainLoopFrameCallback :: proc "c" () {
 }
 
 root:^Toxin.Object
-MainLoopStartupCallback :: proc "c" () {
+main_loop_startup :: proc "c" () {
     context = runtime.default_context()
     /////////////////////////////////////////////////
     //DO NOT USE THIS WITH OPTIMIZED CODE!!!!!
     //Will take 5 minutes to compile because it loads all the init procs ._.
     /////////////////////////////////////////////////
     //Classes.INIT_ALL_OF_THEM()
-    Classes.Sprite2D_Init_(&Texture_Class)
-    Classes.Node2D_Init_(&Node2D_Class)
-    Classes.Node_Init_(&Node_Class)
-    Classes.Performance_Init_(&Performance_Class)
+    Classes.Sprite2D_Init_()
+    Classes.Node2D_Init_()
+    Classes.Node_Init_()
+    Classes.Performance_Init_()
 
     //TODO: fix the singleton getters.
     //GDW.getPhysServer2dObj()
@@ -97,16 +124,16 @@ MainLoopStartupCallback :: proc "c" () {
     //GDW.class_get_method_list()
     //GDW.getInputSingleton()
     //Hold the MainLoop object.
-    scene_tree_obj = GDW.getMainLoop()
+    scene_tree_obj = Toxin.getMainLoop()
     //GDW.init_InputEvent()
 
     //Fetch the root of the current sceneTree
-    root= GDW.getRoot()
-    scene:= GDW.get_current_scene()
-    Classes.Window_Init_(&Window_MethodBind_List)
+    root= Toxin.getRoot()
+    scene:= Toxin.get_current_scene()
+    Classes.Window_Init_()
 
-    Performance = GDW.getPerformance()
-    fmt.println("Performance ", Performance)
+    //Performance = GDW.getPerformance()
+    //fmt.println("Performance ", Performance)
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
@@ -119,7 +146,9 @@ MainLoopStartupCallback :: proc "c" () {
         //Add the class to the root of the sceneTree
         for i in 0..<sprite_count {
             root_node_instance := gdAPI.ClassDB.ConstructObject(&THIS_CLASS_NAME_deets.SN)
-            GDW.addChild(root, &root_node_instance)
+            readable:Toxin.Bool
+            internal_mode:Classes.Node_InternalMode=.INTERNAL_MODE_DISABLED
+            classes.Node_add_child(root, &root_node_instance, &readable, &internal_mode)
         }
         fmt.println(len(class_list))
     };

@@ -8,33 +8,63 @@ import GDE "../../GDWrapper/gdAPI/gdextension"
 import "../../GDWrapper/gdAPI"
 import "core:fmt"
 import "base:runtime"
+import class "../../Toxin/classes"
 
-init:: proc ()  {
 
-    Toxin.myMainLoopCallbacks.startup_func = MainLoopStartupCallback
-    Toxin.myMainLoopCallbacks.frame_func = MainLoopFrameCallback
-    gdAPI.RegisterMainLoopCallbacks(GDW.Library, &Toxin.myMainLoopCallbacks)
-
-    //Register custom class.
-    THIS_CLASS_NAME_deets.required.registerer->self_register(.INITIALIZATION_SCENE)
+@export
+godot_entry_init :: proc "c" (p_get_proc_address: GDE.InterfaceGetProcAddress, p_library: GDE.ClassDB, initialization: ^GDE.Initialization) -> b8 {
+    context = runtime.default_context()
+    return Toxin.toxin_entry(p_get_proc_address, p_library, initialization, &core_setup)
 }
 
-@(init)
-asdf :: proc "contextless" () {
-    Toxin.inits.scene = init
-    Toxin.scene_inits[0] = &THIS_CLASS_NAME_deets
+//@(rodata)
+core_setup: Toxin.inits_deinits= {
+    nil,
+    core_init,
+    servers_init,
+    scene_init,
+    editor_init,
+    core_deinit,
+    servers_deinit,
+    scene_deinit,
+    editor_deinit,
+    {},
+}
+core_init :: proc "c" (userdata: rawptr) {
+    context = runtime.default_context()
+
+    Toxin.register_mainloop_callbacks({main_loop_startup, main_loop_shutdown, MainLoopFrameCallback,})
+}
+
+servers_init :: proc "c" (userdata: rawptr) {
+
+}
+
+scene_init :: proc "c" (userdata: rawptr) {
+    context = runtime.default_context()
+    append(&core_setup.classes.scene, &THIS_CLASS_NAME_deets)
+}
+editor_init :: proc "c" (userdata: rawptr) {
+
+}
+core_deinit :: proc "c" (userdata: rawptr) {
+
+}
+servers_deinit :: proc "c" (userdata: rawptr) {
+
+}
+scene_deinit :: proc "c" (userdata: rawptr) {
+    context = runtime.default_context()
+}
+editor_deinit :: proc "c" (userdata: rawptr) {
+
+}
+
+main_loop_shutdown :: proc "c" () {
 }
 
 scene_tree_obj: ^GDW.Object
 root_node_instance: ^GDW.Object
-
-//Using these class methods.
-texture: Classes.Texture2D
-Texture_Class: Classes.Sprite2D_MethodBind_List
-Node2D_Class: Classes.Node2D_MethodBind_List
-Node_Class: Classes.Node_MethodBind_List
-Window_MethodBind_List: Classes.Window_MethodBind_List
-refcounted: Classes.RefCounted_MethodBind_List
 
 
 last_delta:Toxin.float //Each class is assigning their delta time to this, probably a better way. Might be affecting performance. It is the simple way.
@@ -91,7 +121,7 @@ MainLoopFrameCallback :: proc "c" () {
     //fmt.println("murray: ", murray)
     //fmt.println("rptr: ", r_ret)
     perf:Toxin.float=0
-    gdAPI.Object_Utils.MethodBindPtrcall(cast(GDE.MethodBindPtr)Node_Class.get_process_delta_time._get_process_delta_time, root, nil, &perf)
+    perf = class.Node_get_process_delta_time(root)
 
     if frame_current < frame_count_amout {
         frame_times[frame_current] = perf
@@ -108,26 +138,20 @@ MainLoopFrameCallback :: proc "c" () {
 
 }
 root:^Toxin.Object
-MainLoopStartupCallback :: proc "c" () {
+
+main_loop_startup :: proc "c" () {
     context = runtime.default_context()
 
-    Classes.Sprite2D_Init_(&Texture_Class)
-    Classes.Node2D_Init_(&Node2D_Class)
-    Classes.Node_Init_(&Node_Class)
-    Classes.Window_Init_(&Window_MethodBind_List)
-
-
-    is_center_.is_center = cast(type_of(is_center_.is_center))gdAPI.Object_Utils.MethodBindPtrcall
-    is_center_._is_center = Texture_Class.is_centered
-    Classes.Window_Init_(&Window_MethodBind_List)
-    set_position_.set_position = cast(type_of(set_position_.set_position))gdAPI.Object_Utils.MethodBindPtrcall
-    set_position_._set_position = Texture_Class.is_centered
+    Classes.Sprite2D_Init_()
+    Classes.Node2D_Init_()
+    Classes.Node_Init_()
+    Classes.Window_Init_()
 
     //Setup an object to hold the MainLoop object.
-    scene_tree_obj = GDW.getMainLoop()
+    scene_tree_obj = Toxin.getMainLoop()
     //Fetch the root of the current sceneTree
-    root= GDW.getRoot()
-    //scene:= GDW.get_current_scene()
+    root= Toxin.getRoot()
+    //scene:= Toxin.get_current_scene()
 
     //Create a class. Your extension registerations should all be done and all classes available at this point.
     //warning_player is a global object, not a multi-instance object. As such, there will be issues adding it to multiple sewage instances.
@@ -136,4 +160,4 @@ MainLoopStartupCallback :: proc "c" () {
 
     //A scene is not added when running editor mode. Check for the scene before trying to add the child to it.
 
-};;
+};

@@ -25,25 +25,16 @@ THIS_CLASS_NAME :: struct {
 
 
 windowSize:Toxin.Vector2i
-Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1150, 750}
 size:Toxin.Vector2={64,64}
 
-
-self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
-    me:=(^Toxin.Class_Deets)(self)
-
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)
-    fmt.println("!!special stress test!!")
-}
-
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
-        registerer = {self_register = self_reggy,},
+        class_struct_size = size_of(THIS_CLASS_NAME),
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Sprite2D,
-        class_struct = THIS_CLASS_NAME,
+        name = Toxin.get_name(THIS_CLASS_NAME),
     },
     Exporter = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
@@ -52,7 +43,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 //If there's nothing that is heap allocated, you can use Toxin.Class_Init instead.
 THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
-    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)
     //fmt.println("ïnit")
     return class.self
 }
@@ -66,8 +57,8 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 * If you want your class to tick on its own you gotta use them.
 */
 @(require)
-THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
-    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+THIS_CLASS_NAME_VTable: Classes.Node2D_vtable(THIS_CLASS_NAME) = {
+    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct{delta: ^Toxin.float}, _: rawptr){
         context = runtime.default_context();
     },
 }

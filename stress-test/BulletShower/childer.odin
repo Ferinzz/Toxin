@@ -1,6 +1,7 @@
 package main
 
 import "../../Toxin"
+import "../../Toxin/classes"
 import "base:runtime"
 import "core:fmt"
 import Classes "../../GD_Classes"
@@ -35,7 +36,6 @@ bullet:: struct {
 
 
 windowSize:Toxin.Vector2i
-Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1150, 750}
 size:Toxin.Vector2={64,64}
@@ -43,22 +43,22 @@ texture: Classes.Texture2D
 image: Classes.Image
 
 
-self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
-    me:=(^Toxin.Class_Deets)(self)
-
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
-
-        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-        //texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
-        fmt.println("!!special stress test!!")
-}
+//self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
+//    me:=(^Toxin.Class_Deets)(self)
+//
+//    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
+//
+//        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
+//        //texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
+//        fmt.println("!!special stress test!!")
+//}
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
-        registerer = {self_register = self_reggy,},
+        name = Toxin.get_name(THIS_CLASS_NAME),
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Node2D,
-        class_struct = THIS_CLASS_NAME,
+        class_struct_size = size_of( THIS_CLASS_NAME ),
     },
     Exporter = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
@@ -67,10 +67,10 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 //If there's nothing that is heap allocated, you can use Toxin.Class_Init instead.
 THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
     context = runtime.default_context()
-    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)
 
 
-    texture_Class.create_from_image->m_call(nil, {&image}, &class.class.bullet_image )
+    class.class.bullet_image = classes.ImageTexture_create_from_image(nil, &image)
     //cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
     //class.class.bullet_image = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
 
@@ -86,30 +86,27 @@ THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notif
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
 */
-THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
-    _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
+THIS_CLASS_NAME_VTable: Classes.Node2D_vtable(THIS_CLASS_NAME) = {
+    _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), arg: rawptr, _: rawptr) {
         context = runtime.default_context();
-        CanvasItem_Class.queue_redraw->m_call(self.self)
-        Phys2D_Server.circle_shape_create->m_call(Toxin.PhysServer2dObj, r_ret = &self.class.shape)
+        classes.CanvasItem_queue_redraw(self.self)
+        self.class.shape = classes.PhysicsServer2D_circle_shape_create(Toxin.PhysicsServer2D)
         //shape = PhysicsServer2D.circle_shape_create()
 
         /*
         Can I get the viewport based on the Object itself. This _ready function is being called after it was added to the SceneTree.
         */
-        viewport: Classes.Viewport
-        Node_Class.get_viewport->m_call(self.self, r_ret = &viewport)
+        viewport: Classes.Viewport = classes.Node_get_viewport(self.self)
         
-        world2d: Classes.World2D
-        Viewport_Class.get_world_2d->m_call(viewport, r_ret = &world2d)
+        world2d: Classes.World2D = classes.Viewport_get_world_2d(viewport)
 
         data:Toxin.Int=8
         
         var_int:Toxin.Variant
-        Toxin.copy_to_variant(&var_int, &data)
-        Phys2D_Server.shape_set_data->m_call(Toxin.PhysServer2dObj, {&self.class.shape, &var_int})
+        Toxin.to_variant(&var_int, &data)
+        classes.PhysicsServer2D_shape_set_data(Toxin.PhysicsServer2D, &self.class.shape, &var_int)
 
-        space: Toxin.RID
-        World2D_Class.get_space->m_call(world2d, r_ret = &space)
+        space: Toxin.RID = classes.World2D_get_space(world2d)
         //get_space()
 
         //Acutal code starts here.
@@ -122,20 +119,20 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
             //:tableflip:
             //var bullet := Bullet.new()
             
-            Phys2D_Server.body_create->m_call(Toxin.PhysServer2dObj, r_ret = &abullet.body)
+            abullet.body = classes.PhysicsServer2D_body_create(Toxin.PhysicsServer2D)
             //bullet.body = PhysicsServer2D.body_create()
 
-            Phys2D_Server.body_set_space->m_call(Toxin.PhysServer2dObj, {&abullet.body, &space})
+            classes.PhysicsServer2D_body_set_space(Toxin.PhysicsServer2D, &abullet.body, &space)
             //PhysicsServer2D.body_set_space(bullet.body, get_world_2d().get_space())
 
             trans2D:= Toxin.Transform2D{1,0,0,1,0,0}
 
             disabled: Toxin.Bool = false
-            Phys2D_Server.body_add_shape->m_call(Toxin.PhysServer2dObj, {&abullet.body, &self.class.shape, &trans2D, &disabled})
+            classes.PhysicsServer2D_body_add_shape(Toxin.PhysicsServer2D, &abullet.body, &self.class.shape, &trans2D, &disabled)
             //PhysicsServer2D.body_add_shape(bullet.body, shape)
 
             mask: i64 = 0
-            Phys2D_Server.body_set_collision_mask->m_call(Toxin.PhysServer2dObj, {&abullet.body, &mask})
+            classes.PhysicsServer2D_body_set_collision_mask(Toxin.PhysicsServer2D, &abullet.body, &mask)
             //PhysicsServer2D.body_set_collision_mask(bullet.body, 0)
             
             abullet.speed = (SPEED_RANGE*rand.float64()) + f64(SPEED_MIN)
@@ -144,25 +141,23 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
             //This is for the collision position.
             //trans: Toxin.Transform2D = {0,0,0,0,120,120}
             trans_v: Toxin.Variant
-            Toxin.copy_to_variant(&trans_v, &abullet.position)
+            Toxin.to_variant(&trans_v, &abullet.position)
 
-            Phys2D_Server.body_set_state->m_call(Toxin.PhysServer2dObj, {&abullet.body, &bodyState, &trans_v})
+            classes.PhysicsServer2D_body_set_state(Toxin.PhysicsServer2D, &abullet.body, &bodyState, &trans_v)
             //PhysicsServer2D.body_set_state(bullet.body, PhysicsServer2D.BODY_STATE_TRANSFORM, transform2d)
 
         }
 
         //Acutal code starts here.
-        rect: Toxin.Rect2
-        
-        CanvasItem_Class.get_viewport_rect->m_call(self.self, r_ret = &rect)
-        OFFSET.x = rect.width + 16
-        OFFSET.y = rect.height + 16
+        rect: Toxin.Rect2 = classes.CanvasItem_get_viewport_rect(self.self)
+        OFFSET.x = rect.x + 16
+        OFFSET.y = rect.y + 16
     },
     //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
     //    context = runtime.default_context()
     //    //fmt.println(window)
     //},
-    _physics_process = proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+    _physics_process = proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct{delta: ^Toxin.float}, _: rawptr){
         context = runtime.default_context()
         for &abullet in self.class.bullets {
             if abullet.position[2,0] < -16 {abullet.position[2,0] = OFFSET.x}
@@ -170,22 +165,21 @@ THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
 
             bodyState: Classes.PhysicsServer2D_BodyState = .BODY_STATE_TRANSFORM
             trans_v: Toxin.Variant
-            Toxin.copy_to_variant(&trans_v, &abullet.position)
-            Phys2D_Server.body_set_state->m_call(Toxin.PhysServer2dObj, {&abullet.body, &bodyState, &trans_v})
+            Toxin.to_variant(&trans_v, &abullet.position)
+            classes.PhysicsServer2D_body_set_state(Toxin.PhysicsServer2D, &abullet.body, &bodyState, &trans_v)
         }
     },
-    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct{delta: ^Toxin.float}, _: rawptr){
         context = runtime.default_context();
-        CanvasItem_Class.queue_redraw->m_call(self.self)
+        classes.CanvasItem_queue_redraw(self.self)
     },
-    _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
+    _draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), _: rawptr, _: rawptr){
         context = runtime.default_context()
         color:= Toxin.Color{1,1,1,1}
         for &abullet in self.class.bullets{
-            offset: Toxin.Vector2
-            Texture2D_Class.get_size->m_call(self.class.bullet_image, r_ret = &offset)
-            CanvasItem_Class.draw_texture->m_call(self.self, {&self.class.bullet_image, &(Toxin.Vector2{abullet.position[2,0] - offset.x/2,
-                                                                                                  abullet.position[2,1] - offset.y/2}), &color})
+            offset : Toxin.Vector2 = classes.Texture2D_get_size( self.class.bullet_image )
+            classes.CanvasItem_draw_texture(self.self, &self.class.bullet_image, &(Toxin.Vector2{abullet.position[2,0] - offset.x/2,
+                                                                                                  abullet.position[2,1] - offset.y/2}), &color)
         }
     },
 }

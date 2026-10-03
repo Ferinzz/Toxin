@@ -2,10 +2,10 @@ package main
 
 //import GDW "../../GDWrapper"
 import "../../Toxin"
+import "../../Toxin/classes"
 import "base:runtime"
 import "core:fmt"
 import Classes "../../GD_Classes"
-//import Classes "../../GD_Classes"
 import "../../GDWrapper/gdAPI"
 import GDE "../../GDWrapper/gdAPI/gdextension"
 import Math "core:math"
@@ -25,47 +25,44 @@ THIS_CLASS_NAME :: struct {
 }
 
 windowSize:Toxin.Vector2i
-Window_MethodBind_List: Classes.Window_MethodBind_List
 wind_obj:^Toxin.Object
 window:Toxin.Vector2 = {1150, 750}
 size:Toxin.Vector2={64,64}
+texture: Classes.Texture2D
 
 
-self_reggy:: proc(self: ^Toxin.Registerer, init_level: Toxin.InitializationLevel) {
-    me:=(^Toxin.Class_Deets)(self)
+self_reggy:: proc(self: ^Toxin.Class_Deets, init_level: Toxin.InitializationLevel) {
+    context = runtime.default_context()
+    Toxin._Register(self, init_level)
 
-    Toxin.Register(me, init_level, Toxin.make_get_virtual_func(THIS_CLASS_NAME_VTable), THIS_CLASS_NAME_Init)//Toxin.Class_Init) // THIS_CLASS_NAME_Init)
-
-        cache_mode:Classes.ResourceLoader_CacheMode=.CACHE_MODE_REUSE
-        texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
-        fmt.println("!!special stress test!!")
+    cache_mode : Classes.ResourceLoader_CacheMode = .CACHE_MODE_REUSE
+    texture = Toxin.loadResource("res://icon.svg", "Texture2D", &cache_mode)
+    fmt.println("!!special stress test!!")
         
 }
 
 THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
     required = {
-        registerer = {self_register = self_reggy,},
-    init_level = .INITIALIZATION_SCENE,
-    GDClass_Index = .Sprite2D,
-    class_struct = THIS_CLASS_NAME,
+        name = Toxin.get_name( THIS_CLASS_NAME ),
+        init_level = .INITIALIZATION_SCENE,
+        GDClass_Index = .Sprite2D,
+        class_struct_size = size_of( THIS_CLASS_NAME ),
     },
-    Exporter = THIS_CLASS_NAME_Export,
     vtable = &THIS_CLASS_NAME_VTable,
+    create = THIS_CLASS_NAME_Init,
 }
 
 //If there's nothing that is heap allocated, you can use Toxin.Class_Init instead.
-THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
-    context = runtime.default_context()
-    class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.Create(p_class_user_data, p_notify_postinitialize)
+THIS_CLASS_NAME_Init :: proc(p_class_user_data: ^Toxin.Class_Deets, self: rawptr) {
+    self:=cast(^Toxin.Class_Container(THIS_CLASS_NAME))self
 
-    class.class.angle=rand.float64_range(0, Math.PI*2)
-    class.class.speed=rand.int64_range(100, 600)
-    class.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
-    class.class.position = {rand.float32_range(64,class.class.window.x-64), rand.float32_range(64,class.class.window.y-64)}
-    class.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
-    append_elem(&class_list, class)
+    self.class.angle=rand.float64_range(0, Math.PI*2)
+    self.class.speed=rand.int64_range(100, 600)
+    self.class.window = {rand.float32_range(window.x-64, window.x), rand.float32_range(window.y-64, window.y)}
+    self.class.position = { rand.float32_range( 64, self.class.window.x-64 ), rand.float32_range( 64, self.class.window.y-64 ) }
+    self.class.size = {rand.float32_range(0,32), rand.float32_range(0,32)}
+    append_elem(&class_list, self)
     //fmt.println("ïnit")
-    return class.self
 }
 
 class_list:[dynamic]^Toxin.Class_Container(THIS_CLASS_NAME)
@@ -78,38 +75,27 @@ class_list:[dynamic]^Toxin.Class_Container(THIS_CLASS_NAME)
 * virtuals are basically overrides for a procedure. You likely won't be calling these yourself.
 * If you want your class to tick on its own you gotta use them.
 */
-THIS_CLASS_NAME_VTable: Toxin.vNode2D(THIS_CLASS_NAME) = {
-    _ready= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
+THIS_CLASS_NAME_VTable: Classes.Node2D_vtable(THIS_CLASS_NAME) = {
+    _ready = proc "c" ( self: ^Toxin.Class_Container(THIS_CLASS_NAME), _: rawptr, _: rawptr ) {
         context = runtime.default_context();
-        //Texture_Class.set_texture->m_call(self.self, {&texture}, nil)
-        Node2D_Class.set_position->m_call(self.self, {&self.position})
+        //classes.Texture_set_texture(self.self, &texture)
+        classes.Node2D_set_position(self.self, &self.position)
     },
-    //_enter_tree= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)) {
+    //_enter_tree = proc "c" ( self: ^Toxin.Class_Container(THIS_CLASS_NAME), _: rawptr, _: rawptr ) {
     //    context = runtime.default_context()
     //},
-    _process= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_args: ^struct{delta: ^Toxin.float}){
+    _process = proc "c" ( self: ^Toxin.Class_Container(THIS_CLASS_NAME), #by_ptr p_args: struct{delta: ^Toxin.float}, _: rawptr ){
         context = runtime.default_context()
         self.class.position.x+=Math.cos_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
         self.class.position.y+=Math.sin_f32(f32(self.class.angle))*f32(p_args.delta^)*f32(self.class.speed)
 
-        Node2D_Class.set_position->m_call(self.self, {&self.position})
-        //is_centered:Toxin.Bool
-        //Texture_Class.is_centered->m_call(self.self, 0, &is_centered)
+        classes.Node2D_set_position(self.self, &self.position)
+        //is_centered: Toxin.Bool = classes.Texture_is_centered(self.self, 0)
         if self.class.position.x > self.class.window.x - self.class.size.x || self.class.position.x < self.class.size.x do self.class.angle = Math.PI - self.class.angle
         if self.position.y > self.window.y - self.size.y || self.position.y < self.size.y do self.angle = -self.angle
     },
-    //_draw= proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME)){
+    //_draw = proc "c" ( self: ^Toxin.Class_Container(THIS_CLASS_NAME), _: rawptr, _: rawptr ){
     //    //context = runtime.default_context()
     //    //fmt.println("yarrr")
     //},
-}
-
-
-//******************************\\
-//***********Exports************\\
-//******************************\\
-//make some function public to Godot's scripts.
-//Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
-THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
-    context = runtime.default_context()
 }

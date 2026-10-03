@@ -767,9 +767,9 @@ PackedColorArrayfromVariant :: proc(P_dest: ^GDW.packedArray(Color), p_source: ^
     return {.WRONG_TYPE, .PACKED_COLOR_ARRAY, p_source.VType}
 }
 
-packedHolder:: struct ($packed_type: typeid) {
-    ptr: ^PackedArrayContainer(packed_type)
-}
+//packedHolder:: struct ($packed_type: typeid) {
+//    ptr: ^PackedArrayContainer(packed_type)
+//}
 
 /*
 * If a type fits in 128 bits it will be copied into the variant data section.

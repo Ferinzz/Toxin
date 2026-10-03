@@ -13,8 +13,6 @@ main :: proc() {
     stress_test_dir_s := "stress-test"
     total_time:= odin_check_directory(unit_test_dir_s)
     total_time+= odin_check_directory(stress_test_dir_s)
-    delete(unit_test_dir_s)
-    delete(stress_test_dir_s)
     
     fmt.println("total run time:", total_time)
 }
@@ -29,18 +27,16 @@ odin_check_directory:: proc(dir_s: string) -> time.Duration {
     test_dir:= os.read_directory_iterator_create(unit_test_dir)
 
     total_time: time.Duration
-    dir, curr_err := os.get_working_directory( runtime.default_allocator() )
-    os.chdir( "dir_s" )
-    defer( os.chdir( dir ) )
     for info in os.read_directory_iterator(&test_dir) {
         if info.type == .Directory{
         fmt.println(info.name)
         process_desc:= os.Process_Desc{
-            working_dir="./",
-            command= {"odin", "check", info.name, "-no-entry-point"}
+            working_dir="",
+            command= {"odin", "check", info.fullpath, "-no-entry-point"}
         }
         descriptor:= info.name
-        total_time+= run_proc(process_desc, descriptor)}
+        total_time+= run_proc(process_desc, descriptor)
+        }
     }
 	if path, err := os.read_directory_iterator_error(&test_dir); err != nil {
 		fmt.eprintfln("read directory failed at %s: %s", path, err)
