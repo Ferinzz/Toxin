@@ -11,7 +11,7 @@
 			//"program": "C:\\GodotSrc\\godot4_5\\bin\\godot.windows.editor.dev.x86_64.exe",
 			//"program": "C:\\GodotSrc\\godot\\bin\\godot.windows.editor.dev.x86_64.exe",
 			//"program": "C:\\Godot\\Godot_v4.6-release.exe",
-			//Tells godot what project file to use.
+			//Tells godot what project folder/file to use. This is expecting that the godot folder is inside the vscode project folder.
 			//Generally this .godot file will be in the root of your project's folder.
 			//One set of args launches the editor, the other launches the game exe directly.
 			//"args": [ "--verbose .\/TopDown/project.godot"], //launch editor
