@@ -14,26 +14,30 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
         init_level = .INITIALIZATION_SCENE,
         GDClass_Index = .Sprite2D,
     },
-    registerer = THIS_CLASS_NAME_reggy,
-    create=constructor,
-    destroy=destructor,
-    notification = Toxin.ClassNotification2(THIS_CLASS_NAME_Notifications),
-    Exporter = THIS_CLASS_NAME_Export,
-    vtable =&THIS_CLASS_NAME_VTable,
+    registerer = THIS_CLASS_NAME_reggy, // this is optional
+    create=constructor, // this is optional
+    destroy=destructor, // this is optional
+    notification = Toxin.ClassNotification2(THIS_CLASS_NAME_Notifications), // this is optional
+    Exporter = THIS_CLASS_NAME_Export, // this is optional
+    vtable =&THIS_CLASS_NAME_VTable, // this is optional. Prefer notifications to vtable as the vtable will be overridden by script virtuals.
 }
 
-//Godot will be passing us a pointer to this struct during callbacks.
+// This is your class's data. This struct will be heap allocated whenever this custom class is created.
+// Godot will be passing us a pointer to a Toxin.Class_Container struct containing this struct during callbacks.
 THIS_CLASS_NAME :: struct {
     speed: Toxin.Int,
     int_as_enum: munum,
 }
 
+// example enum for export_enum_as_int
 munum::enum Toxin.Int {
     a1,a2,a3,
     a7=7,
 }
 
-
+// This is not normally necessary. Only declare this if you :
+// a. want to specify different Toxin.class_info details
+// b. need to allocate/set a global variable at time of registration
 THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.Class_Deets, init_level: Toxin.InitializationLevel) {
     context = runtime.default_context()
     Toxin._Register(self, init_level)
@@ -44,15 +48,24 @@ THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.Class_Deets, init_level: Toxin.Initial
 }
 
 
-//Constructor receive an opaque pointer which is in reality a pointer to this class's container.
+// Only necessary if you need to initialize some variables.
+// Required if your class includes :
+// a. Toxin.Array
+// b. Toxin.Dictionary
+// c. Toxin.gdstring - need to set the pointer to nil. Godot's allocator does not zero init memory.
+// Godot's methods will panic if these are not initialized.
 constructor :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
     self:=cast(^Toxin.Class_Container(THIS_CLASS_NAME))self
     //if you have a dictionary or an array from godot initialize it here before using it.
 }
 
+// Only necessary if you have memory cleanup to do.
+// Required if your class includes a type which needs to be destroyed.
+// See Toxin.Destroy for the list of types with a destructor.
+// Don't forget to cleanup textures, objects created, resources.
 destructor :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
     self:=cast(^Toxin.Class_Container(THIS_CLASS_NAME))self
-
+    // destroy your heap allocated memory.
 }
 
 
@@ -60,7 +73,7 @@ destructor :: proc(userdata: ^Toxin.Class_Deets, self: rawptr) {
 //*******VIRTUAL METHODS********\\
 //******************************\\
 
-//Use this to setup your _process _ready etc instead of the virtuals. Virtuals will prioritize GDScript over your own virtuals.
+// Prefer this to setup your _process _ready etc instead of the virtuals.
 THIS_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLASS_NAME), p_what: i32, p_reversed: b8) {
     
     what2:= Classes.Object_Constants(p_what)
@@ -85,7 +98,7 @@ THIS_CLASS_NAME_Notifications :: proc "c" (self: ^Toxin.Class_Container(THIS_CLA
     }
 }
 
-
+// These will be overridden by GDscript's virtuals.
 THIS_CLASS_NAME_VTable: Classes.Sprite2D_vtable(THIS_CLASS_NAME) = {
     _ready= proc "c" (self: ^Classes.Class_Container(THIS_CLASS_NAME), args: rawptr, _: rawptr) {
         context = runtime.default_context()
@@ -106,11 +119,14 @@ THIS_CLASS_NAME_VTable: Classes.Sprite2D_vtable(THIS_CLASS_NAME) = {
 //******************************\\
 //***********Exports************\\
 //******************************\\
-//for default values
+// For export with default values
 var1: Toxin.Variant
 var2: Toxin.Variant
-//make some function public to Godot's scripts.
-//Doesn't have to be in a separate function from the init but it makes it easier to locate where to update.
+
+// Makes some function public to Godot's GDscripts and inspector.
+// There are many different ways to export a function or variable.
+// default, static, with or without default parameters.
+// Many different flavors of custom property info.
 THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     context = runtime.default_context()
 
@@ -162,6 +178,8 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
 //***************************\\
 
 //Godot only supports one return value per functions. No tuples. Might be able to get by with the Array type as that is not type specific (uses variants).
+
+
 somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int, arg2: ^Toxin.float) {
     context = runtime.default_context()
     //do stuff
@@ -169,21 +187,30 @@ somePublicFunction :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_N
     fmt.println("arg1: ", arg1^)
     fmt.println("arg2: ", arg2^)
 }
+
 somePublicFunction2 :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int, arg2: ^Toxin.float) {
     context = runtime.default_context()
     //do stuff
     fmt.println("I am somePublicFunction2. I am called by Godot", arg1^, arg2^)
 }
+
 somePublicFunction3 :: proc "c" (classStruct: ^Toxin.Class_Container(THIS_CLASS_NAME), arg1: ^Toxin.Int) {
     context = runtime.default_context()
     //do stuff
     fmt.println("I am somePublicFunction3. I am called by Godot", arg1^)
 }
 
+// A static proc does not receive any object to work on. Basically acts as a global proc but only this class can see it in GDscript.
 static_proc :: proc "c" () {
     context = runtime.default_context()
     fmt.println("I'm running a static proc")
 }
+
+// Of course all procs can include default values.
+// Defaults need to be variants.
+// Defaults need to exist at the time the proc is called. Which is why the variants are declared as globals in the Export section.
+// You need to own the lifetime of the default values and the slice containing them.
+// Procs with defaults will always be slower to call.
 static_proc_defaults :: proc "c" (arg1: ^Toxin.Int) {
     context = runtime.default_context()
     fmt.println("I'm running a static proc.\nMy default is", arg1^)
@@ -193,11 +220,20 @@ static_proc_defaults :: proc "c" (arg1: ^Toxin.Int) {
 //****Signal Callables****\\
 //************************\\
 
+// Signal callbacks use the callable system. Each signal connection creates a callable variable which contains the proc pointer and the default values.
+// Signals have more overhead than virtuals and other export systems as they must use variants.
+
+// You can attach a callback to a signal. Uses the callable system.
+// Process is a bit long, but Toxin takes care of that.
 signal_test :: proc "c" (obj: ^Toxin.Object) {
     context = runtime.default_context()
     fmt.println("connected signal")
 }
 
+// You can define a callable. A callback outside of the signal system which can be passed to other objects to use.
+// All callables can have default values.
+// Default values can be unique per callable creates.
+// A procedure can be turned into any number of callables, as a callable is just a class of data.
 bound_callable_test :: proc "c" (obj: ^Toxin.Object, str: ^Toxin.Int) {
     context = runtime.default_context()
     fmt.println(str^)
