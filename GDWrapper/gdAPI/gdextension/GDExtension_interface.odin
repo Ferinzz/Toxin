@@ -132,8 +132,9 @@ StringName :: distinct struct{
 
 /*
 * Pointer to a string stored in Godot. Format Unicode.
+* Godot strings use u32 encoding.
 * Variable size.
-* Warning: during class create process set ptr to nil
+* Warning: during class create process set ptr to nil.
 */
 gdstring :: distinct struct{
     ptr: rawptr
