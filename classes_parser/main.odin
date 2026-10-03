@@ -5,30 +5,30 @@ import "core:os"
 import "core:fmt"
 import "base:runtime"
 import "core:strings"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import GDE "../GDWrapper/gdAPI/gdextension"
 import "core:bytes"
 //import "../GD_Classes"
 
 main :: proc() {
-  root, error := os.get_absolute_path("classes_parser\\example.json", context.allocator)
-  if error != nil {
-    print_warning("error getting root.", error)
-    return
-  }
-  fmt.println(root)
+  //root, error := os.get_absolute_path("classes_parser\\example.json", context.allocator)
+  //if error != nil {
+  //  print_warning("error getting root.", error)
+  //  return
+  //}
+  //fmt.println(root)
   //data, err := os.read_entire_file(root, context.allocator)
   data, err := os.read_entire_file("extension_api.json", context.allocator)
+  if err != nil {
+    fmt.println("Error reading extension_api.json", err)
+    return
+  }
   os.make_directory("GD_Classes")
   make_err:= os.set_working_directory("GD_Classes")
   if make_err != nil && make_err != .Exist {
     print_warning("make directory error:", make_err)
     return
   }
-  
-  if err != nil {
-    print_warning("file could not be read: ", err)
-    return
-  }
+
   val:=json.make_parser(data)
   built_different: builtin
   json.unmarshal(data, &built_different)

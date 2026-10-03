@@ -6,7 +6,7 @@ import "core:fmt"
 import "base:runtime"
 import "core:strings"
 //import GDW "shared:GDWrapper"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import GDE "../GDWrapper/gdAPI/gdextension"
 import "core:bytes"
 //import "../builtins"
 
@@ -23,16 +23,24 @@ Projection_Const_names :: enum {
 */
 
 main :: proc() {
-    root, error := os.get_absolute_path("builtin_parser\\example.json", context.allocator)
-    if error != nil {
-        print_warning("error getting root.", error)
-        return
-    }
-    fmt.println(root)
-    data, err := os.read_entire_file("C:\\Odin_programs\\toxin_new_pull\\extension_api.json", context.allocator)
+    //root, error := os.get_absolute_path(".\\builtin_parser\\example.json", context.allocator)
+    //if error != nil {
+    //    print_warning("error getting root.", error)
+    //    return
+    //}
+    //fmt.println(root)
+
+    data, err := os.read_entire_file(".\\extension_api.json", context.allocator)
     
     if err != nil {
-        print_warning("file could not be read: ", err)
+        print_warning("file extension_api.json could not be read: ", err)
+        return
+    }
+    os.make_directory("GD_Builtins")
+    make_err:= os.set_working_directory("GD_Builtins")
+    if make_err != nil {
+        print_warning("error creating directory GD_Builtins", make_err)
+        return
     }
     val:=json.make_parser(data)
     built_different: builtin
@@ -52,7 +60,8 @@ import GDE "gdAPI/gdextension"
 import "core:math"
 
 
-`
+`;
+
     for classes in final {
         //fmt.println(classes.method_list)
         //fmt.println(classes.init_proc)
@@ -60,11 +69,11 @@ import "core:math"
         fmt.println(classes.name)
         file_path:string
         if classes.name != "" {
-            file_path= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\GD_Builtins\\%s_GD_builtin.odin", classes.name)
+            file_path= fmt.aprintf("%s_GD_builtin.odin", classes.name)
         }
         else
         {
-            file_path= fmt.aprintf("C:\\Odin_programs\\toxin_new_pull\\GD_Builtins\\Globals_GD_builtin.odin")
+            file_path= fmt.aprintf("Globals_GD_builtin.odin")
         }
         file, open_err:= os.create(file_path)
         if open_err == nil {
