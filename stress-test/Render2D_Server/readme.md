@@ -5,16 +5,16 @@ Test the performance of the Render2DServer with a basic Texture2D moving across 
 
 # Dependencies
 Godot Class details.
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
 [GD_Classes](https://github.com/Ferinzz/Godot_Odin_Binds)
 
 Basic API, helper procedures, and builtin types
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDW "../../GDWrapper"
+import "../../GDWrapper/gdAPI"
 [GDWrapper](https://github.com/Ferinzz/Toxin/GDWrapper)
 
 Entry, Class Exporter, etc
-import "shared:Toxin"
+import "../../Toxin"
 [Toxin](https://github.com/Ferinzz/Toxin/Toxin)
 
 Package imports are expected to be in Odin's shared folder.

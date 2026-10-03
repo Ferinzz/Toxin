@@ -1,13 +1,13 @@
 package main
 
-//import GDW "shared:GDWrapper"
-import "shared:Toxin"
+//import GDW "../../GDWrapper"
+import "../../Toxin"
 import "base:runtime"
 import "core:fmt"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
 //import Classes "../../GD_Classes"
-import "shared:GDWrapper/gdAPI"
-import GDE "shared:GDWrapper/gdAPI/gdextension"
+import "../../GDWrapper/gdAPI"
+import GDE "../../GDWrapper/gdAPI/gdextension"
 import Math "core:math"
 import rand "core:math/rand"
 

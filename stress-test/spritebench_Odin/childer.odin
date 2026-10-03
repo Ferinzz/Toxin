@@ -1,6 +1,6 @@
 package main
 
-//import GDW "shared:GDWrapper"
+//import GDW "../../GDWrapper"
 import "../../Toxin"
 import class "../../Toxin/classes"
 import "base:runtime"

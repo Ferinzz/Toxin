@@ -2,16 +2,16 @@
 
 ## Dependencies
 Godot Class details.
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
 [text](https://github.com/Ferinzz/Godot_Odin_Binds)
 
 Basic API, helper procedures, and builtin types
-import GDW "shared:GDWrapper"
-import "shared:GDWrapper/gdAPI"
+import GDW "../../GDWrapper"
+import "../../GDWrapper/gdAPI"
 [text](https://github.com/Ferinzz/Toxin/tree/testing_new_hierarchy/src/GDWrapper)
 
 Entry, Class Exporter, etc
-import "shared:Toxin"
+import "../../Toxin"
 [text](https://github.com/Ferinzz/Toxin/tree/testing_new_hierarchy/src/Toxin)
 
 The current version is written based on an in-progress branch.

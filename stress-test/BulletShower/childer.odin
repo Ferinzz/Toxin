@@ -1,9 +1,9 @@
 package main
 
-import "shared:Toxin"
+import "../../Toxin"
 import "base:runtime"
 import "core:fmt"
-import Classes "shared:Godot_Odin_Binds/GD_Classes"
+import Classes "../../GD_Classes"
 import Math "core:math"
 import rand "core:math/rand"
 
