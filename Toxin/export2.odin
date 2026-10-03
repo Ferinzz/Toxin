@@ -51,7 +51,7 @@ Export_default_static :: proc(className_SN: ^StringName, getter_setter: ^$T/gset
 
 export_enum_as_int :: proc(className_SN: ^StringName, getter_setter: ^$T/gsetter_userdata_t($V, $C), $E: typeid) where sics.type_is_enum(E) && V == Int{
     prop_info:= enum_info(E, getter_setter.fieldname)
-    Export5(className_SN, getter_setter, false, &info)
+    Export5(className_SN, getter_setter, false, &prop_info)
     destructProperty(&prop_info)
 }
 
