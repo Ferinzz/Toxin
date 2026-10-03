@@ -510,3 +510,7 @@ process_guard :: proc(obj: ^Object) {
         class.Node_set_physics_process(obj, &enabled)
     }
 }
+
+get_instance_from_id :: proc(instanceID: ObjectInstanceID) -> ^Object {
+    return gdAPI.Object_Utils.GetInstanceFromId(instanceID)
+}
