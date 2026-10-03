@@ -1,3 +1,4 @@
+#+ignore
 package Toxin
 
 import "../GDWrapper/gdAPI"
