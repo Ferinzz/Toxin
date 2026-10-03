@@ -209,15 +209,15 @@ create_dummy :: proc(userdata: ^Class_Deets, self: rawptr) {}
 //Called by Godot
 //This is the default constructor used
 
-bltn_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
-    context = runtime.default_context()
+bltn_Create :: proc "c" ( p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool ) -> ( ^Object ) {
+    context = runtime.default_context( )
 
     //Create our containing struct.
     self:^Class_Container(CC_Dummy)
-    self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(^Object))
-    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    self = cast( ^Class_Container( CC_Dummy ) )gdAPI.Memory_Uils.MemAlloc( int( p_class_userdata.required.class_struct_size ) + size_of( ^Object ) )
+    mem.set( self, 0, int( p_class_userdata.required.class_struct_size ) + size_of( ^Object ) )
 
-    return Create2(p_class_userdata, p_notify_postinitialize, self)
+    return Create2( p_class_userdata, p_notify_postinitialize, self )
 }
 
 //Called by Godot
