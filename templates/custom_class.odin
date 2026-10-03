@@ -36,7 +36,7 @@ munum::enum Toxin.Int {
 
 THIS_CLASS_NAME_reggy:: proc(self: ^Toxin.Class_Deets, init_level: Toxin.InitializationLevel) {
     context = runtime.default_context()
-    Toxin._Register(me, init_level)
+    Toxin._Register(self, init_level)
 
     //for default values in function binding
     var1= Toxin.variant_r(Toxin.Int(34))
@@ -132,17 +132,13 @@ THIS_CLASS_NAME_Export :: proc(className: ^Toxin.StringName){
     @static
     somproperty:= Toxin.gsetter_userdata_t(Toxin.Int, THIS_CLASS_NAME) {
         gs_type=.INT,
-        getter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr, r_return: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            r_return:=cast(^Toxin.Int)r_return
-            r_return^= Object.speed
+        getter_method= proc "c" (Object: (^Toxin.Class_Container(THIS_CLASS_NAME))) -> Toxin.Int{
+            return Object.speed
         },
-        setter_method= proc "c" (method_userdata: rawptr, Object: rawptr, args: rawptr){
-            Object:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Object
-            args:= cast(^Toxin.Int)args
+        setter_method= proc "c" (Object: (^Toxin.Class_Container(THIS_CLASS_NAME)), args: ^Toxin.Int){
             Object.speed = args^
         },
-        userdata= nil,
+        fieldname = "someproperty"
     }
     Toxin.Export_Default2(className, &somproperty, false)
 
