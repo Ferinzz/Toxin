@@ -462,8 +462,8 @@ get_tPtr_Array_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE
 }
 
 //Objects are initialized as nullpoiter in the ObjData struct, can return directly.
-get_tPtr_Object_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^^Object) {
-    ret: ^Object
+get_tPtr_Object_passthrough :: proc "c" (method_userdata: rawptr, p_instance: GDE.ClassInstancePtr, args: [^]rawptr, r_return: ^ObjectPtr) {
+    ret: ObjectPtr
     get_passthrough(method_userdata, p_instance, args, &ret)
     safeRef_Object(ret)
     r_return^ = ret
@@ -621,7 +621,7 @@ insert_variant_data :: proc "c" (container: ^Variant, source: ^variant_union_raw
 	.COLOR, .RID:
         container.data = transmute([2]u64)(source.Vector4)
     case .OBJECT:
-        ObjecttoVariant(container, (cast(^Object)source)^)
+        ObjecttoVariant(container, (cast(ObjectPtr)source)^)
     case  .STRING:
         StringtoVariant(container, (cast(^gdstring)source)^)
     case .STRING_NAME:

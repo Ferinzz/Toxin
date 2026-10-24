@@ -8,11 +8,11 @@ import "core:math"
 Signal_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Signal, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^Signal,  #by_ptr p_args: struct{ from: ^Signal, }),
-    Create2: proc "c" (p_base: ^Signal,  #by_ptr p_args: struct{ object: ^Object, signal: ^StringName, }),
+    Create2: proc "c" (p_base: ^Signal,  #by_ptr p_args: struct{ object: ObjectPtr, signal: ^StringName, }),
     Destroy: proc "c" (p_base: ^Signal),
     get_ptr: proc "c" (base: ^Variant) -> ^Signal,
     is_null:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
-    get_object:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ^Object, p_argument_count: i64 = 0),
+    get_object:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ObjectPtr, p_argument_count: i64 = 0),
     get_object_id:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     get_name:  proc "c" (p_base: ^Signal, p_args: rawptr = nil, r_return: ^StringName, p_argument_count: i64 = 0),
     connect:  proc "c" (p_base: ^Signal, #by_ptr p_args: struct{ callable: ^Callable, flags: ^Int, }, r_return: ^Int, p_argument_count: i64 = 2),

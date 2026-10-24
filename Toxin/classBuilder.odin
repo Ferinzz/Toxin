@@ -160,7 +160,7 @@ CC_Dummy:: struct{}
 * Returns a pointer to Class_Container(your_class_struct)
 */
 @(deprecated="use bltn_Create or TMAlloc_Create")
-Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (ObjectPtr) {
     context = runtime.default_context()
 
     object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
@@ -169,11 +169,11 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
     self:^Class_Container(CC_Dummy)
     if TMAlloc == nil {
         //Maybe can replace mem_alloc with new(). This should be safe as we own the free in the destroy callback.
-        self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+        self = cast(^Class_Container(CC_Dummy))gdAPI.Memory_Uils.MemAlloc(int(p_class_userdata.required.class_struct_size) + size_of(ObjectPtr))
     } else {
-        self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+        self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(ObjectPtr))
     }
-    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(ObjectPtr))
     self.self= object
 
     if p_class_userdata.create != nil {
@@ -191,7 +191,7 @@ Create :: proc"c"(p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool)
 * bltn_Create, TMAlloc_Create will automatically call this method. If you are not owning the allocation portion you can ignore this exists.
 */
 
-Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool, class_obj: ^Class_Container(CC_Dummy)) -> (^Object) {
+Create2 :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool, class_obj: ^Class_Container(CC_Dummy)) -> (ObjectPtr) {
     context = runtime.default_context()
 
     object: GDE.ObjectPtr = gdAPI.ClassDB.ConstructObject(p_class_userdata.GDClass_StringName)
@@ -209,13 +209,13 @@ create_dummy :: proc(userdata: ^Class_Deets, self: rawptr) {}
 //Called by Godot
 //This is the default constructor used
 
-bltn_Create :: proc "c" ( p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool ) -> ( ^Object ) {
+bltn_Create :: proc "c" ( p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool ) -> ( ObjectPtr ) {
     context = runtime.default_context( )
 
     //Create our containing struct.
     self:^Class_Container(CC_Dummy)
-    self = cast( ^Class_Container( CC_Dummy ) )gdAPI.Memory_Uils.MemAlloc( int( p_class_userdata.required.class_struct_size ) + size_of( ^Object ) )
-    mem.set( self, 0, int( p_class_userdata.required.class_struct_size ) + size_of( ^Object ) )
+    self = cast( ^Class_Container( CC_Dummy ) )gdAPI.Memory_Uils.MemAlloc( int( p_class_userdata.required.class_struct_size ) + size_of( ObjectPtr ) )
+    mem.set( self, 0, int( p_class_userdata.required.class_struct_size ) + size_of( ObjectPtr ) )
 
     return Create2( p_class_userdata, p_notify_postinitialize, self )
 }
@@ -223,18 +223,18 @@ bltn_Create :: proc "c" ( p_class_userdata: ^Class_Deets, p_notify_postinitializ
 //Called by Godot
 //pass to register via ClassCreateInfo to override default
 
-TMAlloc_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+TMAlloc_Create :: proc "c" (p_class_userdata: ^Class_Deets, p_notify_postinitialize: Bool) -> (ObjectPtr) {
     context = runtime.default_context()
 
     //Create our containing struct.
     self:^Class_Container(CC_Dummy)
-    self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(^Object))
-    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(^Object))
+    self = cast(^Class_Container(CC_Dummy))TMAlloc(p_class_userdata, Int(p_class_userdata.required.class_struct_size) + size_of(ObjectPtr))
+    mem.set(self, 0, int(p_class_userdata.required.class_struct_size) + size_of(ObjectPtr))
 
     return Create2(p_class_userdata, p_notify_postinitialize, self)
 }
 
-Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (^Object) {
+Class_Init::proc "c" (p_class_user_data: ^Class_Deets, p_notify_postinitialize: Bool) -> (ObjectPtr) {
     context = runtime.default_context()
     class:= bltn_Create(p_class_user_data, p_notify_postinitialize)
     return (cast(^Class_Container(CC_Dummy))class).self
@@ -344,6 +344,7 @@ Notifications_example :: proc "c" (p_instance: GDE.ClassInstancePtr, p_what: i32
     case .NOTIFICATION_VP_MOUSE_ENTER:
     case .NOTIFICATION_VP_MOUSE_EXIT:
     case .NOTIFICATION_WM_POSITION_CHANGED:
+    case .NOTIFICATION_WM_OUTPUT_MAX_LINEAR_VALUE_CHANGED:
     case .NOTIFICATION_OS_MEMORY_WARNING:
     case .NOTIFICATION_TRANSLATION_CHANGED:
     case .NOTIFICATION_WM_ABOUT:
@@ -354,6 +355,8 @@ Notifications_example :: proc "c" (p_instance: GDE.ClassInstancePtr, p_what: i32
     case .NOTIFICATION_APPLICATION_FOCUS_IN:
     case .NOTIFICATION_APPLICATION_FOCUS_OUT:
     case .NOTIFICATION_TEXT_SERVER_CHANGED:
+    case .NOTIFICATION_APPLICATION_PIP_MODE_ENTERED:
+    case .NOTIFICATION_APPLICATION_PIP_MODE_EXITED:
     case .NOTIFICATION_ACCESSIBILITY_UPDATE:
     case .NOTIFICATION_ACCESSIBILITY_INVALIDATE:
     }
@@ -405,6 +408,8 @@ Notifications_example :: proc "c" (p_instance: GDE.ClassInstancePtr, p_what: i32
     case .NOTIFICATION_APPLICATION_FOCUS_IN:
     case .NOTIFICATION_APPLICATION_FOCUS_OUT:
     case .NOTIFICATION_TEXT_SERVER_CHANGED:
+    case .NOTIFICATION_APPLICATION_PIP_MODE_ENTERED:
+    case .NOTIFICATION_APPLICATION_PIP_MODE_EXITED:
     }
     what7:= Classes.EditorSettings_Constants(p_what)
     switch what7 {

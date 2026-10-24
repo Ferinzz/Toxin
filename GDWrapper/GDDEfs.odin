@@ -146,6 +146,7 @@ RID :: distinct struct{
 
 //extension_api says size is dependent on the build config, but callable uses u64 with no typedef.
 Object :: GDE.Object
+ObjectPtr :: GDE.ObjectPtr
 
 //a pointer uniquely identifying the given built-in class in the ClassDB.
 ClassTag:: GDE.ClassTag

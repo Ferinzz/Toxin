@@ -63,8 +63,8 @@ editor_deinit :: proc "c" (userdata: rawptr) {
 main_loop_shutdown :: proc "c" () {
 }
 
-scene_tree_obj: ^GDW.Object
-root_node_instance: ^GDW.Object
+scene_tree_obj: Toxin.ObjectPtr
+root_node_instance: Toxin.ObjectPtr
 
 
 last_delta:Toxin.float //Each class is assigning their delta time to this, probably a better way. Might be affecting performance. It is the simple way.
@@ -121,7 +121,7 @@ MainLoopFrameCallback :: proc "c" () {
     //fmt.println("murray: ", murray)
     //fmt.println("rptr: ", r_ret)
     perf:Toxin.float=0
-    perf = class.Node_get_process_delta_time(root)
+    perf = class.Node_get_process_delta_time( root )
 
     if frame_current < frame_count_amout {
         frame_times[frame_current] = perf
@@ -137,7 +137,7 @@ MainLoopFrameCallback :: proc "c" () {
     }
 
 }
-root:^Toxin.Object
+root: Toxin.ObjectPtr
 
 main_loop_startup :: proc "c" () {
     context = runtime.default_context()

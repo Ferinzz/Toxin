@@ -127,7 +127,7 @@ Destroy_PackedVector4Array :: proc "c" (base: ^PackedVector4Array){
     GDW.PackedVector4Array_M_List.Destroy(base)
 }
 
-Destroy_obj :: proc "c" (base: ^Object) {
+Destroy_obj :: proc "c" (base: ObjectPtr) {
     gdAPI.Object_Utils.Destroy(base)
 }
 
@@ -153,15 +153,15 @@ Destroy :: proc {
 }
 
 @(require_results)
-_instantiate :: proc(obj: Class.ClassName_Index) -> ^Object {
+_instantiate :: proc(obj: Class.ClassName_Index) -> ObjectPtr {
     return gdAPI.ClassDB.ConstructObject(Class.GDClass_StringName_get(obj))
 }
 @(require_results)
-instantiate_SN :: proc(obj: ^StringName) -> ^Object {
+instantiate_SN :: proc(obj: ^StringName) -> ObjectPtr {
     return gdAPI.ClassDB.ConstructObject(obj)
 }
 @(require_results)
-instantiate_custom :: proc(obj: ^Class_Deets) -> ^Object {
+instantiate_custom :: proc(obj: ^Class_Deets) -> ObjectPtr {
     return gdAPI.ClassDB.ConstructObject(&obj.SN)
 }
 

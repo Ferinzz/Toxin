@@ -99,7 +99,7 @@ main_loop_shutdown :: proc "c" () {
 MainLoopFrameCallback :: proc "c" () {
     context = runtime.default_context()
     perf:Toxin.float=0
-    perf = class.Node_get_process_delta_time(root)
+    perf = class.Node_get_process_delta_time( root )
     if frame_current < frame_count_amout {
         frame_times[frame_current] = perf
         frame_current+=1
@@ -116,8 +116,8 @@ MainLoopFrameCallback :: proc "c" () {
 
 }
 
-scene_tree_obj: ^GDW.Object
-root_node_instance: ^GDW.Object
+scene_tree_obj: Toxin.ObjectPtr
+root_node_instance: Toxin.ObjectPtr
 
 
 printonce:bool=true
@@ -125,4 +125,4 @@ sprite_count::50000
 frame_count_amout::2000
 frame_times:[frame_count_amout]f64
 frame_current:int=0
-root:^Toxin.Object
+root: Toxin.ObjectPtr

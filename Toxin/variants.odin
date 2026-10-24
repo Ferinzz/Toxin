@@ -8,6 +8,7 @@ import "core:mem"
 import "core:slice"
 import "core:math/linalg"
 import sics "base:intrinsics"
+import "core:fmt"
 
 /*
 * Variants are Godot's special class of types.
@@ -196,7 +197,7 @@ variant_union_raw :: struct #raw_union {
 }
 
 variant_index :: proc($field: typeid, loc:=#caller_location) -> GDE.VariantType {
-    when field == ^Object {
+    when field == ^Object || field == ObjectPtr {
         index :: GDE.VariantType.OBJECT
     } else {
         index :: GDE.VariantType(sics.type_variant_index_of(variant_union, field))
@@ -308,10 +309,11 @@ to_variant_r :: proc(variant: ^$T) -> (ret: GDE.Variant) {
 }
 
 to_variant :: proc{
-    NiltoVariant,
+    //NiltoVariant,
     BooltoVariant,
     InttoVariant,
     inttoVariant,
+    ObjectPtrtoVariant,
     PtrtoVariant,
     FloattoVariant,
     StringtoVariant,
@@ -402,9 +404,9 @@ variant_Destroy :: proc(var: ^Variant) {
     } else do var^ = {}
 }
 
-NiltoVariant:: proc(P_dest: ^Variant, p_source: rawptr=nil) {
-    P_dest^={}
-}
+//NiltoVariant:: proc(P_dest: ^Variant, p_source: rawptr=nil) {
+//    P_dest^={}
+//}
 
 //Use this if you need a return based on the typeID instead of passing it to a pointer.
 copy_from_variant_r :: proc(variant: ^Variant, $T: typeid) -> T {
@@ -793,6 +795,11 @@ inttoVariant       :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: int, lo
     p_from:=i64(p_from)
     p_variant.data[0] = transmute(u64)p_from
 }
+ObjectPtrtoVariant :: proc "c" (p_variant: ^GDE.Variant, p_from: ObjectPtr, loc:=#caller_location) {
+    context = runtime.default_context()
+    fmt.println( "objtovariantPtr" )
+    GDW.new_variant_from_methods(p_variant, p_from)
+}
 PtrtoVariant       :: proc "c" (p_variant: ^GDE.Variant, p_from: rawptr, loc:=#caller_location) {
     p_variant.VType = .INT
     p_variant.data[0] = transmute(u64)p_from
@@ -877,6 +884,8 @@ RidtoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: RID, loc:=#ca
     p_variant.data = transmute([2]u64)p_from
 }
 ObjecttoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Object, loc:=#caller_location) {
+    context = runtime.default_context()
+    fmt.println( "objtovariant" )
     GDW.new_variant_from_methods(p_variant, p_from)
 }
 CallabletoVariant :: proc "c" (p_variant: ^GDE.Variant, #by_ptr p_from: Callable, loc:=#caller_location) {

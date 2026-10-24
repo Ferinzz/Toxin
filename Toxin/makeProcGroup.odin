@@ -96,7 +96,7 @@ Signal_Destroy :: proc(del: ^Signal) {
 }
 
 
-texture2D :: ^Object
+texture2D :: ObjectPtr
 
 //TODO: fix texture destructor
 @(deprecated="Is borked. No fix yet.")

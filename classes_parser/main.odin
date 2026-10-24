@@ -100,7 +100,7 @@ virtuals_list : [ClassName_Index]proc(rawptr, ^GDW.StringName, u32) -> GDE.Class
   if open_err == nil {
     os.write_strings(file, header2)
     for classes in final {
-      os.write_strings(file, classes.name, ` :: ^GDW.Object
+      os.write_strings(file, classes.name, ` :: GDE.ObjectPtr
 `)
     }
 
@@ -523,7 +523,7 @@ destroy_class_names :: proc() {
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
 Class_Container :: struct ($Class_Structure: typeid) #packed {
-    self: ^GDW.Object, //Keep as first so it can be trivially cast.
+    self: GDE.ObjectPtr, //Keep as first so it can be trivially cast.
     using class: Class_Structure,
 }
 CC_Dummy :: struct {}
@@ -632,7 +632,7 @@ build_init_proc :: proc(json_data: builtin, ctx: runtime.Allocator) -> ([dynamic
   ///////////////////////////////
   // Structure of the init proc
   ///////////////////////////////
-  class_decl:=`%s :: ^Object`
+  class_decl:=`%s :: GDE.ObjectPtr`
   //init_proc_sig:=`%s_Init_ :: proc (%[0]s_methods: ^%[0]s_MethodBind_List, loc := #caller_location) {{
   init_proc_sig:=`%s_Init_ :: proc (loc:= #caller_location) {{
   MB_ptr_call:=gdAPI.get_Interface_Address("object_method_bind_ptrcall")`

@@ -63,6 +63,7 @@ register_custom_class :: proc(list: []^Class_Deets, init_level: InitializationLe
         if class.registerer == nil {
             example_self_reggy(class, init_level)
         } else {
+    fmt.println("123")
             class.registerer(class, init_level)
         }
     }

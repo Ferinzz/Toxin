@@ -66,7 +66,7 @@ type_test_deets: Toxin.Class_Deets = {
 //     Toxin.Register(myself, init_level, Toxin.make_get_virtual_func(type_test_vtable), type_test_Init)
 // }
 
-type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
+type_test_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (Toxin.ObjectPtr) {
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(type_test))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)
     //If these are not 'created' before Godot attempts to use them the engine will panic.

@@ -88,7 +88,7 @@ _bind_static :: proc(function: $P, class: ^StringName,  $need_ref: bool, call_in
     methodStringName: StringName
     gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
 
-    bind_method(class, &methodStringName, rawptr(function), call, ptrcall, ret, args[:argcount], {.STATIC})
+    bind_method(class, &methodStringName, rawptr(function), GDE.ClassMethodCall( call ), GDE.ClassMethodPtrCall( ptrcall ), ret, args[:argcount], GDE.Method_Flags_DEFAULT + {.STATIC})
     Destroy(&methodStringName)
 }
 
@@ -133,7 +133,7 @@ _bind_with_defaults :: proc(function: $P, class: ^StringName, $need_ref: bool, d
     methodStringName: StringName
     gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
 
-    bind_method(class, &methodStringName, rawptr(bind_info), call, ptrcall, ret, args[:argcount], {.STATIC}, defaults)
+    bind_method(class, &methodStringName, rawptr(bind_info), GDE.ClassMethodCall( call ), GDE.ClassMethodPtrCall( ptrcall ), ret, args[:argcount], {.STATIC}, defaults)
     Destroy(&methodStringName)
     return bind_info
 }
@@ -200,7 +200,7 @@ _bind_static_with_defaults :: proc(function: $P, class: ^StringName, $need_ref: 
     methodStringName: StringName
     gdAPI.StringName_Utils.Utf8CharsAndLen(&methodStringName, raw_data(call_info), Int(len(call_info)))
 
-    bind_method(class, &methodStringName, rawptr(bind_info), call, ptrcall, ret, args[:argcount], {.STATIC}, defaults)
+    bind_method(class, &methodStringName, rawptr(bind_info), GDE.ClassMethodCall(call), GDE.ClassMethodPtrCall(ptrcall), ret, args[:argcount], {.STATIC}, defaults)
     Destroy(&methodStringName)
     return bind_info
 }
@@ -760,7 +760,8 @@ godotVariantCallback :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInst
         when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
             defer(variant_Destroy(r_return))
         }
-        to_variant(r_return, (cast(P)method_userdata)(cast(arg0)p_instance))
+        fmt.println( typeid_of( sics.type_proc_return_type( P, 0 ) ))
+        to_variant(r_return, ((cast(P)method_userdata)(cast(arg0)p_instance)))
     } else {
         (cast(P)method_userdata)(cast(arg0)p_instance)
     }}
@@ -929,6 +930,7 @@ godotPtrCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassInstan
         sics.type_proc_parameter_type(P, 10),
         p_args[:11])
     }*/
+        fmt.println( "this is the called func" )
     when sics.type_proc_parameter_count(P) > 0 {
         when sics.type_proc_return_count(P) > 0 {
         //Dictionary and Array need to be destroyed specifically before returning to them.
@@ -1334,12 +1336,17 @@ godotVariantCallback_s :: proc "c" (method_userdata: $P, p_instance: GDE.ClassIn
             arg5: sics.type_proc_parameter_type(P, 9),
         }
     }
+        fmt.println( "this is variant the called func" )
+        fmt.println( r_return )
     when sics.type_proc_parameter_count(P) > 0 {
     when sics.type_proc_return_count(P) > 0 {
         when refcountedType(RefCount_Types, sics.type_proc_return_type(P, 0)) {
             defer(variant_Destroy(r_return))
         }
-        to_variant(r_return, (cast(P)method_userdata)(expand_values(variant_multi_return(p_args, &s_ptrs))))
+        val := (cast(P)method_userdata)(expand_values(variant_multi_return(p_args, &s_ptrs)))
+        fmt.println(val)
+        to_variant(r_return, val)
+        fmt.println(r_return)
     } else {
         variant_multi_return(p_args, &s_ptrs)
         (cast(P)method_userdata)(expand_values(s_ptrs))
@@ -1411,6 +1418,8 @@ variant_multi_return :: proc(vars: GDE.ConstVariantPtrargs, ptrs: ^$T) -> T {
             ((^^RID)((field_value).data))^=cast(^RID)(variant_get_ptr(vars[i]))
 	    case ^Object:
             ((^^Object)((field_value).data))^=cast(^Object)(variant_get_ptr(vars[i]))
+	    case ^ObjectPtr:
+            ((^ObjectPtr)((field_value).data))^=cast(ObjectPtr)(variant_get_ptr(vars[i]))
 	    case ^Callable:
             ((^^Callable)((field_value).data))^=cast(^Callable)(variant_get_ptr(vars[i]))
 	    case ^Signal:
@@ -1511,6 +1520,7 @@ multi_destructor :: proc(ptrs: ^$T) {
 	    case ^NodePath:
 	    case ^RID:
 	    case ^Object:
+	    case ^ObjectPtr:
 	    case ^Callable:
 	    case ^Signal:
 	    case ^Dictionary:
@@ -1550,6 +1560,7 @@ multi_destructor :: proc(ptrs: ^$T) {
             Destroy((cast(^^PackedVector4Array)field_value.data)^)
             free((cast(^^PackedVector4Array)field_value.data)^)
         case:
+            fmt.println(field_value.data)
             panic("Should be impossible to reach this. Type of method parameter is not supported.")
     }
     }

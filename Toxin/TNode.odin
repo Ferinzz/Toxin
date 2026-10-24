@@ -51,34 +51,34 @@ Fill_Node_Methods :: proc() {
 }
 
 Node_Signals :: struct {
-    ready: proc "c" (self: ^Object),
-    renamed: proc "c" (self: ^Object),
-    tree_entered: proc "c" (self: ^Object),
-    tree_exiting: proc "c" (self: ^Object),
-    tree_exited: proc "c" (self: ^Object),
-    child_entered_tree: proc "c" (self: ^Object, node: Node),
+    ready: proc "c" (self: ObjectPtr),
+    renamed: proc "c" (self: ObjectPtr),
+    tree_entered: proc "c" (self: ObjectPtr),
+    tree_exiting: proc "c" (self: ObjectPtr),
+    tree_exited: proc "c" (self: ObjectPtr),
+    child_entered_tree: proc "c" (self: ObjectPtr, node: Node),
     // "arguments": [
     // {
     // "name": "node",
     // "type": "Node"
     // }
-    child_exiting_tree: proc "c" (self: ^Object, node: Node),
+    child_exiting_tree: proc "c" (self: ObjectPtr, node: Node),
     // "arguments": [
     // {
     // "name": "node",
     // "type": "Node"
     // }
-    child_order_changed: proc "c" (self: ^Object),
-    replacing_by: proc "c" (self: ^Object, node: Node),
+    child_order_changed: proc "c" (self: ObjectPtr),
+    replacing_by: proc "c" (self: ObjectPtr, node: Node),
     // "arguments": [
     // {
     // "name": "node",
     // "type": "Node"
     //}
-    editor_description_changed: proc "c" (self: ^Object, node: Node),
+    editor_description_changed: proc "c" (self: ObjectPtr, node: Node),
     // {
     // "name": "node",
     // "type": "Node"
     // }
-    editor_state_changed: proc "c" (self: ^Object),
+    editor_state_changed: proc "c" (self: ObjectPtr),
 }

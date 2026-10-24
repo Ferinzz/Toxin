@@ -85,17 +85,17 @@ Init_Singletons :: proc "c" (singletons: ^Singletons) {
     _Init_Singletons(singletons)
 }
 
-getMainLoop :: proc "c" () -> ^Object {
+getMainLoop :: proc "c" () -> ObjectPtr {
     context = runtime.default_context()
     return _getMainLoop()
 }
 
-getRoot :: proc "c" () -> ^Object {
+getRoot :: proc "c" () -> ObjectPtr {
     context = runtime.default_context()
     return _getRoot()
 }
 
-EngineObj :: proc "c" () -> ^Object {
+EngineObj :: proc "c" () -> ObjectPtr {
     context = runtime.default_context()
     return _EngineObj()
 }
@@ -107,150 +107,150 @@ get_delta_time :: proc() -> (delta: float) {
 
 Library : GDE.ClassDB = nil
 singletons: Singletons
-scene_tree_obj: ^Object
-root_node_instance: ^Object
+scene_tree_obj: ObjectPtr
+root_node_instance: ObjectPtr
 
 
 
 //singletons: Singletons
 
 Singletons :: struct {
-    Performance: ^Object,
-    Engine: ^Object,
-    ProjectSettings: ^Object,
-    OS: ^Object,
+    Performance: ObjectPtr,
+    Engine: ObjectPtr,
+    ProjectSettings: ObjectPtr,
+    OS: ObjectPtr,
 
-    Time: ^Object,
-    TextServerManager: ^Object,
-    PhysicsServer2DManager: ^Object,
-    PhysicsServer3DManager: ^Object,
-    NavigationServer2DManager: ^Object,
-    NavigationServer3DManager: ^Object,
-    NavigationMeshGenerator: ^Object,
-    IP: ^Object,
-    Geometry2D: ^Object,
-    Geometry3D: ^Object,
-    ResourceLoader: ^Object,
-    ResourceSaver: ^Object,
-    ClassDB: ^Object,
-    Marshalls: ^Object,
-    TranslationServer: ^Object,
-    Input: ^Object,
-    InputMap: ^Object,
-    EngineDebugger: ^Object,
-    GDExtensionManager: ^Object,
+    Time: ObjectPtr,
+    TextServerManager: ObjectPtr,
+    PhysicsServer2DManager: ObjectPtr,
+    PhysicsServer3DManager: ObjectPtr,
+    NavigationServer2DManager: ObjectPtr,
+    NavigationServer3DManager: ObjectPtr,
+    NavigationMeshGenerator: ObjectPtr,
+    IP: ObjectPtr,
+    Geometry2D: ObjectPtr,
+    Geometry3D: ObjectPtr,
+    ResourceLoader: ObjectPtr,
+    ResourceSaver: ObjectPtr,
+    ClassDB: ObjectPtr,
+    Marshalls: ObjectPtr,
+    TranslationServer: ObjectPtr,
+    Input: ObjectPtr,
+    InputMap: ObjectPtr,
+    EngineDebugger: ObjectPtr,
+    GDExtensionManager: ObjectPtr,
 
-    ResourceUID: ^Object,
+    ResourceUID: ObjectPtr,
 
-    WorkerThreadPool: ^Object,
+    WorkerThreadPool: ObjectPtr,
 
-    ThemeDB: ^Object,
+    ThemeDB: ObjectPtr,
 
-    EditorInterface: ^Object,
+    EditorInterface: ObjectPtr,
 
-    JavaClassWrapper: ^Object,
+    JavaClassWrapper: ObjectPtr,
 
-    JavaScriptBridge: ^Object,
+    JavaScriptBridge: ObjectPtr,
 
-    AudioServer: ^Object,
+    AudioServer: ObjectPtr,
 
-    CameraServer: ^Object,
+    CameraServer: ObjectPtr,
 
-    DisplayServer: ^Object,
+    DisplayServer: ObjectPtr,
 
-    NativeMenu: ^Object,
+    NativeMenu: ObjectPtr,
 
-    RenderingServer: ^Object,
+    RenderingServer: ObjectPtr,
 
-    NavigationServer2D: ^Object,
+    NavigationServer2D: ObjectPtr,
 
-    NavigationServer3D: ^Object,
+    NavigationServer3D: ObjectPtr,
 
-    PhysicsServer2D: ^Object,
+    PhysicsServer2D: ObjectPtr,
 
-    PhysicsServer3D: ^Object,
+    PhysicsServer3D: ObjectPtr,
 
-    XRServer: ^Object,
+    XRServer: ObjectPtr,
 
 }
 
-Performance: ^Object
+Performance: ObjectPtr
 
-Engine: ^Object
+Engine: ObjectPtr
 
-ProjectSettings: ^Object
+ProjectSettings: ObjectPtr
 
-OS: ^Object
+OS: ObjectPtr
 
-Time: ^Object
+Time: ObjectPtr
 
-TextServerManager: ^Object
+TextServerManager: ObjectPtr
 
-PhysicsServer2DManager: ^Object
+PhysicsServer2DManager: ObjectPtr
 
-PhysicsServer3DManager: ^Object
+PhysicsServer3DManager: ObjectPtr
 
 
-NavigationServer2DManager: ^Object
+NavigationServer2DManager: ObjectPtr
 
-NavigationServer3DManager: ^Object
-NavigationMeshGenerator: ^Object
+NavigationServer3DManager: ObjectPtr
+NavigationMeshGenerator: ObjectPtr
 
-IP: ^Object
+IP: ObjectPtr
 
-Geometry2D: ^Object
+Geometry2D: ObjectPtr
 
-Geometry3D: ^Object
+Geometry3D: ObjectPtr
 
-ResourceLoader: ^Object
+ResourceLoader: ObjectPtr
 
-ResourceSaver: ^Object
+ResourceSaver: ObjectPtr
 
-ClassDB: ^Object
+ClassDB: ObjectPtr
 
-Marshalls: ^Object
+Marshalls: ObjectPtr
 
-TranslationServer: ^Object
+TranslationServer: ObjectPtr
 
-Input: ^Object
+Input: ObjectPtr
 
-InputMap: ^Object
+InputMap: ObjectPtr
 
-EngineDebugger: ^Object
+EngineDebugger: ObjectPtr
 
-GDExtensionManager: ^Object
+GDExtensionManager: ObjectPtr
 
-ResourceUID: ^Object
+ResourceUID: ObjectPtr
 
-WorkerThreadPool: ^Object
+WorkerThreadPool: ObjectPtr
 
-ThemeDB: ^Object
+ThemeDB: ObjectPtr
 
-EditorInterface: ^Object
+EditorInterface: ObjectPtr
 
-JavaClassWrapper: ^Object
+JavaClassWrapper: ObjectPtr
 
-JavaScriptBridge: ^Object
+JavaScriptBridge: ObjectPtr
 
-AudioServer: ^Object
+AudioServer: ObjectPtr
 
-CameraServer: ^Object
+CameraServer: ObjectPtr
 
-DisplayServer: ^Object
+DisplayServer: ObjectPtr
 
-NativeMenu: ^Object
+NativeMenu: ObjectPtr
 
-RenderingServer: ^Object
+RenderingServer: ObjectPtr
 
-NavigationServer2D: ^Object
+NavigationServer2D: ObjectPtr
 
-NavigationServer3D: ^Object
+NavigationServer3D: ObjectPtr
 
-PhysicsServer2D: ^Object
+PhysicsServer2D: ObjectPtr
 
-PhysicsServer3D: ^Object
+PhysicsServer3D: ObjectPtr
 
-XRServer: ^Object
+XRServer: ObjectPtr
 
 
 /*
@@ -300,7 +300,7 @@ TMFree : proc "c" (p_class_user_data: ^Class_Deets, p_ptr: rawptr)
 * Will be passed into the procedures you create, as well as the virtuals that come with the Godot Node.
 */
 Class_Container_c :: struct #packed {
-    self: ^Object, //Keep as first so it can be trivially cast.
+    self: ObjectPtr, //Keep as first so it can be trivially cast.
     class: struct{},
 }
 
@@ -503,7 +503,7 @@ gdstring_new :: proc(text: string) -> (ret: gdstring) {
 
 //Godot will run your nodes regardless of whether you're in the editor or not.
 //Use the process_guard proc in order to simply tell Godot to NOT call the process virtuals or send the notifications.
-process_guard :: proc(obj: ^Object) {
+process_guard :: proc(obj: ObjectPtr) {
     if class.Engine_is_editor_hint(Engine) {
         enabled:Bool= false
         class.Node_set_process(obj, &enabled)
@@ -511,6 +511,10 @@ process_guard :: proc(obj: ^Object) {
     }
 }
 
-get_instance_from_id :: proc(instanceID: ObjectInstanceID) -> ^Object {
+get_instance_from_id :: proc(instanceID: ObjectInstanceID) -> ObjectPtr {
     return gdAPI.Object_Utils.GetInstanceFromId(instanceID)
+}
+
+get_instance_id :: proc(obj: ObjectPtr) -> ( ObjectInstanceID ){
+    return ObjectInstanceID(class.Object_get_instance_id(obj))
 }

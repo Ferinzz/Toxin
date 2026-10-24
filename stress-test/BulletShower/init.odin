@@ -60,9 +60,9 @@ editor_deinit :: proc "c" (userdata: rawptr) {
 
 }
 
-scene_tree_obj: ^GDW.Object
-root_node_instance: ^GDW.Object
-root:^Toxin.Object
+scene_tree_obj: Toxin.ObjectPtr
+root_node_instance: Toxin.ObjectPtr
+root: Toxin.ObjectPtr
 
 printonce:bool=true
 frame_count_amout::2000
@@ -85,7 +85,7 @@ MainLoopFrameCallback :: proc "c" () {
         fmt.println(frame_times[:])
         fmt.println(total/frame_count_amout)
         exit_code:Toxin.Int=0
-        classes.SceneTree_quit(scene_tree_obj, &exit_code)
+        classes.SceneTree_quit( scene_tree_obj, &exit_code )
     }
 }
 

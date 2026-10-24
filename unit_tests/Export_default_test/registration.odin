@@ -61,7 +61,7 @@ main_loop_startup :: proc "c" () {
     context = runtime.default_context()
 
     Classes.Node_Init_()
-    scene: ^Toxin.Object = Toxin.get_current_scene()
+    scene: Toxin.ObjectPtr = Toxin.get_current_scene()
     
     //A scene is not added when running editor mode first time. Check for the scene before trying to add the child to it.
     if scene != nil {

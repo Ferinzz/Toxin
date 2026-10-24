@@ -63,9 +63,9 @@ editor_deinit :: proc "c" (userdata: rawptr) {
 main_loop_shutdown :: proc "c" () {
 }
 
-scene_tree_obj: ^GDW.Object
-root_node_instance: ^GDW.Object
-root:^Toxin.Object
+scene_tree_obj: Toxin.ObjectPtr
+root_node_instance: Toxin.ObjectPtr
+root: Toxin.ObjectPtr
 
 printonce:bool=true
 frame_count_amout::2000

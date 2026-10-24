@@ -54,7 +54,7 @@ position: Vector2,
 normal: Vector2,
 rid: RID,
 collider_id: ObjectID,
-collider: ^Object,
+collider: ObjectPtr,
 shape: Int,
 }
 
@@ -70,7 +70,7 @@ linear_velocity: Vector2,
 PhysicsServer2DExtensionShapeResult :: struct {
 rid: RID,
 collider_id: ObjectID,
-collider: ^Object,
+collider: ObjectPtr,
 shape: Int,
 }
 
@@ -101,7 +101,7 @@ position: Vector3,
 normal: Vector3,
 rid: RID,
 collider_id: ObjectID,
-collider: ^Object,
+collider: ObjectPtr,
 shape: Int,
 face_index: Int,
 }
@@ -118,7 +118,7 @@ linear_velocity: Vector3,
 PhysicsServer3DExtensionShapeResult :: struct {
 rid: RID,
 collider_id: ObjectID,
-collider: ^Object,
+collider: ObjectPtr,
 shape: Int,
 }
 

@@ -8,7 +8,7 @@ import "core:math"
 Callable_Methods_list :: struct {
     Create0: proc "c" (p_base: ^Callable, p_args: rawptr = nil),
     Create1: proc "c" (p_base: ^Callable,  #by_ptr p_args: struct{ from: ^Callable, }),
-    Create2: proc "c" (p_base: ^Callable,  #by_ptr p_args: struct{ object: ^Object, method: ^StringName, }),
+    Create2: proc "c" (p_base: ^Callable,  #by_ptr p_args: struct{ object: ObjectPtr, method: ^StringName, }),
     Destroy: proc "c" (p_base: ^Callable),
     get_ptr: proc "c" (base: ^Variant) -> ^Callable,
     create:  proc "c" (p_base: ^Callable, #by_ptr p_args: struct{ variant: ^Variant, method: ^StringName, }, r_return: ^Callable, p_argument_count: i64 = 2),
@@ -17,7 +17,7 @@ Callable_Methods_list :: struct {
     is_custom:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
     is_standard:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
     is_valid:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Bool, p_argument_count: i64 = 0),
-    get_object:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Object, p_argument_count: i64 = 0),
+    get_object:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ObjectPtr, p_argument_count: i64 = 0),
     get_object_id:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),
     get_method:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^StringName, p_argument_count: i64 = 0),
     get_argument_count:  proc "c" (p_base: ^Callable, p_args: rawptr = nil, r_return: ^Int, p_argument_count: i64 = 0),

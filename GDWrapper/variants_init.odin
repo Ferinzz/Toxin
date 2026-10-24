@@ -107,6 +107,7 @@ new_variant_from_methods :: proc {
     NodePathToVariant,
     RidToVariant,
     ObjectToVariant,
+    ObjectPtrToVariant,
     CallableToVariant,
     SignalToVariant,
     DictionaryToVariant,
@@ -170,7 +171,7 @@ NodePathFromVariant:    proc "c" (dest: ^NodePath, source: ^Variant)
 
 RidFromVariant:         proc "c" (dest: ^RID, source: ^Variant)
 
-ObjectFromVariant:      proc "c" (dest: ^Object, source: ^Variant)
+ObjectFromVariant:      proc "c" (dest: ObjectPtr, source: ^Variant)
 
 CallableFromVariant:    proc "c" (dest: ^Callable, source: ^Variant)
 
@@ -250,6 +251,7 @@ NodePathToVariant:   proc "c" (dest: ^Variant, #by_ptr source: NodePath)
 RidToVariant:        proc "c" (dest: ^Variant, #by_ptr source: RID)
 
 ObjectToVariant:     proc "c" (dest: ^Variant, #by_ptr source: Object)
+ObjectPtrToVariant:     proc "c" (dest: ^Variant, source: GDE.ObjectPtr)
 
 CallableToVariant:   proc "c" (dest: ^Variant, #by_ptr source: Callable)
 
@@ -306,7 +308,7 @@ Init_Variant_Converters :: proc "c" () {
     StringNameFromVariant = cast(proc "c" (dest: ^StringName, source: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.STRING_NAME)
     NodePathFromVariant = cast(proc "c" (dest: ^NodePath, source: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.NODE_PATH)
     RidFromVariant = cast(proc "c" (dest: ^RID, source: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.RID)
-    ObjectFromVariant = cast(proc "c" (dest: ^Object, source: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.OBJECT)
+    ObjectFromVariant = cast(proc "c" (dest: ObjectPtr, source: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.OBJECT)
     CallableFromVariant = cast(proc "c" (dest: ^Callable, source: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.CALLABLE)
     SignalFromVariant = cast(proc "c" (dest: ^Signal, source: ^Variant))gdAPI.Variant_Utils.GetVariantToTypeConstructor(.SIGNAL)
 
@@ -350,6 +352,7 @@ Init_Variant_Converters :: proc "c" () {
     NodePathToVariant = cast(proc "c" (dest: ^Variant, #by_ptr source: NodePath))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.NODE_PATH)
     RidToVariant = cast(proc "c" (dest: ^Variant, #by_ptr source: RID))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.RID)
     ObjectToVariant = cast(proc "c" (dest: ^Variant, #by_ptr source: Object))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.OBJECT)
+    ObjectPtrToVariant = cast(proc "c" (dest: ^Variant, source: GDE.ObjectPtr))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.OBJECT)
     CallableToVariant = cast(proc "c" (dest: ^Variant, #by_ptr source: Callable))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.CALLABLE)
     SignalToVariant = cast(proc "c" (dest: ^Variant, #by_ptr source: Signal))gdAPI.Variant_Utils.GetVariantFromTypeConstructor(.SIGNAL)
 

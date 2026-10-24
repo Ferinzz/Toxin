@@ -64,8 +64,8 @@ main_loop_shutdown :: proc "c" () {
 }
 
 
-scene_tree_obj: ^GDW.Object
-root_node_instance: ^GDW.Object
+scene_tree_obj: Toxin.ObjectPtr
+root_node_instance: Toxin.ObjectPtr
 
 Performance: ^Toxin.Object
 
@@ -105,7 +105,7 @@ MainLoopFrameCallback :: proc "c" () {
     }
 }
 
-root:^Toxin.Object
+root: Toxin.ObjectPtr
 main_loop_startup :: proc "c" () {
     context = runtime.default_context()
     /////////////////////////////////////////////////

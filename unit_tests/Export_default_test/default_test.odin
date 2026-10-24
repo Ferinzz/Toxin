@@ -50,7 +50,7 @@ MainLoopFrameCallback2 :: proc "c" () {
     context = runtime.default_context()
 }
 
-type_test_defaults_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
+type_test_defaults_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (Toxin.ObjectPtr) {
     context = runtime.default_context()
     fmt.println("11!!special stress test!!")
     class:= cast(^Toxin.Class_Container(type_test_defaults))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)

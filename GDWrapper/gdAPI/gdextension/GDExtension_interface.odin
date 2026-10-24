@@ -166,9 +166,9 @@ UninitializedStringNamePtr          :: ^StringName
 StringPtr 							:: ^gdstring
 ConstStringPtr 						:: ^gdstring
 UninitializedStringPtr 				:: ^gdstring
-ObjectPtr 							:: ^Object
-ConstObjectPtr 						:: ^Object
-UninitializedObjectPtr 				:: ^Object
+ObjectPtr 							:: distinct ^Object
+ConstObjectPtr 						:: ObjectPtr
+UninitializedObjectPtr 				:: ObjectPtr
 TypePtr 							:: rawptr
 ConstTypePtr 						:: rawptr
 UninitializedTypePtr 				:: rawptr
@@ -177,7 +177,7 @@ GDObjectInstanceID 					:: u64
 
 RefPtr 								:: rawptr
 ConstRefPtr 						:: ^RefPtr
-ClassDB  							:: distinct ^Object
+ClassDB  							:: distinct ObjectPtr
 ConstTypePtrargs					:: [^]rawptr
 
 

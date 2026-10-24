@@ -40,7 +40,7 @@ register_signal2 :: proc (className: ^StringName, signalName: string, args: []ar
 * Subscriber Object is identified by the Objectid
 */
 @(require_results)
-connect_to :: proc(object: ^Object, callback: ^Callable, signal_name: ^StringName, flags: ConnectFlags = nil) -> (ret_err: GDW.Error) {
+connect_to :: proc(object: ObjectPtr, callback: ^Callable, signal_name: ^StringName, flags: ConnectFlags = nil) -> (ret_err: GDW.Error) {
     flags:i64=i64(transmute(u32)flags)
     Classes.Object_connect->m_call(object, {signal_name, callback, &flags}, &ret_err)
     return
@@ -67,7 +67,7 @@ connect_to :: proc(object: ^Object, callback: ^Callable, signal_name: ^StringNam
 Create_Callable2 :: proc(
         callable_userdata:       rawptr, //Should be something you can use to determine the Callable and/or the function to call.
         
-        object_id:               ^Object, //Pointer to the Object instance which should be used as _this_ function's instance.
+        object_id:               ObjectPtr, //Pointer to the Object instance which should be used as _this_ function's instance.
         call_func:               GDE.CallableCustomCall, //Up to the user to define, as its implementation will depend on how callable_userdata is provided.
         is_valid_func:           GDE.CallableCustomIsValid = nil, //If it's possible the callable is destroyed before disconnecting.
         free_func:               GDE.CallableCustomFree = nil, //Only needed if some memory it was using needs to be freed.
@@ -102,7 +102,7 @@ create_callable_container :: proc(
         function:                rawptr, //function pointer to the proc this should be calling.
         argcount:                int, //number of arguments in the function.
         
-        object_id:               ^Object, //Pointer to the Object instance which should be used as _this_ function's instance.
+        object_id:               ObjectPtr, //Pointer to the Object instance which should be used as _this_ function's instance.
         is_valid_func:           GDE.CallableCustomIsValid = nil, //If it's possible the callable is destroyed before disconnecting.
         free_func:               GDE.CallableCustomFree = nil, //Only needed if some memory it was using needs to be freed.
         hash_func:               GDE.CallableCustomHash = nil, //Godot runs a hash method twice. Not sure what that's used for.
@@ -141,7 +141,7 @@ create_callable_container :: proc(
 
 //First arg should be StringName of the signal
 //called automatically by emit_signal procs
-emit_signal_variant :: proc(p_instance: ^Object, args: []^Variant) -> GDW.Error {
+emit_signal_variant :: proc(p_instance: ObjectPtr, args: []^Variant) -> GDW.Error {
     ret: GDE.Variant
     gdAPI.Object_Utils.MethodBindCall(cast(GDE.MethodBindPtr)(Classes.Object_emit_signal._emit_signal), p_instance, raw_data(args[:]), i64(len(args)), &ret, nil)
     when builtin.ODIN_DEBUG {
@@ -240,9 +240,9 @@ Signal_Callback0 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     }
     callable_self:=callable_self
     obj: Object
-    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
-            (cast(proc(object: ^Object))(callable_self.function))\
-            (&obj)
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, cast(ObjectPtr)(&obj))
+            (cast(proc(object: ObjectPtr))(callable_self.function))\
+            (cast(ObjectPtr)(&obj))
 }
 
 Signal_Callback1 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
@@ -253,9 +253,9 @@ Signal_Callback1 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     }
     callable_self:=callable_self
     obj: Object
-    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
-            (cast(proc(object: ^Object, arg1: rawptr))(callable_self.function))\
-            (&obj, variant_get_ptr(p_args[0]))
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, cast(ObjectPtr)(&obj))
+            (cast(proc(object: ObjectPtr, arg1: rawptr))(callable_self.function))\
+            (cast(ObjectPtr)(&obj), variant_get_ptr(p_args[0]))
 }
 
 Signal_Callback2 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
@@ -266,9 +266,9 @@ Signal_Callback2 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     }
     callable_self:=callable_self
     obj: Object
-    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
-            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr))(callable_self.function))\
-            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]))
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, cast(ObjectPtr)(&obj))
+            (cast(proc(object: ObjectPtr, arg1: rawptr, arg2: rawptr))(callable_self.function))\
+            (cast(ObjectPtr)(&obj), variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]))
 }
 
 Signal_Callback3 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
@@ -279,9 +279,9 @@ Signal_Callback3 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     }
     callable_self:=callable_self
     obj: Object
-    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
-            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr))(callable_self.function))\
-            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]))
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, cast(ObjectPtr)(&obj))
+            (cast(proc(object: ObjectPtr, arg1: rawptr, arg2: rawptr, arg3: rawptr))(callable_self.function))\
+            (cast(ObjectPtr)(&obj), variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]))
 }
 
 Signal_Callback4 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
@@ -292,9 +292,9 @@ Signal_Callback4 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     }
     callable_self:=callable_self
     obj: Object
-    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
-            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr))(callable_self.function))\
-            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]))
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, cast(ObjectPtr)(&obj))
+            (cast(proc(object: ObjectPtr, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr))(callable_self.function))\
+            (cast(ObjectPtr)(&obj), variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]))
 }
 
 Signal_Callback5 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
@@ -305,9 +305,9 @@ Signal_Callback5 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     }
     callable_self:=callable_self
     obj: Object
-    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
-            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr, arg5: rawptr))(callable_self.function))\
-            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]), variant_get_ptr(p_args[4]))
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, cast(ObjectPtr)(&obj))
+            (cast(proc(object: ObjectPtr, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr, arg5: rawptr))(callable_self.function))\
+            (cast(ObjectPtr)(&obj), variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]), variant_get_ptr(p_args[4]))
 }
 
 Signal_Callback6 :: proc "c" (callable_self: callable_container, p_args: GDE.ConstVariantPtrargs, p_argument_count: Int, r_return: GDE.VariantPtr, r_error: ^GDE.CallError) {
@@ -318,9 +318,9 @@ Signal_Callback6 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
     }
     callable_self:=callable_self
     obj: Object
-    GDW.Callable_M_List.get_object(&callable_self.callable, nil, &obj)
-            (cast(proc(object: ^Object, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr, arg5: rawptr, arg6: rawptr))(callable_self.function))\
-            (&obj, variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]), variant_get_ptr(p_args[4]), variant_get_ptr(p_args[5]))
+    GDW.Callable_M_List.get_object(&callable_self.callable, nil, cast(ObjectPtr)(&obj))
+            (cast(proc(object: ObjectPtr, arg1: rawptr, arg2: rawptr, arg3: rawptr, arg4: rawptr, arg5: rawptr, arg6: rawptr))(callable_self.function))\
+            (cast(ObjectPtr)(cast(ObjectPtr)(&obj)), variant_get_ptr(p_args[0]), variant_get_ptr(p_args[1]), variant_get_ptr(p_args[2]), variant_get_ptr(p_args[3]), variant_get_ptr(p_args[4]), variant_get_ptr(p_args[5]))
 }
 
 /*
@@ -328,7 +328,7 @@ Signal_Callback6 :: proc "c" (callable_self: callable_container, p_args: GDE.Con
 * destroy the Variants after they have been used by Godot or get memory leaks for some types.
 * should return OK or ERR_UNAVAILABLE
 */
-emitSignal0 :: proc "c" (p_instance: ^Object, signalName: ^StringName) -> GDW.Error  {
+emitSignal0 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant = variant_r(signalName^)
@@ -339,7 +339,7 @@ emitSignal0 :: proc "c" (p_instance: ^Object, signalName: ^StringName) -> GDW.Er
     return emit_signal_variant(p_instance, varSet[:])
 }
 
-emitSignal1 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P) -> GDW.Error  {
+emitSignal1 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
@@ -354,7 +354,7 @@ emitSignal1 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     return emit_signal_variant(p_instance, varSet[:])
 }
 
-emitSignal2 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A) -> GDW.Error  {
+emitSignal2 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
@@ -374,7 +374,7 @@ emitSignal2 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
 
     return emit_signal_variant(p_instance, varSet[:])
 }
-emitSignal3 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B) -> GDW.Error  {
+emitSignal3 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
@@ -397,7 +397,7 @@ emitSignal3 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
 
     return emit_signal_variant(p_instance, varSet[:])
 }
-emitSignal4 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C) -> GDW.Error  {
+emitSignal4 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
@@ -423,7 +423,7 @@ emitSignal4 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
 
     return emit_signal_variant(p_instance, varSet[:])
 }
-emitSignal5 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D) -> GDW.Error  {
+emitSignal5 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
     arg1: GDE.Variant
@@ -453,7 +453,7 @@ emitSignal5 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
     return emit_signal_variant(p_instance, varSet[:])
 
 }
-emitSignal6 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
+emitSignal6 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
@@ -486,7 +486,7 @@ emitSignal6 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
 
     return emit_signal_variant(p_instance, varSet[:])
 }
-emitSignal7 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
+emitSignal7 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E, p_arg7: $F) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
@@ -522,7 +522,7 @@ emitSignal7 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
 
     return emit_signal_variant(p_instance, varSet[:])
 }
-emitSignal8 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
+emitSignal8 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E, p_arg7: $F, p_arg8: $G) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.
@@ -561,7 +561,7 @@ emitSignal8 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $
 
     return emit_signal_variant(p_instance, varSet[:])
 }
-emitSignal9 :: proc "c" (p_instance: ^Object, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
+emitSignal9 :: proc "c" (p_instance: ObjectPtr, signalName: ^StringName, p_arg1: $P, p_arg2: $A, p_arg3: $B, p_arg4: $C, p_arg5: $D,
                          p_arg6: $E, p_arg7: $F, p_arg8: $G, p_arg9: $H) -> GDW.Error  {
     context = runtime.default_context()
     // Set up the arguments for the call.

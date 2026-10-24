@@ -22,12 +22,12 @@ _getRoot :: proc() -> (root: GDE.ObjectPtr) {
     return
 }
 
-get_current_scene :: proc() -> (scene: ^Object) {
+get_current_scene :: proc() -> (scene: ObjectPtr) {
     Classes.SceneTree_get_current_scene->m_call(scene_tree_obj, r_ret = &scene)
     return
 }
 
-_EngineObj :: proc() -> ^Object {
+_EngineObj :: proc() -> ObjectPtr {
     return gdAPI.GlobalGetSingleton(Classes.GDClass_StringName_get(.Engine))
 }
 

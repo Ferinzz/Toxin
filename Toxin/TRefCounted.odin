@@ -22,7 +22,7 @@ safeRef_Error :: enum u8 {
 * Godot will verify if the object needs to be ref counted and return false if it does not need to be ref counted.
 * Godot can pass an Object containing a nil obj.proxy, particularly when the editor calls set. Need to verify that this is correct.
 */
-safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
+safeRef_Object :: proc "c" (obj: ObjectPtr) -> safeRef_Error {
     if obj == nil || obj.proxy == nil {
         return .NIL_OBJECT
     }
@@ -32,16 +32,16 @@ safeRef_Object :: proc "c" (obj: ^Object) -> safeRef_Error {
 }
 
 //Returns true if the increment was successful, false otherwise.
-Reference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
+Reference :: proc "c" (ref: ObjectPtr, r_bool: ^Bool) {
     Classes.RefCounted_reference->m_call(ref, nil, r_bool)
 }
 
 //Returns true if the increment was successful, false otherwise.
-Unreference :: proc "c" (ref: ^Object, r_bool: ^Bool) {
+Unreference :: proc "c" (ref: ObjectPtr, r_bool: ^Bool) {
     Classes.RefCounted_unreference->m_call(ref, nil, r_bool)
 }
 
-Reference_init :: proc "c" (ref: ^Object, r_bool: ^Bool) {
+Reference_init :: proc "c" (ref: ObjectPtr, r_bool: ^Bool) {
     Classes.RefCounted_init_ref->m_call(ref, nil, r_bool)
 }
 

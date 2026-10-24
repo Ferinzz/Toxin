@@ -42,7 +42,7 @@ THIS_CLASS_NAME_deets: Toxin.Class_Deets = {
 
 //If there's nothing that is heap allocated, you can use Toxin.Class_Init instead.
 //This runs before any virtuals.
-THIS_CLASS_NAME_Init :: proc "c" (p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool) -> (^Toxin.Object) {
+THIS_CLASS_NAME_Init :: proc "c" ( p_class_user_data: ^Toxin.Class_Deets, p_notify_postinitialize: Toxin.Bool ) -> ( Toxin.ObjectPtr ) {
     context = runtime.default_context()
     class:= cast(^Toxin.Class_Container(THIS_CLASS_NAME))Toxin.bltn_Create(p_class_user_data, p_notify_postinitialize)
 
